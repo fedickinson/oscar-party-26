@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Award, ChevronDown, Crown } from 'lucide-react'
 import Avatar from '../Avatar'
+import { CategoryIcon } from '../../lib/category-icons'
 import type { FeedEvent, PlayerImpact } from '../../hooks/useScores'
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
@@ -114,6 +115,7 @@ function WinnerCard({ entry }: { entry: Extract<FeedEvent, { kind: 'winner' }> }
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
+            <CategoryIcon categoryName={entry.categoryName} size={11} className="text-white/35 flex-shrink-0" />
             <span className="text-[10px] text-white/35 uppercase tracking-widest">
               {entry.categoryName}
             </span>

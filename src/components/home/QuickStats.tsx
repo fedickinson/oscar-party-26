@@ -20,6 +20,8 @@ interface Props {
   draftPicks: DraftPickRow[]
   draftEntities: DraftEntityRow[]
   leaderboard: ScoredPlayer[]
+  /** Live mode only: 'top' renders only Categories Remaining; 'bottom' renders the rest. Omit for all. */
+  section?: 'top' | 'bottom'
 }
 
 function StatCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -124,9 +126,9 @@ function PreCeremonyStats({
 
   return (
     <div className="space-y-3">
-      {/* Draft breakdown */}
+      {/* Ensemble breakdown */}
       <StatCard>
-        <SectionLabel icon={BarChart2} label="Draft breakdown" />
+        <SectionLabel icon={BarChart2} label="Ensemble breakdown" />
         <div className="space-y-2">
           {draftBreakdown.map(({ player, filmCount, personCount, topEntity, total }) => (
             <div key={player.id} className="flex items-start justify-between gap-2">
@@ -154,7 +156,7 @@ function PreCeremonyStats({
       {/* Confidence consensus */}
       {(consensus.agreed.length > 0 || consensus.disagreed.length > 0) && (
         <StatCard>
-          <SectionLabel icon={Target} label="Confidence consensus" />
+          <SectionLabel icon={Target} label="Prestige consensus" />
           {consensus.agreed.length > 0 && (
             <div className="mb-2">
               <p className="text-[11px] text-emerald-400/70 mb-1.5">Everyone agrees</p>
@@ -273,8 +275,8 @@ function DraftHitRateCard({ draftEfficiency }: { draftEfficiency: DraftHitEntry[
   return (
     <InfoStatCard
       icon={TrendingUp}
-      label="Draft hit rate"
-      info="Of all the entities you drafted (films and people), how many have won at least one category so far. Higher means your roster is producing winners. It doesn't count points — just whether your picks are hitting."
+      label="Ensemble hit rate"
+      info="Of all the films and people you claimed, how many have won at least one category so far. Higher means your ensemble is producing winners. It doesn't count points — just whether your claims are hitting."
     >
       <div className="space-y-2">
         {draftEfficiency.map(({ player, pct, won, total }) => (
@@ -306,7 +308,7 @@ function DraftHitRateCard({ draftEfficiency }: { draftEfficiency: DraftHitEntry[
 // ─── Live stats ───────────────────────────────────────────────────────────────
 
 function LiveStats({
-  categories, nominees, confidencePicks, draftPicks, draftEntities, leaderboard,
+  categories, nominees, confidencePicks, draftPicks, draftEntities, leaderboard, section,
 }: Omit<Props, 'isPreCeremony'>) {
   const { players } = useGame()
 
@@ -384,10 +386,13 @@ function LiveStats({
     return best as { category: CategoryRow; winner: NomineeRow; uniquePicks: number } | null
   }, [announcedCategories, confidencePicks, nominees])
 
+  const showTop = !section || section === 'top'
+  const showBottom = !section || section === 'bottom'
+
   return (
     <div className="space-y-3">
       {/* Categories remaining */}
-      <InfoStatCard
+      {showTop && <InfoStatCard
         icon={CheckCircle}
         label="Categories remaining"
         info="How many of the 24 Oscar categories are still to be announced tonight. The bar fills as winners are called — when it's full, the ceremony is over."
@@ -411,10 +416,10 @@ function LiveStats({
         <p className="text-xs text-white/40 mt-1">
           {announcedCategories.length} announced
         </p>
-      </InfoStatCard>
+      </InfoStatCard>}
 
       {/* Biggest swing */}
-      {biggestSwing && (
+      {showBottom && biggestSwing && (
         <InfoStatCard
           icon={Zap}
           label="Biggest swing"
@@ -429,10 +434,10 @@ function LiveStats({
       )}
 
       {/* Draft hit rate */}
-      <DraftHitRateCard draftEfficiency={draftEfficiency} />
+      {showBottom && <DraftHitRateCard draftEfficiency={draftEfficiency} />}
 
       {/* Most controversial */}
-      {mostControversial && (
+      {showBottom && mostControversial && (
         <InfoStatCard
           icon={BarChart2}
           label="Most split"
@@ -454,3 +459,4 @@ export default function QuickStats(props: Props) {
   const { isPreCeremony, ...rest } = props
   return isPreCeremony ? <PreCeremonyStats {...rest} /> : <LiveStats {...rest} />
 }
+

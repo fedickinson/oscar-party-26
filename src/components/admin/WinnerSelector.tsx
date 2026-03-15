@@ -28,6 +28,7 @@ import { useGame } from '../../context/GameContext'
 import Avatar from '../Avatar'
 import type { NomineeRow, PlayerRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
+import { CategoryIcon } from '../../lib/category-icons'
 
 const TIER_LABELS: Record<number, string> = {
   1: 'Major Awards',
@@ -99,11 +100,14 @@ export default function WinnerSelector({
 
       let draftPlayer: PlayerRow | null = null
       if (entities && draftPicks && confirming) {
-        // Person entity: match by name. Film entity: match by film_name.
+        // Person entity: match by name.
+        // Film entity: match by film_name, falling back to name for nominees
+        // where the film IS the nominee (e.g. Best Picture) and film_name is empty.
+        const filmTitle = confirming.film_name || confirming.name
         const matchingEntity = entities.find((e) =>
           confirming.type === 'person'
             ? e.type === 'person' && e.name === confirming.name
-            : e.type === 'film' && e.film_name === confirming.film_name,
+            : e.type === 'film' && e.film_name === filmTitle,
         )
         if (matchingEntity) {
           const pick = draftPicks.find((p) => p.entity_id === matchingEntity.id)
@@ -186,7 +190,8 @@ export default function WinnerSelector({
               <p className="text-xs text-white/40 uppercase tracking-widest mb-1">
                 {TIER_LABELS[category.tier] ?? `Tier ${category.tier}`}
               </p>
-              <h2 className="text-lg font-bold text-white leading-tight">
+              <h2 className="text-lg font-bold text-white leading-tight flex items-center gap-2">
+                <CategoryIcon categoryName={category.name} size={18} className="text-white/50 flex-shrink-0" />
                 {category.name}
               </h2>
               <p className="text-sm text-oscar-gold mt-0.5">

@@ -17,17 +17,17 @@ const CONTENT: Record<Phase, {
 }> = {
   draft: {
     icon: <Users size={40} className="text-oscar-gold" />,
-    title: 'Fantasy Draft',
-    what: "Take turns claiming nominees and films. When they win an Oscar tonight you score points. You're building a portfolio for the whole ceremony — choose wisely.",
-    different: "This is the only game where you're competing for picks. Once someone drafts Ryan Coogler, he's theirs. Everyone needs to be here for this part.",
-    tip: "People nominated in multiple categories are the most valuable. Ryan Coogler could win Director AND Screenplay — that's 14 points from one pick.",
+    title: 'Ensemble',
+    what: "Take turns claiming nominees and films. When they win an Oscar tonight you score points. You're building your ensemble for the whole ceremony — choose wisely.",
+    different: "This is the only game where you're competing for picks. Once someone claims Ryan Coogler, he's theirs. Everyone needs to be here for this part.",
+    tip: "People nominated in multiple categories are the most valuable. Ryan Coogler could win Director AND Screenplay — that's 14 points from one claim.",
   },
   confidence: {
     icon: <Hash size={40} className="text-oscar-gold" />,
-    title: 'Confidence Picks',
-    what: "Predict the winner in all 24 categories, then assign confidence points (1–24) to each pick. If you're right, you earn those points. If you're wrong, zero.",
+    title: 'Prestige Picks',
+    what: "Predict the winner in all 24 categories, then assign prestige points (1–24) to each pick. If you're right, you earn those points. If you're wrong, zero.",
     different: "Unlike the draft, everyone picks independently — you can all pick the same winner. The strategy isn't WHO you pick, it's WHERE you put your big numbers. Do this on your own — no peeking.",
-    tip: "Your confidence number IS your score — put your 24 where you're most certain, not where the category seems most important. The real edge is nailing a pick no one else makes with a high number.",
+    tip: "Your prestige number IS your score — put your 24 where you're most certain, not where the category seems most important. The real edge is nailing a pick no one else makes with a high number.",
   },
   bingo: {
     icon: <Grid3X3 size={40} className="text-oscar-gold" />,

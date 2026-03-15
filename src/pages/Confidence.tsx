@@ -179,12 +179,12 @@ export default function Confidence() {
           <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-white/40 uppercase tracking-widest">
-                Confidence Picks
+                Prestige Picks
               </p>
               <p className="text-sm font-semibold text-white mt-0.5">
                 {myHasSubmitted
                   ? 'Submitted — waiting for others'
-                  : 'Pick a nominee + confidence for each category'}
+                  : 'Pick a nominee + prestige for each category'}
               </p>
             </div>
             <div className="flex items-center gap-2">

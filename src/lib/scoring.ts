@@ -115,11 +115,13 @@ export function findDraftPointsForWinner(
     })
   } else {
     // Film entities: match by film_name, type === 'film'.
-    // The winning nominee's film_name IS the film (e.g. "The Brutalist").
+    // For Best Picture nominees, film_name may be empty (the film IS the nominee),
+    // so fall back to matching against the nominee's name field.
+    const nomFilmTitle = winningNominee.film_name || winningNominee.name
     matchingEntity = draftEntities.find(
       (entity) =>
         entity.type === 'film' &&
-        entity.film_name === winningNominee.film_name,
+        entity.film_name === nomFilmTitle,
     )
   }
 

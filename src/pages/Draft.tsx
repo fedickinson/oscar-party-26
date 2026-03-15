@@ -251,7 +251,7 @@ export default function Draft() {
                     animate={{ opacity: 1 }}
                     className="text-xs text-oscar-gold/70 uppercase tracking-widest px-1 mb-2"
                   >
-                    Tap to draft
+                    Tap to claim
                   </motion.p>
                 )}
                 <div className="space-y-2.5">
@@ -277,7 +277,7 @@ export default function Draft() {
                     animate={{ opacity: 1 }}
                     className="text-xs text-oscar-gold/70 uppercase tracking-widest px-1 mb-2"
                   >
-                    Tap to draft
+                    Tap to claim
                   </motion.p>
                 )}
                 {groupPeople(activeAvailable).map((group) => (

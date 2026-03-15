@@ -10,7 +10,7 @@
  *       ANNOUNCED: name + tier badge + winner name (oscar-gold) + film + check
  *                  Tap to expand → all nominees, winner highlighted
  *                  Undo button (host only, within 30s window)
- *       UNANNOUNCED (host): "Select Winner" button → WinnerSelector sheet
+ *       UNANNOUNCED (host): "Open Category" button → spotlight via openSpotlight()
  *       UNANNOUNCED (non-host): "Awaiting result..." italic
  */
 
@@ -28,8 +28,8 @@ import {
   User,
 } from 'lucide-react'
 import { useAdmin } from '../../hooks/useAdmin'
-import WinnerSelector from '../admin/WinnerSelector'
-import type { CategoryWithNominees } from '../../types/game'
+import { CategoryIcon } from '../../lib/category-icons'
+
 
 const UNDO_WINDOW_MS = 30_000
 
@@ -46,19 +46,17 @@ interface Props {
   isHost: boolean
   onEndCeremony: () => Promise<void>
   isEndingCeremony: boolean
+  openSpotlight: (categoryId: number) => Promise<void>
 }
 
-export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCeremony }: Props) {
+export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCeremony, openSpotlight }: Props) {
   const {
     categories,
     winnerSetAt,
     isLoading,
-    setWinner,
     undoWinner,
   } = useAdmin(roomId)
 
-  const [selectedCategory, setSelectedCategory] = useState<CategoryWithNominees | null>(null)
-  const [isSubmittingWinner, setIsSubmittingWinner] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
   const [tick, setTick] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -84,20 +82,6 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
       if (tickRef.current) clearInterval(tickRef.current)
     }
   }, [winnerSetAt, tick])
-
-  async function handleConfirmWinner(nomineeId: string) {
-    if (!selectedCategory) return
-    setIsSubmittingWinner(true)
-    setError(null)
-    try {
-      await setWinner(selectedCategory.id, nomineeId)
-      setSelectedCategory(null)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to set winner.')
-    } finally {
-      setIsSubmittingWinner(false)
-    }
-  }
 
   async function handleUndo(categoryId: number) {
     try {
@@ -246,6 +230,11 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                   {/* Category info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                      <CategoryIcon
+                        categoryName={category.name}
+                        size={13}
+                        className={hasWinner ? 'text-white/30 flex-shrink-0' : 'text-white/60 flex-shrink-0'}
+                      />
                       <p
                         className={[
                           'text-sm font-medium leading-tight',
@@ -293,11 +282,11 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                         whileTap={{ scale: 0.94 }}
                         onClick={(e) => {
                           e.stopPropagation()
-                          setSelectedCategory(category)
+                          openSpotlight(category.id)
                         }}
                         className="px-3 py-1.5 rounded-lg bg-oscar-gold/15 border border-oscar-gold/30 text-oscar-gold text-xs font-semibold"
                       >
-                        Select Winner
+                        Spotlight
                       </motion.button>
                     )}
 
@@ -406,21 +395,6 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
       </div>
 
-      {/* WinnerSelector sheet — rendered outside scroll container */}
-      <AnimatePresence>
-        {selectedCategory && (
-          <WinnerSelector
-            key={selectedCategory.id}
-            category={selectedCategory}
-            roomId={roomId}
-            onConfirm={handleConfirmWinner}
-            onClose={() => {
-              if (!isSubmittingWinner) setSelectedCategory(null)
-            }}
-            isSubmitting={isSubmittingWinner}
-          />
-        )}
-      </AnimatePresence>
     </>
   )
 }

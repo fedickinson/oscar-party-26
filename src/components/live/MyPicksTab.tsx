@@ -23,6 +23,7 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { CategoryIcon } from '../../lib/category-icons'
 import { findDraftPointsForWinner } from '../../lib/scoring'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type {
@@ -160,12 +161,12 @@ export default function MyPicksTab({
           {/* Score breakdown */}
           <div className="grid grid-cols-3 gap-2">
             <ScoreBreakdownCell
-              label="Draft"
+              label="Ensemble"
               value={myScore.fantasyScore}
               dimmed={myScore.fantasyScore === 0}
             />
             <ScoreBreakdownCell
-              label="Confidence"
+              label="Prestige"
               value={myScore.confidenceScore}
               dimmed={myScore.confidenceScore === 0}
             />
@@ -195,7 +196,7 @@ export default function MyPicksTab({
         >
           <div className="flex items-center gap-2">
             <p className="text-xs text-white/35 uppercase tracking-widest">
-              Confidence Picks
+              Prestige Picks
             </p>
             {myConfidencePicks.length > 0 && (
               <span className="text-[10px] text-white/25 bg-white/5 border border-white/8 rounded-full px-1.5 py-0.5 tabular-nums">
@@ -286,9 +287,12 @@ export default function MyPicksTab({
 
                   {/* Category + nominee */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-white/35 uppercase tracking-wider truncate">
-                      {cat?.name ?? `Category ${pick.category_id}`}
-                    </p>
+                    <div className="flex items-center gap-1 mb-0.5">
+                      {cat && <CategoryIcon categoryName={cat.name} size={10} className="text-white/30 flex-shrink-0" />}
+                      <p className="text-[10px] text-white/35 uppercase tracking-wider truncate">
+                        {cat?.name ?? `Category ${pick.category_id}`}
+                      </p>
+                    </div>
                     <p
                       className={[
                         'text-sm truncate',
@@ -337,7 +341,7 @@ export default function MyPicksTab({
         >
           <div className="flex items-center gap-2">
             <p className="text-xs text-white/35 uppercase tracking-widest">
-              Draft Roster
+              My Ensemble
             </p>
             {myDraftEntities.length > 0 && (
               <span className="text-[10px] text-white/25 bg-white/5 border border-white/8 rounded-full px-1.5 py-0.5 tabular-nums">
@@ -402,7 +406,7 @@ export default function MyPicksTab({
             )
           })()}
         {myDraftEntities.length === 0 ? (
-          <p className="text-sm text-white/30 text-center py-6">No draft picks</p>
+          <p className="text-sm text-white/30 text-center py-6">No ensemble picks</p>
         ) : (
           <div className="space-y-1.5">
             {myDraftEntities.map((entity) => {

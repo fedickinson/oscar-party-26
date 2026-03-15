@@ -15,6 +15,7 @@
 
 import type { PlayerRow, ConfidencePickRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
+import { CategoryIcon } from '../../lib/category-icons'
 
 interface Props {
   categories: CategoryWithNominees[]
@@ -115,9 +116,12 @@ export default function PicksReveal({
                 >
                   {/* Category header */}
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-white/70 flex-1 mr-2">
-                      {category.name}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-1 mr-2 min-w-0">
+                      <CategoryIcon categoryName={category.name} size={12} className="text-white/40 flex-shrink-0" />
+                      <span className="text-xs font-semibold text-white/70 truncate">
+                        {category.name}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs text-white/30 font-mono">{category.points}pt</span>
                       {agreementBadge && (

@@ -15,8 +15,9 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Film, Trophy, User, X } from 'lucide-react'
+import { Check, User, X } from 'lucide-react'
 import confetti from 'canvas-confetti'
+import { CategoryIcon } from '../../lib/category-icons'
 
 const DISMISS_MS = 8000
 
@@ -89,7 +90,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
           </p>
           <div className="flex justify-center mb-2">
             <div className="w-10 h-10 rounded-full bg-oscar-gold/15 border border-oscar-gold/30 flex items-center justify-center">
-              <Trophy size={18} className="text-oscar-gold" />
+              <CategoryIcon categoryName={categoryName} size={18} className="text-oscar-gold" />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-oscar-gold leading-tight">
@@ -161,12 +162,12 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
             </div>
           )}
 
-          {/* Fantasy Draft */}
-          <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1 px-0.5">
-              Fantasy Draft
-            </p>
-            {draftResult ? (
+          {/* Fantasy Draft — only shown when someone drafted the winner */}
+          {draftResult && (
+            <div>
+              <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1 px-0.5">
+                Fantasy Draft
+              </p>
               <div
                 className={[
                   'rounded-2xl px-3.5 py-3 flex items-center gap-3 border',
@@ -192,7 +193,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                     {draftResult.isCurrentPlayer ? 'You' : draftResult.playerName}
                   </p>
                   <p className="text-xs text-white/35 mt-0.5">
-                    +{draftResult.points} draft pts
+                    +{draftResult.points} ensemble pts
                   </p>
                 </div>
 
@@ -209,17 +210,8 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                   />
                 </div>
               </div>
-            ) : (
-              <div className="rounded-2xl px-3.5 py-3 flex items-center gap-3 bg-white/4 border border-white/8">
-                <div className="w-8 h-8 rounded-xl bg-white/6 flex items-center justify-center flex-shrink-0">
-                  <Film size={14} className="text-white/20" />
-                </div>
-                <p className="text-sm text-white/25 italic flex-1">
-                  Nobody drafted {winnerName}
-                </p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
         </div>
 

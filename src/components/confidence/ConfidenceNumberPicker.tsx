@@ -72,7 +72,7 @@ export default function ConfidenceNumberPicker({
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-white/40 uppercase tracking-widest mb-0.5">
-                Confidence for
+                Prestige for
               </p>
               <p className="text-sm font-semibold text-white leading-tight">
                 {category.name}
@@ -87,7 +87,7 @@ export default function ConfidenceNumberPicker({
           </div>
 
           <p className="text-xs text-white/40 mb-3">
-            Higher numbers = more confident. Tap a taken number to swap it.
+            Higher numbers = more prestige. Tap a taken number to swap it.
           </p>
 
           {/* 4×6 grid */}

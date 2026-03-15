@@ -103,7 +103,7 @@ function DeltaBadges({ badges }: { badges: ActiveBadge[] }) {
           )}
           {badge.draft !== 0 && (
             <span className="text-[10px] font-bold text-purple-400 bg-purple-500/15 rounded px-1 py-0.5 leading-none">
-              D{badge.draft > 0 ? '+' : ''}
+              E{badge.draft > 0 ? '+' : ''}
               {badge.draft}
             </span>
           )}

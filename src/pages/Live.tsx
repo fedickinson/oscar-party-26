@@ -26,6 +26,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from '../context/GameContext'
 import { useScores } from '../hooks/useScores'
+import { useAICompanions } from '../hooks/useAICompanions'
+import { useSpotlight } from '../hooks/useSpotlight'
+import { useRoomSubscription } from '../hooks/useRoom'
 import { findDraftPointsForWinner } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import TabBar from '../components/live/TabBar'
@@ -35,6 +38,7 @@ import ScoresTab from '../components/live/ScoresTab'
 import WinnersTab from '../components/live/WinnersTab'
 import MyPicksTab from '../components/live/MyPicksTab'
 import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
+import SpotlightNotification from '../components/spotlight/SpotlightNotification'
 import BrowseSection from '../components/home/BrowseSection'
 import PhaseExplainer from '../components/PhaseExplainer'
 import Toast, { useToast } from '../components/ui/Toast'
@@ -59,7 +63,55 @@ export default function Live() {
   const isHost = player?.is_host ?? false
   const currentPlayerId = player?.id ?? ''
 
+  useRoomSubscription(roomId)
   const scores = useScores(roomId)
+  useAICompanions(
+    scores.categories,
+    scores.nominees,
+    scores.confidencePicks,
+    scores.draftPicks,
+    scores.draftEntities,
+    scores.leaderboard,
+    isHost,
+  )
+
+  const {
+    isSpotlightActive,
+    spotlightCategoryId,
+    spotlightNomineeIds,
+    openSpotlight,
+    closeSpotlight,
+    confirmSpotlightWinner,
+  } = useSpotlight()
+
+  // ── Spotlight notification + tab switch ───────────────────────────────────────
+
+  const prevSpotlightCategoryIdRef = useRef<number | null>(null)
+  const [showSpotlightNotification, setShowSpotlightNotification] = useState(false)
+  const [notificationCategory, setNotificationCategory] = useState<{ name: string; tier: number } | null>(null)
+
+  useEffect(() => {
+    const prev = prevSpotlightCategoryIdRef.current
+    prevSpotlightCategoryIdRef.current = spotlightCategoryId
+
+    if (spotlightCategoryId != null && spotlightCategoryId !== prev) {
+      const cat = scores.categories.find((c) => c.id === spotlightCategoryId)
+      if (cat) {
+        setNotificationCategory({ name: cat.name, tier: cat.tier })
+        setShowSpotlightNotification(true)
+      }
+    }
+  }, [spotlightCategoryId, scores.categories])
+
+  function handleSpotlightNotificationComplete() {
+    setShowSpotlightNotification(false)
+    selectTab(0)
+  }
+
+  // Keep a ref for the announcement guard (avoids stale closure in useEffect below)
+  const spotlightCategoryIdRef = useRef(spotlightCategoryId)
+  spotlightCategoryIdRef.current = spotlightCategoryId
+
   const { toast, showToast, dismissToast } = useToast()
 
   // ── Bingo peek tracking ───────────────────────────────────────────────────
@@ -179,6 +231,7 @@ export default function Live() {
 
       seenWinnerCategoryIds.current!.add(cat.id)
 
+
       const winner = scores.nominees.find((n) => n.id === cat.winner_id)
       if (!winner) return
 
@@ -193,7 +246,10 @@ export default function Live() {
         ? {
             pickedName: pickedNominee?.name ?? 'Unknown',
             confidence: myPick.confidence,
-            isCorrect: myPick.is_correct === true,
+            // Use nominee_id comparison, not is_correct, because the
+            // confidence_picks.is_correct DB update may not have arrived
+            // via Realtime yet when this announcement fires.
+            isCorrect: myPick.nominee_id === cat.winner_id,
           }
         : null
 
@@ -294,7 +350,7 @@ export default function Live() {
                 animate="animate"
                 exit="exit"
                 transition={tabTransition}
-                className="absolute inset-0 overflow-y-auto"
+                className="absolute inset-0 overflow-hidden"
               >
                 <HomeTab
                   categories={scores.categories}
@@ -305,6 +361,12 @@ export default function Live() {
                   leaderboard={scores.leaderboard}
                   onNavigateToWinnersTab={() => selectTab(3)}
                   onNavigateToBingo={handleNavigateToBingo}
+                  spotlightCategoryId={spotlightCategoryId}
+                  spotlightNomineeIds={spotlightNomineeIds}
+                  isHost={isHost}
+                  openSpotlight={openSpotlight}
+                  closeSpotlight={closeSpotlight}
+                  confirmSpotlightWinner={confirmSpotlightWinner}
                 />
               </motion.div>
             )}
@@ -348,6 +410,11 @@ export default function Live() {
                     leaderboard={scores.leaderboard}
                     activityFeed={scores.activityFeed}
                     currentPlayerId={currentPlayerId}
+                    categories={scores.categories}
+                    nominees={scores.nominees}
+                    confidencePicks={scores.confidencePicks}
+                    draftPicks={scores.draftPicks}
+                    draftEntities={scores.draftEntities}
                   />
                 </div>
               </motion.div>
@@ -370,6 +437,7 @@ export default function Live() {
                     isHost={isHost}
                     onEndCeremony={handleEndCeremony}
                     isEndingCeremony={isEndingCeremony}
+                    openSpotlight={openSpotlight}
                   />
                 </div>
               </motion.div>
@@ -424,7 +492,19 @@ export default function Live() {
         <TabBar activeTab={tab} onSelect={selectTab} />
       </div>
 
-      {/* Winner announcements */}
+      {/* Spotlight notification — slides in on any tab when spotlight opens */}
+      <AnimatePresence>
+        {showSpotlightNotification && notificationCategory && (
+          <SpotlightNotification
+            key={`spotlight-notif-${spotlightCategoryId}`}
+            categoryName={notificationCategory.name}
+            tier={notificationCategory.tier}
+            onComplete={handleSpotlightNotificationComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Winner announcements — shown on top of spotlight */}
       <AnimatePresence>
         {announcementQueue[0] && (
           <WinnerAnnouncement

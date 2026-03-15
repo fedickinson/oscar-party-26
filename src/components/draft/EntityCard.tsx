@@ -127,7 +127,7 @@ export default function EntityCard({
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: draftedBy.color }}
               />
-              <span className="text-xs text-white/35">Drafted by {draftedBy.name}</span>
+              <span className="text-xs text-white/35">In {draftedBy.name}'s ensemble</span>
             </div>
           )}
         </div>
@@ -147,7 +147,7 @@ export default function EntityCard({
               <p className="text-[10px] text-white/30 mt-0.5">pts</p>
             </>
           ) : (
-            <span className="text-xs text-white/20">drafted</span>
+            <span className="text-xs text-white/20">claimed</span>
           )}
         </div>
       </div>

@@ -241,7 +241,8 @@ export function useScores(roomId: string | undefined): ScoresState {
           if (!Array.isArray(noms) || noms.length === 0) return true
           return noms.some((n) => n.category_id === rw.category_id)
         } else {
-          return entity.type === 'film' && entity.film_name === winner.film_name
+          const filmTitle = winner.film_name || winner.name
+          return entity.type === 'film' && entity.film_name === filmTitle
         }
       })
       if (matchingEntity) {

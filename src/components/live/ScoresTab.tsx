@@ -9,16 +9,32 @@
 
 import Leaderboard from './Leaderboard'
 import ActivityFeed from './ActivityFeed'
+import QuickStats from '../home/QuickStats'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { FeedEvent } from '../../hooks/useScores'
+import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 
 interface Props {
   leaderboard: ScoredPlayer[]
   activityFeed: FeedEvent[]
   currentPlayerId: string
+  categories: CategoryRow[]
+  nominees: NomineeRow[]
+  confidencePicks: ConfidencePickRow[]
+  draftPicks: DraftPickRow[]
+  draftEntities: DraftEntityRow[]
 }
 
-export default function ScoresTab({ leaderboard, activityFeed, currentPlayerId }: Props) {
+export default function ScoresTab({
+  leaderboard,
+  activityFeed,
+  currentPlayerId,
+  categories,
+  nominees,
+  confidencePicks,
+  draftPicks,
+  draftEntities,
+}: Props) {
   return (
     <div className="flex flex-col gap-4 py-2">
       <section>
@@ -34,6 +50,25 @@ export default function ScoresTab({ leaderboard, activityFeed, currentPlayerId }
 
       <section className="pb-2">
         <ActivityFeed feed={activityFeed} />
+      </section>
+
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-white/8" />
+        <span className="text-[10px] text-white/25 uppercase tracking-widest">Stats</span>
+        <div className="flex-1 h-px bg-white/8" />
+      </div>
+
+      <section className="pb-2">
+        <QuickStats
+          isPreCeremony={false}
+          section="bottom"
+          categories={categories}
+          nominees={nominees}
+          confidencePicks={confidencePicks}
+          draftPicks={draftPicks}
+          draftEntities={draftEntities}
+          leaderboard={leaderboard}
+        />
       </section>
     </div>
   )

@@ -26,6 +26,7 @@ import { Hash } from 'lucide-react'
 import type { NomineeRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
 import type { LocalPick } from '../../hooks/useConfidence'
+import { CategoryIcon } from '../../lib/category-icons'
 
 interface Props {
   category: CategoryWithNominees
@@ -95,9 +96,12 @@ export default function CategoryPickCard({
     >
       {/* Header row */}
       <div className="flex items-center justify-between mb-2.5">
-        <span className="text-xs font-semibold text-white/80 leading-tight flex-1 mr-2">
-          {category.name}
-        </span>
+        <div className="flex items-center gap-1.5 flex-1 mr-2 min-w-0">
+          <CategoryIcon categoryName={category.name} size={13} className={style.label} />
+          <span className="text-xs font-semibold text-white/80 leading-tight truncate">
+            {category.name}
+          </span>
+        </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Confidence badge — tap opens picker */}
           <motion.button

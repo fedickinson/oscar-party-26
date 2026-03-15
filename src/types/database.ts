@@ -23,6 +23,7 @@ export interface RoomRow {
   current_pick: number
   ready_players: unknown // jsonb — array of player ids who tapped "Got it"
   ai_analysis: unknown // jsonb
+  active_spotlight_category_id: number | null
   created_at: string
 }
 
@@ -35,6 +36,7 @@ export interface RoomInsert {
   current_pick?: number
   ready_players?: unknown
   ai_analysis?: unknown
+  active_spotlight_category_id?: number | null
   created_at?: string
 }
 
@@ -47,6 +49,7 @@ export interface RoomUpdate {
   current_pick?: number
   ready_players?: unknown
   ai_analysis?: unknown
+  active_spotlight_category_id?: number | null
   created_at?: string
 }
 
@@ -391,6 +394,7 @@ export interface AvatarUpdate {
 export interface MessageRow {
   id: string
   room_id: string
+  // UUID for human players, or 'meryl' | 'nikki' | 'will' for AI companions (FK dropped in migration).
   player_id: string
   text: string
   created_at: string
