@@ -13,6 +13,7 @@
  *   Train Dreams · The Secret Agent · KPop Demon Hunters
  */
 
+import React from 'react'
 import type { ReactNode } from 'react'
 import { Clapperboard } from 'lucide-react'
 
@@ -242,7 +243,7 @@ function DemonMic({ size, className }: { size?: number; className?: string }) {
 
 // ─── Resolver ──────────────────────────────────────────────────────────────────
 
-type FilmIconComponent = (props: { size?: number; className?: string }) => JSX.Element
+type FilmIconComponent = (props: { size?: number; className?: string }) => React.ReactElement
 
 function resolveFilmIcon(name: string): FilmIconComponent {
   const n = name.toLowerCase().trim()
