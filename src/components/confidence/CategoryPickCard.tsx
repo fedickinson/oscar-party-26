@@ -27,6 +27,7 @@ import type { NomineeRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
 import type { LocalPick } from '../../hooks/useConfidence'
 import { CategoryIcon } from '../../lib/category-icons'
+import { FilmIcon } from '../../lib/film-icons'
 
 interface Props {
   category: CategoryWithNominees
@@ -182,8 +183,9 @@ function NomineeRow({
         {nominee.name}
       </span>
       {showFilm && (
-        <span className="text-xs text-white/60 leading-snug mt-0.5">
-          {nominee.film_name}
+        <span className="flex items-center gap-1 mt-0.5">
+          <FilmIcon filmName={nominee.film_name!} size={9} className="text-white/40 flex-shrink-0" />
+          <span className="text-xs text-white/60 leading-snug">{nominee.film_name}</span>
         </span>
       )}
     </motion.button>

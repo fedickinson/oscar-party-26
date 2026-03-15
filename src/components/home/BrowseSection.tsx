@@ -7,13 +7,14 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, AlertTriangle, BookOpen, Film } from 'lucide-react'
+import { ChevronDown, ChevronUp, AlertTriangle, BookOpen } from 'lucide-react'
 import {
   filmEncyclopedia,
   ceremonyStorylines,
   biggestSnubs,
   type FilmProfile,
 } from '../../data/film-encyclopedia'
+import { FilmIcon } from '../../lib/film-icons'
 
 // Nomination-count → border accent: more noms = stronger gold
 function nomAccentClass(nominations: number): string {
@@ -41,6 +42,7 @@ function FilmCard({ film }: { film: FilmProfile }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
+              <FilmIcon filmName={film.title} size={16} className="text-oscar-gold flex-shrink-0" />
               <span className="font-semibold text-white leading-tight">{film.title}</span>
               {film.nominations >= 10 && (
                 <span className="text-[10px] font-bold text-oscar-gold bg-oscar-gold/15 border border-oscar-gold/30 px-1.5 py-0.5 rounded-full">
@@ -157,7 +159,6 @@ export default function BrowseSection() {
     <div className="space-y-3">
       {/* Films header */}
       <div className="flex items-center gap-2">
-        <Film size={16} className="text-oscar-gold" />
         <h3 className="text-sm font-semibold text-white/80">Films &amp; Nominees</h3>
       </div>
 

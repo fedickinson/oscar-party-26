@@ -9,8 +9,9 @@
  */
 
 import { motion } from 'framer-motion'
-import { X, Star, DollarSign, Clock, Film } from 'lucide-react'
+import { X, Star, DollarSign, Clock } from 'lucide-react'
 import { filmEncyclopedia } from '../../data/film-encyclopedia'
+import { FilmIcon } from '../../lib/film-icons'
 import type { NomineeRow } from '../../types/database'
 
 interface Props {
@@ -73,13 +74,19 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
             {isFilm ? (
               <>
                 <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-0.5">{categoryName}</p>
-                <h2 className="text-xl font-bold text-white leading-tight">{nominee.film_name}</h2>
+                <div className="flex items-center gap-2">
+                  <FilmIcon filmName={nominee.film_name} size={20} className="text-oscar-gold flex-shrink-0" />
+                  <h2 className="text-xl font-bold text-white leading-tight">{nominee.film_name}</h2>
+                </div>
               </>
             ) : (
               <>
                 <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-0.5">{categoryName}</p>
                 <h2 className="text-xl font-bold text-white leading-tight">{nominee.name}</h2>
-                <p className="text-sm text-white/50 mt-0.5">{nominee.film_name}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <FilmIcon filmName={nominee.film_name} size={12} className="text-white/40 flex-shrink-0" />
+                  <p className="text-sm text-white/50">{nominee.film_name}</p>
+                </div>
               </>
             )}
           </div>
@@ -109,7 +116,7 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
               <div className="flex flex-wrap gap-3 text-xs text-white/50">
                 {film.director && (
                   <span className="flex items-center gap-1">
-                    <Film size={11} className="text-white/30" />
+                    <FilmIcon filmName={film.title} size={11} className="text-white/30" />
                     {film.director}
                   </span>
                 )}

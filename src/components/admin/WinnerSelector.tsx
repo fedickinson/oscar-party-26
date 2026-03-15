@@ -8,7 +8,7 @@
  *
  * PICK CONTEXT (shown in confirming state):
  *   When the host selects a nominee, we immediately fetch and display:
- *   - Fantasy Draft: which player drafted this entity and their points gain
+ *   - Ensemble Draft: which player drafted this entity and their points gain
  *   - Confidence: each player's pick for this category with their confidence
  *     value — clearly showing who scores and who doesn't
  *   This eliminates ambiguity between "someone drafted it" vs "someone
@@ -22,7 +22,8 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Film, User, X } from 'lucide-react'
+import { Check, User, X } from 'lucide-react'
+import { FilmIcon } from '../../lib/film-icons'
 import { supabase } from '../../lib/supabase'
 import { useGame } from '../../context/GameContext'
 import Avatar from '../Avatar'
@@ -220,15 +221,16 @@ export default function WinnerSelector({
                   {confirming.type === 'person' ? (
                     <User size={18} className="text-oscar-gold" />
                   ) : (
-                    <Film size={18} className="text-oscar-gold" />
+                    <FilmIcon filmName={confirming.film_name || confirming.name} size={18} className="text-oscar-gold" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-white leading-tight">{confirming.name}</p>
                   {confirming.film_name && (
-                    <p className="text-xs text-white/50 mt-0.5 truncate">
-                      {confirming.film_name}
-                    </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <FilmIcon filmName={confirming.film_name} size={10} className="text-white/40 flex-shrink-0" />
+                      <p className="text-xs text-white/50 truncate">{confirming.film_name}</p>
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-white/35 flex-shrink-0">winner?</p>
@@ -242,10 +244,10 @@ export default function WinnerSelector({
               ) : (
                 <div className="space-y-3">
 
-                  {/* ── Fantasy Draft ─────────────────────────────────────── */}
+                  {/* ── Ensemble Draft ────────────────────────────────────── */}
                   <div>
                     <p className="text-[10px] text-white/35 uppercase tracking-widest mb-1.5">
-                      Fantasy Draft · {category.points} pts
+                      Ensemble · {category.points} pts
                     </p>
                     {pickContext.draftPlayer ? (
                       <div className="flex items-center gap-2.5 px-3 py-2.5 bg-oscar-gold/8 border border-oscar-gold/20 rounded-xl">
@@ -259,7 +261,7 @@ export default function WinnerSelector({
                       </div>
                     ) : (
                       <p className="text-xs text-white/30 italic px-1">
-                        Nobody drafted {confirming.name} — no fantasy points
+                        Nobody claimed {confirming.name} — no ensemble points
                       </p>
                     )}
                   </div>
@@ -362,15 +364,16 @@ export default function WinnerSelector({
                     {nominee.type === 'person' ? (
                       <User size={18} className="text-white/50" />
                     ) : (
-                      <Film size={18} className="text-white/50" />
+                      <FilmIcon filmName={nominee.film_name || nominee.name} size={18} className="text-white/50" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white leading-tight">{nominee.name}</p>
                     {nominee.film_name && (
-                      <p className="text-xs text-white/45 mt-0.5 truncate">
-                        {nominee.film_name}
-                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <FilmIcon filmName={nominee.film_name} size={10} className="text-white/35 flex-shrink-0" />
+                        <p className="text-xs text-white/45 truncate">{nominee.film_name}</p>
+                      </div>
                     )}
                   </div>
                 </motion.button>

@@ -25,9 +25,9 @@ const CONTENT: Record<Phase, {
   confidence: {
     icon: <Hash size={40} className="text-oscar-gold" />,
     title: 'Prestige Picks',
-    what: "Predict the winner in all 24 categories, then assign prestige points (1–24) to each pick. If you're right, you earn those points. If you're wrong, zero.",
-    different: "Unlike the draft, everyone picks independently — you can all pick the same winner. The strategy isn't WHO you pick, it's WHERE you put your big numbers. Do this on your own — no peeking.",
-    tip: "Your prestige number IS your score — put your 24 where you're most certain, not where the category seems most important. The real edge is nailing a pick no one else makes with a high number.",
+    what: "Pick who you think will win each of the 24 categories. Each pick gets a confidence number from 1 to 24 — if your pick wins, you score that many points. Each number can only be used once.",
+    different: "Everyone picks independently — you can all choose the same winner. The strategy isn't just WHO you pick, it's WHERE you put your big numbers. Save the 20s for categories you're sure about.",
+    tip: "Put your highest numbers on your most confident picks, not on the biggest awards. Missing Best Picture with a 24 hurts more than missing Best Score.",
   },
   bingo: {
     icon: <Grid3X3 size={40} className="text-oscar-gold" />,

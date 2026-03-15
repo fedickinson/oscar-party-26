@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Award, ChevronDown, Crown } from 'lucide-react'
 import Avatar from '../Avatar'
 import { CategoryIcon } from '../../lib/category-icons'
+import { FilmIcon } from '../../lib/film-icons'
 import type { FeedEvent, PlayerImpact } from '../../hooks/useScores'
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ function PlayerImpactRow({ impact, muted }: { impact: PlayerImpact; muted: boole
             {': D+'}
             <span className="font-bold">{impact.draftDelta}</span>
             {impact.draftedEntityName && (
-              <span className="text-white/40"> (drafted {impact.draftedEntityName})</span>
+              <span className="text-white/40"> (claimed {impact.draftedEntityName})</span>
             )}
           </span>
         </div>
@@ -127,7 +128,10 @@ function WinnerCard({ entry }: { entry: Extract<FeedEvent, { kind: 'winner' }> }
         </div>
         <p className="text-sm font-semibold text-white">{entry.winnerName}</p>
         {entry.winnerFilm && (
-          <p className="text-xs text-white/45">{entry.winnerFilm}</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <FilmIcon filmName={entry.winnerFilm} size={10} className="text-white/30 flex-shrink-0" />
+            <p className="text-xs text-white/45">{entry.winnerFilm}</p>
+          </div>
         )}
       </div>
 

@@ -17,6 +17,7 @@
  */
 
 import { motion } from 'framer-motion'
+import { FilmIcon } from '../../lib/film-icons'
 import type { PlayerRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -59,16 +60,15 @@ export default function EntityCard({
       <div className="flex items-start gap-3">
         {/* Left: type badge */}
         <div className="flex-shrink-0 mt-0.5">
-          <span
-            className={[
-              'text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded',
-              isFilm
-                ? 'bg-oscar-gold/20 text-oscar-gold'
-                : 'bg-violet-500/20 text-violet-300',
-            ].join(' ')}
-          >
-            {isFilm ? 'Film' : 'Person'}
-          </span>
+          {isFilm ? (
+            <div className={['p-1.5 rounded-lg', isAvailable ? 'bg-oscar-gold/15 text-oscar-gold' : 'bg-white/5 text-white/25'].join(' ')}>
+              <FilmIcon filmName={entity.name} size={16} />
+            </div>
+          ) : (
+            <span className="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300">
+              Person
+            </span>
+          )}
         </div>
 
         {/* Center: name + details */}
@@ -83,9 +83,10 @@ export default function EntityCard({
           </p>
 
           {!isFilm && entity.film_name && (
-            <p className="text-xs text-white/60 truncate mt-0.5">
-              {entity.film_name}
-            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <FilmIcon filmName={entity.film_name} size={10} className="text-white/40 flex-shrink-0" />
+              <p className="text-xs text-white/60 truncate">{entity.film_name}</p>
+            </div>
           )}
 
           {/* Nominations display */}

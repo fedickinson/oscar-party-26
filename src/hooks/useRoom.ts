@@ -301,13 +301,27 @@ export function usePlayersSubscription(roomId: string | undefined) {
       .subscribe()
 
     // Initial fetch runs AFTER the channel is set up so we don't miss any
-    // events that fire between mounting and the channel going live
+    // events that fire between mounting and the channel going live.
+    //
+    // We merge with the functional updater instead of overwriting so that
+    // any player INSERTs that arrived via the subscription before this fetch
+    // completes are not silently dropped.
     supabase
       .from('players')
       .select()
       .eq('room_id', roomId)
       .then(({ data }) => {
-        if (data) setPlayers(data)
+        if (!data) return
+        setPlayers((prev) => {
+          // Build a map of id → row from the fetched snapshot
+          const fetched = new Map(data.map((p) => [p.id, p]))
+          // Merge: keep any subscription-added players not in the fetch snapshot,
+          // update existing players with the fetched (authoritative) row
+          const merged = prev.map((p) => fetched.get(p.id) ?? p)
+          const mergedIds = new Set(merged.map((p) => p.id))
+          data.forEach((p) => { if (!mergedIds.has(p.id)) merged.push(p) })
+          return merged
+        })
       })
 
     return () => {

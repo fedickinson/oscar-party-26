@@ -10,9 +10,9 @@
  *   switches to oscar-gold.
  *
  * TAKEN AVATARS:
- *   20% opacity + grayscale filter + pointer-events-none. A centered overlay
- *   shows the claiming player's first name so it's immediately clear who has
- *   the avatar. Character/actor/film text is hidden for taken cards.
+ *   30% opacity + grayscale filter + pointer-events-none + cursor-not-allowed.
+ *   A Lock icon overlay sits centered on the avatar circle, and a two-line
+ *   label reads "Taken by / [Name]". Character/actor/film text is hidden.
  *
  * UPGRADE PATH:
  *   When image assets exist, Avatar.tsx handles the swap internally.
@@ -21,6 +21,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Lock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import Avatar from './Avatar'
 import type { AvatarRow } from '../types/database'
@@ -91,10 +92,10 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
               isSelected
                 ? 'border-oscar-gold bg-oscar-gold/8'
                 : isTaken
-                  ? 'border-white/5 bg-white/5 pointer-events-none'
+                  ? 'border-white/5 bg-white/5 pointer-events-none cursor-not-allowed'
                   : 'border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer',
             ].join(' ')}
-            style={isTaken ? { opacity: 0.2, filter: 'grayscale(1)' } : undefined}
+            style={isTaken ? { opacity: 0.3, filter: 'grayscale(1)' } : undefined}
           >
             {/* Gold ring expands from center on selection */}
             <AnimatePresence>
@@ -111,20 +112,31 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
             </AnimatePresence>
 
             {/* Avatar visual */}
-            <div className="flex justify-center mb-3">
+            <div className="flex justify-center mb-3 relative">
               <Avatar
                 avatarId={avatar.id}
                 size="lg"
                 emotion="neutral"
                 highlighted={isSelected}
               />
+              {/* Lock overlay for taken avatars */}
+              {isTaken && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
+                    <Lock size={16} className="text-white/80" />
+                  </div>
+                </div>
+              )}
             </div>
 
             {isTaken ? (
-              /* Taken: show only who claimed it */
-              <p className="text-sm font-bold leading-tight text-white/70 text-center">
-                {claimedBy ?? 'Taken'}
-              </p>
+              /* Taken: show who claimed it with clear label */
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">Taken by</p>
+                <p className="text-sm font-bold leading-tight text-white/70 truncate">
+                  {claimedBy ?? 'Someone'}
+                </p>
+              </div>
             ) : (
               /* Available: show full character details */
               <>

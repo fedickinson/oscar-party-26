@@ -79,6 +79,7 @@ export default function Confidence() {
     isLoading,
     assignNominee,
     assignConfidence,
+    setLocalPicksDirectly,
     submitPicks,
     lockPicks,
   } = useConfidence(room?.id)
@@ -110,14 +111,22 @@ export default function Confidence() {
   }
 
   function handleRandomFill() {
+    // Build the full picks map in one pass to avoid stale-closure issues with
+    // sequential setLocalPicks calls that each read from the same snapshot.
     const shuffledConfidence = Array.from({ length: 24 }, (_, i) => i + 1).sort(
       () => Math.random() - 0.5,
     )
+    const newPicks: import('../hooks/useConfidence').LocalPicksMap = {}
     categories.forEach((cat, i) => {
       const randomNominee = cat.nominees[Math.floor(Math.random() * cat.nominees.length)]
-      if (randomNominee) assignNominee(cat.id, randomNominee.id)
-      assignConfidence(cat.id, shuffledConfidence[i])
+      newPicks[cat.id] = {
+        nominee_id: randomNominee?.id ?? null,
+        confidence: shuffledConfidence[i],
+      }
     })
+    // Replace the entire localPicks map in a single setState call so every
+    // category gets both a nominee and a unique confidence number.
+    setLocalPicksDirectly(newPicks)
   }
 
   async function handleLock() {

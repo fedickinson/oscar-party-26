@@ -1,5 +1,5 @@
 /**
- * Draft — the fantasy draft page.
+ * Draft — the ensemble draft page.
  *
  * LAYOUT (flex column, full viewport height):
  *
@@ -186,11 +186,26 @@ export default function Draft() {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="text-center py-2 px-4 mb-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white/50 flex-shrink-0"
+            className="text-center py-2.5 px-4 mb-2 rounded-xl text-sm flex-shrink-0"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.4)',
+            }}
           >
-            Waiting for{' '}
-            <span className="font-semibold text-white/80">{currentDrafter.name}</span>{' '}
-            to pick…
+            <motion.span
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="inline-flex items-center gap-1.5"
+            >
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: currentDrafter.color, opacity: 0.7 }}
+              />
+              Waiting for{' '}
+              <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>{currentDrafter.name}</span>{' '}
+              to pick…
+            </motion.span>
           </motion.div>
         )}
 
@@ -208,7 +223,7 @@ export default function Draft() {
                 : <Users size={14} className="text-oscar-gold" />
               }
               <span className="text-xs font-semibold text-oscar-gold uppercase tracking-widest">
-                {isFilmsPhase ? 'Film Draft' : 'People Draft'}
+                {isFilmsPhase ? 'Film Ensemble' : 'People Ensemble'}
               </span>
             </div>
             {devAutoPickAll && (
@@ -222,7 +237,7 @@ export default function Draft() {
                 className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-full disabled:opacity-40"
               >
                 <Shuffle size={12} />
-                {isAutoDrafting ? 'Drafting…' : 'Auto Draft'}
+                {isAutoDrafting ? 'Selecting…' : 'Auto Select'}
               </button>
             )}
           </motion.div>
@@ -239,7 +254,7 @@ export default function Draft() {
                 className="text-center py-10"
               >
                 <Trophy size={48} className="text-oscar-gold mx-auto mb-3" />
-                <p className="text-xl font-bold text-oscar-gold mb-1">Draft Complete!</p>
+                <p className="text-xl font-bold text-oscar-gold mb-1">Ensemble Complete!</p>
                 <p className="text-white/50 text-sm">Moving to Confidence Picks…</p>
               </motion.div>
             ) : isFilmsPhase ? (
@@ -307,7 +322,7 @@ export default function Draft() {
             {!isDraftComplete && activeDrafted.length > 0 && (
               <div className="mt-3">
                 <p className="text-xs text-white/30 uppercase tracking-widest px-1 mb-1.5">
-                  Drafted ({activeDrafted.length})
+                  Claimed ({activeDrafted.length})
                 </p>
                 <div className="space-y-2.5">
                   {activeDrafted.map((entity, i) => (

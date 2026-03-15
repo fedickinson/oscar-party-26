@@ -20,6 +20,8 @@ export interface AvatarConfig {
   initials: string
   colorPrimary: string
   colorSecondary: string
+  /** Optional photo. Place file at public/avatars/<id>.jpg and set this path. */
+  imageUrl?: string
 }
 
 export const AVATAR_CONFIGS: AvatarConfig[] = [
@@ -31,6 +33,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'MJ',
     colorPrimary: '#8B0000',
     colorSecondary: '#FF4500',
+    imageUrl: '/avatars/mbj-smoke.png',
   },
   {
     id: 'lindo-delta',
@@ -40,6 +43,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'DL',
     colorPrimary: '#191970',
     colorSecondary: '#D4AF37',
+    imageUrl: '/avatars/lindo-delta.png',
   },
   {
     id: 'mosaku-sinners',
@@ -49,6 +53,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'WM',
     colorPrimary: '#4B0082',
     colorSecondary: '#FFBF00',
+    imageUrl: '/avatars/mosaku-sinners.png',
   },
   {
     id: 'chalamet-marty',
@@ -58,6 +63,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'TC',
     colorPrimary: '#7B2FF7',
     colorSecondary: '#E0D0FF',
+    imageUrl: '/avatars/chalamet-marty.png',
   },
   {
     id: 'buckley-agnes',
@@ -67,6 +73,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'JB',
     colorPrimary: '#228B22',
     colorSecondary: '#F5DEB3',
+    imageUrl: '/avatars/buckley-agnes.png',
   },
   {
     id: 'stone-bugonia',
@@ -76,6 +83,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'ES',
     colorPrimary: '#3D6B00',
     colorSecondary: '#ADFF2F',
+    imageUrl: '/avatars/stone-bugonia.png',
   },
   {
     id: 'elordi-creature',
@@ -85,6 +93,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'JE',
     colorPrimary: '#2E4A1E',
     colorSecondary: '#B8FFB0',
+    imageUrl: '/avatars/elordi-creature.png',
   },
   {
     id: 'reinsve-sv',
@@ -94,6 +103,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'RR',
     colorPrimary: '#2A6B8A',
     colorSecondary: '#B0E0E6',
+    imageUrl: '/avatars/reinsve-sv.png',
   },
   {
     id: 'pitt-f1',
@@ -103,6 +113,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'BP',
     colorPrimary: '#CC0000',
     colorSecondary: '#1A1A1A',
+    imageUrl: '/avatars/pitt-f1.png',
   },
   {
     id: 'dicaprio-obaa',
@@ -112,6 +123,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'LD',
     colorPrimary: '#2B5BA8',
     colorSecondary: '#C0C0C0',
+    imageUrl: '/avatars/dicaprio-obaa.png',
   },
   {
     id: 'penn-obaa',
@@ -121,6 +133,7 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'SP',
     colorPrimary: '#36454F',
     colorSecondary: '#8B0000',
+    imageUrl: '/avatars/penn-obaa.png',
   },
   {
     id: 'taylor-obaa',
@@ -130,5 +143,6 @@ export const AVATAR_CONFIGS: AvatarConfig[] = [
     initials: 'TR',
     colorPrimary: '#C2185B',
     colorSecondary: '#D4AF37',
+    imageUrl: '/avatars/taylor-obaa.png',
   },
 ]

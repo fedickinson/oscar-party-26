@@ -21,10 +21,10 @@
  *   4. Each client updates their local state arrays → React re-renders
  *   5. computeLeaderboard() is called with fresh state:
  *        - confidenceScore: sums picks where is_correct = true
- *        - fantasyScore: re-evaluates which draft entity matches the winner
+ *        - ensembleScore: re-evaluates which draft entity matches the winner
  *   6. Leaderboard re-sorts by totalScore and all players see the new ranking
  *
- * FANTASY SCORING ENTITY MATCH:
+ * ENSEMBLE SCORING ENTITY MATCH:
  *   The draft entity for a person (e.g. "Adrien Brody") is identified by:
  *     entity.type === 'person' AND entity.name === nominee.name
  *     AND entity.nominations.some(n => n.category_id === categoryId)
@@ -47,7 +47,7 @@ import type {
 
 export interface ScoredPlayer {
   player: PlayerRow
-  fantasyScore: number
+  ensembleScore: number
   confidenceScore: number
   bingoScore: number
   totalScore: number
@@ -166,10 +166,10 @@ export function computeLeaderboard(
         .filter((p) => p.player_id === player.id && p.is_correct === true)
         .reduce((sum, p) => sum + p.confidence, 0)
 
-      // ── Fantasy score ─────────────────────────────────────────────────────
+      // ── Ensemble score ────────────────────────────────────────────────────
       // For each announced category, check if this player's drafted entity won.
       // Each matching entity earns category.points.
-      const fantasyScore = announcedCategories.reduce((sum, cat) => {
+      const ensembleScore = announcedCategories.reduce((sum, cat) => {
         const { playerId, points } = findDraftPointsForWinner(
           cat.id,
           cat.winner_id!,
@@ -185,9 +185,9 @@ export function computeLeaderboard(
       // Stubbed — will be populated when bingo scoring is implemented.
       const bingoScore = bingoScores.get(player.id) ?? 0
 
-      const totalScore = confidenceScore + fantasyScore + bingoScore
+      const totalScore = confidenceScore + ensembleScore + bingoScore
 
-      return { player, fantasyScore, confidenceScore, bingoScore, totalScore }
+      return { player, ensembleScore, confidenceScore, bingoScore, totalScore }
     })
     .sort((a, b) => b.totalScore - a.totalScore)
 }

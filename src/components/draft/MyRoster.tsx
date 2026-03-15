@@ -17,6 +17,7 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { FilmIcon } from '../../lib/film-icons'
 import type { DraftEntityWithDetails } from '../../types/game'
 
 interface Props {
@@ -133,7 +134,10 @@ function RosterSection({
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{entity.name}</p>
                 {entity.film_name && entity.type === 'person' && (
-                  <p className="text-xs text-white/40 italic truncate">{entity.film_name}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <FilmIcon filmName={entity.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                    <p className="text-xs text-white/40 italic truncate">{entity.film_name}</p>
+                  </div>
                 )}
                 <p className="text-xs text-white/30 mt-0.5">
                   {entity.nom_count} nom{entity.nom_count !== 1 ? 's' : ''}

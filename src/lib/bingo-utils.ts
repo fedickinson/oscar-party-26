@@ -39,6 +39,29 @@ export const BINGO_LINES: readonly number[][] = [
   [4, 8, 12, 16, 20],
 ]
 
+// ─── BINGO_LINE_PALETTE ───────────────────────────────────────────────────────
+
+/** One color entry per BINGO_LINES index (rows 0-4, cols 5-9, diags 10-11). */
+export const BINGO_LINE_PALETTE: Array<{
+  bg: string
+  border: string
+  text: string
+  glow: string
+}> = [
+  { bg: 'rgba(16,185,129,0.22)', border: 'rgba(52,211,153,0.65)', text: 'rgba(110,231,183,0.95)', glow: 'rgba(16,185,129,0.12)' },  // emerald — row 0
+  { bg: 'rgba(14,165,233,0.22)', border: 'rgba(56,189,248,0.65)', text: 'rgba(125,211,252,0.95)', glow: 'rgba(14,165,233,0.12)' },  // sky — row 1
+  { bg: 'rgba(139,92,246,0.22)', border: 'rgba(167,139,250,0.65)', text: 'rgba(196,181,253,0.95)', glow: 'rgba(139,92,246,0.12)' }, // violet — row 2
+  { bg: 'rgba(244,63,94,0.22)', border: 'rgba(251,113,133,0.65)', text: 'rgba(253,164,175,0.95)', glow: 'rgba(244,63,94,0.12)' },   // rose — row 3
+  { bg: 'rgba(245,158,11,0.22)', border: 'rgba(251,191,36,0.65)', text: 'rgba(252,211,77,0.95)', glow: 'rgba(245,158,11,0.12)' },   // amber — row 4
+  { bg: 'rgba(20,184,166,0.22)', border: 'rgba(45,212,191,0.65)', text: 'rgba(94,234,212,0.95)', glow: 'rgba(20,184,166,0.12)' },   // teal — col 0
+  { bg: 'rgba(99,102,241,0.22)', border: 'rgba(129,140,248,0.65)', text: 'rgba(165,180,252,0.95)', glow: 'rgba(99,102,241,0.12)' }, // indigo — col 1
+  { bg: 'rgba(217,70,239,0.22)', border: 'rgba(232,121,249,0.65)', text: 'rgba(240,171,252,0.95)', glow: 'rgba(217,70,239,0.12)' }, // fuchsia — col 2
+  { bg: 'rgba(249,115,22,0.22)', border: 'rgba(251,146,60,0.65)', text: 'rgba(253,186,116,0.95)', glow: 'rgba(249,115,22,0.12)' },  // orange — col 3
+  { bg: 'rgba(132,204,22,0.22)', border: 'rgba(163,230,53,0.65)', text: 'rgba(190,242,100,0.95)', glow: 'rgba(132,204,22,0.12)' },  // lime — col 4
+  { bg: 'rgba(6,182,212,0.22)', border: 'rgba(34,211,238,0.65)', text: 'rgba(103,232,249,0.95)', glow: 'rgba(6,182,212,0.12)' },    // cyan — diag TL-BR
+  { bg: 'rgba(236,72,153,0.22)', border: 'rgba(244,114,182,0.65)', text: 'rgba(249,168,212,0.95)', glow: 'rgba(236,72,153,0.12)' }, // pink — diag TR-BL
+]
+
 // ─── generateBingoCard ────────────────────────────────────────────────────────
 
 /**

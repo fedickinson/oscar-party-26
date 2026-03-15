@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle, ClipboardList } from 'lucide-react'
+import { BookOpen, CheckCircle, ClipboardList } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useBingo } from '../../hooks/useBingo'
 import { useBingoApprovals } from '../../hooks/useBingoApprovals'
@@ -31,8 +31,7 @@ import PeekCardOverlay from '../bingo/PeekCardOverlay'
 import Avatar from '../Avatar'
 import type { CategoryRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
-import type { OtherPlayerCard } from '../../hooks/useOtherBingoCards'
-import { FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
+import { BINGO_LINE_PALETTE, BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
 
 interface Props {
   roomId: string
@@ -40,11 +39,12 @@ interface Props {
   categories: CategoryRow[]
   nominees: NomineeRow[]
   leaderboard: ScoredPlayer[]
+  onShowExplainer?: () => void
 }
 
-export default function BingoTab({ roomId, isHost, categories, nominees, leaderboard }: Props) {
+export default function BingoTab({ roomId, isHost, categories, nominees, leaderboard, onShowExplainer }: Props) {
   const { player } = useGame()
-  const [peekingCard, setPeekingCard] = useState<OtherPlayerCard | null>(null)
+  const [peekingPlayerId, setPeekingPlayerId] = useState<string | null>(null)
   const [showApprovals, setShowApprovals] = useState(false)
 
   const {
@@ -113,18 +113,25 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
             </div>
           </div>
 
-          {/* Bingo line badges */}
+          {/* Bingo line badges — color matches the corresponding line on the card */}
           {bingoCount > 0 && (
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-              {Array.from({ length: bingoCount }).map((_, i) => (
-                <span
-                  key={i}
-                  className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/30 px-2 py-0.5 rounded-full"
-                >
-                  <CheckCircle size={9} />
-                  BINGO {bingoCount > 1 ? i + 1 : ''}
-                </span>
-              ))}
+              {bingoLines.map((completedLine, i) => {
+                const lineIdx = BINGO_LINES.findIndex(
+                  (l) => l.length === completedLine.length && l.every((v, j) => v === completedLine[j]),
+                )
+                const palette = lineIdx >= 0 ? BINGO_LINE_PALETTE[lineIdx] : BINGO_LINE_PALETTE[0]
+                return (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                    style={{ color: palette.text, backgroundColor: palette.bg, borderColor: palette.border }}
+                  >
+                    <CheckCircle size={9} />
+                    BINGO {bingoCount > 1 ? i + 1 : ''}
+                  </span>
+                )
+              })}
             </div>
           )}
         </div>
@@ -202,7 +209,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                       key={entry.player.id}
                       whileTap={{ scale: 0.97 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      onClick={() => otherCard ? setPeekingCard(otherCard) : undefined}
+                      onClick={() => otherCard ? setPeekingPlayerId(entry.player.id) : undefined}
                       className={[
                         'w-full flex items-center gap-2.5 py-2.5 px-1 rounded-xl',
                         'transition-colors duration-150',
@@ -235,6 +242,18 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
             </div>
           </div>
         )}
+
+        {/* How Bingo Works — re-show the explainer */}
+        {onShowExplainer && (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={onShowExplainer}
+            className="flex items-center gap-2 text-xs text-white/30 hover:text-white/50 transition-colors"
+          >
+            <BookOpen size={13} />
+            How Bingo Works
+          </motion.button>
+        )}
       </div>
 
       {/* Celebration overlay */}
@@ -252,14 +271,17 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
 
       {/* Peek card overlay */}
       <AnimatePresence>
-        {peekingCard && (
-          <PeekCardOverlay
-            player={peekingCard.player}
-            squares={peekingCard.squares}
-            marks={peekingCard.marks}
-            onDismiss={() => setPeekingCard(null)}
-          />
-        )}
+        {peekingPlayerId && (() => {
+          const liveCard = otherCards.find((c) => c.player.id === peekingPlayerId)
+          return liveCard ? (
+            <PeekCardOverlay
+              player={liveCard.player}
+              squares={liveCard.squares}
+              marks={liveCard.marks}
+              onDismiss={() => setPeekingPlayerId(null)}
+            />
+          ) : null
+        })()}
       </AnimatePresence>
 
       {/* Host approval sheet */}

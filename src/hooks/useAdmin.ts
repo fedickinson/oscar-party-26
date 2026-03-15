@@ -149,7 +149,7 @@ export function useAdmin(roomId: string | undefined): AdminState {
       // 1. Upsert the per-room winner record
       const { error: rwError } = await supabase
         .from('room_winners')
-        .upsert({ room_id: roomId, category_id: categoryId, winner_id: nomineeId })
+        .upsert({ room_id: roomId, category_id: categoryId, winner_id: nomineeId, announced_at: new Date().toISOString() })
 
       if (rwError) throw new Error(rwError.message)
 

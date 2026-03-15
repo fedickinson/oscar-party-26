@@ -18,7 +18,7 @@
  * so all clients read the same order from the DB — no client-side randomness.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Clapperboard, Copy, Crown } from 'lucide-react'
@@ -91,9 +91,19 @@ export default function Room() {
   }
 
   // Called when a player taps "Got it" on the draft explainer.
+  // We re-fetch the current ready_players from Supabase right before appending
+  // so that two players tapping simultaneously don't overwrite each other's entry
+  // (a classic client-side read-modify-write race on a shared array).
   async function markReady() {
     if (!room || !player) return
-    const current = (room.ready_players as string[] | null) ?? []
+
+    const { data: freshRoom } = await supabase
+      .from('rooms')
+      .select('ready_players')
+      .eq('id', room.id)
+      .single()
+
+    const current = (freshRoom?.ready_players as string[] | null) ?? []
     if (current.includes(player.id)) return
     await supabase
       .from('rooms')
@@ -116,6 +126,17 @@ export default function Room() {
   const readyPlayerIds = (room?.ready_players as string[] | null) ?? []
   const playerIsReady = player ? readyPlayerIds.includes(player.id) : false
   const isPreDraft = room?.phase === 'pre_draft'
+
+  // Record the moment all players became ready so every client can compute
+  // elapsed time and derive the correct countdown position locally.
+  const countdownStartedAtRef = useRef<number | null>(null)
+  const allReady = players.length > 0 && readyPlayerIds.length >= players.length
+  if (isPreDraft && allReady && countdownStartedAtRef.current === null) {
+    countdownStartedAtRef.current = Date.now()
+  }
+  if (!isPreDraft) {
+    countdownStartedAtRef.current = null
+  }
 
   // ─── Loading & null guards ───────────────────────────────────────────────────
 
@@ -144,7 +165,7 @@ export default function Room() {
       >
         {/* Header */}
         <div className="text-center pt-2">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Gold Standard</p>
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Oscar Party</p>
           <h1 className="text-2xl font-bold text-white">Lobby</h1>
         </div>
 
@@ -231,7 +252,7 @@ export default function Room() {
                   'Starting…'
                 ) : canStart ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Clapperboard size={18} /> Start Draft
+                    <Clapperboard size={18} /> Start Ensemble
                   </span>
                 ) : (
                   `Need ${2 - players.length} more player${2 - players.length === 1 ? '' : 's'}`
@@ -261,6 +282,7 @@ export default function Room() {
             readyPlayerIds={readyPlayerIds}
             isHost={isHost}
             onCountdownComplete={finalizeDraft}
+            countdownStartedAt={countdownStartedAtRef.current ?? Date.now()}
           />
         )}
       </AnimatePresence>

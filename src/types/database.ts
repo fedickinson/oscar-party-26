@@ -5,8 +5,6 @@ export type RoomPhase =
   | 'confidence'
   | 'live'
   | 'finished'
-  | 'hot_takes'
-  | 'morning_after'
 
 export type EntityType = 'person' | 'film'
 
@@ -22,8 +20,8 @@ export interface RoomRow {
   draft_order: unknown // jsonb — array of player ids
   current_pick: number
   ready_players: unknown // jsonb — array of player ids who tapped "Got it"
-  ai_analysis: unknown // jsonb
   active_spotlight_category_id: number | null
+  show_started: boolean
   created_at: string
 }
 
@@ -35,8 +33,8 @@ export interface RoomInsert {
   draft_order?: unknown
   current_pick?: number
   ready_players?: unknown
-  ai_analysis?: unknown
   active_spotlight_category_id?: number | null
+  show_started?: boolean
   created_at?: string
 }
 
@@ -48,8 +46,8 @@ export interface RoomUpdate {
   draft_order?: unknown
   current_pick?: number
   ready_players?: unknown
-  ai_analysis?: unknown
   active_spotlight_category_id?: number | null
+  show_started?: boolean
   created_at?: string
 }
 
@@ -94,6 +92,7 @@ export interface CategoryRow {
   points: number
   display_order: number
   winner_id: string | null
+  announced_at: string | null
 }
 
 export interface CategoryInsert {
@@ -103,6 +102,7 @@ export interface CategoryInsert {
   points: number
   display_order: number
   winner_id?: string | null
+  announced_at?: string | null
 }
 
 export interface CategoryUpdate {
@@ -112,6 +112,7 @@ export interface CategoryUpdate {
   points?: number
   display_order?: number
   winner_id?: string | null
+  announced_at?: string | null
 }
 
 // ─── nominees ────────────────────────────────────────────────────────────────
@@ -328,32 +329,6 @@ export interface BingoMarkUpdate {
   marked_at?: string
 }
 
-// ─── hot_takes ───────────────────────────────────────────────────────────────
-
-export interface HotTakeRow {
-  id: string
-  room_id: string
-  player_id: string
-  text: string
-  submitted_at: string
-}
-
-export interface HotTakeInsert {
-  id?: string
-  room_id: string
-  player_id: string
-  text: string
-  submitted_at?: string
-}
-
-export interface HotTakeUpdate {
-  id?: string
-  room_id?: string
-  player_id?: string
-  text?: string
-  submitted_at?: string
-}
-
 // ─── avatars ─────────────────────────────────────────────────────────────────
 
 export interface AvatarRow {
@@ -452,7 +427,6 @@ export interface Database {
       bingo_squares: { Row: BingoSquareRow; Insert: BingoSquareInsert; Update: BingoSquareUpdate }
       bingo_cards: { Row: BingoCardRow; Insert: BingoCardInsert; Update: BingoCardUpdate }
       bingo_marks: { Row: BingoMarkRow; Insert: BingoMarkInsert; Update: BingoMarkUpdate }
-      hot_takes: { Row: HotTakeRow; Insert: HotTakeInsert; Update: HotTakeUpdate }
       avatars: { Row: AvatarRow; Insert: AvatarInsert; Update: AvatarUpdate }
       messages: { Row: MessageRow; Insert: MessageInsert; Update: MessageUpdate }
       room_winners: { Row: RoomWinnerRow; Insert: RoomWinnerInsert; Update: RoomWinnerUpdate }

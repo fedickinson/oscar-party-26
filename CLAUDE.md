@@ -2,18 +2,17 @@
 
 ## What this project is
 
-A mobile-first multiplayer Oscars party game app for 3-4 friends watching the 98th Academy Awards (March 15, 2026). Four interconnected games run through one interface with a unified real-time leaderboard:
+A mobile-first multiplayer Oscars party game app for 3-4 friends watching the 98th Academy Awards (March 15, 2026). Three interconnected games run through one interface with a unified real-time leaderboard:
 
 1. **Fantasy Draft** — snake draft where players claim nominees and films
 2. **Confidence Picks** — predict winners in all 24 categories with weighted confidence values (1-24, each used once)
 3. **Oscars Bingo** — randomized 5x5 cards with broadcast moments, host-confirmed
-4. **Hot Take Review** — post-ceremony AI-powered analysis comparing player narratives to media coverage
 
 ## Architecture
 
 **Serverless. No REST API. No backend server.**
 
-The React frontend talks directly to Supabase (hosted Postgres). Row Level Security (RLS) handles authorization at the database layer. Supabase Realtime (WebSocket subscriptions on Postgres logical replication) powers all multiplayer sync. One future Edge Function for the Claude API call (currently client-side with TODO marker).
+The React frontend talks directly to Supabase (hosted Postgres). Row Level Security (RLS) handles authorization at the database layer. Supabase Realtime (WebSocket subscriptions on Postgres logical replication) powers all multiplayer sync.
 
 Data flow: User action → Supabase write → Realtime broadcast → All clients update state → React re-renders.
 
@@ -24,7 +23,7 @@ Data flow: User action → Supabase write → Realtime broadcast → All clients
 - **Animation:** framer-motion (imported as `motion` from `framer-motion`)
 - **Icons:** lucide-react — NO EMOJI ANYWHERE. Every icon is an SVG from lucide-react or a custom component in src/components/ui/Icons.tsx
 - **Backend:** Supabase (Postgres + Realtime + RLS)
-- **AI:** Anthropic API (Claude Sonnet) for Game 4 hot take analysis
+- **AI:** Anthropic API (Claude Sonnet) for AI chat companions during live ceremony
 - **State:** React Context (GameContext) + useState/useReducer for local state, Supabase Realtime for shared state
 - **Routing:** react-router-dom v6
 - **Effects:** canvas-confetti for celebrations
@@ -53,13 +52,11 @@ src/
     useBingo.ts    — Card generation, marking, bingo detection
     useScores.ts   — Leaderboard computation from all game data
     useAdmin.ts    — Winner input, undo, bingo approvals
-    useHotTakes.ts — Hot take submission, AI analysis trigger
   lib/
     supabase.ts    — Supabase client singleton
     scoring.ts     — Pure scoring functions (no React, no Supabase)
     draft-utils.ts — Snake order, turn computation (pure functions)
     bingo-utils.ts — Card generation, bingo detection (pure functions)
-    ai-prompts.ts  — Claude API prompt construction
     avatar-utils.ts — Emotion computation, avatar lookup
   pages/
     Home.tsx       — Create/join room
@@ -69,10 +66,8 @@ src/
     Live.tsx       — Tabbed live dashboard (Bingo | Scores | My Picks)
     Admin.tsx      — Host-only winner input + bingo approvals
     Results.tsx    — Final standings + fun stats
-    HotTake.tsx    — Post-ceremony writing
-    MorningAfter.tsx — AI analysis results
   types/
-    database.ts    — Row/Insert/Update types for all 13 Supabase tables
+    database.ts    — Row/Insert/Update types for all Supabase tables
     game.ts        — Derived game types (LeaderboardEntry, PlayerWithAvatar, etc.)
   App.tsx          — Router with AnimatePresence page transitions
   main.tsx         — Entry point
@@ -80,11 +75,11 @@ src/
 
 ## Database (Supabase)
 
-13 tables. Schema defined in oscars-naughty-party-schema.sql.
+Schema defined in oscars-naughty-party-schema.sql.
 
-Key tables: rooms, players, categories (24 rows), nominees (125 rows), category_nominees, draft_entities (44 rows), draft_picks, confidence_picks, bingo_squares (50 rows), bingo_cards, bingo_marks, hot_takes, avatars (12 rows).
+Key tables: rooms, players, categories (24 rows), nominees (125 rows), category_nominees, draft_entities (44 rows), draft_picks, confidence_picks, bingo_squares (50 rows), bingo_cards, bingo_marks, avatars (12 rows).
 
-Realtime enabled on: rooms, players, categories, draft_picks, confidence_picks, bingo_marks, hot_takes.
+Realtime enabled on: rooms, players, categories, draft_picks, confidence_picks, bingo_marks.
 
 ## Key patterns (follow these consistently)
 
@@ -168,7 +163,7 @@ Font: Inter (400, 500, 600, 700, 800)
 - Touch targets: minimum 44x44px
 
 ## Room phases (state machine)
-lobby → draft → confidence → live → finished → hot_takes → morning_after
+lobby → draft → confidence → live → finished
 
 Each transition: host writes new phase to rooms table → Realtime subscription → all clients navigate via useEffect.
 
@@ -176,7 +171,7 @@ Each transition: host writes new phase to rooms table → Realtime subscription 
 ```
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_xxx
-VITE_ANTHROPIC_API_KEY=sk-ant-xxx  # TODO: move to edge function
+VITE_ANTHROPIC_API_KEY=sk-ant-xxx  # Used by AI chat companions
 ```
 
 ## Common gotchas

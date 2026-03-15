@@ -43,6 +43,7 @@ export interface ConfidenceState {
   isLoading: boolean
   assignNominee: (categoryId: number, nomineeId: string) => void
   assignConfidence: (categoryId: number, confidence: number) => void
+  setLocalPicksDirectly: (picks: LocalPicksMap) => void
   submitPicks: () => Promise<void>
   lockPicks: () => Promise<void>
 }
@@ -226,17 +227,30 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
       const shuffled = Array.from({ length: 24 }, (_, i) => i + 1).sort(
         () => Math.random() - 0.5,
       )
-      const rows: ConfidencePickInsert[] = categories.map((cat, i) => ({
-        room_id: roomId,
-        player_id: p.id,
-        category_id: cat.id,
-        nominee_id: cat.nominees[0]?.id ?? '',
-        confidence: shuffled[i],
-      }))
-      await supabase.from('confidence_picks').insert(rows)
+      // Only include categories that have at least one nominee so we don't
+      // insert rows with an empty-string nominee_id (which violates the FK).
+      const rows: ConfidencePickInsert[] = categories
+        .filter((cat) => cat.nominees.length > 0)
+        .map((cat, i) => ({
+          room_id: roomId,
+          player_id: p.id,
+          category_id: cat.id,
+          nominee_id: cat.nominees[0].id,
+          confidence: shuffled[i],
+        }))
+      if (rows.length > 0) {
+        const { error } = await supabase.from('confidence_picks').insert(rows)
+        // If auto-fill insert fails, abort rather than advancing the phase
+        // and leaving this player without picks.
+        if (error) throw new Error(`Auto-fill failed for ${p.name}: ${error.message}`)
+      }
     }
 
     await supabase.from('rooms').update({ phase: 'live' }).eq('id', roomId)
+  }
+
+  function setLocalPicksDirectly(picks: LocalPicksMap) {
+    setLocalPicks(picks)
   }
 
   return {
@@ -250,6 +264,7 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     isLoading,
     assignNominee,
     assignConfidence,
+    setLocalPicksDirectly,
     submitPicks,
     lockPicks,
   }

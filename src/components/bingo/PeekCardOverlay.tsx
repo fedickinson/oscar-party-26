@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Avatar from '../Avatar'
 import BingoSquare from './BingoSquare'
-import { FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
+import { BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
 import type { BingoMarkRow, BingoSquareRow, PlayerRow } from '../../types/database'
 
 interface Props {
@@ -36,8 +36,20 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
   marks.filter((m) => m.status === 'approved').forEach((m) => markedIndices.add(m.square_index))
 
   const { lines: bingoLines } = checkBingo(markedIndices, [])
-  const lineIndices = new Set(bingoLines.flat())
   const bingoCount = countBingos(bingoLines)
+
+  // Map square index → BINGO_LINES index for per-line coloring (same logic as BingoCard)
+  const squareLineColorMap = new Map<number, number>()
+  bingoLines.forEach((completedLine) => {
+    const lineIdx = BINGO_LINES.findIndex(
+      (l) => l.length === completedLine.length && l.every((v, i) => v === completedLine[i]),
+    )
+    if (lineIdx >= 0) {
+      completedLine.forEach((squareIdx) => {
+        if (!squareLineColorMap.has(squareIdx)) squareLineColorMap.set(squareIdx, lineIdx)
+      })
+    }
+  })
   const approvedCount = marks.filter((m) => m.status === 'approved').length
 
   function getStatus(index: number): 'free' | 'approved' | 'pending' | 'denied' | 'unmarked' {
@@ -124,7 +136,7 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
                 shortText={square?.short_text ?? ''}
                 status={getStatus(index)}
                 isObjective={square?.is_objective ?? false}
-                isInBingoLine={lineIndices.has(index)}
+                bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
                 isSelected={false}
                 onTap={() => {}}
                 readOnly

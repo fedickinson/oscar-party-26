@@ -49,7 +49,7 @@ export interface PlayerWithAvatar extends PlayerRow {
 
 export interface LeaderboardEntry {
   player: PlayerWithAvatar
-  fantasyScore: number
+  ensembleScore: number
   confidenceScore: number
   bingoScore: number
   totalScore: number

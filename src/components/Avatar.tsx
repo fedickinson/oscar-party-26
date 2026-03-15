@@ -110,38 +110,49 @@ export default function Avatar({
           overflow: 'hidden',
         }}
       >
-        {/* Gradient layer — crossfades on emotion change */}
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={`${avatarId}-${emotion}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.28 }}
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(${angle}deg, ${primary} 0%, ${secondary} 100%)`,
-            }}
+        {config?.imageUrl ? (
+          /* Photo — fills the circle, cropped from top (faces) */
+          <img
+            src={config.imageUrl}
+            alt={config.characterName}
+            className="absolute inset-0 w-full h-full object-cover object-top"
           />
-        </AnimatePresence>
+        ) : (
+          <>
+            {/* Gradient layer — crossfades on emotion change */}
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={`${avatarId}-${emotion}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.28 }}
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(${angle}deg, ${primary} 0%, ${secondary} 100%)`,
+                }}
+              />
+            </AnimatePresence>
 
-        {/* Initials */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            style={{
-              fontSize: fontPx,
-              fontWeight: 700,
-              color: '#ffffff',
-              letterSpacing: '0.04em',
-              lineHeight: 1,
-              textShadow: '0 1px 4px rgba(0,0,0,0.45)',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              userSelect: 'none',
-            }}
-          >
-            {initials}
-          </span>
-        </div>
+            {/* Initials */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                style={{
+                  fontSize: fontPx,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  letterSpacing: '0.04em',
+                  lineHeight: 1,
+                  textShadow: '0 1px 4px rgba(0,0,0,0.45)',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  userSelect: 'none',
+                }}
+              >
+                {initials}
+              </span>
+            </div>
+          </>
+        )}
 
         {/* Emotion badge — bottom-right corner */}
         {emotion !== 'neutral' && (

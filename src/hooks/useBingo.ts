@@ -117,7 +117,17 @@ export function useBingo(
           .from('bingo_marks')
           .select()
           .eq('card_id', existing.id)
-        setMarks(markData ?? [])
+        const initialMarks = markData ?? []
+
+        // Pre-seed prevBingoLinesRef so existing bingos don't re-trigger
+        // the celebration popup when the component remounts (e.g. tab switch).
+        const initialMarkedIndices = new Set<number>([FREE_CENTER_INDEX])
+        initialMarks
+          .filter((m) => m.status === 'approved')
+          .forEach((m) => initialMarkedIndices.add(m.square_index))
+        prevBingoLinesRef.current = checkBingo(initialMarkedIndices, []).lines
+
+        setMarks(initialMarks)
         await loadSquares(existing)
         setIsLoading(false)
         return
@@ -134,13 +144,28 @@ export function useBingo(
         (existingCards ?? []).map((c) => c.squares as number[]),
       )
 
-      const { data: newCard } = await supabase
+      const { data: newCard, error: cardInsertError } = await supabase
         .from('bingo_cards')
         .insert({ room_id: roomId!, player_id: player!.id, squares: cardSquares })
         .select()
         .single()
 
-      if (newCard) {
+      if (cardInsertError) {
+        // Card creation failed (network error, RLS, or duplicate). Attempt to
+        // recover by fetching an existing card that may have been created by a
+        // concurrent initCard() call (e.g. StrictMode double-invoke in dev).
+        const { data: recovery } = await supabase
+          .from('bingo_cards')
+          .select()
+          .eq('room_id', roomId!)
+          .eq('player_id', player!.id)
+          .maybeSingle()
+        if (recovery) {
+          setCard(recovery)
+          await loadSquares(recovery)
+        }
+        // isLoading still goes false so we don't spin forever
+      } else if (newCard) {
         setCard(newCard)
         await loadSquares(newCard)
       }

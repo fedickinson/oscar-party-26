@@ -37,8 +37,6 @@ import Confidence from './pages/Confidence'
 import Live from './pages/Live'
 import Admin from './pages/Admin'
 import Results from './pages/Results'
-import HotTake from './pages/HotTake'
-import MorningAfter from './pages/MorningAfter'
 
 // ─── Page wrapper ─────────────────────────────────────────────────────────────
 
@@ -111,8 +109,6 @@ function AppInner() {
             <Route path="/room/:code/live" element={<PageWrap><Live /></PageWrap>} />
             <Route path="/room/:code/admin" element={<PageWrap><Admin /></PageWrap>} />
             <Route path="/room/:code/results" element={<PageWrap><Results /></PageWrap>} />
-            <Route path="/room/:code/hot-take" element={<PageWrap><HotTake /></PageWrap>} />
-            <Route path="/room/:code/morning-after" element={<PageWrap><MorningAfter /></PageWrap>} />
           </Routes>
         </AnimatePresence>
       </div>

@@ -10,7 +10,7 @@
  *     callback that directly writes to the span's textContent. This avoids
  *     React state updates during the animation (60fps, no re-renders).
  *   - Expand/collapse per row: AnimatePresence with height animation reveals
- *     Fantasy | Confidence | Bingo score breakdown.
+ *     Ensemble | Confidence | Bingo score breakdown.
  *
  * Current player's row gets a left gold border and "You" badge.
  * Rank badges: 1 → Crown(gold), 2 → silver dot, 3 → bronze dot, 4+ → number.
@@ -29,7 +29,7 @@ interface ActiveBadge {
   id: number
   playerId: string
   confidence: number // delta in confidence score
-  draft: number      // delta in fantasy score
+  draft: number      // delta in ensemble score
 }
 
 // Manages score-change badges: appears with spring animation, fades after 3s.
@@ -46,7 +46,7 @@ function useDeltaBadges(leaderboard: ScoredPlayer[]) {
       leaderboard.forEach((e) =>
         prevRef.current.set(e.player.id, {
           c: e.confidenceScore,
-          f: e.fantasyScore,
+          f: e.ensembleScore,
         }),
       )
       return
@@ -57,7 +57,7 @@ function useDeltaBadges(leaderboard: ScoredPlayer[]) {
       const prev = prevRef.current.get(e.player.id)
       if (prev) {
         const cDelta = e.confidenceScore - prev.c
-        const fDelta = e.fantasyScore - prev.f
+        const fDelta = e.ensembleScore - prev.f
         if (cDelta !== 0 || fDelta !== 0) {
           newBadges.push({
             id: ++badgeIdRef.current,
@@ -67,7 +67,7 @@ function useDeltaBadges(leaderboard: ScoredPlayer[]) {
           })
         }
       }
-      prevRef.current.set(e.player.id, { c: e.confidenceScore, f: e.fantasyScore })
+      prevRef.current.set(e.player.id, { c: e.confidenceScore, f: e.ensembleScore })
     })
 
     if (newBadges.length > 0) {
@@ -258,7 +258,7 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
                 >
                   <div className="px-3 pb-3 grid grid-cols-3 gap-2">
                     {[
-                      { label: 'Fantasy', value: entry.fantasyScore },
+                      { label: 'Ensemble', value: entry.ensembleScore },
                       { label: 'Confidence', value: entry.confidenceScore },
                       { label: 'Bingo', value: entry.bingoScore },
                     ].map(({ label, value }) => (

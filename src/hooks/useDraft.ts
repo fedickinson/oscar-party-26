@@ -1,5 +1,5 @@
 /**
- * useDraft — all state and logic for the fantasy draft phase.
+ * useDraft — all state and logic for the ensemble draft phase.
  *
  * ═══════════════════════════════════════════════════════════════
  *  A COMPLETE PICK CYCLE (the multiplayer state machine)
@@ -150,35 +150,22 @@ export function useDraft(roomId: string | undefined): DraftState {
     roomRef.current = room
   })
 
-  // ─── Initial data load ──────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!roomId) return
-
-    async function load() {
-      const [{ data: entityRows }, { data: pickRows }, { data: categoryRows }] = await Promise.all([
-        supabase.from('draft_entities').select().order('nom_count', { ascending: false }),
-        supabase.from('draft_picks').select().eq('room_id', roomId!),
-        supabase.from('categories').select(),
-      ])
-      const categoryMap = new Map((categoryRows ?? []).map((c) => [c.id, c]))
-      setEntities((entityRows ?? []).map((row) => parseEntity(row, categoryMap)))
-      setPicks(pickRows ?? [])
-      setIsLoading(false)
-    }
-
-    load()
-  }, [roomId])
-
-  // ─── Realtime: draft_picks ──────────────────────────────────────────────────
+  // ─── Subscribe + initial data load ─────────────────────────────────────────
   //
-  // We subscribe to INSERT only — picks are never updated or deleted.
-  // This subscription runs in useDraft (not in useRoomSubscription) because
-  // picks are only needed on the Draft page. No need to pollute GameContext.
+  // IMPORTANT: The subscription is set up BEFORE the initial fetch so that any
+  // INSERT that fires during the network round-trip is caught by the channel.
+  // The dedup guard in the callback handles the case where both the subscription
+  // and the fetch deliver the same row.
+  //
+  // Previously the load and subscription were in two separate useEffects.
+  // React runs effects in order, so the subscription was registered AFTER
+  // load() had already started — creating a window where an INSERT could be
+  // missed. Merging them into one effect closes that race window.
 
   useEffect(() => {
     if (!roomId) return
 
+    // Register the real-time subscription first
     const channel = supabase
       .channel(`draft-picks:${roomId}`)
       .on(
@@ -200,6 +187,21 @@ export function useDraft(roomId: string | undefined): DraftState {
         },
       )
       .subscribe()
+
+    // Initial fetch runs after subscription is live to close the race window
+    async function load() {
+      const [{ data: entityRows }, { data: pickRows }, { data: categoryRows }] = await Promise.all([
+        supabase.from('draft_entities').select().order('nom_count', { ascending: false }),
+        supabase.from('draft_picks').select().eq('room_id', roomId!),
+        supabase.from('categories').select(),
+      ])
+      const categoryMap = new Map((categoryRows ?? []).map((c) => [c.id, c]))
+      setEntities((entityRows ?? []).map((row) => parseEntity(row, categoryMap)))
+      setPicks(pickRows ?? [])
+      setIsLoading(false)
+    }
+
+    load()
 
     return () => {
       supabase.removeChannel(channel)

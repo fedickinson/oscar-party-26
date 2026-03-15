@@ -21,13 +21,15 @@
  *   all players navigate to the next page at once.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from '../context/GameContext'
 import { useScores } from '../hooks/useScores'
 import { useAICompanions } from '../hooks/useAICompanions'
+import { useChatReactivity } from '../hooks/useChatReactivity'
 import { useSpotlight } from '../hooks/useSpotlight'
+import { useChat } from '../hooks/useChat'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { findDraftPointsForWinner } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
@@ -38,9 +40,11 @@ import ScoresTab from '../components/live/ScoresTab'
 import WinnersTab from '../components/live/WinnersTab'
 import MyPicksTab from '../components/live/MyPicksTab'
 import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
+import FinaleOverlay from '../components/live/FinaleOverlay'
 import SpotlightNotification from '../components/spotlight/SpotlightNotification'
 import BrowseSection from '../components/home/BrowseSection'
 import PhaseExplainer from '../components/PhaseExplainer'
+import WelcomeCard from '../components/live/WelcomeCard'
 import Toast, { useToast } from '../components/ui/Toast'
 
 // Entering tab slides in from direction * 100%, exits to direction * -100%
@@ -62,9 +66,108 @@ export default function Live() {
   const roomId = room?.id
   const isHost = player?.is_host ?? false
   const currentPlayerId = player?.id ?? ''
+  const showStarted = room?.show_started ?? false
 
   useRoomSubscription(roomId)
   const scores = useScores(roomId)
+  // Use a distinct channelKey so this subscription gets its own Supabase channel
+  // instance — prevents ChatSection's removeChannel call from killing this one.
+  const { messages } = useChat(roomId, 'live-badges')
+
+  // ── Tab badge notifications ─────────────────────────────────────────────────
+  //
+  // Home (tab 0): unread chat messages since the player last left the Home tab.
+  // Bingo (tab 1): a new bingo line was achieved by this player.
+  // Scores (tab 2): the leaderboard leader changed.
+
+  const [chatBadge, setChatBadge] = useState(false)
+  const [bingoBadge, setBingoBadge] = useState(false)
+  const [scoresBadge, setScoresBadge] = useState(false)
+
+  // Chat badge: track message count when leaving Home tab
+  const lastSeenMessageCountRef = useRef<number>(0)
+
+  // Seed the ref on first message load so existing messages don't trigger a badge
+  const chatSeededRef = useRef(false)
+  useEffect(() => {
+    if (!chatSeededRef.current && messages.length > 0) {
+      lastSeenMessageCountRef.current = messages.length
+      chatSeededRef.current = true
+    }
+  }, [messages.length])
+
+  useEffect(() => {
+    if (tab !== 0 && chatSeededRef.current && messages.length > lastSeenMessageCountRef.current) {
+      setChatBadge(true)
+    }
+  }, [messages.length, tab])
+
+  // Scores badge: detect lead changes
+  const topPlayerId = scores.leaderboard.length > 0 ? scores.leaderboard[0].player.id : null
+  const prevTopPlayerRef = useRef<string | null>(null)
+  const scoresSeededRef = useRef(false)
+
+  useEffect(() => {
+    if (scores.isLoading || !topPlayerId) {
+      prevTopPlayerRef.current = topPlayerId
+      return
+    }
+    if (!scoresSeededRef.current) {
+      prevTopPlayerRef.current = topPlayerId
+      scoresSeededRef.current = true
+      return
+    }
+    if (prevTopPlayerRef.current !== topPlayerId) {
+      if (tab !== 2) setScoresBadge(true)
+    }
+    prevTopPlayerRef.current = topPlayerId
+  }, [topPlayerId, scores.isLoading, tab])
+
+  // Bingo badge: detect when current player's bingo count increases
+  const myBingoCount = scores.playerBingoCounts.get(currentPlayerId) ?? 0
+  const prevBingoCountRef = useRef<number>(0)
+  const bingoSeededRef = useRef(false)
+
+  useEffect(() => {
+    if (scores.isLoading) return
+    if (!bingoSeededRef.current) {
+      prevBingoCountRef.current = myBingoCount
+      bingoSeededRef.current = true
+      return
+    }
+    if (myBingoCount > prevBingoCountRef.current) {
+      if (tab !== 1) setBingoBadge(true)
+    }
+    prevBingoCountRef.current = myBingoCount
+  }, [myBingoCount, scores.isLoading, tab])
+
+  // Clear badges when visiting the corresponding tab
+  useEffect(() => {
+    if (tab === 0) {
+      setChatBadge(false)
+      lastSeenMessageCountRef.current = messages.length
+    }
+    if (tab === 1) setBingoBadge(false)
+    if (tab === 2) setScoresBadge(false)
+  }, [tab, messages.length])
+
+  const tabBadges = useMemo(() => {
+    const set = new Set<number>()
+    if (chatBadge) set.add(0)
+    if (bingoBadge) set.add(1)
+    if (scoresBadge) set.add(2)
+    return set
+  }, [chatBadge, bingoBadge, scoresBadge])
+
+  const { predictionsRef } = useChatReactivity(
+    roomId,
+    players,
+    scores.nominees,
+    scores.leaderboard,
+    scores.categories,
+    isHost,
+  )
+
   useAICompanions(
     scores.categories,
     scores.nominees,
@@ -73,6 +176,8 @@ export default function Live() {
     scores.draftEntities,
     scores.leaderboard,
     isHost,
+    predictionsRef,
+    showStarted,
   )
 
   const {
@@ -114,6 +219,17 @@ export default function Live() {
 
   const { toast, showToast, dismissToast } = useToast()
 
+  // ── Welcome card (shown once per player per room) ────────────────────────
+  const welcomeSeenKey = `oscar_welcome_seen_${roomId}_${player?.id}`
+  const [showWelcome, setShowWelcome] = useState(
+    () => !!(roomId && player?.id) && !localStorage.getItem(`oscar_welcome_seen_${roomId}_${player?.id}`),
+  )
+
+  function handleDismissWelcome() {
+    localStorage.setItem(welcomeSeenKey, '1')
+    setShowWelcome(false)
+  }
+
   // ── Bingo peek tracking ───────────────────────────────────────────────────
   const bingoPeekedKey = `oscar_bingo_peeked_${roomId}_${player?.id}`
   const [hasPeekedBingo, setHasPeekedBingo] = useState(
@@ -121,7 +237,10 @@ export default function Live() {
   )
 
   function handleNavigateToBingo() {
-    if (!hasPeekedBingo) {
+    // Re-read from localStorage at navigation time — the lazy useState initializer
+    // may have run before roomId/player were available, leaving hasPeekedBingo stale.
+    const peeked = !!localStorage.getItem(bingoPeekedKey)
+    if (!peeked) {
       setShowBingoExplainer(true)
     } else {
       selectTab(1)
@@ -188,8 +307,13 @@ export default function Live() {
             .maybeSingle()
           const squareText = (square as { short_text: string } | null)?.short_text ?? 'a square'
 
-          showToast(`${playerName} marked: ${squareText}`, 'warning')
-          setPendingBingoCount((prev) => prev + 1)
+          // Only notify the host for marks that require manual approval.
+          // Auto-approved marks (objective squares, host's own card) don't
+          // need the host's attention.
+          if (mark.status === 'pending') {
+            showToast(`${playerName} marked: ${squareText}`, 'warning')
+            setPendingBingoCount((prev) => prev + 1)
+          }
         },
       )
       .on(
@@ -294,6 +418,17 @@ export default function Live() {
     players,
   ])
 
+  // ── Start Show ───────────────────────────────────────────────────────────────
+
+  async function handleStartShow() {
+    if (!room || showStarted) return
+    await supabase
+      .from('rooms')
+      .update({ show_started: true })
+      .eq('id', room.id)
+    // Realtime subscription propagates the update to all clients
+  }
+
   // ── End Ceremony ─────────────────────────────────────────────────────────
 
   const [isEndingCeremony, setIsEndingCeremony] = useState(false)
@@ -312,13 +447,22 @@ export default function Live() {
     // Navigation handled by phase watcher below
   }
 
+  // ── Finale overlay ────────────────────────────────────────────────────────
+
+  const [showFinale, setShowFinale] = useState(false)
+
+  function handleFinaleDismiss() {
+    setShowFinale(false)
+    navigate(`/room/${code}/results`)
+  }
+
   // ── Phase navigation ──────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!room) return
-    if (room.phase === 'hot_takes') navigate(`/room/${code}/hot-take`)
-    if (room.phase === 'morning_after' || room.phase === 'finished') {
-      navigate(`/room/${code}/results`)
+    if (room.phase === 'finished') {
+      // Show the finale overlay for all clients before navigating
+      setShowFinale(true)
     }
   }, [room?.phase, code, navigate])
 
@@ -361,12 +505,16 @@ export default function Live() {
                   leaderboard={scores.leaderboard}
                   onNavigateToWinnersTab={() => selectTab(3)}
                   onNavigateToBingo={handleNavigateToBingo}
+                  showStarted={showStarted}
+                  onStartShow={handleStartShow}
                   spotlightCategoryId={spotlightCategoryId}
                   spotlightNomineeIds={spotlightNomineeIds}
                   isHost={isHost}
                   openSpotlight={openSpotlight}
                   closeSpotlight={closeSpotlight}
                   confirmSpotlightWinner={confirmSpotlightWinner}
+                  onEndCeremony={handleEndCeremony}
+                  isEndingCeremony={isEndingCeremony}
                 />
               </motion.div>
             )}
@@ -389,6 +537,7 @@ export default function Live() {
                     categories={scores.categories}
                     nominees={scores.nominees}
                     leaderboard={scores.leaderboard}
+                    onShowExplainer={() => setShowBingoExplainer(true)}
                   />
                 </div>
               </motion.div>
@@ -489,7 +638,11 @@ export default function Live() {
         </div>
 
         {/* Bottom tab bar */}
-        <TabBar activeTab={tab} onSelect={selectTab} />
+        <TabBar
+          activeTab={tab}
+          onSelect={(next) => next === 1 ? handleNavigateToBingo() : selectTab(next)}
+          badges={tabBadges}
+        />
       </div>
 
       {/* Spotlight notification — slides in on any tab when spotlight opens */}
@@ -500,6 +653,17 @@ export default function Live() {
             categoryName={notificationCategory.name}
             tier={notificationCategory.tier}
             onComplete={handleSpotlightNotificationComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Finale overlay — shown for ALL clients when ceremony ends */}
+      <AnimatePresence>
+        {showFinale && (
+          <FinaleOverlay
+            leaderboard={scores.leaderboard}
+            totalCategories={scores.categories.length}
+            onDismiss={handleFinaleDismiss}
           />
         )}
       </AnimatePresence>
@@ -516,6 +680,13 @@ export default function Live() {
       </AnimatePresence>
 
       <Toast toast={toast} onDismiss={dismissToast} />
+
+      {/* Welcome orientation card — shown once on first visit */}
+      <AnimatePresence>
+        {showWelcome && (
+          <WelcomeCard onDismiss={handleDismissWelcome} />
+        )}
+      </AnimatePresence>
     </>
   )
 }

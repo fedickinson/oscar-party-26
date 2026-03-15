@@ -56,7 +56,7 @@ export default function SpotlightStakes({ allPicks, draftStakes }: Props) {
         )}
         {draftStakes.map((ds, i) => (
           <p key={i} className="text-xs text-white/45">
-            {ds.playerName} drafted {ds.entityName} — D+{ds.points} if wins
+            {ds.playerName} claimed {ds.entityName} — D+{ds.points} if wins
           </p>
         ))}
       </div>

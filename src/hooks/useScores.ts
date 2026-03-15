@@ -93,6 +93,8 @@ export interface ScoresState {
   confidencePicks: ConfidencePickRow[]
   draftPicks: DraftPickRow[]
   draftEntities: DraftEntityRow[]
+  /** Bingo line counts per player ID — used for badge notifications */
+  playerBingoCounts: Map<string, number>
   isLoading: boolean
 }
 
@@ -191,14 +193,15 @@ export function useScores(roomId: string | undefined): ScoresState {
       if (!cat) return
 
       const prevWinnerId = prevCategoriesRef.current.get(rw.category_id) ?? null
+
+      if (rw.winner_id === prevWinnerId) return
+
       prevCategoriesRef.current.set(rw.category_id, rw.winner_id)
 
       // Update categories state with the per-room winner
       setCategories((prev) =>
         prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: rw.winner_id } : c)),
       )
-
-      if (rw.winner_id === prevWinnerId) return
 
       const winner = nomineesRef.current.find((n) => n.id === rw.winner_id)
       if (!winner) return
@@ -415,6 +418,7 @@ export function useScores(roomId: string | undefined): ScoresState {
   // ── Compute bingo scores per player ────────────────────────────────────────
 
   const bingoScores = new Map<string, number>()
+  const playerBingoCounts = new Map<string, number>()
   players.forEach((player) => {
     const card = bingoCards.find((c) => c.player_id === player.id)
     if (!card) return
@@ -426,12 +430,14 @@ export function useScores(roomId: string | undefined): ScoresState {
       .forEach((m) => approvedIndices.add(m.square_index))
 
     const { lines } = checkBingo(approvedIndices)
+    const bCount = countBingos(lines)
     const score = computeBingoScore(
-      countBingos(lines),
+      bCount,
       isBlackout(approvedIndices),
       approvedIndices.size, // each approved square = 1pt
     )
     bingoScores.set(player.id, score)
+    playerBingoCounts.set(player.id, bCount)
   })
 
   const leaderboard = computeLeaderboard(
@@ -491,6 +497,7 @@ export function useScores(roomId: string | undefined): ScoresState {
     confidencePicks,
     draftPicks,
     draftEntities,
+    playerBingoCounts,
     isLoading,
   }
 }

@@ -15,15 +15,17 @@
  * All data is read from refs at fire time to avoid stale closure issues.
  */
 
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useGame } from '../context/GameContext'
 import { supabase } from '../lib/supabase'
 import {
   buildPreCeremonyPrompt,
+  buildShowStartedPrompt,
   buildWinnerReactionPrompt,
   buildPreCategoryPrompt,
   buildMilestonePrompt,
   parseCompanionResponse,
+  type PlayerPrediction,
 } from '../lib/companion-prompts'
 import type {
   CategoryRow,
@@ -33,6 +35,7 @@ import type {
   DraftEntityRow,
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
+import type { StoredPrediction } from '../lib/chat-reactivity-utils'
 
 export function useAICompanions(
   categories: CategoryRow[],
@@ -42,6 +45,8 @@ export function useAICompanions(
   draftEntities: DraftEntityRow[],
   leaderboard: ScoredPlayer[],
   isHost: boolean,
+  predictionsRef?: React.MutableRefObject<StoredPrediction[]>,
+  showStarted?: boolean,
 ): { isGenerating: boolean } {
   const { room, players } = useGame()
   const isHostRef = useRef(isHost)
@@ -52,8 +57,8 @@ export function useAICompanions(
   const preCategoryFiredRef = useRef<Set<number>>(new Set())
   const milestoneFiredRef = useRef<Set<string>>(new Set())
   const preCeremonyFiredRef = useRef(false)
+  const showStartedFiredRef = useRef(false)
   const previousLeaderIdRef = useRef<string | null>(null)
-  const isGeneratingRef = useRef(false)
   const dataInitializedRef = useRef(false)
   const prevSpotlightCategoryIdRef = useRef<number | null>(null)
 
@@ -77,7 +82,7 @@ export function useAICompanions(
 
   // ── Core helpers ──────────────────────────────────────────────────────────────
 
-  async function callClaude(prompt: { system: string; user: string }): Promise<string> {
+  async function callClaude(prompt: { system: string; user: string }, maxTokens = 600): Promise<string> {
     const response = await fetch('/api/anthropic/v1/messages', {
       method: 'POST',
       headers: {
@@ -86,7 +91,7 @@ export function useAICompanions(
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 400,
+        max_tokens: maxTokens,
         system: prompt.system,
         messages: [{ role: 'user', content: prompt.user }],
       }),
@@ -107,12 +112,20 @@ export function useAICompanions(
     })
   }
 
-  async function fireCompanionMessages(prompt: { system: string; user: string }) {
+  async function insertSystemDivider(text: string) {
+    const currentRoom = roomRef.current
+    if (!currentRoom || !isHostRef.current) return
+    await supabase.from('messages').insert({
+      room_id: currentRoom.id,
+      player_id: 'system',
+      text,
+    })
+  }
+
+  async function fireCompanionMessages(prompt: { system: string; user: string }, maxTokens = 600) {
     if (!isHostRef.current) return
-    if (isGeneratingRef.current) return
-    isGeneratingRef.current = true
     try {
-      const raw = await callClaude(prompt)
+      const raw = await callClaude(prompt, maxTokens)
       if (!raw) return
       const messages = parseCompanionResponse(raw)
       for (const msg of messages) {
@@ -126,21 +139,32 @@ export function useAICompanions(
       }
     } catch {
       // Companions are a nice-to-have — silently fail so the rest of the app works
-    } finally {
-      isGeneratingRef.current = false
     }
   }
 
-  // ── Effect 1: Pre-ceremony intro (mount only) ─────────────────────────────────
-  // Delay 2s to allow useScores initial fetch to complete before checking winners.
+  // ── Effect 1: Pre-ceremony intro (fires once per room, ever) ────────────────
+  // Waits for room to be non-null (session restore complete), then delays 2s
+  // so useScores initial fetch completes before checking winners.
+  // Checks the DB for existing companion messages before firing — prevents
+  // duplicate welcome messages when the host reloads the page.
 
   useEffect(() => {
-    if (preCeremonyFiredRef.current) return
-    preCeremonyFiredRef.current = true
+    if (!room) return
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      if (preCeremonyFiredRef.current) return
+      preCeremonyFiredRef.current = true
+
       const hasWinners = categoriesRef.current.some((c) => c.winner_id != null)
       if (hasWinners) return
+
+      // Skip if companion messages already exist for this room (page reload case)
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('room_id', roomRef.current?.id ?? '')
+        .in('player_id', ['the-academy', 'meryl', 'nikki', 'will'])
+      if (count && count > 0) return
 
       fireCompanionMessages(
         buildPreCeremonyPrompt(
@@ -151,12 +175,42 @@ export function useAICompanions(
           categoriesRef.current,
           nomineesRef.current,
         ),
+        900,
       )
     }, 2000)
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [room])
+
+  // ── Effect 1b: "Show Started" — divider + companion reaction ────────────────
+  // Fires once when show_started flips true. DB check guards against re-firing
+  // on page reload when show_started is already true.
+
+  useEffect(() => {
+    if (!showStarted) return
+    if (showStartedFiredRef.current) return
+    showStartedFiredRef.current = true
+
+    insertSystemDivider('Show Started')
+
+    // Only the host fires AI messages; non-hosts get them via Realtime
+    if (!isHostRef.current) return
+
+    // Guard against re-firing on reload: skip if a show-started marker exists
+    supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomRef.current?.id ?? '')
+      .eq('player_id', 'system')
+      .eq('text', 'Show Started')
+      .then(({ count }) => {
+        // count includes the divider we just inserted, so > 1 means a previous session already fired
+        if (count != null && count > 1) return
+        fireCompanionMessages(buildShowStartedPrompt(playersRef.current))
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showStarted])
 
   // ── Effect 2: Winner reactions ────────────────────────────────────────────────
   // First meaningful data load: initialize seen set without firing reactions.
@@ -168,6 +222,16 @@ export function useAICompanions(
     if (!dataInitializedRef.current) {
       // Mark all currently-announced categories as already seen
       categories.filter((c) => c.winner_id != null).forEach((c) => previousWinnersRef.current.add(c.id))
+
+      // Pre-populate milestoneFiredRef for any thresholds already passed so
+      // Effect 5 (milestone reactions) doesn't re-fire them on page reload.
+      const count = categories.filter((c) => c.winner_id != null).length
+      if (count >= 12) milestoneFiredRef.current.add('halfway')
+      if (count >= 18) milestoneFiredRef.current.add('final_stretch')
+      const total = categories.length
+      if (total > 0 && count >= total - 1) milestoneFiredRef.current.add('final_category')
+      if (total > 0 && count >= total) milestoneFiredRef.current.add('ceremony_end')
+
       dataInitializedRef.current = true
       return
     }
@@ -183,6 +247,38 @@ export function useAICompanions(
     const winner = nomineesRef.current.find((n) => n.id === cat.winner_id)
     if (!winner) return
 
+    // Find stored predictions that mentioned nominees in this category
+    let playerPredictions: PlayerPrediction[] | undefined
+    if (predictionsRef) {
+      const catNomineeIds = new Set(
+        confidencePicksRef.current.filter((p) => p.category_id === cat.id).map((p) => p.nominee_id),
+      )
+      const catNomineeNames = new Set(
+        nomineesRef.current
+          .filter((n) => catNomineeIds.has(n.id))
+          .map((n) => n.name.toLowerCase()),
+      )
+
+      const relevant = predictionsRef.current.filter((pred) =>
+        pred.nomineeNames.some((name) => catNomineeNames.has(name.toLowerCase())),
+      )
+
+      if (relevant.length > 0) {
+        playerPredictions = relevant.map((pred) => ({
+          playerName: pred.playerName,
+          text: pred.text,
+          wasCorrect: pred.nomineeNames.some(
+            (name) => name.toLowerCase() === winner.name.toLowerCase(),
+          ),
+        }))
+        // Consume these predictions so they don't repeat for future categories
+        const usedTimestamps = new Set(relevant.map((p) => p.timestamp))
+        predictionsRef.current = predictionsRef.current.filter(
+          (p) => !usedTimestamps.has(p.timestamp),
+        )
+      }
+    }
+
     fireCompanionMessages(
       buildWinnerReactionPrompt(
         cat,
@@ -193,6 +289,7 @@ export function useAICompanions(
         draftPicksRef.current,
         draftEntitiesRef.current,
         leaderboardRef.current,
+        playerPredictions,
       ),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,7 +308,12 @@ export function useAICompanions(
     if (spotlightId == null) return
 
     const cat = categoriesRef.current.find((c) => c.id === spotlightId)
-    if (!cat || preCategoryFiredRef.current.has(cat.id)) return
+    if (!cat) return
+
+    // Insert category divider for every spotlight open (even if pre-category prompt already fired)
+    insertSystemDivider(cat.name)
+
+    if (preCategoryFiredRef.current.has(cat.id)) return
 
     preCategoryFiredRef.current.add(cat.id)
     fireCompanionMessages(
@@ -249,14 +351,34 @@ export function useAICompanions(
       milestoneFiredRef.current.add('final_category')
       const remaining = categoriesRef.current.find((c) => c.winner_id == null)
       fireCompanionMessages(
-        buildMilestonePrompt('final_category', leaderboardRef.current, playersRef.current, undefined, undefined, remaining?.name),
+        buildMilestonePrompt(
+          'final_category',
+          leaderboardRef.current,
+          playersRef.current,
+          undefined,
+          undefined,
+          remaining?.name,
+          count,
+          categoriesRef.current,
+          confidencePicksRef.current,
+        ),
       )
     }
 
     if (count === totalCategories && totalCategories > 0 && !milestoneFiredRef.current.has('ceremony_end')) {
       milestoneFiredRef.current.add('ceremony_end')
       fireCompanionMessages(
-        buildMilestonePrompt('ceremony_end', leaderboardRef.current, playersRef.current),
+        buildMilestonePrompt(
+          'ceremony_end',
+          leaderboardRef.current,
+          playersRef.current,
+          undefined,
+          undefined,
+          undefined,
+          count,
+          categoriesRef.current,
+          confidencePicksRef.current,
+        ),
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,8 +397,18 @@ export function useAICompanions(
         milestoneFiredRef.current.add(key)
         const newLeader = leaderboard[0]
         const oldLeader = leaderboard.find((e) => e.player.id === previousLeaderIdRef.current)
+        const announcedCount = categoriesRef.current.filter((c) => c.winner_id != null).length
         fireCompanionMessages(
-          buildMilestonePrompt('lead_change', leaderboard, playersRef.current, newLeader, oldLeader),
+          buildMilestonePrompt(
+            'lead_change',
+            leaderboard,
+            playersRef.current,
+            newLeader,
+            oldLeader,
+            undefined,
+            announcedCount,
+            categoriesRef.current,
+          ),
         )
       }
     }
@@ -285,5 +417,5 @@ export function useAICompanions(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaderboard])
 
-  return { isGenerating: isGeneratingRef.current }
+  return { isGenerating: false }
 }

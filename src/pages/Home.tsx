@@ -172,13 +172,90 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-[85vh] gap-6">
       {/* App title — always visible */}
       <motion.div
-        className="text-center"
+        className="text-center relative"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.4 }}
       >
-        <h1 className="text-4xl font-bold text-oscar-gold tracking-tight">Gold Standard</h1>
-        <p className="text-white/50 text-sm mt-1">98th Academy Awards Party Game</p>
+        {/* Decorative film-strip bars */}
+        <div className="flex justify-center gap-1 mb-4 opacity-30" aria-hidden>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-4 h-2 rounded-sm"
+              style={{ backgroundColor: i % 2 === 0 ? '#D4AF37' : 'rgba(255,255,255,0.15)' }}
+            />
+          ))}
+        </div>
+
+        {/* Statuette silhouette SVG */}
+        <div className="flex justify-center mb-3">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
+          >
+            <svg width="44" height="64" viewBox="0 0 44 64" fill="none" aria-hidden>
+              {/* Oscar statuette silhouette */}
+              <ellipse cx="22" cy="58" rx="12" ry="4" fill="#D4AF37" opacity="0.4" />
+              <rect x="16" y="50" width="12" height="10" rx="2" fill="#D4AF37" opacity="0.7" />
+              <rect x="18" y="34" width="8" height="18" rx="1" fill="#D4AF37" opacity="0.85" />
+              {/* arms */}
+              <path d="M18 40 Q10 36 12 28 Q14 22 18 26" fill="#D4AF37" opacity="0.85" />
+              <path d="M26 40 Q34 36 32 28 Q30 22 26 26" fill="#D4AF37" opacity="0.85" />
+              {/* head */}
+              <ellipse cx="22" cy="22" rx="8" ry="10" fill="#D4AF37" opacity="0.9" />
+              {/* shimmer highlight */}
+              <ellipse cx="19" cy="18" rx="2.5" ry="4" fill="white" opacity="0.2" />
+            </svg>
+          </motion.div>
+        </div>
+
+        <motion.h1
+          className="text-5xl font-extrabold tracking-tight"
+          style={{
+            background: 'linear-gradient(135deg, #F5E6A3 0%, #D4AF37 40%, #B8960C 70%, #D4AF37 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          Oscar Party
+        </motion.h1>
+        <motion.p
+          className="text-white/45 text-sm mt-2 tracking-wide"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.25 }}
+        >
+          98th Academy Awards Party Game
+        </motion.p>
+
+        {/* Star field — static decorative dots */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+          {([
+            { top: '10%', left: '5%', size: 2, opacity: 0.5 },
+            { top: '20%', left: '92%', size: 1.5, opacity: 0.35 },
+            { top: '55%', left: '2%', size: 1, opacity: 0.3 },
+            { top: '70%', left: '96%', size: 2, opacity: 0.4 },
+            { top: '80%', left: '10%', size: 1, opacity: 0.25 },
+          ] as Array<{ top: string; left: string; size: number; opacity: number }>).map((s, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-oscar-gold"
+              style={{
+                width: s.size,
+                height: s.size,
+                top: s.top,
+                left: s.left,
+                opacity: s.opacity,
+              }}
+            />
+          ))}
+        </div>
       </motion.div>
 
       {/* Screen switcher */}
@@ -188,18 +265,40 @@ export default function Home() {
           {/* ── LANDING ─────────────────────────────────────────────────── */}
           {screen.view === 'landing' && (
             <motion.div key="landing" {...screenAnim} className="flex flex-col gap-3">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 onClick={handleCreateClick}
-                className="w-full py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg hover:bg-oscar-gold-light active:scale-95 transition-all"
+                className="w-full py-4 rounded-2xl font-bold text-lg text-deep-navy relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, #F5E6A3 0%, #D4AF37 50%, #B8960C 100%)',
+                  boxShadow: '0 4px 24px rgba(212,175,55,0.35)',
+                }}
               >
+                {/* Subtle shimmer stripe */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.22) 50%, transparent 60%)',
+                  }}
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+                />
                 Create Room
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 onClick={() => { setScreen({ view: 'join-code' }); setError(null) }}
-                className="w-full py-4 rounded-2xl backdrop-blur-lg bg-white/10 border border-white/15 text-white font-bold text-lg hover:bg-white/15 active:scale-95 transition-all"
+                className="w-full py-4 rounded-2xl backdrop-blur-lg bg-white/8 border border-white/20 text-white font-bold text-lg hover:bg-white/12 transition-colors"
               >
                 Join Room
-              </button>
+              </motion.button>
+
+              {/* Divider with ceremony label */}
+              <div className="flex items-center gap-3 mt-1 px-1">
+                <div className="flex-1 h-px bg-white/8" />
+                <span className="text-[10px] uppercase tracking-widest text-white/20">March 15, 2026</span>
+                <div className="flex-1 h-px bg-white/8" />
+              </div>
             </motion.div>
           )}
 

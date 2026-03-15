@@ -35,6 +35,8 @@ interface Props {
   leaderboard: ScoredPlayer[]
   onNavigateToWinnersTab: () => void
   onNavigateToBingo: () => void
+  showStarted: boolean
+  onStartShow: () => Promise<void>
   // Spotlight
   spotlightCategoryId: number | null
   spotlightNomineeIds: string[]
@@ -42,6 +44,9 @@ interface Props {
   openSpotlight: (categoryId: number) => Promise<void>
   closeSpotlight: () => Promise<void>
   confirmSpotlightWinner: (nomineeId: string) => Promise<void>
+  // Finale
+  onEndCeremony: () => Promise<void>
+  isEndingCeremony: boolean
 }
 
 export default function HomeTab({
@@ -53,12 +58,16 @@ export default function HomeTab({
   leaderboard,
   onNavigateToWinnersTab,
   onNavigateToBingo,
+  showStarted,
+  onStartShow,
   spotlightCategoryId,
   spotlightNomineeIds,
   isHost,
   openSpotlight,
   closeSpotlight,
   confirmSpotlightWinner,
+  onEndCeremony,
+  isEndingCeremony,
 }: Props) {
   const { player } = useGame()
   const currentPlayerId = player?.id ?? ''
@@ -112,14 +121,21 @@ export default function HomeTab({
   const hasAnyWinner = categories.some((c) => c.winner_id != null)
   const viewKey = spotlightContent ? `spotlight-${spotlightCategoryId}` : hasAnyWinner ? 'live' : 'pre'
 
+  // Spotlight gets a dramatic reveal; normal tab switches are subtle fades
+  const isSpotlight = !!spotlightContent
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={viewKey}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.18, ease: 'easeInOut' }}
+        initial={isSpotlight ? { opacity: 0, y: 28, scale: 0.97 } : { opacity: 0 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={isSpotlight ? { opacity: 0, y: -12, scale: 0.98 } : { opacity: 0 }}
+        transition={
+          isSpotlight
+            ? { type: 'spring', stiffness: 280, damping: 26, mass: 0.9 }
+            : { duration: 0.18, ease: 'easeInOut' }
+        }
         className="h-full"
       >
         {spotlightContent ?? (
@@ -132,7 +148,10 @@ export default function HomeTab({
               draftEntities={draftEntities}
               leaderboard={leaderboard}
               isHost={isHost}
+              showStarted={showStarted}
               openSpotlight={openSpotlight}
+              onEndCeremony={onEndCeremony}
+              isEndingCeremony={isEndingCeremony}
             />
           ) : (
             <PreCeremonyView
@@ -142,6 +161,8 @@ export default function HomeTab({
               draftPicks={draftPicks}
               draftEntities={draftEntities}
               leaderboard={leaderboard}
+              showStarted={showStarted}
+              onStartShow={onStartShow}
               onNavigateToWinnersTab={onNavigateToWinnersTab}
               onNavigateToBingo={onNavigateToBingo}
             />

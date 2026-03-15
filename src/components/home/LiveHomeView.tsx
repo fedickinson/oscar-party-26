@@ -9,12 +9,13 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, Info, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clapperboard, Clock, Info, Trophy, X } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { supabase } from '../../lib/supabase'
 import ChatSection from './ChatSection'
 import NomineeDetailSheet from './NomineeDetailSheet'
 import { CategoryIcon } from '../../lib/category-icons'
+import { FilmIcon } from '../../lib/film-icons'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
 
@@ -26,7 +27,10 @@ interface Props {
   draftEntities: DraftEntityRow[]
   leaderboard: ScoredPlayer[]
   isHost: boolean
+  showStarted: boolean
   openSpotlight: (categoryId: number) => Promise<void>
+  onEndCeremony: () => Promise<void>
+  isEndingCeremony: boolean
 }
 
 // ─── Category Info Modal ──────────────────────────────────────────────────────
@@ -163,7 +167,10 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
                     <>
                       <p className="text-sm font-semibold text-white/90 leading-snug">{nominee.name}</p>
                       {nominee.film_name && (
-                        <p className="text-xs text-white/45 mt-0.5 truncate">{nominee.film_name}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <FilmIcon filmName={nominee.film_name} size={10} className="text-white/35 flex-shrink-0" />
+                          <p className="text-xs text-white/45 truncate">{nominee.film_name}</p>
+                        </div>
                       )}
                     </>
                   )}
@@ -214,7 +221,10 @@ function NextUpCard({
   draftPicks,
   draftEntities,
   isHost,
+  showStarted,
   openSpotlight,
+  onEndCeremony,
+  isEndingCeremony,
 }: Omit<Props, 'leaderboard'>) {
   const { player } = useGame()
   const currentPlayerId = player?.id ?? ''
@@ -224,8 +234,47 @@ function NextUpCard({
   const nextCategory = categories.find((c) => c.winner_id == null)
   if (!nextCategory) {
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-        <p className="text-sm text-white/50 text-center">All categories announced</p>
+      <div
+        className="rounded-2xl px-4 py-4 space-y-3"
+        style={{
+          background: 'rgba(212,175,55,0.08)',
+          border: '1px solid rgba(212,175,55,0.25)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Trophy size={15} className="text-oscar-gold flex-shrink-0" />
+          <p className="text-sm font-semibold text-white">The ceremony is complete</p>
+        </div>
+        <p className="text-xs text-white/45">
+          All {categories.length} categories have been decided.
+        </p>
+        {isHost ? (
+          <motion.button
+            onClick={onEndCeremony}
+            disabled={isEndingCeremony}
+            whileTap={!isEndingCeremony ? { scale: 0.97 } : undefined}
+            className={[
+              'w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
+              !isEndingCeremony
+                ? 'bg-oscar-gold text-deep-navy'
+                : 'bg-white/10 text-white/30 cursor-not-allowed',
+            ].join(' ')}
+          >
+            {isEndingCeremony ? (
+              <div className="w-4 h-4 border-2 border-deep-navy/40 border-t-deep-navy rounded-full animate-spin" />
+            ) : (
+              <>
+                <Clapperboard size={14} />
+                Reveal Final Results
+              </>
+            )}
+          </motion.button>
+        ) : (
+          <div className="flex items-center gap-2 py-2">
+            <Clock size={13} className="text-white/30 flex-shrink-0" />
+            <p className="text-xs text-white/35 italic">Waiting for host to reveal results...</p>
+          </div>
+        )}
       </div>
     )
   }
@@ -267,7 +316,7 @@ function NextUpCard({
           <p className="text-sm font-bold text-white truncate">{nextCategory.name}</p>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          {isHost && (
+          {isHost && showStarted && (
             <motion.button
               whileTap={{ scale: 0.88 }}
               onClick={() => openSpotlight(nextCategory.id)}
@@ -296,7 +345,10 @@ function NextUpCard({
                 <p className="text-[10px] uppercase tracking-wider text-oscar-gold/55 mb-0.5">Prestige</p>
                 <p className="text-sm text-white/85 font-medium truncate">{myNominee.name}</p>
                 {myNominee.film_name && myNominee.type !== 'film' && (
-                  <p className="text-xs text-white/40 truncate">{myNominee.film_name}</p>
+                  <div className="flex items-center gap-1">
+                    <FilmIcon filmName={myNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                    <p className="text-xs text-white/40 truncate">{myNominee.film_name}</p>
+                  </div>
                 )}
               </div>
               <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center">
@@ -429,10 +481,13 @@ export default function LiveHomeView({
   draftEntities,
   leaderboard,
   isHost,
+  showStarted,
   openSpotlight,
+  onEndCeremony,
+  isEndingCeremony,
 }: Props) {
   return (
-    <div className="h-full flex flex-col max-w-md mx-auto">
+    <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
       {/* Fixed top: next category + score summary */}
       <div className="px-4 pt-4 space-y-3 flex-shrink-0">
         <NextUpCard
@@ -442,13 +497,16 @@ export default function LiveHomeView({
           draftPicks={draftPicks}
           draftEntities={draftEntities}
           isHost={isHost}
+          showStarted={showStarted}
           openSpotlight={openSpotlight}
+          onEndCeremony={onEndCeremony}
+          isEndingCeremony={isEndingCeremony}
         />
         <CollapsibleScores leaderboard={leaderboard} />
       </div>
 
-      {/* Chat fills remaining vertical space */}
-      <div className="flex-1 flex flex-col min-h-0 px-4 pt-3 pb-4">
+      {/* Chat fills remaining vertical space — min-h-0 prevents flex overflow */}
+      <div className="flex-1 flex flex-col min-h-0 px-4 pt-3" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         <p className="text-xs uppercase tracking-wider text-white/35 mb-2 px-1 flex-shrink-0">Chat</p>
         <ChatSection fill />
       </div>

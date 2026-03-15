@@ -17,8 +17,39 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, X } from 'lucide-react'
 import type { BingoMarkRow, BingoSquareRow } from '../../types/database'
-import { FREE_CENTER_INDEX } from '../../lib/bingo-utils'
+import { BINGO_LINES, FREE_CENTER_INDEX } from '../../lib/bingo-utils'
 import BingoSquare from './BingoSquare'
+
+// ─── Bingo band palette ───────────────────────────────────────────────────────
+// Colors for each bingo line band overlay (1st, 2nd, 3rd, 4th, 5th+)
+
+const BAND_COLORS = [
+  'rgba(212,175,55,0.35)',  // gold — 1st
+  'rgba(236,72,153,0.32)',  // pink — 2nd
+  'rgba(59,130,246,0.32)',  // blue — 3rd
+  'rgba(139,92,246,0.32)',  // purple — 4th
+  'rgba(16,185,129,0.30)',  // emerald — 5th+
+]
+
+function getBandColor(index: number): string {
+  return BAND_COLORS[Math.min(index, BAND_COLORS.length - 1)]
+}
+
+// Determine if a BINGO_LINES line is a row, column, or diagonal
+function getLineType(line: number[]): 'row' | 'col' | 'diag-tl' | 'diag-tr' {
+  // Rows: all indices in same group of 5
+  const row0 = Math.floor(line[0] / 5)
+  if (line.every((i) => Math.floor(i / 5) === row0)) return 'row'
+  // Cols: all indices differ by 5
+  const col0 = line[0] % 5
+  if (line.every((i) => i % 5 === col0)) return 'col'
+  // Diag TL-BR: [0,6,12,18,24]
+  if (line[0] === 0) return 'diag-tl'
+  return 'diag-tr'
+}
+
+function getRowIndex(line: number[]): number { return Math.floor(line[0] / 5) }
+function getColIndex(line: number[]): number { return line[0] % 5 }
 
 type SquareStatus = 'free' | 'approved' | 'pending' | 'denied' | 'unmarked'
 
@@ -46,8 +77,19 @@ export default function BingoCard({
 }: Props) {
   if (squares.length === 0) return null
 
-  // Build a set of all indices in completed lines for glow highlighting
-  const lineIndices = new Set(bingoLines.flat())
+  // Build a map from square index → BINGO_LINES index for per-line coloring.
+  // When a square is in multiple completed lines, the first (lowest index) wins.
+  const squareLineColorMap = new Map<number, number>()
+  bingoLines.forEach((completedLine) => {
+    const lineIdx = BINGO_LINES.findIndex(
+      (l) => l.length === completedLine.length && l.every((v, i) => v === completedLine[i]),
+    )
+    if (lineIdx >= 0) {
+      completedLine.forEach((squareIdx) => {
+        if (!squareLineColorMap.has(squareIdx)) squareLineColorMap.set(squareIdx, lineIdx)
+      })
+    }
+  })
 
   // Build a mark status lookup by square index
   const markByIndex = new Map<number, BingoMarkRow>()
@@ -99,8 +141,8 @@ export default function BingoCard({
         ))}
       </div>
 
-      {/* 5×5 grid */}
-      <div className="grid grid-cols-5 gap-1">
+      {/* 5×5 grid with band overlays */}
+      <div className="relative grid grid-cols-5 gap-1">
         {squares.map((square, index) => (
           <BingoSquare
             key={index}
@@ -108,11 +150,101 @@ export default function BingoCard({
             shortText={square?.short_text ?? ''}
             status={getStatus(index)}
             isObjective={square?.is_objective ?? false}
-            isInBingoLine={lineIndices.has(index)}
+            bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
             isSelected={selectedIndex === index}
             onTap={() => handleTap(index)}
           />
         ))}
+
+        {/* Bingo band overlays — SVG spanning the full grid for reliable % positioning */}
+        {bingoLines.length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              zIndex: 10,
+            }}
+          >
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+            >
+              <defs>
+                {bingoLines.map((_, bandIdx) => (
+                  <filter key={bandIdx} id={`bingo-glow-${bandIdx}`} x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                ))}
+              </defs>
+              {bingoLines.map((completedLine, bandIdx) => {
+                const lineType = getLineType(completedLine)
+                const color = getBandColor(bandIdx)
+                const key = `band-svg-${completedLine.join('-')}`
+
+                // Cell size in % (5 cells = 100%, ignoring gap for overlay purposes)
+                const cellPct = 100 / 5  // 20%
+                const halfCell = cellPct / 2  // 10%
+
+                if (lineType === 'row') {
+                  const r = getRowIndex(completedLine)
+                  const y = r * cellPct
+                  return (
+                    <rect
+                      key={key}
+                      x="0"
+                      y={y}
+                      width="100"
+                      height={cellPct}
+                      fill={color}
+                      filter={`url(#bingo-glow-${bandIdx})`}
+                      rx="1"
+                    />
+                  )
+                } else if (lineType === 'col') {
+                  const c = getColIndex(completedLine)
+                  const x = c * cellPct
+                  return (
+                    <rect
+                      key={key}
+                      x={x}
+                      y="0"
+                      width={cellPct}
+                      height="100"
+                      fill={color}
+                      filter={`url(#bingo-glow-${bandIdx})`}
+                      rx="1"
+                    />
+                  )
+                } else {
+                  // Diagonal — thick SVG line
+                  const x1 = lineType === 'diag-tl' ? halfCell : 100 - halfCell
+                  const x2 = lineType === 'diag-tl' ? 100 - halfCell : halfCell
+                  return (
+                    <line
+                      key={key}
+                      x1={x1}
+                      y1={halfCell}
+                      x2={x2}
+                      y2={100 - halfCell}
+                      stroke={color}
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                      filter={`url(#bingo-glow-${bandIdx})`}
+                    />
+                  )
+                }
+              })}
+            </svg>
+          </div>
+        )}
       </div>
 
       {/* Confirmation bar — slides up from inside the card */}

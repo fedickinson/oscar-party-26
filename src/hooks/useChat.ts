@@ -12,7 +12,7 @@ import type { MessageRow } from '../types/database'
 
 export type { MessageRow }
 
-export function useChat(roomId: string | undefined) {
+export function useChat(roomId: string | undefined, channelKey = 'default') {
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -20,8 +20,10 @@ export function useChat(roomId: string | undefined) {
     if (!roomId) return
 
     // Subscribe first so we don't miss messages inserted between fetch + subscribe
+    // channelKey disambiguates callers so two useChat instances on the same roomId
+    // don't share (and accidentally unsubscribe) the same Supabase channel object.
     const channel = supabase
-      .channel(`chat:${roomId}`)
+      .channel(`chat:${roomId}:${channelKey}`)
       .on(
         'postgres_changes',
         {
@@ -41,29 +43,42 @@ export function useChat(roomId: string | undefined) {
       )
       .subscribe()
 
-    // Then fetch existing messages
+    // Then fetch existing messages — merge with any already-accumulated via Realtime
+    // to avoid overwriting messages that arrived between subscribe and fetch completing.
     supabase
       .from('messages')
       .select('id, room_id, player_id, text, created_at')
       .eq('room_id', roomId)
       .order('created_at', { ascending: true })
       .then(({ data }) => {
-        if (data) setMessages(data as MessageRow[])
+        if (data) {
+          setMessages((prev) => {
+            const fetched = data as MessageRow[]
+            // Merge: keep any subscription-delivered messages not in the fetched snapshot
+            const fetchedIds = new Set(fetched.map((m) => m.id))
+            const extra = prev.filter((m) => !fetchedIds.has(m.id))
+            return [...fetched, ...extra].sort(
+              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+            )
+          })
+        }
         setIsLoading(false)
       })
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [roomId])
+  }, [roomId, channelKey])
 
-  async function sendMessage(playerId: string, text: string) {
-    if (!roomId || !playerId || !text.trim()) return
-    await supabase.from('messages').insert({
+  async function sendMessage(playerId: string, text: string): Promise<{ error: Error | null }> {
+    if (!roomId || !playerId || !text.trim()) return { error: null }
+    const { error } = await supabase.from('messages').insert({
       room_id: roomId,
       player_id: playerId,
       text: text.trim(),
     })
+    if (error) return { error: new Error(error.message) }
+    return { error: null }
   }
 
   return { messages, sendMessage, isLoading }

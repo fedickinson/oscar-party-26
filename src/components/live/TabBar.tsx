@@ -24,9 +24,11 @@ export const TABS = [
 interface Props {
   activeTab: number
   onSelect: (tab: number) => void
+  /** Tab IDs that should show a notification badge dot */
+  badges?: Set<number>
 }
 
-export default function TabBar({ activeTab, onSelect }: Props) {
+export default function TabBar({ activeTab, onSelect, badges }: Props) {
   return (
     <div
       className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-t border-white/10"
@@ -35,6 +37,7 @@ export default function TabBar({ activeTab, onSelect }: Props) {
       <div className="flex h-[60px]">
         {TABS.map(({ id, label, Icon }) => {
           const isActive = activeTab === id
+          const hasBadge = !isActive && badges?.has(id)
           return (
             <motion.button
               key={id}
@@ -45,11 +48,18 @@ export default function TabBar({ activeTab, onSelect }: Props) {
               <motion.div
                 animate={{ scale: isActive ? 1.1 : 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                className="relative"
               >
                 <Icon
                   size={20}
                   className={isActive ? 'text-oscar-gold' : 'text-white/45'}
                 />
+                {hasBadge && (
+                  <span
+                    className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-oscar-gold"
+                    aria-label="New activity"
+                  />
+                )}
               </motion.div>
               <span
                 className={[

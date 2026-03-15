@@ -22,13 +22,13 @@ import {
   ChevronUp,
   Clapperboard,
   Clock,
-  Film,
   RotateCcw,
   Trophy,
   User,
 } from 'lucide-react'
 import { useAdmin } from '../../hooks/useAdmin'
 import { CategoryIcon } from '../../lib/category-icons'
+import { FilmIcon } from '../../lib/film-icons'
 
 
 const UNDO_WINDOW_MS = 30_000
@@ -118,20 +118,28 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
         {/* Progress header */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-white/40 uppercase tracking-widest">Winners</span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] text-white/35 uppercase tracking-widest font-semibold">Winners</span>
             <div className="flex items-center gap-1.5">
-              <Trophy size={12} className="text-oscar-gold" />
-              <span className="text-xs font-bold text-oscar-gold tabular-nums">
-                {announcedCount} / {totalCount} Announced
+              <Trophy size={11} className="text-oscar-gold" />
+              <span className="text-xs font-extrabold text-oscar-gold tabular-nums">
+                {announcedCount}
+                <span className="text-white/30 font-normal mx-0.5">/</span>
+                {totalCount}
               </span>
+              <span className="text-[10px] text-white/35">Announced</span>
             </div>
           </div>
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+          {/* Progress track */}
+          <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-oscar-gold rounded-full"
+              className="h-full rounded-full"
               animate={{ width: `${totalCount > 0 ? (announcedCount / totalCount) * 100 : 0}%` }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{
+                background: 'linear-gradient(90deg, #D4AF37, #F5E6A3)',
+                boxShadow: announcedCount > 0 ? '0 0 8px 1px rgba(212,175,55,0.5)' : undefined,
+              }}
             />
           </div>
         </div>
@@ -199,10 +207,12 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 key={category.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.015, 0.3), duration: 0.2 }}
+                transition={{ delay: Math.min(i * 0.015, 0.3), duration: 0.22 }}
                 className={[
-                  'backdrop-blur-lg border rounded-xl overflow-hidden',
-                  hasWinner ? 'bg-white/5 border-white/10' : 'bg-white/8 border-white/12',
+                  'backdrop-blur-lg border rounded-xl overflow-hidden relative',
+                  hasWinner
+                    ? 'bg-white/4 border-white/8'
+                    : 'bg-white/6 border-white/10',
                 ].join(' ')}
               >
                 {/* Main row */}
@@ -217,13 +227,15 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                   <div
                     className={[
                       'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
-                      hasWinner ? 'bg-emerald-500/20' : 'bg-white/8',
+                      hasWinner
+                        ? 'bg-emerald-500/15 border border-emerald-500/20'
+                        : 'bg-white/6 border border-white/8',
                     ].join(' ')}
                   >
                     {hasWinner ? (
-                      <Check size={13} className="text-emerald-400" strokeWidth={3} />
+                      <Check size={12} className="text-emerald-400" strokeWidth={3} />
                     ) : (
-                      <Clock size={13} className="text-white/25" />
+                      <Clock size={12} className="text-white/22" />
                     )}
                   </div>
 
@@ -259,9 +271,12 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           {winnerNominee.name}
                         </p>
                         {winnerNominee.film_name && (
-                          <p className="text-[11px] text-white/40 truncate">
-                            {winnerNominee.film_name}
-                          </p>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                            <p className="text-[11px] text-white/40 truncate">
+                              {winnerNominee.film_name}
+                            </p>
+                          </div>
                         )}
                       </div>
                     ) : (
@@ -346,7 +361,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                                 {nominee.type === 'person' ? (
                                   <User size={12} className={isWinner ? 'text-oscar-gold' : 'text-white/30'} />
                                 ) : (
-                                  <Film size={12} className={isWinner ? 'text-oscar-gold' : 'text-white/30'} />
+                                  <FilmIcon filmName={nominee.film_name || nominee.name} size={12} className={isWinner ? 'text-oscar-gold' : 'text-white/30'} />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -359,9 +374,10 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                                   {nominee.name}
                                 </p>
                                 {nominee.film_name && (
-                                  <p className="text-[10px] text-white/30 truncate">
-                                    {nominee.film_name}
-                                  </p>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <FilmIcon filmName={nominee.film_name} size={9} className="text-white/25 flex-shrink-0" />
+                                    <p className="text-[10px] text-white/30 truncate">{nominee.film_name}</p>
+                                  </div>
                                 )}
                               </div>
                               {isWinner && (

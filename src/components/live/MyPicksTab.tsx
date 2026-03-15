@@ -3,7 +3,7 @@
  *
  * Section 0: Score Card
  *   Total score, rank among all players, and breakdown by game type
- *   (Fantasy Draft / Confidence / Bingo).
+ *   (Ensemble Draft / Confidence / Bingo).
  *
  * Section 1: Confidence Picks
  *   All 24 picks sorted by confidence number descending. Each shows:
@@ -24,6 +24,7 @@ import { useState } from 'react'
 import { CheckCircle, XCircle, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryIcon } from '../../lib/category-icons'
+import { FilmIcon } from '../../lib/film-icons'
 import { findDraftPointsForWinner } from '../../lib/scoring'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type {
@@ -162,8 +163,8 @@ export default function MyPicksTab({
           <div className="grid grid-cols-3 gap-2">
             <ScoreBreakdownCell
               label="Ensemble"
-              value={myScore.fantasyScore}
-              dimmed={myScore.fantasyScore === 0}
+              value={myScore.ensembleScore}
+              dimmed={myScore.ensembleScore === 0}
             />
             <ScoreBreakdownCell
               label="Prestige"
@@ -445,14 +446,16 @@ export default function MyPicksTab({
                       {entity.name}
                     </p>
                     {entity.film_name && entity.type === 'person' && (
-                      <p
-                        className={[
-                          'text-xs truncate',
-                          status === 'eliminated' ? 'text-white/20' : 'text-white/35',
-                        ].join(' ')}
-                      >
-                        {entity.film_name}
-                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <FilmIcon
+                          filmName={entity.film_name}
+                          size={10}
+                          className={status === 'eliminated' ? 'text-white/15 flex-shrink-0' : 'text-white/28 flex-shrink-0'}
+                        />
+                        <p className={['text-xs truncate', status === 'eliminated' ? 'text-white/20' : 'text-white/35'].join(' ')}>
+                          {entity.film_name}
+                        </p>
+                      </div>
                     )}
                   </div>
 

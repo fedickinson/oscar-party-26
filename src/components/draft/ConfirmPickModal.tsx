@@ -19,6 +19,7 @@
  */
 
 import { motion } from 'framer-motion'
+import { FilmIcon } from '../../lib/film-icons'
 import type { DraftEntityWithDetails } from '../../types/game'
 
 interface Props {
@@ -76,7 +77,10 @@ export default function ConfirmPickModal({
           <h2 className="text-2xl font-bold leading-tight">{entity.name}</h2>
 
           {!isFilm && entity.film_name && (
-            <p className="text-white/50 italic mt-0.5">{entity.film_name}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <FilmIcon filmName={entity.film_name} size={12} className="text-white/35 flex-shrink-0" />
+              <p className="text-white/50 italic">{entity.film_name}</p>
+            </div>
           )}
         </div>
 
@@ -120,7 +124,7 @@ export default function ConfirmPickModal({
             disabled={isSubmitting}
             className="flex-[2] py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-60 hover:bg-oscar-gold-light transition-colors"
           >
-            {isSubmitting ? 'Drafting…' : `Draft ${entity.name.split(' ')[0]}`}
+            {isSubmitting ? 'Claiming…' : `Claim ${entity.name.split(' ')[0]}`}
           </button>
         </div>
       </motion.div>

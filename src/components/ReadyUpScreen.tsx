@@ -18,6 +18,9 @@ interface ReadyUpScreenProps {
   readyPlayerIds: string[]
   isHost: boolean
   onCountdownComplete: () => void
+  /** Unix ms timestamp recorded when all players first became ready. Used to
+   *  derive the correct countdown position for clients that mount late. */
+  countdownStartedAt: number
 }
 
 type Stage = 'waiting' | 'countdown' | 'go'
@@ -27,9 +30,24 @@ export default function ReadyUpScreen({
   readyPlayerIds,
   isHost,
   onCountdownComplete,
+  countdownStartedAt,
 }: ReadyUpScreenProps) {
-  const [stage, setStage] = useState<Stage>('waiting')
-  const [count, setCount] = useState(3)
+  const allReady = players.length > 0 && readyPlayerIds.length >= players.length
+
+  // Derive the initial count from how much time has already elapsed since all
+  // players became ready. This ensures a late-mounting client (e.g. the last
+  // player to tap "Got it") shows the correct number instead of always starting
+  // from 3 and missing intermediate ticks.
+  function deriveInitialCount(): number {
+    const elapsed = Date.now() - countdownStartedAt
+    if (elapsed >= 3000) return 1
+    if (elapsed >= 2000) return 1
+    if (elapsed >= 1000) return 2
+    return 3
+  }
+
+  const [stage, setStage] = useState<Stage>(allReady ? 'countdown' : 'waiting')
+  const [count, setCount] = useState(allReady ? deriveInitialCount() : 3)
   const startedRef = useRef(false)
   // Keep a stable ref so the timeout always calls the latest callback without
   // being in the dependency array (which would cancel the timeouts on re-render).
@@ -38,19 +56,25 @@ export default function ReadyUpScreen({
     onCountdownCompleteRef.current = onCountdownComplete
   })
 
-  const allReady = players.length > 0 && readyPlayerIds.length >= players.length
-
   // Kick off the countdown as soon as all players are ready.
   // Guard with a ref so we only start it once even if readyPlayerIds fluctuates.
   useEffect(() => {
     if (!allReady || startedRef.current) return
     startedRef.current = true
 
-    setStage('countdown')
-    setCount(3)
+    // Calculate how much of the 3-second countdown has already elapsed so
+    // that a client who mounts late schedules its remaining ticks correctly.
+    const elapsed = Date.now() - countdownStartedAt
+    const remaining2 = Math.max(0, 1000 - elapsed)
+    const remaining1 = Math.max(0, 2000 - elapsed)
+    const remainingGo = Math.max(0, 3000 - elapsed)
+    const remainingComplete = Math.max(0, 3600 - elapsed)
 
-    const t1 = setTimeout(() => setCount(2), 1000)
-    const t2 = setTimeout(() => setCount(1), 2000)
+    setStage('countdown')
+    setCount(deriveInitialCount())
+
+    const t1 = remaining2 > 0 ? setTimeout(() => setCount(2), remaining2) : null
+    const t2 = remaining1 > 0 ? setTimeout(() => setCount(1), remaining1) : null
     const t3 = setTimeout(() => {
       setStage('go')
       confetti({
@@ -59,14 +83,14 @@ export default function ReadyUpScreen({
         origin: { y: 0.5 },
         colors: ['#D4AF37', '#ffffff', '#12163A'],
       })
-    }, 3000)
+    }, remainingGo)
     const t4 = setTimeout(() => {
       if (isHost) onCountdownCompleteRef.current()
-    }, 3600)
+    }, remainingComplete)
 
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
+      if (t1) clearTimeout(t1)
+      if (t2) clearTimeout(t2)
       clearTimeout(t3)
       clearTimeout(t4)
     }
@@ -120,7 +144,7 @@ export default function ReadyUpScreen({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 500, damping: 20 }}
             >
-              Draft time.
+              Ensemble time.
             </motion.span>
           </motion.div>
         )}
@@ -134,7 +158,7 @@ export default function ReadyUpScreen({
       >
         {/* Header */}
         <div className="text-center">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Fantasy Draft</p>
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Ensemble</p>
           <h1 className="text-2xl font-bold text-white">Ready up</h1>
           <p className="text-white/50 text-sm mt-1">Waiting for everyone to read the rules</p>
         </div>

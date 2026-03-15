@@ -7,7 +7,7 @@
  * - Input bar at bottom: 16px font-size to prevent iOS zoom.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
@@ -15,6 +15,74 @@ import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
 import CompanionAvatar from './CompanionAvatar'
 import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
+
+// ─── Markdown-lite renderer ───────────────────────────────────────────────────
+// Supports: \n line breaks, **bold**, *italic*
+
+function renderFormattedText(text: string): React.ReactNode[] {
+  const lines = text.split('\n')
+  return lines.map((line, li) => {
+    // Split by **bold** and *italic* patterns
+    const parts: React.ReactNode[] = []
+    const pattern = /(\*\*(.+?)\*\*|\*(.+?)\*)/g
+    let lastIndex = 0
+    let match: RegExpExecArray | null
+
+    while ((match = pattern.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(line.slice(lastIndex, match.index))
+      }
+      if (match[2] !== undefined) {
+        // **bold**
+        parts.push(<strong key={match.index}>{match[2]}</strong>)
+      } else if (match[3] !== undefined) {
+        // *italic*
+        parts.push(<em key={match.index}>{match[3]}</em>)
+      }
+      lastIndex = match.index + match[0].length
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.slice(lastIndex))
+    }
+
+    return (
+      <span key={li}>
+        {parts}
+        {li < lines.length - 1 && <br />}
+      </span>
+    )
+  })
+}
+
+// ─── Companion bubble styles ──────────────────────────────────────────────────
+
+const COMPANION_BUBBLE_STYLES: Record<string, {
+  background: string
+  border: string
+  borderLeft: string
+}> = {
+  'the-academy': {
+    background: 'rgba(212, 175, 55, 0.07)',
+    border: '1px solid rgba(212, 175, 55, 0.18)',
+    borderLeft: '3px solid #D4AF37',
+  },
+  meryl: {
+    background: 'rgba(201,168,76,0.09)',
+    border: '1px solid rgba(201,168,76,0.18)',
+    borderLeft: '3px solid #CC9966',
+  },
+  nikki: {
+    background: 'rgba(236,72,153,0.08)',
+    border: '1px solid rgba(236,72,153,0.18)',
+    borderLeft: '3px solid #EC4899',
+  },
+  will: {
+    background: 'rgba(234,179,8,0.08)',
+    border: '1px solid rgba(234,179,8,0.18)',
+    borderLeft: '3px solid #EAB308',
+  },
+}
 
 interface Props {
   /** When true, the message list fills all available vertical space instead of capping at 40vh. */
@@ -37,11 +105,13 @@ export default function ChatSection({ fill = false }: Props) {
     bottomRef.current.scrollIntoView({ behavior: isNewMessage ? 'smooth' : 'instant' })
   }, [messages])
 
-  function handleSend() {
+  async function handleSend() {
     const text = input.trim()
     if (!text || !player) return
-    sendMessage(player.id, text)
-    setInput('')
+    const { error } = await sendMessage(player.id, text)
+    if (!error) {
+      setInput('')
+    }
     inputRef.current?.focus()
   }
 
@@ -67,6 +137,25 @@ export default function ChatSection({ fill = false }: Props) {
 
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
+            // ── System divider messages ──────────────────────────────────
+            if (msg.player_id === 'system') {
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex items-center gap-3 py-2"
+                >
+                  <div className="flex-1 h-px bg-white/15" />
+                  <span className="text-[11px] uppercase tracking-wider text-white/30 font-medium whitespace-nowrap">
+                    {msg.text}
+                  </span>
+                  <div className="flex-1 h-px bg-white/15" />
+                </motion.div>
+              )
+            }
+
             const isCompanion = COMPANION_IDS.has(msg.player_id)
             const companion = isCompanion ? getCompanionById(msg.player_id) : undefined
             const isMine = !isCompanion && msg.player_id === player?.id
@@ -80,7 +169,11 @@ export default function ChatSection({ fill = false }: Props) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className={['flex gap-2 items-end', isMine ? 'flex-row-reverse' : 'flex-row'].join(' ')}
+                className={[
+                  'flex gap-2 items-end',
+                  isMine ? 'flex-row-reverse' : 'flex-row',
+                  isCompanion ? 'mb-1' : '',
+                ].join(' ')}
               >
                 {/* Avatar — companion icon or player avatar (hidden on own messages) */}
                 {!isMine && (
@@ -106,26 +199,23 @@ export default function ChatSection({ fill = false }: Props) {
 
                   {/* Bubble */}
                   {isCompanion && companion ? (
-                    companion.id === 'the-academy' ? (
-                      <div
-                        className="px-3 py-2 rounded-2xl text-sm leading-snug rounded-bl-sm"
-                        style={{
-                          background: 'rgba(212, 175, 55, 0.07)',
-                          border: '1px solid rgba(212, 175, 55, 0.18)',
-                          borderLeft: '3px solid #D4AF37',
-                          color: 'rgba(255,255,255,0.95)',
-                        }}
-                      >
-                        {msg.text}
-                      </div>
-                    ) : (
-                    <div
-                      className="px-3 py-2 rounded-2xl text-sm leading-snug bg-black/25 border border-white/10 text-white/90 rounded-bl-sm"
-                      style={{ borderLeft: `2px solid ${companion.colorPrimary}` }}
-                    >
-                      {msg.text}
-                    </div>
-                    )
+                    (() => {
+                      const bubbleStyle = COMPANION_BUBBLE_STYLES[companion.id] ?? COMPANION_BUBBLE_STYLES['the-academy']
+                      const isAcademy = companion.id === 'the-academy'
+                      return (
+                        <div
+                          className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed rounded-bl-sm"
+                          style={{
+                            background: bubbleStyle.background,
+                            border: bubbleStyle.border,
+                            borderLeft: bubbleStyle.borderLeft,
+                            color: isAcademy ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
+                          }}
+                        >
+                          {renderFormattedText(msg.text)}
+                        </div>
+                      )
+                    })()
                   ) : (
                     <div
                       className={[

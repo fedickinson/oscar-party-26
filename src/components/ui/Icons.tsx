@@ -158,29 +158,6 @@ export function CrownIcon({ size = 24, className = '' }: IconProps) {
   )
 }
 
-// ─── FireIcon ─────────────────────────────────────────────────────────────────
-// Stylized flame — for Hot Take section. Inner teardrop for depth.
-
-export function FireIcon({ size = 24, className = '' }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      {/* Outer flame */}
-      <path d="M12 2 C12 2 18 8 18 13.5 C18 17 15.3 20 12 20 C8.7 20 6 17 6 13.5 C6 8 12 2 12 2 Z" />
-      {/* Inner smaller flame for depth */}
-      <path d="M12 8 C12 8 15 11.5 15 14 C15 15.7 13.7 17 12 17 C10.3 17 9 15.7 9 14 C9 11.5 12 8 12 8 Z" strokeWidth="1" />
-    </svg>
-  )
-}
 
 // ─── DraftPick ────────────────────────────────────────────────────────────────
 // An index-finger cursor pointing at a card — draft selection gesture.

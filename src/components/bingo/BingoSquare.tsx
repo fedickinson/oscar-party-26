@@ -19,9 +19,10 @@
  *   unmarked → select (local only)
  */
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Clock, Star } from 'lucide-react'
+import { BINGO_LINE_PALETTE } from '../../lib/bingo-utils'
 
 type MarkStatus = 'unmarked' | 'pending' | 'approved' | 'denied' | 'free'
 
@@ -30,7 +31,8 @@ interface Props {
   shortText: string
   status: MarkStatus
   isObjective: boolean
-  isInBingoLine: boolean
+  /** Index into BINGO_LINES for the first completed line this square belongs to, or null */
+  bingoLineColorIndex: number | null
   isSelected: boolean
   onTap: () => void
   /** When true: no tap interaction, no press animation, no denied flash */
@@ -42,11 +44,13 @@ export default function BingoSquare({
   shortText,
   status,
   isObjective,
-  isInBingoLine,
+  bingoLineColorIndex,
   isSelected,
   onTap,
   readOnly = false,
 }: Props) {
+  const isInBingoLine = bingoLineColorIndex !== null
+  const lineColor = bingoLineColorIndex !== null ? BINGO_LINE_PALETTE[bingoLineColorIndex] : null
   // Internal state drives the brief red flash for denied marks
   const [visualDenied, setVisualDenied] = useState(false)
 
@@ -89,8 +93,9 @@ export default function BingoSquare({
     borderClass = 'border border-oscar-gold/60'
     textClass = 'text-oscar-gold'
   } else if (isApproved) {
+    // Always green — bingo line coloring is handled by band overlays at the card level
     bgClass = 'bg-emerald-500/20'
-    borderClass = isInBingoLine ? 'border-2 border-emerald-400' : 'border border-emerald-500/40'
+    borderClass = 'border border-emerald-500/40'
     textClass = 'text-emerald-300/70'
   } else if (isPending) {
     bgClass = 'bg-amber-500/10'
@@ -112,11 +117,15 @@ export default function BingoSquare({
     textClass = 'text-white/85'
   }
 
+  // No line-based inline style — band overlays handle that at the card level
+  const inlineStyle: React.CSSProperties = {}
+
   return (
     <motion.button
       whileTap={canTap ? { scale: 0.88 } : undefined}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       onClick={handleTap}
+      style={inlineStyle}
       className={[
         ...baseClasses,
         bgClass,
@@ -125,15 +134,7 @@ export default function BingoSquare({
         readOnly ? 'pointer-events-none' : '',
       ].join(' ')}
     >
-      {/* Bingo line highlight sweep */}
-      {isInBingoLine && isApproved && (
-        <motion.div
-          className="absolute inset-0 bg-emerald-400/10 rounded-lg pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.4, 0.15] }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        />
-      )}
+      {/* Bingo line coloring is handled by band overlays at the BingoCard level */}
 
       {/* Pending pulse ring */}
       {isPending && (
@@ -167,7 +168,8 @@ export default function BingoSquare({
       {isApproved && !isFree && (
         <Check
           size={12}
-          className="text-emerald-400 absolute top-1 right-1 flex-shrink-0"
+          className="absolute top-1 right-1 flex-shrink-0"
+          style={{ color: 'rgba(52,211,153,0.85)' }}
           strokeWidth={3}
         />
       )}
