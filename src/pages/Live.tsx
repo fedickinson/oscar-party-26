@@ -1,0 +1,441 @@
+/**
+ * Live — the live phase dashboard (four-tab mobile shell).
+ *
+ * Tab 0: Bingo    (BingoTab)
+ * Tab 1: Scores   (ScoresTab)
+ * Tab 2: Winners  (WinnersTab)  ← host controls + all-player view
+ * Tab 3: My Picks (MyPicksTab)
+ *
+ * TAB SWITCHING:
+ *   { tab, direction } state tracks active tab and slide direction.
+ *   direction = 1  → advancing (new tab is to the right; slides in from right)
+ *   direction = -1 → going back (new tab is to the left; slides in from left)
+ *
+ * WINNER ANNOUNCEMENTS:
+ *   Watches scores.categories for new winner_id values after initial load.
+ *   Queues AnnouncementData objects; WinnerAnnouncement shows one at a time
+ *   and auto-dismisses after 5s. Queue advances on dismiss.
+ *
+ * PHASE NAVIGATION:
+ *   useEffect watches room?.phase. When the host advances the room phase,
+ *   all players navigate to the next page at once.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useGame } from '../context/GameContext'
+import { useScores } from '../hooks/useScores'
+import { findDraftPointsForWinner } from '../lib/scoring'
+import { supabase } from '../lib/supabase'
+import TabBar from '../components/live/TabBar'
+import HomeTab from '../components/live/HomeTab'
+import BingoTab from '../components/live/BingoTab'
+import ScoresTab from '../components/live/ScoresTab'
+import WinnersTab from '../components/live/WinnersTab'
+import MyPicksTab from '../components/live/MyPicksTab'
+import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
+import BrowseSection from '../components/home/BrowseSection'
+import PhaseExplainer from '../components/PhaseExplainer'
+import Toast, { useToast } from '../components/ui/Toast'
+
+// Entering tab slides in from direction * 100%, exits to direction * -100%
+const tabVariants = {
+  initial: (dir: number) => ({ x: `${dir * 100}%`, opacity: 0 }),
+  animate: { x: '0%', opacity: 1 },
+  exit: (dir: number) => ({ x: `${dir * -100}%`, opacity: 0 }),
+}
+
+const tabTransition = { type: 'tween', ease: 'easeInOut', duration: 0.22 } as const
+
+export default function Live() {
+  const { code } = useParams()
+  const navigate = useNavigate()
+  const { room, player, players } = useGame()
+  const [{ tab, direction }, setTabState] = useState({ tab: 0, direction: 1 })
+  const [showBingoExplainer, setShowBingoExplainer] = useState(false)
+
+  const roomId = room?.id
+  const isHost = player?.is_host ?? false
+  const currentPlayerId = player?.id ?? ''
+
+  const scores = useScores(roomId)
+  const { toast, showToast, dismissToast } = useToast()
+
+  // ── Bingo peek tracking ───────────────────────────────────────────────────
+  const bingoPeekedKey = `oscar_bingo_peeked_${roomId}_${player?.id}`
+  const [hasPeekedBingo, setHasPeekedBingo] = useState(
+    () => !!localStorage.getItem(bingoPeekedKey),
+  )
+
+  function handleNavigateToBingo() {
+    if (!hasPeekedBingo) {
+      setShowBingoExplainer(true)
+    } else {
+      selectTab(1)
+    }
+  }
+
+  function handleBingoExplainerContinue() {
+    localStorage.setItem(bingoPeekedKey, '1')
+    setHasPeekedBingo(true)
+    setShowBingoExplainer(false)
+    selectTab(1)
+  }
+
+  // ── Pending bingo count + toast (host only) ───────────────────────────────
+
+  const [pendingBingoCount, setPendingBingoCount] = useState(0)
+
+  const refreshPendingCount = useCallback(async () => {
+    if (!roomId) return
+    const { data: cards } = await supabase
+      .from('bingo_cards')
+      .select('id')
+      .eq('room_id', roomId)
+    if (!cards?.length) { setPendingBingoCount(0); return }
+    const { count } = await supabase
+      .from('bingo_marks')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .in('card_id', cards.map((c) => c.id))
+    setPendingBingoCount(count ?? 0)
+  }, [roomId])
+
+  useEffect(() => {
+    if (!isHost || !roomId) return
+    refreshPendingCount()
+  }, [isHost, roomId, refreshPendingCount])
+
+  useEffect(() => {
+    if (!isHost || !roomId) return
+
+    const channel = supabase
+      .channel(`live-bingo-host:${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bingo_marks' },
+        async (payload) => {
+          const mark = payload.new as { card_id: string; square_index: number; status: string }
+          const { data: card } = await supabase
+            .from('bingo_cards')
+            .select()
+            .eq('id', mark.card_id)
+            .eq('room_id', roomId)
+            .maybeSingle()
+          if (!card) return
+
+          const markerPlayer = players.find((p) => p.id === card.player_id)
+          const playerName = markerPlayer?.name ?? 'Someone'
+
+          const squareId = card.squares[mark.square_index]
+          const { data: square } = await supabase
+            .from('bingo_squares')
+            .select('short_text')
+            .eq('id', squareId)
+            .maybeSingle()
+          const squareText = (square as { short_text: string } | null)?.short_text ?? 'a square'
+
+          showToast(`${playerName} marked: ${squareText}`, 'warning')
+          setPendingBingoCount((prev) => prev + 1)
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bingo_marks' },
+        () => { refreshPendingCount() },
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [isHost, roomId, players, showToast, refreshPendingCount])
+
+  // ── Winner announcement queue ─────────────────────────────────────────────
+  //
+  // seenWinnerCategoryIds: initialized on first data load with all already-
+  // announced categories. Subsequent category updates are checked against it;
+  // new winners get queued. This prevents replaying history on page load.
+
+  const [announcementQueue, setAnnouncementQueue] = useState<AnnouncementData[]>([])
+  const seenWinnerCategoryIds = useRef<Set<number> | null>(null)
+
+  useEffect(() => {
+    if (scores.isLoading) return
+
+    if (seenWinnerCategoryIds.current === null) {
+      // First load — mark all currently-announced categories as already seen
+      seenWinnerCategoryIds.current = new Set(
+        scores.categories
+          .filter((c) => c.winner_id != null)
+          .map((c) => c.id),
+      )
+      return
+    }
+
+    // Detect newly-announced categories
+    scores.categories.forEach((cat) => {
+      if (cat.winner_id == null) return
+      if (seenWinnerCategoryIds.current!.has(cat.id)) return
+
+      seenWinnerCategoryIds.current!.add(cat.id)
+
+      const winner = scores.nominees.find((n) => n.id === cat.winner_id)
+      if (!winner) return
+
+      // Confidence impact for current player
+      const myPick = scores.confidencePicks.find(
+        (p) => p.player_id === currentPlayerId && p.category_id === cat.id,
+      )
+      const pickedNominee = myPick
+        ? scores.nominees.find((n) => n.id === myPick.nominee_id)
+        : null
+      const confidenceResult = myPick
+        ? {
+            pickedName: pickedNominee?.name ?? 'Unknown',
+            confidence: myPick.confidence,
+            isCorrect: myPick.is_correct === true,
+          }
+        : null
+
+      // Draft impact
+      const { playerId: draftPlayerId, points: draftPoints } = findDraftPointsForWinner(
+        cat.id,
+        cat.winner_id!,
+        scores.categories,
+        scores.nominees,
+        scores.draftEntities,
+        scores.draftPicks,
+      )
+      const draftPlayer = draftPlayerId ? players.find((p) => p.id === draftPlayerId) : null
+      const draftResult = draftPlayer
+        ? {
+            playerName: draftPlayer.name,
+            playerColor: draftPlayer.color ?? '#ffffff',
+            points: draftPoints,
+            isCurrentPlayer: draftPlayerId === currentPlayerId,
+          }
+        : null
+
+      setAnnouncementQueue((prev) => [
+        ...prev,
+        {
+          categoryName: cat.name,
+          winnerName: winner.name,
+          winnerFilm: winner.film_name ?? '',
+          confidenceResult,
+          draftResult,
+        },
+      ])
+    })
+  }, [
+    scores.categories,
+    scores.isLoading,
+    scores.nominees,
+    scores.confidencePicks,
+    scores.draftPicks,
+    scores.draftEntities,
+    currentPlayerId,
+    players,
+  ])
+
+  // ── End Ceremony ─────────────────────────────────────────────────────────
+
+  const [isEndingCeremony, setIsEndingCeremony] = useState(false)
+
+  async function handleEndCeremony() {
+    if (!room || isEndingCeremony) return
+    setIsEndingCeremony(true)
+    const { error } = await supabase
+      .from('rooms')
+      .update({ phase: 'finished' })
+      .eq('id', room.id)
+    if (error) {
+      // Reset flag so host can retry
+      setIsEndingCeremony(false)
+    }
+    // Navigation handled by phase watcher below
+  }
+
+  // ── Phase navigation ──────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!room) return
+    if (room.phase === 'hot_takes') navigate(`/room/${code}/hot-take`)
+    if (room.phase === 'morning_after' || room.phase === 'finished') {
+      navigate(`/room/${code}/results`)
+    }
+  }, [room?.phase, code, navigate])
+
+  function selectTab(next: number) {
+    setTabState((prev) => ({
+      tab: next,
+      direction: next > prev.tab ? 1 : -1,
+    }))
+  }
+
+  return (
+    <>
+      {showBingoExplainer && (
+        <PhaseExplainer phase="bingo" onContinue={handleBingoExplainerContinue} />
+      )}
+      <div
+        className="flex flex-col bg-deep-navy"
+        style={{ height: 'calc(100vh - 3rem)' }}
+      >
+        {/* Scrollable tab content */}
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence initial={false} custom={direction}>
+            {tab === 0 && (
+              <motion.div
+                key="home"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <HomeTab
+                  categories={scores.categories}
+                  nominees={scores.nominees}
+                  confidencePicks={scores.confidencePicks}
+                  draftPicks={scores.draftPicks}
+                  draftEntities={scores.draftEntities}
+                  leaderboard={scores.leaderboard}
+                  onNavigateToWinnersTab={() => selectTab(3)}
+                  onNavigateToBingo={handleNavigateToBingo}
+                />
+              </motion.div>
+            )}
+
+            {tab === 1 && roomId && (
+              <motion.div
+                key="bingo"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <div className="px-4 pb-6">
+                  <BingoTab
+                    roomId={roomId}
+                    isHost={isHost}
+                    categories={scores.categories}
+                    nominees={scores.nominees}
+                    leaderboard={scores.leaderboard}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {tab === 2 && (
+              <motion.div
+                key="scores"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <div className="px-4 pb-6">
+                  <ScoresTab
+                    leaderboard={scores.leaderboard}
+                    activityFeed={scores.activityFeed}
+                    currentPlayerId={currentPlayerId}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {tab === 3 && roomId && (
+              <motion.div
+                key="winners"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <div className="px-4 pb-6">
+                  <WinnersTab
+                    roomId={roomId}
+                    isHost={isHost}
+                    onEndCeremony={handleEndCeremony}
+                    isEndingCeremony={isEndingCeremony}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {tab === 4 && (
+              <motion.div
+                key="my-picks"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <div className="px-4 pb-6">
+                  <MyPicksTab
+                    currentPlayerId={currentPlayerId}
+                    leaderboard={scores.leaderboard}
+                    categories={scores.categories}
+                    nominees={scores.nominees}
+                    confidencePicks={scores.confidencePicks}
+                    draftPicks={scores.draftPicks}
+                    draftEntities={scores.draftEntities}
+                    onSwitchToBingo={() => selectTab(1)}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {tab === 5 && (
+              <motion.div
+                key="films"
+                custom={direction}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={tabTransition}
+                className="absolute inset-0 overflow-y-auto"
+              >
+                <div className="px-4 py-6 pb-24 max-w-md mx-auto">
+                  <BrowseSection />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Bottom tab bar */}
+        <TabBar activeTab={tab} onSelect={selectTab} />
+      </div>
+
+      {/* Winner announcements */}
+      <AnimatePresence>
+        {announcementQueue[0] && (
+          <WinnerAnnouncement
+            key={`${announcementQueue[0].categoryName}-${announcementQueue[0].winnerName}`}
+            announcement={announcementQueue[0]}
+            onDismiss={() => setAnnouncementQueue((q) => q.slice(1))}
+          />
+        )}
+      </AnimatePresence>
+
+      <Toast toast={toast} onDismiss={dismissToast} />
+    </>
+  )
+}

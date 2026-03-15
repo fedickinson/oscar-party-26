@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-oscar-gold: #D4AF37;
+  --color-oscar-gold-light: #E8C547;
+  --color-deep-navy: #0A0E27;
+  --color-midnight: #12163A;
+  --color-glass-white: rgba(255, 255, 255, 0.1);
+  --color-glass-border: rgba(255, 255, 255, 0.15);
+  --font-family-sans: 'Inter', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, var(--color-deep-navy) 0%, var(--color-midnight) 100%);
+  min-height: 100vh;
+  color: white;
+  font-family: var(--font-family-sans);
+}
