@@ -10,7 +10,7 @@
 
 The invite page sent to players before the ceremony. Built as a standalone HTML file using the same design system as the app.
 
-Open `teaser.html` in a browser, or [view the source](./teaser.html). If this repo has GitHub Pages enabled, it renders live at `/teaser.html`.
+Open `teaser.html` in a browser, or [view it live on GitHub Pages](https://fedickinson.github.io/oscar-party-26/teaser.html).
 
 ---
 
