@@ -51,6 +51,7 @@ export interface ScoredPlayer {
   confidenceScore: number
   bingoScore: number
   totalScore: number
+  rank: number
 }
 
 // ─── scoreConfidencePick ──────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ export function computeLeaderboard(
 ): ScoredPlayer[] {
   const announcedCategories = categories.filter((c) => c.winner_id != null)
 
-  return players
+  const sorted = players
     .map((player) => {
       // ── Confidence score ──────────────────────────────────────────────────
       // Sum of confidence values for every pick where is_correct === true.
@@ -235,7 +236,22 @@ export function computeLeaderboard(
 
       const totalScore = confidenceScore + ensembleScore + bingoScore
 
-      return { player, ensembleScore, confidenceScore, bingoScore, totalScore }
+      return { player, ensembleScore, confidenceScore, bingoScore, totalScore, rank: 0 }
     })
     .sort((a, b) => b.totalScore - a.totalScore)
+
+  // Assign ranks using standard competition ranking (1224):
+  // Tied players share the same rank; the next rank skips ahead.
+  // e.g. two players tied at #1 both get rank 1, the next gets rank 3.
+  let currentRank = 1
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i].totalScore === sorted[i - 1].totalScore) {
+      sorted[i].rank = sorted[i - 1].rank
+    } else {
+      sorted[i].rank = currentRank
+    }
+    currentRank++
+  }
+
+  return sorted
 }

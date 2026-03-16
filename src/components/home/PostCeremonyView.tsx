@@ -12,15 +12,16 @@
  * Receives all computed data as props — no Supabase calls here.
  */
 
-import { useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Download, Loader2, Share2, Swords, Trophy, TrendingUp } from 'lucide-react'
+import { Check, ChevronDown, Download, Grid3X3, Loader2, Share2, Swords, Trophy, TrendingUp } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import Avatar from '../Avatar'
 import ScoreTimeline from './ScoreTimeline'
 import TurningPoints from './TurningPoints'
 import MiniTimelines from './MiniTimelines'
-import type { PlayerRow } from '../../types/database'
+import BingoCard from '../bingo/BingoCard'
+import type { BingoMarkRow, BingoSquareRow, PlayerRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
@@ -38,6 +39,9 @@ interface Props {
   isGeneratingRecap?: boolean
   onShareResults?: () => void
   isCopied?: boolean
+  bingoSquares?: (BingoSquareRow | null)[]
+  bingoMarks?: BingoMarkRow[]
+  bingoLines?: number[][]
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -58,8 +62,12 @@ export default function PostCeremonyView({
   isGeneratingRecap,
   onShareResults,
   isCopied,
+  bingoSquares,
+  bingoMarks,
+  bingoLines,
 }: Props) {
   const confettiFired = useRef(false)
+  const [bingoExpanded, setBingoExpanded] = useState(false)
 
   // Fire three-burst confetti cannon on mount
   useEffect(() => {
@@ -134,7 +142,8 @@ export default function PostCeremonyView({
     { x: '35%', delay: 2.1,  duration: 7.4, size: 2 },
   ]
 
-  const winner = leaderboard[0]
+  const winners = leaderboard.filter((e) => e.rank === 1)
+  const isTie = winners.length > 1
 
   // Rank medal colors for top 3
   const rankColors: Record<number, string> = {
@@ -210,39 +219,64 @@ export default function PostCeremonyView({
       </div>
 
       {/* ── 2. Champion hero card ─────────────────────────────────────────── */}
-      {winner && (
+      {winners.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.2 }}
           className="relative z-10 backdrop-blur-xl rounded-3xl overflow-hidden"
-          style={{
+          style={isTie && winners.length >= 2 ? {
+            background: 'linear-gradient(150deg, rgba(25,20,5,0.98) 0%, rgba(18,14,4,0.98) 50%, rgba(10,14,39,0.98) 100%)',
+            border: '1px solid transparent',
+            backgroundClip: 'padding-box',
+            boxShadow: `0 0 90px 16px rgba(212,175,55,0.20), 0 0 48px 6px rgba(212,175,55,0.13), 0 8px 48px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(212,175,55,0.45)`,
+          } : {
             background: 'linear-gradient(150deg, rgba(25,20,5,0.98) 0%, rgba(18,14,4,0.98) 50%, rgba(10,14,39,0.98) 100%)',
             border: '1px solid rgba(212,175,55,0.5)',
             boxShadow: '0 0 80px 12px rgba(212,175,55,0.14), 0 0 40px 4px rgba(212,175,55,0.10), 0 8px 48px rgba(0,0,0,0.55)',
           }}
         >
+          {/* Tie: dual-color side-split glow overlay */}
+          {isTie && winners.length >= 2 && (
+            <motion.div
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              style={{
+                background: `linear-gradient(90deg, ${getPlayerColor(winners[0].player.avatar_id)}33 0%, transparent 45%, transparent 55%, ${getPlayerColor(winners[1].player.avatar_id)}33 100%)`,
+              }}
+              animate={{ opacity: [0.55, 1, 0.55] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
+
           {/* Pulsing outer glow ring */}
           <motion.div
             className="absolute inset-0 rounded-3xl pointer-events-none"
-            animate={{
+            animate={isTie ? {
+              boxShadow: [
+                '0 0 40px 6px rgba(212,175,55,0.14)',
+                '0 0 72px 18px rgba(212,175,55,0.28)',
+                '0 0 40px 6px rgba(212,175,55,0.14)',
+              ],
+            } : {
               boxShadow: [
                 '0 0 32px 4px rgba(212,175,55,0.10)',
                 '0 0 56px 12px rgba(212,175,55,0.20)',
                 '0 0 32px 4px rgba(212,175,55,0.10)',
               ],
             }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: isTie ? 2.2 : 2.8, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Top accent bar */}
+          {/* Top accent bar — dual-color split for ties */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.55, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="h-0.5 origin-left"
             style={{
-              background: 'linear-gradient(90deg, transparent, #D4AF37 20%, #F5E6A3 50%, #D4AF37 80%, transparent)',
+              background: isTie && winners.length >= 2
+                ? `linear-gradient(90deg, transparent 0%, ${getPlayerColor(winners[0].player.avatar_id)} 15%, ${getPlayerColor(winners[0].player.avatar_id)}cc 42%, #F5E6A3 50%, ${getPlayerColor(winners[1].player.avatar_id)}cc 58%, ${getPlayerColor(winners[1].player.avatar_id)} 85%, transparent 100%)`
+                : 'linear-gradient(90deg, transparent, #D4AF37 20%, #F5E6A3 50%, #D4AF37 80%, transparent)',
             }}
           />
 
@@ -255,15 +289,36 @@ export default function PostCeremonyView({
             animate={{ x: ['-140%', '240%'] }}
             transition={{ duration: 1.3, delay: 0.55, ease: 'easeOut' }}
           />
-          {/* Slow repeating shimmer */}
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(108deg, transparent 30%, rgba(212,175,55,0.06) 50%, transparent 70%)',
-            }}
-            animate={{ x: ['-140%', '240%'] }}
-            transition={{ duration: 2.8, delay: 2.8, repeat: Infinity, repeatDelay: 4.5, ease: 'easeInOut' }}
-          />
+          {/* Slow repeating shimmer — dual sweep for ties */}
+          {isTie ? (
+            <>
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(108deg, transparent 30%, rgba(212,175,55,0.06) 50%, transparent 70%)',
+                }}
+                animate={{ x: ['-140%', '240%'] }}
+                transition={{ duration: 2.8, delay: 2.8, repeat: Infinity, repeatDelay: 5.5, ease: 'easeInOut' }}
+              />
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(252deg, transparent 30%, rgba(212,175,55,0.05) 50%, transparent 70%)',
+                }}
+                animate={{ x: ['240%', '-140%'] }}
+                transition={{ duration: 2.8, delay: 5.6, repeat: Infinity, repeatDelay: 5.5, ease: 'easeInOut' }}
+              />
+            </>
+          ) : (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(108deg, transparent 30%, rgba(212,175,55,0.06) 50%, transparent 70%)',
+              }}
+              animate={{ x: ['-140%', '240%'] }}
+              transition={{ duration: 2.8, delay: 2.8, repeat: Infinity, repeatDelay: 4.5, ease: 'easeInOut' }}
+            />
+          )}
 
           {/* Radial gold glow at center */}
           <div
@@ -281,63 +336,141 @@ export default function PostCeremonyView({
               transition={{ type: 'spring', stiffness: 380, damping: 20, delay: 0.3 }}
               className="flex justify-center mb-5"
             >
-              <div
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.10) 100%)',
-                  border: '1px solid rgba(212,175,55,0.45)',
-                  boxShadow: '0 0 16px 2px rgba(212,175,55,0.18)',
-                }}
-              >
-                <Trophy size={10} className="text-oscar-gold" />
-                <span className="text-[10px] font-extrabold text-oscar-gold uppercase tracking-[0.22em]">
-                  Tonight's Champion
-                </span>
-              </div>
+              {isTie ? (
+                <motion.div
+                  className="flex items-center gap-2 px-5 py-1.5 rounded-full"
+                  animate={{ boxShadow: [
+                    '0 0 18px 3px rgba(212,175,55,0.20)',
+                    '0 0 30px 7px rgba(212,175,55,0.35)',
+                    '0 0 18px 3px rgba(212,175,55,0.20)',
+                  ]}}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(212,175,55,0.28) 0%, rgba(212,175,55,0.14) 100%)',
+                    border: '1px solid rgba(212,175,55,0.55)',
+                  }}
+                >
+                  <Trophy size={11} className="text-oscar-gold flex-shrink-0" />
+                  <span className="text-[11px] font-extrabold text-oscar-gold uppercase tracking-[0.24em]">
+                    Co-Champions
+                  </span>
+                  <Trophy size={11} className="text-oscar-gold flex-shrink-0" />
+                </motion.div>
+              ) : (
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.10) 100%)',
+                    border: '1px solid rgba(212,175,55,0.45)',
+                    boxShadow: '0 0 16px 2px rgba(212,175,55,0.18)',
+                  }}
+                >
+                  <Trophy size={10} className="text-oscar-gold" />
+                  <span className="text-[10px] font-extrabold text-oscar-gold uppercase tracking-[0.22em]">
+                    Tonight's Champion
+                  </span>
+                </div>
+              )}
             </motion.div>
 
-            {/* Avatar with bloom glow */}
+            {/* Avatar(s) with bloom glow */}
             <motion.div
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 320, damping: 22, delay: 0.38 }}
               className="flex justify-center mb-4"
             >
-              <div className="relative">
-                {/* Outer bloom */}
-                <motion.div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    inset: '-14px',
-                    background: `radial-gradient(circle, ${getPlayerColor(winner.player.avatar_id)}55 0%, transparent 72%)`,
-                    filter: 'blur(12px)',
-                  }}
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                {/* Gold ring pulse */}
-                <motion.div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    inset: '-5px',
-                    border: '2px solid rgba(212,175,55,0.55)',
-                    borderRadius: '9999px',
-                  }}
-                  animate={{ opacity: [0.4, 0.85, 0.4], scale: [0.97, 1.03, 0.97] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                <Avatar avatarId={winner.player.avatar_id} size="xl" emotion="happy" />
-              </div>
+              {isTie ? (
+                <div className="flex items-center justify-center gap-2">
+                  {winners.map((w, idx) => {
+                    // Each avatar pulse is phase-offset by half a cycle so they breathe in opposite sync
+                    const phaseDelay = idx % 2 === 0 ? 0 : 1.2
+                    const playerColor = getPlayerColor(w.player.avatar_id)
+                    return (
+                      <Fragment key={w.player.id}>
+                        <div className="relative flex-shrink-0">
+                          {/* Outer bloom — avatar's own color */}
+                          <motion.div
+                            className="absolute rounded-full pointer-events-none"
+                            style={{
+                              inset: '-14px',
+                              background: `radial-gradient(circle, ${playerColor}55 0%, transparent 72%)`,
+                              filter: 'blur(12px)',
+                            }}
+                            animate={{ opacity: [0.45, 1, 0.45] }}
+                            transition={{ duration: 2.4, delay: phaseDelay, repeat: Infinity, ease: 'easeInOut' }}
+                          />
+                          {/* Avatar-colored ring pulse — phase-offset */}
+                          <motion.div
+                            className="absolute rounded-full pointer-events-none"
+                            style={{
+                              inset: '-4px',
+                              border: `2px solid ${playerColor}99`,
+                              borderRadius: '9999px',
+                            }}
+                            animate={{ opacity: [0.35, 0.9, 0.35], scale: [0.97, 1.04, 0.97] }}
+                            transition={{ duration: 2.4, delay: phaseDelay, repeat: Infinity, ease: 'easeInOut' }}
+                          />
+                          <Avatar
+                            avatarId={w.player.avatar_id}
+                            size="lg"
+                            emotion="happy"
+                          />
+                        </div>
+                        {/* "TIE" label between the two avatars (only after first, before last) */}
+                        {idx < winners.length - 1 && (
+                          <div className="flex flex-col items-center gap-1 flex-shrink-0 px-1">
+                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.45), transparent)' }} />
+                            <span
+                              className="text-[9px] font-extrabold tracking-[0.30em] uppercase"
+                              style={{ color: 'rgba(212,175,55,0.70)' }}
+                            >
+                              TIE
+                            </span>
+                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.45), transparent)' }} />
+                          </div>
+                        )}
+                      </Fragment>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="relative">
+                  {/* Outer bloom */}
+                  <motion.div
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      inset: '-14px',
+                      background: `radial-gradient(circle, ${getPlayerColor(winners[0].player.avatar_id)}55 0%, transparent 72%)`,
+                      filter: 'blur(12px)',
+                    }}
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                  {/* Gold ring pulse */}
+                  <motion.div
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      inset: '-5px',
+                      border: '2px solid rgba(212,175,55,0.55)',
+                      borderRadius: '9999px',
+                    }}
+                    animate={{ opacity: [0.4, 0.85, 0.4], scale: [0.97, 1.03, 0.97] }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                  <Avatar avatarId={winners[0].player.avatar_id} size="xl" emotion="happy" />
+                </div>
+              )}
             </motion.div>
 
-            {/* Winner name */}
+            {/* Winner name(s) */}
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.5 }}
               className="text-2xl font-extrabold text-white leading-tight"
             >
-              {winner.player.name}
+              {winners.map((w) => w.player.name).join(' & ')}
             </motion.p>
 
             {/* Score */}
@@ -345,18 +478,30 @@ export default function PostCeremonyView({
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.58 }}
-              className="mt-2 mb-5"
+              className="mt-2 mb-5 flex flex-col items-center gap-1"
             >
-              <span
-                className="text-5xl font-black tabular-nums text-oscar-gold"
-                style={{ textShadow: '0 0 40px rgba(212,175,55,0.5), 0 0 80px rgba(212,175,55,0.2)' }}
-              >
-                {winner.totalScore}
-              </span>
-              <span className="text-lg font-semibold text-oscar-gold/45 ml-2">points</span>
+              {isTie && (
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.40))' }} />
+                  <span className="text-[9px] font-extrabold tracking-[0.28em] uppercase" style={{ color: 'rgba(212,175,55,0.55)' }}>
+                    tied at
+                  </span>
+                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(212,175,55,0.40), transparent)' }} />
+                </div>
+              )}
+              <div>
+                <span
+                  className="text-5xl font-black tabular-nums text-oscar-gold"
+                  style={{ textShadow: '0 0 40px rgba(212,175,55,0.5), 0 0 80px rgba(212,175,55,0.2)' }}
+                >
+                  {winners[0].totalScore}
+                </span>
+                <span className="text-lg font-semibold text-oscar-gold/45 ml-2">points</span>
+              </div>
             </motion.div>
 
-            {/* Score breakdown chips */}
+            {/* Score breakdown chips (hidden on tie since each winner has different breakdowns) */}
+            {!isTie && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -364,9 +509,9 @@ export default function PostCeremonyView({
               className="flex justify-center gap-2.5"
             >
               {[
-                { label: 'Draft', value: winner.ensembleScore },
-                { label: 'Picks', value: winner.confidenceScore },
-                { label: 'Bingo', value: winner.bingoScore },
+                { label: 'Draft', value: winners[0].ensembleScore },
+                { label: 'Picks', value: winners[0].confidenceScore },
+                { label: 'Bingo', value: winners[0].bingoScore },
               ].map(({ label, value }) => (
                 <div
                   key={label}
@@ -381,6 +526,7 @@ export default function PostCeremonyView({
                 </div>
               ))}
             </motion.div>
+            )}
           </div>
 
           {/* Bottom accent bar */}
@@ -401,8 +547,8 @@ export default function PostCeremonyView({
         <p className="text-[10px] text-white/35 uppercase tracking-[0.18em] mb-3 font-medium">Full Standings</p>
         <div className="space-y-2">
           {leaderboard.map((entry, i) => {
-            const rank = i + 1
-            const medalColor = rankColors[rank]
+            const medalColor = rankColors[entry.rank]
+            const rankTied = leaderboard.filter((e) => e.rank === entry.rank).length > 1
             return (
               <motion.div
                 key={entry.player.id}
@@ -411,49 +557,66 @@ export default function PostCeremonyView({
                 transition={{ type: 'spring', stiffness: 320, damping: 28, delay: 0.32 + i * 0.07 }}
                 className={[
                   'flex items-center gap-3 px-3.5 py-3 rounded-2xl border relative overflow-hidden',
-                  i === 0
+                  entry.rank === 1
                     ? 'bg-oscar-gold/8 border-oscar-gold/25'
                     : 'bg-white/4 border-white/7',
                 ].join(' ')}
                 style={
-                  i === 0
+                  entry.rank === 1
                     ? { boxShadow: '0 0 24px 2px rgba(212,175,55,0.07)' }
                     : undefined
                 }
               >
-                {/* Left accent bar for top 3 */}
-                {rank <= 3 && (
+                {/* Left accent bar for top 3 — dual-color for tied entries */}
+                {entry.rank <= 3 && (
                   <div
                     className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl"
                     style={{
-                      background: `linear-gradient(180deg, ${medalColor}88 0%, ${medalColor}33 100%)`,
+                      background: rankTied
+                        ? `linear-gradient(180deg, ${medalColor}cc 0%, ${medalColor}66 50%, ${medalColor}cc 100%)`
+                        : `linear-gradient(180deg, ${medalColor}88 0%, ${medalColor}33 100%)`,
                     }}
                   />
                 )}
 
-                {/* Rank badge */}
-                <div className="w-6 flex items-center justify-center flex-shrink-0">
-                  {medalColor ? (
+                {/* Rank badge — show "=" prefix for ties */}
+                <div className="w-7 flex items-center justify-center flex-shrink-0">
+                  {rankTied ? (
+                    <div className="flex flex-col items-center leading-none">
+                      <span
+                        className="text-[8px] font-extrabold tracking-tight"
+                        style={{ color: medalColor ?? 'rgba(212,175,55,0.65)', opacity: 0.75 }}
+                      >
+                        =
+                      </span>
+                      <span
+                        className="text-[11px] font-extrabold tabular-nums"
+                        style={{ color: medalColor ?? 'rgba(255,255,255,0.25)' }}
+                      >
+                        {entry.rank}
+                      </span>
+                    </div>
+                  ) : medalColor ? (
                     <span
                       className="text-[11px] font-extrabold tabular-nums"
                       style={{ color: medalColor }}
                     >
-                      {rank}
+                      {entry.rank}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-white/25 font-bold tabular-nums">{rank}</span>
+                    <span className="text-[11px] text-white/25 font-bold tabular-nums">{entry.rank}</span>
                   )}
                 </div>
 
                 <Avatar
                   avatarId={entry.player.avatar_id}
                   size="sm"
-                  emotion={i === 0 ? 'happy' : 'neutral'}
+                  emotion={entry.rank === 1 ? 'happy' : 'neutral'}
                 />
 
                 <span className={[
                   'text-sm font-semibold flex-1 truncate',
-                  i === 0 ? 'text-white' : 'text-white/65',
+                  entry.rank === 1 ? 'text-white' : 'text-white/65',
                 ].join(' ')}>
                   {entry.player.name}
                 </span>
@@ -587,6 +750,68 @@ export default function PostCeremonyView({
             </p>
           </div>
           <p className="text-sm text-white/65 leading-relaxed">{finalStretchNarrative}</p>
+        </motion.div>
+      )}
+
+      {/* ── 8. My Bingo Card ───────────────────────────────────────── */}
+      {bingoSquares && bingoSquares.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 28, delay: 0.65 }}
+          className="relative z-10 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden"
+        >
+          {/* Header row — tappable toggle */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setBingoExpanded((v) => !v)}
+            className="w-full flex items-center gap-2 px-4 py-3.5"
+          >
+            <div className="w-7 h-7 rounded-lg bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
+              <Grid3X3 size={13} className="text-oscar-gold/80" />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/40 flex-1 text-left">
+              My Bingo Card
+            </p>
+            {(bingoLines?.length ?? 0) > 0 && (
+              <span className="text-[10px] font-bold text-oscar-gold/70 tabular-nums mr-1">
+                {bingoLines!.length} {bingoLines!.length === 1 ? 'Bingo' : 'Bingos'}
+              </span>
+            )}
+            <motion.div
+              animate={{ rotate: bingoExpanded ? 180 : 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            >
+              <ChevronDown size={15} className="text-white/30" />
+            </motion.div>
+          </motion.button>
+
+          {/* Collapsible card */}
+          <AnimatePresence initial={false}>
+            {bingoExpanded && (
+              <motion.div
+                key="bingo-card-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="px-3 pb-4 flex justify-center">
+                  <BingoCard
+                    squares={bingoSquares}
+                    marks={bingoMarks ?? []}
+                    bingoLines={bingoLines ?? []}
+                    disabled
+                    selectedIndex={null}
+                    onSelect={() => {}}
+                    onDeselect={() => {}}
+                    onConfirm={async () => {}}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 

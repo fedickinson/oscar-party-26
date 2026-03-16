@@ -137,10 +137,10 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
               {/* Scores */}
               {(film.rtScore || film.metacritic) && (
                 <div className="flex gap-2">
-                  {film.rtScore > 0 && (
+                  {film.rtScore != null && film.rtScore > 0 && (
                     <ScorePill label="Rotten Tomatoes" value={film.rtScore} color="text-red-400" />
                   )}
-                  {film.metacritic > 0 && (
+                  {film.metacritic != null && film.metacritic > 0 && (
                     <ScorePill label="Metacritic" value={film.metacritic} color="text-yellow-400" />
                   )}
                   <div className="flex flex-col items-center px-3 py-2 bg-white/5 border border-white/8 rounded-xl">

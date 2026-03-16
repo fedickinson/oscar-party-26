@@ -21,6 +21,7 @@ import { useRoomSubscription } from '../hooks/useRoom'
 import { useScores } from '../hooks/useScores'
 import { useRecap } from '../hooks/useRecap'
 import { useShareResults } from '../hooks/useShareResults'
+import { useBingo } from '../hooks/useBingo'
 import { supabase } from '../lib/supabase'
 import {
   buildPostShowPrompt,
@@ -43,6 +44,8 @@ export default function Results() {
   useRoomSubscription(room?.id)
 
   const scores = useScores(room?.id)
+
+  const bingo = useBingo(room?.id, scores.categories, scores.nominees)
 
   useEffect(() => {
     if (!loading && !player) navigate('/')
@@ -217,6 +220,9 @@ export default function Results() {
       isGeneratingRecap={isGenerating}
       onShareResults={() => shareResults(scores.leaderboard, players, room.code)}
       isCopied={isCopied}
+      bingoSquares={bingo.squares}
+      bingoMarks={bingo.marks}
+      bingoLines={bingo.bingoLines}
     />
   )
 }
