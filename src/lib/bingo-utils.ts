@@ -185,9 +185,11 @@ export function checkObjectiveCondition(
 ): boolean {
   const text = squareText.toLowerCase().trim()
 
-  const winnerIds = new Set(
-    categories.filter((c) => c.winner_id != null).map((c) => c.winner_id!),
-  )
+  const winnerIds = new Set<string>()
+  categories.filter((c) => c.winner_id != null).forEach((c) => {
+    winnerIds.add(c.winner_id!)
+    if (c.tie_winner_id) winnerIds.add(c.tie_winner_id)
+  })
   if (winnerIds.size === 0) return false
 
   const winningNominees = nominees.filter((n) => winnerIds.has(n.id))
@@ -224,10 +226,16 @@ export function checkObjectiveCondition(
 
     if (cat?.winner_id) {
       const winner = nominees.find((n) => n.id === cat.winner_id)
-      return winner
+      const tieWinner = cat.tie_winner_id ? nominees.find((n) => n.id === cat.tie_winner_id) : null
+      const matchesWinner = winner
         ? winner.name.toLowerCase().includes(personTarget) ||
             winner.film_name.toLowerCase().includes(personTarget)
         : false
+      const matchesTie = tieWinner
+        ? tieWinner.name.toLowerCase().includes(personTarget) ||
+            tieWinner.film_name.toLowerCase().includes(personTarget)
+        : false
+      return matchesWinner || matchesTie
     }
   }
 

@@ -44,6 +44,10 @@ export interface RecentResult {
   categoryPoints: number
   winnerName: string
   winnerFilm: string
+  /** Second winner name when there is a tie */
+  tieWinnerName: string | null
+  /** Second winner film when there is a tie */
+  tieWinnerFilm: string | null
   announcedAt: Date
 }
 
@@ -68,6 +72,10 @@ export interface WinnerFeedEntry {
   categoryPoints: number
   winnerName: string
   winnerFilm: string
+  /** Second winner name when there is a tie */
+  tieWinnerName: string | null
+  /** Second winner film when there is a tie */
+  tieWinnerFilm: string | null
   time: Date
   playerImpacts: PlayerImpact[]
 }
@@ -147,12 +155,16 @@ export function useScores(roomId: string | undefined): ScoresState {
       supabase.from('room_winners').select().eq('room_id', roomId),
     ]).then(async ([catRes, nomRes, cpRes, dpRes, deRes, bcRes, rwRes]) => {
       if (catRes.data) {
-        const winnerMap = new Map(
-          (rwRes.data ?? []).map((rw: RoomWinnerRow) => [rw.category_id, rw.winner_id]),
+        const winnerMap = new Map<number, { winner_id: string; tie_winner_id: string | null }>(
+          (rwRes.data ?? []).map((rw: RoomWinnerRow) => [
+            rw.category_id,
+            { winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id },
+          ]),
         )
         const mergedCats = catRes.data.map((c) => ({
           ...c,
-          winner_id: winnerMap.get(c.id) ?? null,
+          winner_id: winnerMap.get(c.id)?.winner_id ?? null,
+          tie_winner_id: winnerMap.get(c.id)?.tie_winner_id ?? null,
         }))
         setCategories(mergedCats)
         categoriesRef.current = mergedCats
@@ -198,13 +210,17 @@ export function useScores(roomId: string | undefined): ScoresState {
 
       prevCategoriesRef.current.set(rw.category_id, rw.winner_id)
 
-      // Update categories state with the per-room winner
+      // Update categories state with the per-room winner (including tie)
       setCategories((prev) =>
-        prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: rw.winner_id } : c)),
+        prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id } : c)),
       )
 
       const winner = nomineesRef.current.find((n) => n.id === rw.winner_id)
       if (!winner) return
+
+      const tieWinner = rw.tie_winner_id
+        ? nomineesRef.current.find((n) => n.id === rw.tie_winner_id)
+        : null
 
       const now = new Date()
 
@@ -216,6 +232,8 @@ export function useScores(roomId: string | undefined): ScoresState {
             categoryPoints: cat.points,
             winnerName: winner.name,
             winnerFilm: winner.film_name,
+            tieWinnerName: tieWinner?.name ?? null,
+            tieWinnerFilm: tieWinner?.film_name ?? null,
             announcedAt: now,
           },
           ...prev,
@@ -224,8 +242,10 @@ export function useScores(roomId: string | undefined): ScoresState {
 
       // Build per-player impacts for activity feed
       const categoriesWithUpdate = categoriesRef.current.map((c) =>
-        c.id === rw.category_id ? { ...c, winner_id: rw.winner_id } : c,
+        c.id === rw.category_id ? { ...c, winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id } : c,
       )
+
+      // Draft impact for first winner
       const { playerId: draftWinnerId, points: draftPoints } =
         findDraftPointsForWinner(
           rw.category_id,
@@ -235,6 +255,22 @@ export function useScores(roomId: string | undefined): ScoresState {
           draftEntitiesRef.current,
           draftPicksRef.current,
         )
+
+      // Draft impact for tie winner (if any)
+      let draftTieWinnerId: string | null = null
+      let draftTiePoints = 0
+      if (rw.tie_winner_id) {
+        const tieResult = findDraftPointsForWinner(
+          rw.category_id,
+          rw.tie_winner_id,
+          categoriesWithUpdate,
+          nomineesRef.current,
+          draftEntitiesRef.current,
+          draftPicksRef.current,
+        )
+        draftTieWinnerId = tieResult.playerId
+        draftTiePoints = tieResult.points
+      }
 
       let draftedEntityName: string | null = null
       const matchingEntity = draftEntitiesRef.current.find((entity) => {
@@ -257,12 +293,17 @@ export function useScores(roomId: string | undefined): ScoresState {
         const confPick = confidencePicksRef.current.find(
           (p) => p.player_id === player.id && p.category_id === rw.category_id,
         )
-        const confidenceCorrect = confPick ? confPick.nominee_id === rw.winner_id : false
+        // In a tie, picks matching EITHER winner are correct
+        const confidenceCorrect = confPick
+          ? (confPick.nominee_id === rw.winner_id || confPick.nominee_id === rw.tie_winner_id)
+          : false
         const confidenceDelta = confidenceCorrect ? confPick!.confidence : 0
         const pickedNominee = confPick
           ? nomineesRef.current.find((n) => n.id === confPick.nominee_id)
           : null
-        const draftDelta = draftWinnerId === player.id ? draftPoints : 0
+        // Combine draft points from both winners (a player could theoretically draft both entities)
+        let draftDelta = draftWinnerId === player.id ? draftPoints : 0
+        if (draftTieWinnerId === player.id) draftDelta += draftTiePoints
 
         return {
           playerId: player.id,
@@ -285,6 +326,8 @@ export function useScores(roomId: string | undefined): ScoresState {
           categoryPoints: cat.points,
           winnerName: winner.name,
           winnerFilm: winner.film_name,
+          tieWinnerName: tieWinner?.name ?? null,
+          tieWinnerFilm: tieWinner?.film_name ?? null,
           time: now,
           playerImpacts,
         },
@@ -295,7 +338,7 @@ export function useScores(roomId: string | undefined): ScoresState {
     function handleWinnerUndo(categoryId: number) {
       prevCategoriesRef.current.set(categoryId, null)
       setCategories((prev) =>
-        prev.map((c) => (c.id === categoryId ? { ...c, winner_id: null } : c)),
+        prev.map((c) => (c.id === categoryId ? { ...c, winner_id: null, tie_winner_id: null } : c)),
       )
       setRecentResults((prev) => prev.filter((r) => r.categoryId !== categoryId))
       setWinnerEntries((prev) => prev.filter((e) => e.categoryId !== categoryId))

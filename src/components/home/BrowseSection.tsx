@@ -5,16 +5,40 @@
  * Storylines and snubs are compact cards below the film list.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, AlertTriangle, BookOpen } from 'lucide-react'
+import { ChevronDown, ChevronUp, AlertTriangle, BookOpen, Clapperboard } from 'lucide-react'
 import {
   filmEncyclopedia,
   ceremonyStorylines,
   biggestSnubs,
   type FilmProfile,
+  type FilmCategory,
 } from '../../data/film-encyclopedia'
 import { FilmIcon } from '../../lib/film-icons'
+
+// ─── Category display config ─────────────────────────────────────────────────
+
+const SPECIALTY_SECTIONS: { category: FilmCategory; label: string }[] = [
+  { category: 'live-action-short', label: 'Live Action Shorts' },
+  { category: 'animated-short', label: 'Animated Shorts' },
+  { category: 'documentary-short', label: 'Documentary Shorts' },
+  { category: 'animated-feature', label: 'Animated Features' },
+  { category: 'documentary-feature', label: 'Documentary Features' },
+  { category: 'international-feature', label: 'International Features' },
+]
+
+function categoryBadgeLabel(cat: FilmCategory): string {
+  switch (cat) {
+    case 'live-action-short': return 'Live Action Short'
+    case 'animated-short': return 'Animated Short'
+    case 'documentary-short': return 'Doc Short'
+    case 'animated-feature': return 'Animated Feature'
+    case 'documentary-feature': return 'Doc Feature'
+    case 'international-feature': return 'International'
+    default: return 'Best Picture'
+  }
+}
 
 // Nomination-count → border accent: more noms = stronger gold
 function nomAccentClass(nominations: number): string {
@@ -24,13 +48,29 @@ function nomAccentClass(nominations: number): string {
   return 'border-white/10'
 }
 
-function FilmCard({ film }: { film: FilmProfile }) {
+interface FilmCardProps {
+  film: FilmProfile
+  highlighted?: boolean
+  forceExpanded?: boolean
+  cardRef?: React.Ref<HTMLDivElement>
+}
+
+function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }: FilmCardProps) {
   const [expanded, setExpanded] = useState(false)
+
+  // Force-expand when highlighted
+  useEffect(() => {
+    if (forceExpanded) setExpanded(true)
+  }, [forceExpanded])
 
   return (
     <motion.div
+      ref={cardRef}
       layout
-      className={['bg-white/5 backdrop-blur-lg border rounded-2xl overflow-hidden', nomAccentClass(film.nominations)].join(' ')}
+      className={[
+        'bg-white/5 backdrop-blur-lg border rounded-2xl overflow-hidden transition-shadow duration-700',
+        highlighted ? 'border-oscar-gold/60 shadow-[0_0_20px_3px_rgba(212,175,55,0.3)]' : nomAccentClass(film.nominations),
+      ].join(' ')}
     >
       {/* Collapsed header — always visible */}
       <motion.button
@@ -55,8 +95,14 @@ function FilmCard({ film }: { film: FilmProfile }) {
               <span className="text-xs text-white/35">{film.genre}</span>
             </div>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-xs font-medium text-emerald-400">RT {film.rtScore}%</span>
-              <span className="text-xs text-white/40">MC {film.metacritic}</span>
+              {film.rtScore != null ? (
+                <span className="text-xs font-medium text-emerald-400">RT {film.rtScore}%</span>
+              ) : (
+                <span className="text-xs text-white/30">RT N/A</span>
+              )}
+              {film.metacritic != null && (
+                <span className="text-xs text-white/40">MC {film.metacritic}</span>
+              )}
               {film.nominations < 10 && (
                 <span className="text-xs text-white/40">{film.nominations} noms</span>
               )}
@@ -86,15 +132,17 @@ function FilmCard({ film }: { film: FilmProfile }) {
               {/* Meta row */}
               <div className="flex items-center gap-3 flex-wrap text-xs text-white/50">
                 <span>{film.runtime}</span>
-                <span>{film.boxOffice}</span>
+                {film.boxOffice && <span>{film.boxOffice}</span>}
                 <span>{film.year}</span>
               </div>
 
               {/* Cast */}
+              {film.stars.length > 0 && (
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-white/35 mb-1">Cast</p>
                 <p className="text-sm text-white/75">{film.stars.join(', ')}</p>
               </div>
+              )}
 
               {/* Synopsis */}
               <div>
@@ -148,12 +196,71 @@ function FilmCard({ film }: { film: FilmProfile }) {
   )
 }
 
-export default function BrowseSection() {
+interface BrowseSectionProps {
+  /** When set, the matching film card auto-expands and scrolls into view with a gold highlight. */
+  highlightFilmTitle?: string | null
+  /** Called after the highlight animation finishes so the parent can clear state. */
+  onHighlightComplete?: () => void
+}
+
+export default function BrowseSection({ highlightFilmTitle, onHighlightComplete }: BrowseSectionProps = {}) {
   const [showStorylines, setShowStorylines] = useState(false)
   const [showSnubs, setShowSnubs] = useState(false)
+  const [showSpecialty, setShowSpecialty] = useState(false)
 
-  // Sort: most nominated first
-  const sortedFilms = [...filmEncyclopedia].sort((a, b) => b.nominations - a.nominations)
+  // Sort: most nominated first — main grid shows only best-picture entries
+  const sortedFilms = [...filmEncyclopedia]
+    .filter((f) => (f.category ?? 'best-picture') === 'best-picture')
+    .sort((a, b) => b.nominations - a.nominations)
+
+  // Specialty films: everything that is NOT best-picture
+  const specialtyFilms = filmEncyclopedia.filter(
+    (f) => f.category != null && f.category !== 'best-picture',
+  )
+
+  // All films combined for highlight search
+  const allFilms = [...filmEncyclopedia]
+
+  // Highlight: find the matching film by title (case-insensitive, partial match)
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(null)
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    if (!highlightFilmTitle) {
+      setActiveHighlight(null)
+      return
+    }
+
+    const target = highlightFilmTitle.toLowerCase()
+    const match = allFilms.find(
+      (f) => f.title.toLowerCase() === target || f.title.toLowerCase().includes(target) || target.includes(f.title.toLowerCase()),
+    )
+
+    // If the match is a specialty film, auto-expand the specialty section so the card is visible
+    if (match && match.category && match.category !== 'best-picture') {
+      setShowSpecialty(true)
+    }
+
+    if (match) {
+      setActiveHighlight(match.id)
+
+      // Scroll to the card after a brief delay so the tab switch + expand can complete
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const el = cardRefs.current.get(match.id)
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 150)
+      })
+
+      // Clear highlight after 3 seconds
+      const timer = setTimeout(() => {
+        setActiveHighlight(null)
+        onHighlightComplete?.()
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightFilmTitle])
 
   return (
     <div className="space-y-3">
@@ -165,8 +272,74 @@ export default function BrowseSection() {
       {/* Film cards */}
       <div className="space-y-2">
         {sortedFilms.map((film) => (
-          <FilmCard key={film.id} film={film} />
+          <FilmCard
+            key={film.id}
+            film={film}
+            highlighted={activeHighlight === film.id}
+            forceExpanded={activeHighlight === film.id}
+            cardRef={(el: HTMLDivElement | null) => {
+              if (el) cardRefs.current.set(film.id, el)
+              else cardRefs.current.delete(film.id)
+            }}
+          />
         ))}
+      </div>
+
+      {/* Shorts & Specialty */}
+      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden">
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowSpecialty((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3"
+        >
+          <div className="flex items-center gap-2">
+            <Clapperboard size={16} className="text-oscar-gold" />
+            <span className="text-sm font-semibold text-white/80">Shorts &amp; Specialty</span>
+            <span className="text-xs text-white/40">{specialtyFilms.length}</span>
+          </div>
+          {showSpecialty
+            ? <ChevronUp size={16} className="text-white/40" />
+            : <ChevronDown size={16} className="text-white/40" />
+          }
+        </motion.button>
+
+        <AnimatePresence initial={false}>
+          {showSpecialty && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-3 pt-1 space-y-4 border-t border-white/8">
+                {SPECIALTY_SECTIONS.map(({ category, label }) => {
+                  const films = specialtyFilms.filter((f) => f.category === category)
+                  if (films.length === 0) return null
+                  return (
+                    <div key={category}>
+                      <p className="text-[11px] uppercase tracking-wider text-oscar-gold/60 mb-2 mt-2">{label}</p>
+                      <div className="space-y-1.5">
+                        {films.map((film) => (
+                          <FilmCard
+                            key={film.id}
+                            film={film}
+                            highlighted={activeHighlight === film.id}
+                            forceExpanded={activeHighlight === film.id}
+                            cardRef={(el: HTMLDivElement | null) => {
+                              if (el) cardRefs.current.set(film.id, el)
+                              else cardRefs.current.delete(film.id)
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Storylines */}

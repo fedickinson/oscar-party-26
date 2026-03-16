@@ -31,6 +31,7 @@ interface Props {
   openSpotlight: (categoryId: number) => Promise<void>
   onEndCeremony: () => Promise<void>
   isEndingCeremony: boolean
+  onFilmLinkTap?: (filmTitle: string) => void
 }
 
 // ─── Category Info Modal ──────────────────────────────────────────────────────
@@ -342,7 +343,7 @@ function NextUpCard({
           {myNominee && myPick && (
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider text-oscar-gold/55 mb-0.5">Prestige</p>
+                <p className="text-[10px] uppercase tracking-wider text-oscar-gold/55 mb-0.5">My prestige pick</p>
                 <p className="text-sm text-white/85 font-medium truncate">{myNominee.name}</p>
                 {myNominee.film_name && myNominee.type !== 'film' && (
                   <div className="flex items-center gap-1">
@@ -359,7 +360,7 @@ function NextUpCard({
 
           {myDraftHere.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">Ensemble</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">My ensemble pick</p>
               <div className="flex flex-wrap gap-1.5">
                 {myDraftHere.map((e) => (
                   <span
@@ -421,7 +422,7 @@ function CollapsibleScores({ leaderboard }: { leaderboard: ScoredPlayer[] }) {
         className="w-full px-4 py-3 flex items-center justify-between gap-2"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold text-white/80 flex-shrink-0">Scores</span>
+          <span className="text-sm font-semibold text-white/80 flex-shrink-0">Scoreboard</span>
           {me && (
             <span className="text-sm font-bold text-oscar-gold flex-shrink-0">{me.totalScore} pts</span>
           )}
@@ -485,6 +486,7 @@ export default function LiveHomeView({
   openSpotlight,
   onEndCeremony,
   isEndingCeremony,
+  onFilmLinkTap,
 }: Props) {
   return (
     <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
@@ -508,7 +510,7 @@ export default function LiveHomeView({
       {/* Chat fills remaining vertical space — min-h-0 prevents flex overflow */}
       <div className="flex-1 flex flex-col min-h-0 px-4 pt-3" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         <p className="text-xs uppercase tracking-wider text-white/35 mb-2 px-1 flex-shrink-0">Chat</p>
-        <ChatSection fill />
+        <ChatSection fill onFilmLinkTap={onFilmLinkTap} />
       </div>
     </div>
   )

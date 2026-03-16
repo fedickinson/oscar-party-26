@@ -79,6 +79,18 @@ function getEntityStatus(
       draftPicks,
     )
     if (winnerId === playerId) return 'won'
+    // Check tie winner too
+    if (cat.tie_winner_id) {
+      const { playerId: tieWinnerId } = findDraftPointsForWinner(
+        catId,
+        cat.tie_winner_id,
+        categories,
+        nominees,
+        draftEntities,
+        draftPicks,
+      )
+      if (tieWinnerId === playerId) return 'won'
+    }
   }
 
   const hasLive = nominatedCatIds.some((catId) => {

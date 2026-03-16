@@ -326,9 +326,9 @@ function LiveStats({
       const winner = nominees.find((n) => n.id === cat.winner_id)
       if (!winner) return
 
-      // Confidence points earned in this category
+      // Confidence points earned in this category (match either winner in a tie)
       const confPoints = confidencePicks
-        .filter((cp) => cp.category_id === cat.id && cp.nominee_id === cat.winner_id)
+        .filter((cp) => cp.category_id === cat.id && (cp.nominee_id === cat.winner_id || cp.nominee_id === cat.tie_winner_id))
         .reduce((sum, cp) => sum + cp.confidence, 0)
 
       // Draft points: just the category points (simplified)

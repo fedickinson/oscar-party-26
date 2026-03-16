@@ -97,8 +97,8 @@ function AppInner() {
     <>
       <ReconnectBanner />
       <div
-        className="min-h-screen max-w-md mx-auto px-4 py-6"
-        style={{ overscrollBehavior: 'contain' }}
+        className="max-w-md mx-auto px-4 py-6"
+        style={{ minHeight: '100dvh', overscrollBehavior: 'none' }}
       >
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>

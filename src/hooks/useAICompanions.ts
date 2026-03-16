@@ -36,6 +36,7 @@ import type {
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
+import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
 
 export function useAICompanions(
   categories: CategoryRow[],
@@ -79,6 +80,8 @@ export function useAICompanions(
   playersRef.current = players
   const roomRef = useRef(room)
   roomRef.current = room
+  const showStartedRef = useRef(showStarted ?? false)
+  showStartedRef.current = showStarted ?? false
 
   // ── Core helpers ──────────────────────────────────────────────────────────────
 
@@ -122,6 +125,26 @@ export function useAICompanions(
     })
   }
 
+  async function insertWinnerDivider(text: string) {
+    const currentRoom = roomRef.current
+    if (!currentRoom || !isHostRef.current) return
+    await supabase.from('messages').insert({
+      room_id: currentRoom.id,
+      player_id: 'winner-divider',
+      text,
+    })
+  }
+
+  async function insertFilmLink(filmName: string) {
+    const currentRoom = roomRef.current
+    if (!currentRoom || !isHostRef.current) return
+    await supabase.from('messages').insert({
+      room_id: currentRoom.id,
+      player_id: 'film-link',
+      text: filmName,
+    })
+  }
+
   async function fireCompanionMessages(prompt: { system: string; user: string }, maxTokens = 600) {
     if (!isHostRef.current) return
     try {
@@ -155,6 +178,10 @@ export function useAICompanions(
       if (preCeremonyFiredRef.current) return
       preCeremonyFiredRef.current = true
 
+      // If the show already started while the 2s timer was pending, skip the
+      // pre-ceremony intro — Effect 1b handles that moment via buildShowStartedPrompt.
+      if (showStartedRef.current) return
+
       const hasWinners = categoriesRef.current.some((c) => c.winner_id != null)
       if (hasWinners) return
 
@@ -174,8 +201,9 @@ export function useAICompanions(
           confidencePicksRef.current,
           categoriesRef.current,
           nomineesRef.current,
+          buildCeremonyPreamble(),
         ),
-        900,
+        1400,
       )
     }, 2000)
 
@@ -192,12 +220,10 @@ export function useAICompanions(
     if (showStartedFiredRef.current) return
     showStartedFiredRef.current = true
 
-    insertSystemDivider('Show Started')
-
-    // Only the host fires AI messages; non-hosts get them via Realtime
+    // Only the host inserts dividers and fires AI messages; non-hosts get them via Realtime
     if (!isHostRef.current) return
 
-    // Guard against re-firing on reload: skip if a show-started marker exists
+    // Guard against re-firing on reload: check before inserting the divider
     supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
@@ -205,8 +231,8 @@ export function useAICompanions(
       .eq('player_id', 'system')
       .eq('text', 'Show Started')
       .then(({ count }) => {
-        // count includes the divider we just inserted, so > 1 means a previous session already fired
-        if (count != null && count > 1) return
+        if (count != null && count > 0) return
+        insertSystemDivider('Show Started')
         fireCompanionMessages(buildShowStartedPrompt(playersRef.current))
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -247,6 +273,10 @@ export function useAICompanions(
     const winner = nomineesRef.current.find((n) => n.id === cat.winner_id)
     if (!winner) return
 
+    const tieWinner = cat.tie_winner_id
+      ? nomineesRef.current.find((n) => n.id === cat.tie_winner_id) ?? undefined
+      : undefined
+
     // Find stored predictions that mentioned nominees in this category
     let playerPredictions: PlayerPrediction[] | undefined
     if (predictionsRef) {
@@ -268,7 +298,9 @@ export function useAICompanions(
           playerName: pred.playerName,
           text: pred.text,
           wasCorrect: pred.nomineeNames.some(
-            (name) => name.toLowerCase() === winner.name.toLowerCase(),
+            (name) =>
+              name.toLowerCase() === winner.name.toLowerCase() ||
+              (tieWinner != null && name.toLowerCase() === tieWinner.name.toLowerCase()),
           ),
         }))
         // Consume these predictions so they don't repeat for future categories
@@ -279,19 +311,32 @@ export function useAICompanions(
       }
     }
 
-    fireCompanionMessages(
-      buildWinnerReactionPrompt(
-        cat,
-        winner,
-        playersRef.current,
-        nomineesRef.current,
-        confidencePicksRef.current,
-        draftPicksRef.current,
-        draftEntitiesRef.current,
-        leaderboardRef.current,
-        playerPredictions,
-      ),
+    insertWinnerDivider(
+      tieWinner
+        ? `Winner — ${winner.name} & ${tieWinner.name}`
+        : `Winner — ${winner.name}`,
     )
+
+    // Await so the film link fires only after the Academy's delay-0 message is inserted
+    const filmName = winner.film_name || winner.name
+    ;(async () => {
+      await fireCompanionMessages(
+        buildWinnerReactionPrompt(
+          cat,
+          winner,
+          playersRef.current,
+          nomineesRef.current,
+          confidencePicksRef.current,
+          draftPicksRef.current,
+          draftEntitiesRef.current,
+          leaderboardRef.current,
+          playerPredictions,
+          tieWinner,
+          buildCategoryContext(cat.name),
+        ),
+      )
+      if (filmName) await insertFilmLink(filmName)
+    })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories])
 
@@ -313,6 +358,21 @@ export function useAICompanions(
     // Insert category divider for every spotlight open (even if pre-category prompt already fired)
     insertSystemDivider(cat.name)
 
+    // The Academy announces the category immediately after the divider (varied phrasing)
+    if (isHostRef.current) {
+      callClaude(
+        {
+          system:
+            'You are the Academy Awards host. Announce the next category in one short, casual sentence. Vary your phrasing every time — never repeat the same opener twice. Examples: "Okay, next up — Best Picture.", "Alright, we\'re moving on to Best Director.", "Next category: Best Actress." Keep it under 12 words. Plain text only, no quotes.',
+          user: `Announce: ${cat.name}`,
+        },
+        80,
+      ).then((text) => {
+        const cleaned = text.trim().replace(/^["']|["']$/g, '')
+        insertCompanionMessage('the-academy', cleaned || `Okay, next up — ${cat.name}.`)
+      })
+    }
+
     if (preCategoryFiredRef.current.has(cat.id)) return
 
     preCategoryFiredRef.current.add(cat.id)
@@ -322,6 +382,7 @@ export function useAICompanions(
         nomineesRef.current,
         confidencePicksRef.current,
         playersRef.current,
+        buildCategoryContext(cat.name),
       ),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

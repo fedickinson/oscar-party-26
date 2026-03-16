@@ -63,10 +63,10 @@ export function computeScoreTimeline(
       const confPick = confidencePicks.find(
         (cp) => cp.player_id === player.id && cp.category_id === cat.id,
       )
-      const confCorrect = confPick ? confPick.nominee_id === cat.winner_id : false
+      const confCorrect = confPick ? (confPick.nominee_id === cat.winner_id || confPick.nominee_id === cat.tie_winner_id) : false
       const confDelta = confCorrect ? confPick!.confidence : 0
 
-      // Draft delta
+      // Draft delta (first winner)
       const { playerId: draftWinnerId, points: draftPoints } = findDraftPointsForWinner(
         cat.id,
         cat.winner_id!,
@@ -75,7 +75,20 @@ export function computeScoreTimeline(
         draftEntities,
         draftPicks,
       )
-      const draftDelta = draftWinnerId === player.id ? draftPoints : 0
+      let draftDelta = draftWinnerId === player.id ? draftPoints : 0
+
+      // Draft delta for tie winner (if any)
+      if (cat.tie_winner_id) {
+        const tieResult = findDraftPointsForWinner(
+          cat.id,
+          cat.tie_winner_id,
+          categories,
+          nominees,
+          draftEntities,
+          draftPicks,
+        )
+        if (tieResult.playerId === player.id) draftDelta += tieResult.points
+      }
 
       const delta = confDelta + draftDelta
       cumulative[player.id] = (cumulative[player.id] ?? 0) + delta
@@ -417,12 +430,12 @@ export function computeBreakdownTimeline(
       const confPick = confidencePicks.find(
         (cp) => cp.player_id === player.id && cp.category_id === cat.id,
       )
-      const confCorrect = confPick ? confPick.nominee_id === cat.winner_id : false
+      const confCorrect = confPick ? (confPick.nominee_id === cat.winner_id || confPick.nominee_id === cat.tie_winner_id) : false
       const confDelta = confCorrect ? confPick!.confidence : 0
       confCumulative[player.id] += confDelta
       confRow[player.id] = confCumulative[player.id]
 
-      // Draft
+      // Draft (first winner)
       const { playerId: draftWinnerId, points: draftPoints } = findDraftPointsForWinner(
         cat.id,
         cat.winner_id!,
@@ -431,7 +444,19 @@ export function computeBreakdownTimeline(
         draftEntities,
         draftPicks,
       )
-      const draftDelta = draftWinnerId === player.id ? draftPoints : 0
+      let draftDelta = draftWinnerId === player.id ? draftPoints : 0
+      // Draft (tie winner)
+      if (cat.tie_winner_id) {
+        const tieResult = findDraftPointsForWinner(
+          cat.id,
+          cat.tie_winner_id,
+          categories,
+          nominees,
+          draftEntities,
+          draftPicks,
+        )
+        if (tieResult.playerId === player.id) draftDelta += tieResult.points
+      }
       draftCumulative[player.id] += draftDelta
       draftRow[player.id] = draftCumulative[player.id]
     })

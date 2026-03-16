@@ -168,7 +168,7 @@ export default function Draft() {
         App.tsx has py-6 (3rem total) on its container, so we subtract that
         to get exactly the remaining viewport height.
       */}
-      <div className="flex flex-col" style={{ height: 'calc(100vh - 3rem)' }}>
+      <div className="flex flex-col" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
 
         {/* ── Top bar ── */}
         <DraftTimer

@@ -44,9 +44,12 @@ interface Props {
   openSpotlight: (categoryId: number) => Promise<void>
   closeSpotlight: () => Promise<void>
   confirmSpotlightWinner: (nomineeId: string) => Promise<void>
+  confirmSpotlightTieWinner: (nomineeId1: string, nomineeId2: string) => Promise<void>
   // Finale
   onEndCeremony: () => Promise<void>
   isEndingCeremony: boolean
+  // Film encyclopedia link
+  onFilmLinkTap?: (filmTitle: string) => void
 }
 
 export default function HomeTab({
@@ -66,8 +69,10 @@ export default function HomeTab({
   openSpotlight,
   closeSpotlight,
   confirmSpotlightWinner,
+  confirmSpotlightTieWinner,
   onEndCeremony,
   isEndingCeremony,
+  onFilmLinkTap,
 }: Props) {
   const { player } = useGame()
   const currentPlayerId = player?.id ?? ''
@@ -110,8 +115,9 @@ export default function HomeTab({
         nomineeData={nomineeData}
         isHost={isHost}
         onSelectWinner={confirmSpotlightWinner}
+        onSelectTieWinner={confirmSpotlightTieWinner}
         onClose={closeSpotlight}
-        chatSection={<ChatSection fill />}
+        chatSection={<ChatSection fill onFilmLinkTap={onFilmLinkTap} />}
       />
     )
   }
@@ -119,7 +125,7 @@ export default function HomeTab({
   // ── Normal mode ───────────────────────────────────────────────────────────────
 
   const hasAnyWinner = categories.some((c) => c.winner_id != null)
-  const viewKey = spotlightContent ? `spotlight-${spotlightCategoryId}` : hasAnyWinner ? 'live' : 'pre'
+  const viewKey = spotlightContent ? `spotlight-${spotlightCategoryId}` : (showStarted || hasAnyWinner) ? 'live' : 'pre'
 
   // Spotlight gets a dramatic reveal; normal tab switches are subtle fades
   const isSpotlight = !!spotlightContent
@@ -139,7 +145,7 @@ export default function HomeTab({
         className="h-full"
       >
         {spotlightContent ?? (
-          hasAnyWinner ? (
+          (showStarted || hasAnyWinner) ? (
             <LiveHomeView
               categories={categories}
               nominees={nominees}
@@ -152,6 +158,7 @@ export default function HomeTab({
               openSpotlight={openSpotlight}
               onEndCeremony={onEndCeremony}
               isEndingCeremony={isEndingCeremony}
+              onFilmLinkTap={onFilmLinkTap}
             />
           ) : (
             <PreCeremonyView

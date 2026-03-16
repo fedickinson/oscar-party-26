@@ -181,7 +181,7 @@ export default function Confidence() {
         <PhaseExplainer phase="confidence" onContinue={() => setShowExplainer(false)} />
       )}
 
-      <div className="flex flex-col" style={{ height: 'calc(100vh - 3rem)' }}>
+      <div className="flex flex-col" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
 
         {/* ── Header ── */}
         <div className="flex-shrink-0 mb-3">
@@ -193,7 +193,7 @@ export default function Confidence() {
               <p className="text-sm font-semibold text-white mt-0.5">
                 {myHasSubmitted
                   ? 'Submitted — waiting for others'
-                  : 'Pick a nominee + prestige for each category'}
+                  : 'Choose your winner pick and assign prestige points for all 24 categories'}
               </p>
             </div>
             <div className="flex items-center gap-2">

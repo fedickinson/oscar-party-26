@@ -10,6 +10,7 @@
 import Leaderboard from './Leaderboard'
 import ActivityFeed from './ActivityFeed'
 import QuickStats from '../home/QuickStats'
+import ScoringExplainer from './ScoringExplainer'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { FeedEvent } from '../../hooks/useScores'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
@@ -37,6 +38,8 @@ export default function ScoresTab({
 }: Props) {
   return (
     <div className="flex flex-col gap-4 py-2">
+      <ScoringExplainer />
+
       <section>
         <p className="text-xs text-white/35 uppercase tracking-widest mb-3">Standings</p>
         <Leaderboard leaderboard={leaderboard} currentPlayerId={currentPlayerId} />

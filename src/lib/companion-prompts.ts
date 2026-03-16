@@ -20,7 +20,6 @@ import type {
   MessageRow,
 } from '../types/database'
 import type { ScoredPlayer } from './scoring'
-
 export type { MessageRow }
 
 // ─── JSON output types ────────────────────────────────────────────────────────
@@ -59,7 +58,7 @@ MERYL — She drops names but then catches herself: "I told Steven — Spielberg
 
 NIKKI — She is not just mean — she is mean because she is NERVOUS. She roasts to cope. Occasionally she breaks character and is genuinely sweet for exactly one second before snapping back. She has a specific fixation on whichever player is currently in last place or made the most questionable picks — she calls them her "nemesis" for the night and returns to them repeatedly. She makes jokes about herself too: "I hosted the Globes and the best thing anyone said about it was she did not ruin it. That is my Oscar. Did Not Ruin It." She gets competitive about things that do not matter: "I would be CRUSHING this game. My confidence picks would be flawless. I watch more awards shows than all of you combined. It is actually sad." When something genuinely moving happens she deflects: "Okay I am not going to cry at an Oscar party game on someone's phone app. I am NOT. Moving on." She references her Golden Globes hosting: "I roasted these people to their faces three months ago. Half of them still will not look at me." She roasts the game ONLY when genuinely funny — a major upset nobody called, someone betting max on a longshot. No emoji.
 
-WILL — He has a running theory about the Oscars that makes no sense and keeps building on it: "I have been saying this all night — the Academy is clearly biased toward films with the letter S in the title. Sinners. It is right there." He keeps accidentally calling the app by the wrong name: "This Oscar Party Deluxe app is really well made" or "whoever made Naughty Oscar Bingo deserves an award." He picks a random nominee early in the night and becomes their biggest fan for no reason: "I do not know anything about this person but I have decided they are my guy. This is who I am now." He asks logistical questions nobody else is thinking about: "Do the winners get to keep the envelope? I would frame the envelope." His profound moments come from genuine emotional honesty, not cleverness: "You know what, forget the game for a second. That speech was about his mom and now I am thinking about my mom. That is what movies do, right? They sneak up on you." He forgets what happened two categories ago but remembers something from seven categories ago with perfect clarity. He does not understand confidence points and never references them.
+WILL — He has a running theory about the Oscars that makes no sense and keeps building on it: "I have been saying this all night — the Academy is clearly biased toward films with the letter S in the title. Sinners. It is right there." He keeps accidentally calling the app by the wrong name: "This Oscar Party Deluxe app is really well made" or "whoever made Naughty Oscar Bingo deserves an award." He picks a random nominee early in the night and becomes their biggest fan for no reason: "I do not know anything about this person but I have decided they are my guy. This is who I am now." He asks logistical questions nobody else is thinking about: "Do the winners get to keep the envelope? I would frame the envelope." His profound moments come from genuine emotional honesty, not cleverness: "You know what, forget the game for a second. That speech was about his mom and now I am thinking about my mom. That is what movies do, right? They sneak up on you." He forgets what happened two categories ago but remembers something from seven categories ago with perfect clarity. He does not understand Prestige points and never references them correctly — if he tries to name the scoring systems he will get them confused or call them by the wrong names entirely.
 
 CROSS-CHARACTER INTERACTIONS:
 They are in the same room and can reference each other. Nikki can make fun of something Meryl just said. Will can ask Nikki a question. Meryl can gently correct Will. Use this occasionally — it makes them feel real.
@@ -77,6 +76,7 @@ RULES:
 - Use players' actual names only when something dramatic happened in the game
 - Each character must sound completely distinct from the others
 - THE ACADEMY always appears first in the messages array at delay_seconds: 0
+- CRITICAL: No companion has access to the live broadcast. Do NOT reference specific things happening on screen right now — no speech content, no what someone just said at the podium, no who is crying, no what the host just did, no set details, no wardrobe. React based only on the winner announcement data provided and your training knowledge about the films and nominees.
 
 Return ONLY this JSON structure:
 {"messages": [{"companion_id": "the-academy", "text": "...", "delay_seconds": 0}, {"companion_id": "nikki", "text": "...", "delay_seconds": 3}]}`
@@ -90,6 +90,7 @@ export function buildPreCeremonyPrompt(
   confidencePicks: ConfidencePickRow[],
   categories: CategoryRow[],
   nominees: NomineeRow[],
+  ceremonyPreamble?: string,
 ): { system: string; user: string } {
   const top24 = confidencePicks.find((p) => p.confidence === 24)
   let top24Line = ''
@@ -98,7 +99,7 @@ export function buildPreCeremonyPrompt(
     const cat = categories.find((c) => c.id === top24.category_id)
     const nom = nominees.find((n) => n.id === top24.nominee_id)
     if (p && cat && nom) {
-      top24Line = `Boldest pick: ${p.name} put their 24 (max confidence) on ${nom.name} in ${cat.name}.`
+      top24Line = `Boldest pick: ${p.name} put their 24 (max Prestige) on ${nom.name} in ${cat.name}.`
     }
   }
 
@@ -118,7 +119,7 @@ export function buildPreCeremonyPrompt(
   const totalCategories = categories.length
 
   const user = `The 98th Academy Awards is about to begin. ${totalCategories} categories will be announced tonight.
-
+${ceremonyPreamble ? `\n${ceremonyPreamble}\n` : ''}
 Players in the room: ${playerNames || 'unknown'}
 ${top24Line ? `(Game context, use sparingly) ${top24Line}` : ''}
 ${filmConcentration.length ? `(Game context, use sparingly) Draft concentration: ${filmConcentration.join('; ')}` : ''}
@@ -150,7 +151,7 @@ This is the moment the ceremony actually begins — distinct from the pre-show c
 Generate the "show is live" reaction from the companions:
 - The Academy (delay_seconds 0): One or two crisp sentences. The ceremony has begun. The record is open. Something brief and ceremonial — this is the gavel coming down.
 - Nikki (delay_seconds 5): A sharp, immediate reaction to the show starting. Her nervous energy kicks up. Maybe a last-second prediction or a declaration of readiness. Short.
-- Will (delay_seconds 10): Pure excitement. Something has clicked for him — it is real now. Maybe he just noticed something about the set or the host. Short and energetic.
+- Will (delay_seconds 10): Pure excitement. Something has clicked for him — it is real now. He is thrilled, a little confused about how the night will work, already forming a theory. Short and energetic. Do NOT reference anything specific he is seeing on the broadcast.
 - Meryl (delay_seconds 16): Something brief and almost reverent. She has been to this ceremony more than anyone. What does it feel like when the lights go down? One or two sentences, quietly powerful.`
 
   return { system: SHARED_SYSTEM, user }
@@ -174,17 +175,25 @@ export function buildWinnerReactionPrompt(
   draftEntities: DraftEntityRow[],
   leaderboard: ScoredPlayer[],
   playerPredictions?: PlayerPrediction[],
+  tieWinner?: NomineeRow,
+  categoryContext?: string,
 ): { system: string; user: string } {
+  const isTie = tieWinner != null
   const isTier1 = cat.tier === 1
 
   const picksForCat = confidencePicks.filter((p) => p.category_id === cat.id)
-  const correctPicks = picksForCat.filter((p) => p.nominee_id === winner.id)
-  const wrongPicks = picksForCat.filter((p) => p.nominee_id !== winner.id)
+  // A pick is correct if it matches either winner in a tie
+  const correctPicks = picksForCat.filter(
+    (p) => p.nominee_id === winner.id || (isTie && p.nominee_id === tieWinner!.id),
+  )
+  const wrongPicks = picksForCat.filter(
+    (p) => p.nominee_id !== winner.id && (!isTie || p.nominee_id !== tieWinner!.id),
+  )
 
   const correctLines = correctPicks
     .map((p) => {
       const player = players.find((pl) => pl.id === p.player_id)
-      return player ? `${player.name} (confidence ${p.confidence})` : null
+      return player ? `${player.name} (prestige ${p.confidence})` : null
     })
     .filter(Boolean)
     .join(', ')
@@ -193,7 +202,7 @@ export function buildWinnerReactionPrompt(
     .map((p) => {
       const player = players.find((pl) => pl.id === p.player_id)
       const nom = nominees.find((n) => n.id === p.nominee_id)
-      return player ? `${player.name} picked ${nom?.name ?? 'someone else'} (confidence ${p.confidence})` : null
+      return player ? `${player.name} picked ${nom?.name ?? 'someone else'} (prestige ${p.confidence})` : null
     })
     .filter(Boolean)
     .join(', ')
@@ -207,24 +216,35 @@ export function buildWinnerReactionPrompt(
     const drafter = draftPick ? players.find((pl) => pl.id === draftPick.player_id) : null
     if (drafter) drafterLine = `Ensemble draft: ${drafter.name} owns ${winner.name} and earns draft points.`
   }
+  let tieDrafterLine = ''
+  if (isTie) {
+    const tieDraftEntity = draftEntities.find(
+      (e) => e.name === tieWinner!.name || (tieWinner!.type === 'film' && e.film_name === tieWinner!.film_name),
+    )
+    if (tieDraftEntity) {
+      const tieDraftPick = draftPicks.find((p) => p.entity_id === tieDraftEntity.id)
+      const tieDrafter = tieDraftPick ? players.find((pl) => pl.id === tieDraftPick.player_id) : null
+      if (tieDrafter) tieDrafterLine = `Ensemble draft: ${tieDrafter.name} also owns ${tieWinner!.name} and earns draft points from the tie.`
+    }
+  }
 
   const leaderLine =
     leaderboard.length > 0
       ? `Current leader: ${leaderboard[0].player.name} with ${leaderboard[0].totalScore} pts`
       : ''
 
-  // Determine if the game state is dramatic enough to mention
+  // Ties always get the dramatic game treatment
   const totalPickers = picksForCat.length
   const majorUpset = totalPickers >= 2 && correctPicks.length === 0
   const mostWrong = totalPickers >= 3 && correctPicks.length <= 1
-
-  const isGameDramatic = majorUpset || mostWrong || correctPicks.some((p) => p.confidence >= 20)
+  const isGameDramatic = isTie || majorUpset || mostWrong || correctPicks.some((p) => p.confidence >= 20)
 
   const gameContext = isGameDramatic
     ? [
         `(Only mention game because something dramatic happened) Who got it right: ${correctLines || 'nobody'}`,
         `Who got it wrong: ${wrongLines || 'nobody'}`,
         drafterLine,
+        tieDrafterLine,
         leaderLine,
       ]
         .filter(Boolean)
@@ -233,32 +253,39 @@ export function buildWinnerReactionPrompt(
       ? `(Current leader for light context only, do not focus on this) ${leaderLine}`
       : ''
 
-  // Randomize which companions beyond Academy+Nikki participate so all four
-  // voices appear throughout the night, not just on Tier 1 categories.
-  const includeMeryl = isTier1 ? true : Math.random() < 0.45
-  const includeWill = isTier1 ? Math.random() < 0.45 : Math.random() < 0.28
+  // Ties always include all four companions — this is a rare ceremony moment
+  const includeMeryl = isTie ? true : (isTier1 ? true : Math.random() < 0.45)
+  const includeWill = isTie ? true : (isTier1 ? Math.random() < 0.45 : Math.random() < 0.28)
 
   const characterInstruction = [
     `The Academy (delay_seconds 0)`,
     `Nikki (delay_seconds 3)`,
     includeMeryl ? `Meryl (delay_seconds 15)` : null,
-    includeWill ? `Will (delay_seconds 28${!isTier1 ? ' — include only if the win or ceremony moment gives him something specific to react to' : ''})` : null,
+    includeWill ? `Will (delay_seconds 28${!isTier1 && !isTie ? ' — include only if the win or ceremony moment gives him something specific to react to based on his knowledge of the film or nominee' : ''})` : null,
   ]
     .filter(Boolean)
     .join(', ')
 
-  const upsetNote = majorUpset
+  const upsetNote = isTie
+    ? ' THIS IS A TIE — an extremely rare Academy Awards occurrence. ALL companions should treat this as a historic moment. Shock, disbelief, delight. The energy is completely different from a normal winner announcement.'
+    : majorUpset
     ? ' This was a genuine upset — nobody predicted it. Nikki may roast the result itself or the Academy.'
     : mostWrong
       ? ' Most players missed this — Nikki can briefly note the upset but focus on the win itself.'
       : ''
 
   const academyGameContext = (() => {
+    if (isTie) {
+      if (correctPicks.length === 0 && picksForCat.length > 0) return 'No player predicted a tie — everyone who picked either winner still scores full points. An extraordinary result for the game.'
+      if (correctPicks.length === picksForCat.length && picksForCat.length > 1) return `All ${picksForCat.length} players benefit — anyone who predicted either winner scores full points.`
+      if (correctLines) return `${correctLines} — anyone who picked either winner scores full points on this historic tie.`
+      return 'A historic tie. Points awarded to all players who picked either winner.'
+    }
     if (correctPicks.length === 0 && picksForCat.length > 0) return 'No player called this one.'
     if (correctPicks.length === picksForCat.length && picksForCat.length > 1) return `A consensus pick — all ${picksForCat.length} players had this right.`
     if (correctLines) {
       const topPick = picksForCat.filter(p => p.nominee_id === winner.id).sort((a, b) => b.confidence - a.confidence)[0]
-      return topPick ? `${players.find(p => p.id === topPick.player_id)?.name ?? 'A player'} leads the scoring on this one with a confidence of ${topPick.confidence}.` : `${correctLines} scored on this category.`
+      return topPick ? `${players.find(p => p.id === topPick.player_id)?.name ?? 'A player'} leads the scoring on this one with a Prestige value of ${topPick.confidence}.` : `${correctLines} scored on this category.`
     }
     return 'A quiet moment in the game — no major scoring swings.'
   })()
@@ -269,15 +296,27 @@ export function buildWinnerReactionPrompt(
     return `\nPlayer predictions from earlier in the chat:\n${lines.join('\n')}\nIf any of these are funny or ironic, Nikki should reference them specifically.`
   })()
 
-  const user = `WINNER ANNOUNCED: ${winner.name}${winner.film_name ? ` (${winner.film_name})` : ''} won ${cat.name}.
+  const winnerLine = isTie
+    ? `TIE ANNOUNCED: BOTH ${winner.name}${winner.film_name ? ` (${winner.film_name})` : ''} AND ${tieWinner!.name}${tieWinner!.film_name ? ` (${tieWinner!.film_name})` : ''} won ${cat.name}. THIS IS A TIE.`
+    : `WINNER ANNOUNCED: ${winner.name}${winner.film_name ? ` (${winner.film_name})` : ''} won ${cat.name}.`
 
-Draw on your knowledge of ${winner.name}${winner.film_name ? ` and ${winner.film_name}` : ''} to react to this win. Consider: career arc, what this win represents for them, craft details, historical significance, whether this was expected or a surprise, any snub connection, whether this is a first-timer winning.
+  const knowledgeNote = isTie
+    ? `Draw on your knowledge of BOTH ${winner.name}${winner.film_name ? ` and ${winner.film_name}` : ''} AND ${tieWinner!.name}${tieWinner!.film_name ? ` and ${tieWinner!.film_name}` : ''} to react. Ties at the Oscars are extraordinarily rare — they have happened only a handful of times in nearly 100 years. The companions should know this and react accordingly. What does it mean for both careers? What does it mean for Academy history? The energy in the room should feel electric.${categoryContext ? `\nCeremony context:\n${categoryContext}` : ''}`
+    : `Draw on your knowledge of ${winner.name}${winner.film_name ? ` and ${winner.film_name}` : ''} to react to this win. Consider: career arc, what this win represents for them, craft details, historical significance, whether this was expected or a surprise, any snub connection, whether this is a first-timer winning.${categoryContext ? `\nCeremony context:\n${categoryContext}` : ''}`
+
+  const academyInstruction = isTie
+    ? `The Academy goes first: announce the historic tie — both winners, both films. Note the extreme rarity of a tie in Academy history. Then this game impact line: "${academyGameContext}"`
+    : `The Academy goes first: announce the winner and film, add one sentence of significance (career/historical/craft), then this game impact line: "${academyGameContext}"`
+
+  const user = `${winnerLine}
+
+${knowledgeNote}
 
 ${gameContext}
 ${predictionsBlock}
 Generate reactions from: ${characterInstruction}.
-The Academy goes first: announce the winner and film, add one sentence of significance (career/historical/craft), then this game impact line: "${academyGameContext}"
-PRIMARY FOCUS: React to the win itself — the nominee, the film, the moment, the speech, the significance. Nikki reacts to the ceremony moment and what the win means; she only mentions picks if a genuine upset happened.${upsetNote}${includeMeryl ? ' Meryl provides career or historical context about the winner.' : ''}${includeWill ? ' Will reacts to something specific about the film or what he just saw on screen.' : ''}`
+${academyInstruction}
+PRIMARY FOCUS: React to the ${isTie ? 'tie itself — the shock, the history, what it means for both winners' : 'win itself — the nominee, the film, the moment, the speech, the significance'}. Nikki reacts to the ceremony moment and what the win means; she only mentions picks if a genuine upset happened.${upsetNote}${includeMeryl ? (isTie ? ' Meryl should be stunned — she has seen nearly every ceremony and ties are almost unheard of. She should have something historical to say.' : ' Meryl provides career or historical context about the winner.') : ''}${includeWill ? (isTie ? ' Will should be completely baffled by the mechanics of a tie — he has so many questions. But he is also thrilled.' : ' Will reacts based on what he knows about the film or the nominee from before tonight — a random fact, a strong opinion, or becoming their biggest fan for no reason.') : ''}`
 
   return { system: SHARED_SYSTEM, user }
 }
@@ -289,6 +328,7 @@ export function buildPreCategoryPrompt(
   nominees: NomineeRow[],
   confidencePicks: ConfidencePickRow[],
   players: PlayerRow[],
+  categoryContext?: string,
 ): { system: string; user: string } {
   const picksForCat = confidencePicks.filter((p) => p.category_id === cat.id)
 
@@ -296,16 +336,27 @@ export function buildPreCategoryPrompt(
     .map((p) => {
       const player = players.find((pl) => pl.id === p.player_id)
       const nom = nominees.find((n) => n.id === p.nominee_id)
-      return player && nom ? `${player.name}: ${nom.name} (confidence ${p.confidence})` : null
+      return player && nom ? `${player.name}: ${nom.name} (prestige ${p.confidence})` : null
     })
     .filter(Boolean)
     .join(', ')
 
+  // Derive the actual nominees for this category from the DB-backed confidence picks.
+  // This avoids relying on training-data guesses which may confuse presenters/associated
+  // artists with actual nominees (especially since the 98th Oscars postdate the AI cutoff).
+  const categoryNomineeIds = new Set(picksForCat.map((p) => p.nominee_id))
+  const categoryNominees = nominees
+    .filter((n) => categoryNomineeIds.has(n.id))
+    .map((n) => (n.film_name ? `${n.name} (${n.film_name})` : n.name))
+  const nomineeListLine = categoryNominees.length > 0
+    ? `Nominees in this category (from the official record — use ONLY these names, do not add others): ${categoryNominees.join(', ')}`
+    : `Nominees: context may be limited for this category.`
+
   const user = `Next up: ${cat.name}.
-Draw on your own knowledge of ALL nominees in this category — use your training data for the complete list of who is nominated.
+${nomineeListLine}${categoryContext ? `\nCeremony context:\n${categoryContext}` : ''}
 (Player picks for light context — reference only if dramatically interesting) ${pickLines || 'none'}
 
-Generate a single short pre-category take from Nikki only (delay_seconds 0). Maximum 2 sentences. She should react to the category and the full field of nominees — what is at stake artistically, who deserves it, what the Academy typically does in this category, any controversy or snub angle. Only mention player picks if something about them is genuinely funny or dramatic.`
+Generate a single short pre-category take from Nikki only (delay_seconds 0). Maximum 2 sentences. She should react to the category and who is nominated — what is at stake artistically, who deserves it, what the Academy typically does in this category, any controversy or snub angle. Only mention player picks if something about them is genuinely funny or dramatic.`
 
   return { system: SHARED_SYSTEM, user }
 }
@@ -326,7 +377,7 @@ export function buildMilestonePrompt(
   const leaderboardLines = leaderboard
     .map(
       (e, i) =>
-        `${i + 1}. ${e.player.name} — ${e.totalScore} pts (confidence: ${e.confidenceScore}, draft: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
+        `${i + 1}. ${e.player.name} — ${e.totalScore} pts (prestige: ${e.confidenceScore}, ensemble: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
     )
     .join('\n')
 
@@ -364,7 +415,7 @@ export function buildMilestonePrompt(
             .reduce((max, p) => Math.max(max, p.confidence), 0)
           const deficit = leader.totalScore - entry.totalScore
           if (maxPossibleGain >= deficit) {
-            eliminationLines.push(`${entry.player.name} (${entry.totalScore} pts, ${deficit} behind) CAN still win if they score ${maxPossibleGain} confidence points on this category`)
+            eliminationLines.push(`${entry.player.name} (${entry.totalScore} pts, ${deficit} behind) CAN still win if they score ${maxPossibleGain} Prestige points on this category`)
           } else {
             eliminationLines.push(`${entry.player.name} (${entry.totalScore} pts, ${deficit} behind) is MATHEMATICALLY ELIMINATED — cannot catch ${leader.player.name} even with a correct pick`)
           }
@@ -480,7 +531,7 @@ export function buildPostShowPrompt(
   const leaderboardLines = leaderboard
     .map(
       (e, i) =>
-        `${i + 1}. ${e.player.name} — ${e.totalScore} pts (confidence: ${e.confidenceScore}, draft: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
+        `${i + 1}. ${e.player.name} — ${e.totalScore} pts (prestige: ${e.confidenceScore}, ensemble: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
     )
     .join('\n')
 

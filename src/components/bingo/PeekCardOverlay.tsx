@@ -7,7 +7,8 @@
  */
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { X } from 'lucide-react'
 import Avatar from '../Avatar'
 import BingoSquare from './BingoSquare'
 import { BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
@@ -22,6 +23,7 @@ interface Props {
 
 export default function PeekCardOverlay({ player, squares, marks, onDismiss }: Props) {
   const [showHint, setShowHint] = useState(true)
+  const [tappedIndex, setTappedIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setShowHint(false), 2000)
@@ -130,20 +132,53 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
           {/* Grid */}
           <div className="grid grid-cols-5 gap-1">
             {squares.map((square, index) => (
-              <BingoSquare
+              <div
                 key={index}
-                index={index}
-                shortText={square?.short_text ?? ''}
-                status={getStatus(index)}
-                isObjective={square?.is_objective ?? false}
-                bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
-                isSelected={false}
-                onTap={() => {}}
-                readOnly
-              />
+                className="relative cursor-pointer"
+                onClick={() => index !== FREE_CENTER_INDEX && setTappedIndex(tappedIndex === index ? null : index)}
+              >
+                <BingoSquare
+                  index={index}
+                  shortText={square?.short_text ?? ''}
+                  status={getStatus(index)}
+                  isObjective={square?.is_objective ?? false}
+                  bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
+                  isSelected={false}
+                  onTap={() => {}}
+                  readOnly
+                />
+              </div>
             ))}
           </div>
         </div>
+
+        {/* Square detail panel */}
+        <AnimatePresence>
+          {tappedIndex !== null && squares[tappedIndex] && (
+            <motion.div
+              key="square-detail"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="w-full backdrop-blur-lg bg-white/8 border border-white/12 rounded-2xl px-4 py-3 flex items-start gap-3"
+            >
+              <p className="flex-1 text-sm text-white/90 leading-snug">
+                {squares[tappedIndex]!.text}
+              </p>
+              <button
+                onClick={() => setTappedIndex(null)}
+                className="flex-shrink-0 mt-0.5 text-white/30 hover:text-white/60 transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <p className="text-xs text-white/25 text-center">
+          Tap a square to read the full text
+        </p>
       </motion.div>
     </motion.div>
   )

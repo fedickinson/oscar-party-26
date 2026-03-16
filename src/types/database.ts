@@ -92,6 +92,8 @@ export interface CategoryRow {
   points: number
   display_order: number
   winner_id: string | null
+  /** Second winner in a tie — null for normal (non-tie) categories */
+  tie_winner_id: string | null
   announced_at: string | null
 }
 
@@ -397,18 +399,21 @@ export interface RoomWinnerRow {
   room_id: string
   category_id: number
   winner_id: string
+  tie_winner_id: string | null
 }
 
 export interface RoomWinnerInsert {
   room_id: string
   category_id: number
   winner_id: string
+  tie_winner_id?: string | null
 }
 
 export interface RoomWinnerUpdate {
   room_id?: string
   category_id?: number
   winner_id?: string
+  tie_winner_id?: string | null
 }
 
 // ─── Database helper type ────────────────────────────────────────────────────

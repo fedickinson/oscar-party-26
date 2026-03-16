@@ -40,9 +40,10 @@ interface Props {
   nominees: NomineeRow[]
   leaderboard: ScoredPlayer[]
   onShowExplainer?: () => void
+  onSquareApproved?: (squareText: string) => void
 }
 
-export default function BingoTab({ roomId, isHost, categories, nominees, leaderboard, onShowExplainer }: Props) {
+export default function BingoTab({ roomId, isHost, categories, nominees, leaderboard, onShowExplainer, onSquareApproved }: Props) {
   const { player } = useGame()
   const [peekingPlayerId, setPeekingPlayerId] = useState<string | null>(null)
   const [showApprovals, setShowApprovals] = useState(false)
@@ -62,7 +63,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     deselectSquare,
     markSquare,
     dismissCelebration,
-  } = useBingo(roomId, categories, nominees)
+  } = useBingo(roomId, categories, nominees, onSquareApproved)
 
   const { pendingMarks, approveMark, denyMark } = useBingoApprovals(roomId)
 

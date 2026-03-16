@@ -81,6 +81,14 @@ export function scoreConfidencePick(
  *   'person' → find draft entity by name + category nomination.
  *   'film'   → find draft entity by film_name.
  *
+ * FILM FALLBACK FOR UNDRAFTED PEOPLE:
+ *   If the winning person has no individual draft entity (or nobody picked
+ *   them), points fall through to whoever drafted their film. This handles
+ *   technical categories (Makeup & Hairstyling, Costume Design, Sound, etc.)
+ *   where the crew members are not individually draftable — the film owner
+ *   benefits instead. Individually drafted people (actors, directors) take
+ *   priority: if someone drafted the person, the film drafter gets nothing.
+ *
  * This is more reliable than keyword-matching on category names, since
  * the DB is the source of truth for whether a nominee is a person or film.
  */
@@ -98,12 +106,13 @@ export function findDraftPointsForWinner(
   const winningNominee = nominees.find((n) => n.id === winnerId)
   if (!winningNominee) return { playerId: null, points: 0 }
 
-  let matchingEntity: DraftEntityRow | undefined
+  const pickForEntity = (entity: DraftEntityRow | undefined) =>
+    entity ? (draftPicks.find((p) => p.entity_id === entity.id) ?? null) : null
 
   if (winningNominee.type === 'person') {
     // Person entities: match by name, then verify nominated in this category.
     // The nominations JSONB contains { category_id, category_name, points }.
-    matchingEntity = draftEntities.find((entity) => {
+    const personEntity = draftEntities.find((entity) => {
       if (entity.type !== 'person') return false
       if (entity.name !== winningNominee.name) return false
 
@@ -113,24 +122,47 @@ export function findDraftPointsForWinner(
       if (!Array.isArray(noms) || noms.length === 0) return true // no nomination data — trust the name match
       return noms.some((n) => n.category_id === categoryId)
     })
+
+    const personPick = pickForEntity(personEntity)
+    if (personPick) {
+      // Someone drafted this person individually — they get 1.5x points.
+      // The multiplier rewards the more specific, risky prediction over
+      // drafting a film that passively collects technical category wins.
+      // The film drafter gets nothing for this category.
+      return { playerId: personPick.player_id, points: Math.round(category.points * 1.5) }
+    }
+
+    // Nobody drafted this person (or they weren't a draftable entity).
+    // Fall back to awarding points to whoever drafted their film.
+    // This is how technical category wins (e.g. Best Makeup & Hairstyling)
+    // reward the player who drafted the winning film.
+    const filmTitle = winningNominee.film_name
+    if (filmTitle) {
+      const filmEntity = draftEntities.find(
+        (entity) => entity.type === 'film' && entity.film_name === filmTitle,
+      )
+      const filmPick = pickForEntity(filmEntity)
+      if (filmPick) {
+        return { playerId: filmPick.player_id, points: category.points }
+      }
+    }
+
+    return { playerId: null, points: 0 }
   } else {
     // Film entities: match by film_name, type === 'film'.
     // For Best Picture nominees, film_name may be empty (the film IS the nominee),
     // so fall back to matching against the nominee's name field.
     const nomFilmTitle = winningNominee.film_name || winningNominee.name
-    matchingEntity = draftEntities.find(
+    const filmEntity = draftEntities.find(
       (entity) =>
         entity.type === 'film' &&
         entity.film_name === nomFilmTitle,
     )
+
+    const pick = pickForEntity(filmEntity)
+    if (!pick) return { playerId: null, points: 0 }
+    return { playerId: pick.player_id, points: category.points }
   }
-
-  if (!matchingEntity) return { playerId: null, points: 0 }
-
-  const pick = draftPicks.find((p) => p.entity_id === matchingEntity!.id)
-  if (!pick) return { playerId: null, points: 0 }
-
-  return { playerId: pick.player_id, points: category.points }
 }
 
 // ─── computeLeaderboard ───────────────────────────────────────────────────────
@@ -169,6 +201,7 @@ export function computeLeaderboard(
       // ── Ensemble score ────────────────────────────────────────────────────
       // For each announced category, check if this player's drafted entity won.
       // Each matching entity earns category.points.
+      // In a tie, both winners' draft entities earn points independently.
       const ensembleScore = announcedCategories.reduce((sum, cat) => {
         const { playerId, points } = findDraftPointsForWinner(
           cat.id,
@@ -178,7 +211,22 @@ export function computeLeaderboard(
           draftEntities,
           draftPicks,
         )
-        return playerId === player.id ? sum + points : sum
+        let catPoints = playerId === player.id ? points : 0
+
+        // Check second winner in a tie
+        if (cat.tie_winner_id) {
+          const tieResult = findDraftPointsForWinner(
+            cat.id,
+            cat.tie_winner_id,
+            categories,
+            nominees,
+            draftEntities,
+            draftPicks,
+          )
+          if (tieResult.playerId === player.id) catPoints += tieResult.points
+        }
+
+        return sum + catPoints
       }, 0)
 
       // ── Bingo score ───────────────────────────────────────────────────────

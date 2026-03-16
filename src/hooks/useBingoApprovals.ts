@@ -23,6 +23,8 @@ import { useGame } from '../context/GameContext'
 
 export interface PendingMark {
   markId: string
+  cardId: string
+  squareIndex: number
   playerId: string
   playerName: string
   playerAvatarId: string
@@ -98,6 +100,8 @@ export function useBingoApprovals(roomId: string | undefined): BingoApprovalsSta
 
         return {
           markId: mark.id,
+          cardId: mark.card_id,
+          squareIndex: mark.square_index,
           playerId: card.player_id,
           playerName: player?.name ?? 'Unknown',
           playerAvatarId: player?.avatar_id ?? '',
@@ -116,7 +120,8 @@ export function useBingoApprovals(roomId: string | undefined): BingoApprovalsSta
     fetchPendingMarks()
   }, [fetchPendingMarks])
 
-  // Subscribe to bingo_marks INSERT — new pending marks appear immediately
+  // Subscribe to bingo_marks INSERT and UPDATE — new pending marks appear
+  // immediately, and approved/denied marks drop from the pending list.
   useEffect(() => {
     if (!roomId) return
 
@@ -125,10 +130,12 @@ export function useBingoApprovals(roomId: string | undefined): BingoApprovalsSta
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'bingo_marks' },
-        () => {
-          // Re-fetch full list; simpler than incremental merge
-          fetchPendingMarks()
-        },
+        () => { fetchPendingMarks() },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bingo_marks' },
+        () => { fetchPendingMarks() },
       )
       .subscribe()
 
@@ -138,8 +145,59 @@ export function useBingoApprovals(roomId: string | undefined): BingoApprovalsSta
   // ── Actions ────────────────────────────────────────────────────────────────
 
   async function approveMark(markId: string): Promise<void> {
+    const mark = pendingMarks.find((m) => m.markId === markId)
+
+    // Approve the submitted mark
     await supabase.from('bingo_marks').update({ status: 'approved' }).eq('id', markId)
     setPendingMarks((prev) => prev.filter((m) => m.markId !== markId))
+
+    if (!mark || !roomId) return
+
+    // Cascade: find the bingo_square_id at this position on the origin card
+    const { data: originCard } = await supabase
+      .from('bingo_cards')
+      .select('squares')
+      .eq('id', mark.cardId)
+      .maybeSingle()
+    if (!originCard) return
+
+    const squareId = (originCard.squares as number[])[mark.squareIndex]
+    if (!squareId) return
+
+    // Find all other cards in the room
+    const { data: otherCards } = await supabase
+      .from('bingo_cards')
+      .select()
+      .eq('room_id', roomId)
+      .neq('id', mark.cardId)
+    if (!otherCards?.length) return
+
+    // For each card that contains the same square, approve or insert a mark
+    for (const otherCard of otherCards) {
+      const otherSquares = otherCard.squares as number[]
+      const otherIndex = otherSquares.indexOf(squareId)
+      if (otherIndex === -1) continue
+
+      const { data: existing } = await supabase
+        .from('bingo_marks')
+        .select('id, status')
+        .eq('card_id', otherCard.id)
+        .eq('square_index', otherIndex)
+        .maybeSingle()
+
+      if (existing) {
+        if (existing.status !== 'approved') {
+          await supabase.from('bingo_marks').update({ status: 'approved' }).eq('id', existing.id)
+        }
+      } else {
+        await supabase.from('bingo_marks').insert({
+          card_id: otherCard.id,
+          square_index: otherIndex,
+          status: 'approved',
+          marked_at: new Date().toISOString(),
+        })
+      }
+    }
   }
 
   async function denyMark(markId: string): Promise<void> {

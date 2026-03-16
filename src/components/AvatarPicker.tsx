@@ -10,9 +10,9 @@
  *   switches to oscar-gold.
  *
  * TAKEN AVATARS:
- *   30% opacity + grayscale filter + pointer-events-none + cursor-not-allowed.
- *   A Lock icon overlay sits centered on the avatar circle, and a two-line
- *   label reads "Taken by / [Name]". Character/actor/film text is hidden.
+ *   Red glassmorphism tint (bg-red-500/15, border-red-500/30) + subtle
+ *   grayscale/opacity. Layout top-to-bottom: "TAKEN BY / Name" label, then
+ *   avatar circle with lock overlay, then character + film details (muted).
  *
  * UPGRADE PATH:
  *   When image assets exist, Avatar.tsx handles the swap internally.
@@ -92,10 +92,10 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
               isSelected
                 ? 'border-oscar-gold bg-oscar-gold/8'
                 : isTaken
-                  ? 'border-white/5 bg-white/5 pointer-events-none cursor-not-allowed'
+                  ? 'border-red-500/30 bg-red-500/15 pointer-events-none cursor-not-allowed'
                   : 'border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer',
             ].join(' ')}
-            style={isTaken ? { opacity: 0.3, filter: 'grayscale(1)' } : undefined}
+            style={isTaken ? { opacity: 0.85, filter: 'grayscale(0.3)' } : undefined}
           >
             {/* Gold ring expands from center on selection */}
             <AnimatePresence>
@@ -110,6 +110,18 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
                 />
               )}
             </AnimatePresence>
+
+            {/* Taken-by label sits at the TOP, only rendered for taken cards */}
+            {isTaken && (
+              <div className="text-center mb-2">
+                <p className="text-[10px] uppercase tracking-wider text-red-300/80 leading-none mb-0.5">
+                  Taken by
+                </p>
+                <p className="text-sm font-bold leading-tight text-white truncate">
+                  {claimedBy ?? 'Someone'}
+                </p>
+              </div>
+            )}
 
             {/* Avatar visual */}
             <div className="flex justify-center mb-3 relative">
@@ -129,16 +141,15 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
               )}
             </div>
 
+            {/* Character details — always shown, muted red-tint for taken cards */}
             {isTaken ? (
-              /* Taken: show who claimed it with clear label */
-              <div className="text-center">
-                <p className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">Taken by</p>
-                <p className="text-sm font-bold leading-tight text-white/70 truncate">
-                  {claimedBy ?? 'Someone'}
+              <>
+                <p className="text-sm font-semibold leading-tight truncate text-white/50">
+                  {avatar.character_name}
                 </p>
-              </div>
+                <p className="text-xs text-red-300/40 italic mt-0.5 truncate">{avatar.film_name}</p>
+              </>
             ) : (
-              /* Available: show full character details */
               <>
                 <p className="text-sm font-bold leading-tight truncate text-white">
                   {avatar.character_name}

@@ -76,6 +76,7 @@ export function useBingo(
   roomId: string | undefined,
   categories: CategoryRow[] = [],
   nominees: NomineeRow[] = [],
+  onSquareApproved?: (squareText: string) => void,
 ): BingoState {
   const { player } = useGame()
 
@@ -90,9 +91,11 @@ export function useBingo(
   const squaresRef = useRef<(BingoSquareRow | null)[]>([])
   const marksRef = useRef<BingoMarkRow[]>([])
   const cardRef = useRef<BingoCardRow | null>(null)
+  const onSquareApprovedRef = useRef(onSquareApproved)
   useEffect(() => { squaresRef.current = squares }, [squares])
   useEffect(() => { marksRef.current = marks }, [marks])
   useEffect(() => { cardRef.current = card }, [card])
+  useEffect(() => { onSquareApprovedRef.current = onSquareApproved }, [onSquareApproved])
 
   // Tracks previously known complete lines for new-bingo detection
   const prevBingoLinesRef = useRef<number[][]>([])
@@ -204,15 +207,31 @@ export function useBingo(
         (payload) => {
           const m = payload.new as BingoMarkRow
           setMarks((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+          // Notify for cascade-approved marks: approved INSERT on a non-objective
+          // square that the player didn't initiate (host auto-approves via cascade).
+          if (m.status === 'approved') {
+            const square = squaresRef.current[m.square_index]
+            if (square && !square.is_objective) {
+              onSquareApprovedRef.current?.(square.short_text)
+            }
+          }
         },
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'bingo_marks', filter: `card_id=eq.${card.id}` },
         (payload) => {
+          const m = payload.new as BingoMarkRow
           setMarks((prev) =>
-            prev.map((m) => (m.id === (payload.new as BingoMarkRow).id ? (payload.new as BingoMarkRow) : m)),
+            prev.map((x) => (x.id === m.id ? m : x)),
           )
+          // Notify when the host approves a pending mark (pending → approved)
+          if (m.status === 'approved') {
+            const square = squaresRef.current[m.square_index]
+            if (square) {
+              onSquareApprovedRef.current?.(square.short_text)
+            }
+          }
         },
       )
       .on(

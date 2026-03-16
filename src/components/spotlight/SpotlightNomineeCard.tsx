@@ -5,7 +5,7 @@
  *   Prestige · [n]  — they confidence-picked this nominee (n = their value)
  *   Ensemble        — they drafted this entity
  *
- * States: normal (tappable by host) | winner (gold) | loser (faded)
+ * States: normal (tappable by host) | selected (gold outline, pre-confirm) | winner (gold) | loser (faded)
  */
 
 import { motion } from 'framer-motion'
@@ -31,7 +31,9 @@ interface Props {
   myDraftPick: boolean          // current player drafted this entity
   isHost: boolean
   onSelect: () => void
-  state: 'normal' | 'winner' | 'loser'
+  state: 'normal' | 'selected' | 'winner' | 'loser'
+  /** When true, the card is visually dimmed and not tappable */
+  disabled?: boolean
 }
 
 export default function SpotlightNomineeCard({
@@ -41,10 +43,13 @@ export default function SpotlightNomineeCard({
   isHost,
   onSelect,
   state,
+  disabled = false,
 }: Props) {
   const isNormal = state === 'normal'
+  const isSelected = state === 'selected'
   const isWinner = state === 'winner'
   const isLoser = state === 'loser'
+  const isTappable = isHost && (isNormal || isSelected) && !disabled
 
   const displayName =
     nominee.type === 'film' ? nominee.film_name || nominee.name : nominee.name
@@ -54,19 +59,19 @@ export default function SpotlightNomineeCard({
       layout
       animate={{
         scale: isWinner ? 1.03 : isLoser ? 0.96 : 1,
-        opacity: isLoser ? 0.18 : 1,
+        opacity: isLoser ? 0.18 : disabled ? 0.35 : 1,
         y: isWinner ? -2 : 0,
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
     >
       <motion.button
-        whileTap={isHost && isNormal ? { scale: 0.97 } : undefined}
-        onClick={isHost && isNormal ? onSelect : undefined}
-        disabled={!isHost || !isNormal}
+        whileTap={isTappable ? { scale: 0.97 } : undefined}
+        onClick={isTappable ? onSelect : undefined}
+        disabled={!isTappable}
         className={[
           'w-full text-left px-3 py-1.5 rounded-lg border flex items-center gap-2 relative overflow-hidden',
-          isWinner ? 'border-oscar-gold/60' : 'bg-white/5 border-white/10',
-          isHost && isNormal ? 'cursor-pointer' : 'cursor-default',
+          isWinner ? 'border-oscar-gold/60' : isSelected ? 'border-oscar-gold/50 bg-oscar-gold/8' : 'bg-white/5 border-white/10',
+          isTappable ? 'cursor-pointer' : 'cursor-default',
         ].join(' ')}
         style={isWinner ? {
           background: 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.06) 100%)',
@@ -89,7 +94,7 @@ export default function SpotlightNomineeCard({
         <div className="flex-1 min-w-0">
           <p className={[
             'text-sm font-semibold leading-tight truncate',
-            isWinner ? 'text-oscar-gold' : 'text-white',
+            isWinner || isSelected ? 'text-oscar-gold' : 'text-white',
           ].join(' ')}>
             {displayName}
           </p>
@@ -125,6 +130,18 @@ export default function SpotlightNomineeCard({
           >
             <Check size={9} strokeWidth={3} />
             <span className="text-[9px] font-bold">WIN</span>
+          </motion.div>
+        )}
+
+        {/* Selected check */}
+        {isSelected && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+            className="w-5 h-5 rounded-full bg-oscar-gold/20 border border-oscar-gold/40 flex items-center justify-center flex-shrink-0"
+          >
+            <Check size={10} className="text-oscar-gold" strokeWidth={3} />
           </motion.div>
         )}
       </motion.button>

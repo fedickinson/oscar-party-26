@@ -2,7 +2,7 @@
  * useRecap -- orchestrates data fetching and PDF generation for the night's recap.
  *
  * The Results page already has leaderboard + categories + nominees + confidence picks
- * from useScores. This hook:
+ * + draft picks + draft entities from useScores. This hook:
  *   1. Fetches chat messages (one-time, not realtime -- recap is a snapshot)
  *   2. Combines everything into RecapData
  *   3. Calls the pure generateRecapPDF function
@@ -19,6 +19,8 @@ import type {
   CategoryRow,
   NomineeRow,
   ConfidencePickRow,
+  DraftPickRow,
+  DraftEntityRow,
   PlayerRow,
   MessageRow,
 } from '../types/database'
@@ -30,6 +32,8 @@ interface UseRecapArgs {
   categories: CategoryRow[]
   nominees: NomineeRow[]
   confidencePicks: ConfidencePickRow[]
+  draftPicks: DraftPickRow[]
+  draftEntities: DraftEntityRow[]
   players: PlayerRow[]
   playerBingoCounts: Map<string, number>
 }
@@ -41,6 +45,8 @@ export function useRecap({
   categories,
   nominees,
   confidencePicks,
+  draftPicks,
+  draftEntities,
   players,
   playerBingoCounts,
 }: UseRecapArgs) {
@@ -65,6 +71,8 @@ export function useRecap({
         categories,
         nominees,
         confidencePicks,
+        draftPicks,
+        draftEntities,
         players,
         messages: (messages ?? []) as MessageRow[],
         playerBingoCounts,

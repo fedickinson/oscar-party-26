@@ -20,6 +20,7 @@ import { useGame } from '../context/GameContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useScores } from '../hooks/useScores'
 import { useRecap } from '../hooks/useRecap'
+import { useShareResults } from '../hooks/useShareResults'
 import { supabase } from '../lib/supabase'
 import {
   buildPostShowPrompt,
@@ -177,6 +178,8 @@ export default function Results() {
     [timeline, players, scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees],
   )
 
+  const { shareResults, isCopied } = useShareResults()
+
   const { downloadRecap, isGenerating } = useRecap({
     roomId: room?.id,
     roomCode: room?.code,
@@ -184,6 +187,8 @@ export default function Results() {
     categories: scores.categories,
     nominees: scores.nominees,
     confidencePicks: scores.confidencePicks,
+    draftPicks: scores.draftPicks,
+    draftEntities: scores.draftEntities,
     players,
     playerBingoCounts: scores.playerBingoCounts,
   })
@@ -210,6 +215,8 @@ export default function Results() {
       draftData={breakdowns.draft}
       onDownloadRecap={downloadRecap}
       isGeneratingRecap={isGenerating}
+      onShareResults={() => shareResults(scores.leaderboard, players, room.code)}
+      isCopied={isCopied}
     />
   )
 }

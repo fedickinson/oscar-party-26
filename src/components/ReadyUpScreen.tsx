@@ -58,6 +58,11 @@ export default function ReadyUpScreen({
 
   // Kick off the countdown as soon as all players are ready.
   // Guard with a ref so we only start it once even if readyPlayerIds fluctuates.
+  // Timers are stored in a ref so the unmount cleanup can cancel them, but
+  // allReady toggling false→true after the countdown has started will NOT
+  // cancel the already-running timers (that would leave clients stuck on "3").
+  const timersRef = useRef<(ReturnType<typeof setTimeout> | null)[]>([])
+
   useEffect(() => {
     if (!allReady || startedRef.current) return
     startedRef.current = true
@@ -88,14 +93,16 @@ export default function ReadyUpScreen({
       if (isHost) onCountdownCompleteRef.current()
     }, remainingComplete)
 
-    return () => {
-      if (t1) clearTimeout(t1)
-      if (t2) clearTimeout(t2)
-      clearTimeout(t3)
-      clearTimeout(t4)
-    }
+    timersRef.current = [t1, t2, t3, t4]
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allReady])
+
+  // Cancel timers only on unmount, not on every allReady change.
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((t) => { if (t) clearTimeout(t) })
+    }
+  }, [])
 
   return (
     <motion.div

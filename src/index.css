@@ -10,9 +10,14 @@
   --font-family-sans: 'Inter', sans-serif;
 }
 
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   background: linear-gradient(135deg, var(--color-deep-navy) 0%, var(--color-midnight) 100%);
-  min-height: 100vh;
+  min-height: 100dvh;
   color: white;
   font-family: var(--font-family-sans);
 }

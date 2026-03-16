@@ -22,6 +22,7 @@ import {
   ChevronUp,
   Clapperboard,
   Clock,
+  FastForward,
   RotateCcw,
   Trophy,
   User,
@@ -29,6 +30,9 @@ import {
 import { useAdmin } from '../../hooks/useAdmin'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
+import { supabase } from '../../lib/supabase'
+
+const FREE_CENTER_INDEX = 12
 
 
 const UNDO_WINDOW_MS = 30_000
@@ -47,17 +51,77 @@ interface Props {
   onEndCeremony: () => Promise<void>
   isEndingCeremony: boolean
   openSpotlight: (categoryId: number) => Promise<void>
+  onDevAutoCompleteRunning?: (running: boolean) => void
 }
 
-export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCeremony, openSpotlight }: Props) {
+export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCeremony, openSpotlight, onDevAutoCompleteRunning }: Props) {
   const {
     categories,
     winnerSetAt,
     isLoading,
     undoWinner,
+    setWinner,
   } = useAdmin(roomId)
 
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false)
+
+  async function devFillBingoCards() {
+    const { data: cards } = await supabase
+      .from('bingo_cards')
+      .select()
+      .eq('room_id', roomId)
+    if (!cards?.length) return
+
+    // Brief pause so objective auto-approvals have time to insert first
+    await new Promise((r) => setTimeout(r, 300))
+
+    for (const card of cards) {
+      const { data: existingMarks } = await supabase
+        .from('bingo_marks')
+        .select('square_index')
+        .eq('card_id', card.id)
+
+      const markedSet = new Set((existingMarks ?? []).map((m) => m.square_index as number))
+      markedSet.add(FREE_CENTER_INDEX)
+
+      // Randomly approve ~50% of the remaining unmarked squares
+      const toMark = Array.from({ length: 25 }, (_, i) => i)
+        .filter((i) => !markedSet.has(i) && Math.random() < 0.5)
+
+      if (!toMark.length) continue
+
+      const now = new Date().toISOString()
+      await supabase.from('bingo_marks').insert(
+        toMark.map((index) => ({
+          card_id: card.id,
+          square_index: index,
+          status: 'approved',
+          marked_at: now,
+        })),
+      )
+    }
+  }
+
+  async function handleDevAutoComplete() {
+    if (!isHost || isAutoCompleting) return
+    setIsAutoCompleting(true)
+    onDevAutoCompleteRunning?.(true)
+    try {
+      const unannounced = categories.filter((c) => c.winner_id == null)
+      for (const category of unannounced) {
+        if (category.nominees.length > 0) {
+          await setWinner(category.id, category.nominees[0].id)
+          await new Promise((r) => setTimeout(r, 80))
+        }
+      }
+      await devFillBingoCards()
+      await onEndCeremony()
+    } finally {
+      setIsAutoCompleting(false)
+      onDevAutoCompleteRunning?.(false)
+    }
+  }
   const [tick, setTick] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
@@ -115,6 +179,28 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
   return (
     <>
       <div className="space-y-3 pt-2">
+
+        {/* Dev-only: auto-complete all categories and end ceremony */}
+        {import.meta.env.DEV && isHost && (
+          <motion.button
+            onClick={handleDevAutoComplete}
+            disabled={isAutoCompleting}
+            whileTap={!isAutoCompleting ? { scale: 0.97 } : undefined}
+            className={[
+              'w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all',
+              !isAutoCompleting
+                ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
+                : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed',
+            ].join(' ')}
+          >
+            {isAutoCompleting ? (
+              <div className="w-3.5 h-3.5 border-2 border-purple-300/40 border-t-purple-300 rounded-full animate-spin" />
+            ) : (
+              <FastForward size={12} />
+            )}
+            {isAutoCompleting ? 'Auto-completing...' : 'DEV: Auto-Complete All & End'}
+          </motion.button>
+        )}
 
         {/* Progress header */}
         <div>
@@ -201,6 +287,10 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
             const winnerNominee = hasWinner
               ? category.nominees.find((n) => n.id === category.winner_id)
               : null
+            const tieWinnerNominee = hasWinner && category.tie_winner_id
+              ? category.nominees.find((n) => n.id === category.tie_winner_id)
+              : null
+            const hasTie = tieWinnerNominee != null
 
             return (
               <motion.div
@@ -211,10 +301,20 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 className={[
                   'backdrop-blur-lg border rounded-xl overflow-hidden relative',
                   hasWinner
-                    ? 'bg-white/4 border-white/8'
+                    ? 'bg-oscar-gold/4 border-oscar-gold/14'
                     : 'bg-white/6 border-white/10',
                 ].join(' ')}
               >
+                {/* Gold left-edge accent for announced categories */}
+                {hasWinner && (
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl"
+                    style={{
+                      background: 'linear-gradient(180deg, rgba(212,175,55,0.7) 0%, rgba(212,175,55,0.25) 100%)',
+                    }}
+                  />
+                )}
+
                 {/* Main row */}
                 <button
                   onClick={hasWinner ? () => toggleExpand(category.id) : undefined}
@@ -228,12 +328,12 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                     className={[
                       'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
                       hasWinner
-                        ? 'bg-emerald-500/15 border border-emerald-500/20'
+                        ? 'bg-oscar-gold/16 border border-oscar-gold/30'
                         : 'bg-white/6 border border-white/8',
                     ].join(' ')}
                   >
                     {hasWinner ? (
-                      <Check size={12} className="text-emerald-400" strokeWidth={3} />
+                      <Trophy size={11} className="text-oscar-gold" />
                     ) : (
                       <Clock size={12} className="text-white/22" />
                     )}
@@ -267,10 +367,21 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
                     {hasWinner && winnerNominee ? (
                       <div>
-                        <p className="text-xs font-semibold text-oscar-gold leading-tight truncate">
+                        <p className="text-[13px] font-bold text-oscar-gold leading-tight truncate"
+                          style={{ textShadow: '0 0 16px rgba(212,175,55,0.28)' }}
+                        >
                           {winnerNominee.name}
+                          {hasTie && tieWinnerNominee && (
+                            <>
+                              <span className="text-white/28 mx-1 font-normal">&</span>
+                              {tieWinnerNominee.name}
+                            </>
+                          )}
                         </p>
-                        {winnerNominee.film_name && (
+                        {hasTie && (
+                          <span className="text-[9px] text-amber-400/60 uppercase tracking-wide font-semibold">Tie</span>
+                        )}
+                        {winnerNominee.film_name && !hasTie && (
                           <div className="flex items-center gap-1 mt-0.5">
                             <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
                             <p className="text-[11px] text-white/40 truncate">
@@ -341,7 +452,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                     >
                       <div className="px-3.5 pb-3 pt-2 space-y-1.5 border-t border-white/8">
                         {category.nominees.map((nominee) => {
-                          const isWinner = nominee.id === category.winner_id
+                          const isWinner = nominee.id === category.winner_id || nominee.id === category.tie_winner_id
                           return (
                             <div
                               key={nominee.id}

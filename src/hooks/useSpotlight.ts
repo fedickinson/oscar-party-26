@@ -63,11 +63,12 @@ export function useSpotlight() {
     if (!roomId || !spotlightCategoryId || isConfirmingRef.current) return
     isConfirmingRef.current = true
     try {
-      // 1. Upsert the per-room winner record
+      // 1. Upsert the per-room winner record (single winner, clear any tie)
       await supabase.from('room_winners').upsert({
         room_id: roomId,
         category_id: spotlightCategoryId,
         winner_id: nomineeId,
+        tie_winner_id: null,
       })
 
       // 2a. Mark correct picks
@@ -93,6 +94,47 @@ export function useSpotlight() {
     }
   }
 
+  async function confirmSpotlightTieWinner(nomineeId1: string, nomineeId2: string): Promise<void> {
+    if (!roomId || !spotlightCategoryId || isConfirmingRef.current) return
+    isConfirmingRef.current = true
+    try {
+      // 1. Upsert with both winners
+      await supabase.from('room_winners').upsert({
+        room_id: roomId,
+        category_id: spotlightCategoryId,
+        winner_id: nomineeId1,
+        tie_winner_id: nomineeId2,
+      })
+
+      // 2a. Mark correct picks for first winner
+      await supabase
+        .from('confidence_picks')
+        .update({ is_correct: true })
+        .eq('category_id', spotlightCategoryId)
+        .eq('nominee_id', nomineeId1)
+        .eq('room_id', roomId)
+
+      // 2b. Mark correct picks for second winner
+      await supabase
+        .from('confidence_picks')
+        .update({ is_correct: true })
+        .eq('category_id', spotlightCategoryId)
+        .eq('nominee_id', nomineeId2)
+        .eq('room_id', roomId)
+
+      // 2c. Mark incorrect picks — neither winner
+      await supabase
+        .from('confidence_picks')
+        .update({ is_correct: false })
+        .eq('category_id', spotlightCategoryId)
+        .neq('nominee_id', nomineeId1)
+        .neq('nominee_id', nomineeId2)
+        .eq('room_id', roomId)
+    } finally {
+      isConfirmingRef.current = false
+    }
+  }
+
   return {
     isSpotlightActive: spotlightCategoryId != null,
     spotlightCategoryId,
@@ -100,5 +142,6 @@ export function useSpotlight() {
     openSpotlight,
     closeSpotlight,
     confirmSpotlightWinner,
+    confirmSpotlightTieWinner,
   }
 }

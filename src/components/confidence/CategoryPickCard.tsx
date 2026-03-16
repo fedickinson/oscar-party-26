@@ -110,11 +110,11 @@ export default function CategoryPickCard({
             onClick={onOpenPicker}
             className={[
               'w-9 h-9 rounded-lg flex flex-col items-center justify-center relative',
-              'border transition-colors',
+              'border-2 transition-colors',
               pick.confidence != null
-                ? 'bg-oscar-gold/15 border-oscar-gold/50'
+                ? 'bg-oscar-gold/15 border-oscar-gold/60'
                 : hasNominee
-                  ? 'bg-amber-500/15 border-amber-400/60'
+                  ? 'bg-red-500/20 border-red-400 border-dashed'
                   : 'bg-white/5 border-white/15 border-dashed',
             ].join(' ')}
           >
@@ -124,9 +124,13 @@ export default function CategoryPickCard({
               </span>
             ) : hasNominee ? (
               <>
-                <Hash size={13} className="text-amber-400" />
-                {/* Attention dot */}
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />
+                <span className="text-sm font-bold text-red-400 leading-none">?</span>
+                {/* Pulsing ring */}
+                <motion.span
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 rounded-lg border-2 border-red-400"
+                />
               </>
             ) : (
               <Hash size={13} className="text-white/30" />

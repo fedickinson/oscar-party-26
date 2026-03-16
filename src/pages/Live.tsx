@@ -62,6 +62,7 @@ export default function Live() {
   const { room, player, players } = useGame()
   const [{ tab, direction }, setTabState] = useState({ tab: 0, direction: 1 })
   const [showBingoExplainer, setShowBingoExplainer] = useState(false)
+  const [highlightFilmTitle, setHighlightFilmTitle] = useState<string | null>(null)
 
   const roomId = room?.id
   const isHost = player?.is_host ?? false
@@ -187,6 +188,7 @@ export default function Live() {
     openSpotlight,
     closeSpotlight,
     confirmSpotlightWinner,
+    confirmSpotlightTieWinner,
   } = useSpotlight()
 
   // ── Spotlight notification + tab switch ───────────────────────────────────────
@@ -252,6 +254,11 @@ export default function Live() {
     setHasPeekedBingo(true)
     setShowBingoExplainer(false)
     selectTab(1)
+  }
+
+  function handleFilmLinkTap(filmTitle: string) {
+    setHighlightFilmTitle(filmTitle)
+    selectTab(5)
   }
 
   // ── Pending bingo count + toast (host only) ───────────────────────────────
@@ -334,6 +341,8 @@ export default function Live() {
 
   const [announcementQueue, setAnnouncementQueue] = useState<AnnouncementData[]>([])
   const seenWinnerCategoryIds = useRef<Set<number> | null>(null)
+  // Suppressed during dev auto-complete so the rapid winner cascade doesn't flood the UI
+  const suppressAnnouncementsRef = useRef(false)
 
   useEffect(() => {
     if (scores.isLoading) return
@@ -355,11 +364,21 @@ export default function Live() {
 
       seenWinnerCategoryIds.current!.add(cat.id)
 
+      // Skip announcement pop-ups during dev auto-complete
+      if (suppressAnnouncementsRef.current) return
 
       const winner = scores.nominees.find((n) => n.id === cat.winner_id)
       if (!winner) return
 
-      // Confidence impact for current player
+      const tieWinner = cat.tie_winner_id
+        ? scores.nominees.find((n) => n.id === cat.tie_winner_id)
+        : null
+
+      // Helper: check if a nominee_id matches either winner in a tie
+      const isWinningPick = (nomineeId: string) =>
+        nomineeId === cat.winner_id || (cat.tie_winner_id != null && nomineeId === cat.tie_winner_id)
+
+      // Confidence impact for current player (kept for confetti/scored logic)
       const myPick = scores.confidencePicks.find(
         (p) => p.player_id === currentPlayerId && p.category_id === cat.id,
       )
@@ -373,9 +392,29 @@ export default function Live() {
             // Use nominee_id comparison, not is_correct, because the
             // confidence_picks.is_correct DB update may not have arrived
             // via Realtime yet when this announcement fires.
-            isCorrect: myPick.nominee_id === cat.winner_id,
+            isCorrect: isWinningPick(myPick.nominee_id),
           }
         : null
+
+      // Confidence results for all players in the room
+      const allConfidenceResults = players
+        .map((player) => {
+          const pick = scores.confidencePicks.find(
+            (p) => p.player_id === player.id && p.category_id === cat.id,
+          )
+          if (!pick) return null
+          const pickedNom = scores.nominees.find((n) => n.id === pick.nominee_id)
+          return {
+            playerId: player.id,
+            playerName: player.name,
+            playerColor: player.color ?? '#ffffff',
+            pickedName: pickedNom?.name ?? 'Unknown',
+            confidence: pick.confidence,
+            isCorrect: isWinningPick(pick.nominee_id),
+            isCurrentPlayer: player.id === currentPlayerId,
+          }
+        })
+        .filter(Boolean) as AnnouncementData['allConfidenceResults']
 
       // Draft impact
       const { playerId: draftPlayerId, points: draftPoints } = findDraftPointsForWinner(
@@ -402,7 +441,10 @@ export default function Live() {
           categoryName: cat.name,
           winnerName: winner.name,
           winnerFilm: winner.film_name ?? '',
+          tieWinnerName: tieWinner?.name ?? null,
+          tieWinnerFilm: tieWinner?.film_name ?? null,
           confidenceResult,
+          allConfidenceResults,
           draftResult,
         },
       ])
@@ -480,7 +522,7 @@ export default function Live() {
       )}
       <div
         className="flex flex-col bg-deep-navy"
-        style={{ height: 'calc(100vh - 3rem)' }}
+        style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}
       >
         {/* Scrollable tab content */}
         <div className="flex-1 overflow-hidden relative">
@@ -513,8 +555,10 @@ export default function Live() {
                   openSpotlight={openSpotlight}
                   closeSpotlight={closeSpotlight}
                   confirmSpotlightWinner={confirmSpotlightWinner}
+                  confirmSpotlightTieWinner={confirmSpotlightTieWinner}
                   onEndCeremony={handleEndCeremony}
                   isEndingCeremony={isEndingCeremony}
+                  onFilmLinkTap={handleFilmLinkTap}
                 />
               </motion.div>
             )}
@@ -538,6 +582,7 @@ export default function Live() {
                     nominees={scores.nominees}
                     leaderboard={scores.leaderboard}
                     onShowExplainer={() => setShowBingoExplainer(true)}
+                    onSquareApproved={(text) => showToast(`Approved: ${text}`, 'success')}
                   />
                 </div>
               </motion.div>
@@ -587,6 +632,7 @@ export default function Live() {
                     onEndCeremony={handleEndCeremony}
                     isEndingCeremony={isEndingCeremony}
                     openSpotlight={openSpotlight}
+                    onDevAutoCompleteRunning={(running) => { suppressAnnouncementsRef.current = running }}
                   />
                 </div>
               </motion.div>
@@ -630,7 +676,10 @@ export default function Live() {
                 className="absolute inset-0 overflow-y-auto"
               >
                 <div className="px-4 py-6 pb-24 max-w-md mx-auto">
-                  <BrowseSection />
+                  <BrowseSection
+                    highlightFilmTitle={highlightFilmTitle}
+                    onHighlightComplete={() => setHighlightFilmTitle(null)}
+                  />
                 </div>
               </motion.div>
             )}

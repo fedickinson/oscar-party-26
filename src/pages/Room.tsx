@@ -252,7 +252,7 @@ export default function Room() {
                   'Starting…'
                 ) : canStart ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Clapperboard size={18} /> Start Ensemble
+                    <Clapperboard size={18} /> Start the Party
                   </span>
                 ) : (
                   `Need ${2 - players.length} more player${2 - players.length === 1 ? '' : 's'}`

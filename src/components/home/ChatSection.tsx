@@ -9,12 +9,13 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send } from 'lucide-react'
+import { BookOpen, Send } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
 import CompanionAvatar from './CompanionAvatar'
 import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
+import { getAvatarById } from '../../lib/avatar-utils'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -55,6 +56,14 @@ function renderFormattedText(text: string): React.ReactNode[] {
   })
 }
 
+// ─── Companion role labels ────────────────────────────────────────────────────
+
+const COMPANION_ROLES: Record<string, string> = {
+  meryl: 'The Legend',
+  nikki: 'The Roaster',
+  will:  'The Goofball',
+}
+
 // ─── Companion bubble styles ──────────────────────────────────────────────────
 
 const COMPANION_BUBBLE_STYLES: Record<string, {
@@ -87,9 +96,11 @@ const COMPANION_BUBBLE_STYLES: Record<string, {
 interface Props {
   /** When true, the message list fills all available vertical space instead of capping at 40vh. */
   fill?: boolean
+  /** Called when user taps a film-link card in chat. Receives the film title. */
+  onFilmLinkTap?: (filmTitle: string) => void
 }
 
-export default function ChatSection({ fill = false }: Props) {
+export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const { room, player, players } = useGame()
   const { messages, sendMessage, isLoading } = useChat(room?.id)
   const [input, setInput] = useState('')
@@ -156,12 +167,58 @@ export default function ChatSection({ fill = false }: Props) {
               )
             }
 
+            // ── Winner sub-divider ────────────────────────────────────
+            if (msg.player_id === 'winner-divider') {
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex items-center gap-2 py-1"
+                >
+                  <div className="flex-1 h-px bg-oscar-gold/15" />
+                  <span className="text-[10px] uppercase tracking-widest text-oscar-gold/55 font-semibold whitespace-nowrap">
+                    {msg.text}
+                  </span>
+                  <div className="flex-1 h-px bg-oscar-gold/15" />
+                </motion.div>
+              )
+            }
+
+            // ── Film encyclopedia link cards ──────────────────────────────
+            if (msg.player_id === 'film-link') {
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="flex justify-center py-1"
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onFilmLinkTap?.(msg.text)}
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-oscar-gold/8 border border-oscar-gold/25 min-h-[44px]"
+                  >
+                    <BookOpen size={15} className="text-oscar-gold flex-shrink-0" />
+                    <span className="text-sm text-oscar-gold/90 font-medium">
+                      See <span className="font-semibold text-oscar-gold">{msg.text}</span> in Film Encyclopedia
+                    </span>
+                  </motion.button>
+                </motion.div>
+              )
+            }
+
             const isCompanion = COMPANION_IDS.has(msg.player_id)
             const companion = isCompanion ? getCompanionById(msg.player_id) : undefined
             const isMine = !isCompanion && msg.player_id === player?.id
             const sender = !isCompanion ? players.find((p) => p.id === msg.player_id) : undefined
             const senderName = sender?.name ?? (isCompanion ? (companion?.name ?? 'AI') : 'Unknown')
             const avatarId = sender?.avatar_id ?? ''
+            const avatarColor = !isCompanion && !isMine && avatarId
+              ? (getAvatarById(avatarId)?.colorPrimary ?? null)
+              : null
 
             return (
               <motion.div
@@ -189,11 +246,18 @@ export default function ChatSection({ fill = false }: Props) {
                 <div className={['flex flex-col gap-0.5 max-w-[75%]', isMine ? 'items-end' : 'items-start'].join(' ')}>
                   {/* Sender name */}
                   {!isMine && (
-                    <span
-                      className="text-[11px] px-1"
-                      style={companion ? { color: companion.colorPrimary } : { color: 'rgba(255,255,255,0.45)' }}
-                    >
-                      {senderName}
+                    <span className="text-[13px] px-1 font-medium flex items-baseline gap-1">
+                      <span style={companion ? { color: companion.colorPrimary } : { color: 'rgba(255,255,255,0.45)' }}>
+                        {senderName}
+                      </span>
+                      {companion && COMPANION_ROLES[companion.id] && (
+                        <span
+                          className="text-[11px] font-normal"
+                          style={{ color: companion.colorPrimary, opacity: 0.5 }}
+                        >
+                          ({COMPANION_ROLES[companion.id]})
+                        </span>
+                      )}
                     </span>
                   )}
 
@@ -222,8 +286,22 @@ export default function ChatSection({ fill = false }: Props) {
                         'px-3 py-2 rounded-2xl text-sm leading-snug',
                         isMine
                           ? 'bg-oscar-gold/20 border border-oscar-gold/30 text-white rounded-br-sm'
-                          : 'bg-white/8 border border-white/10 text-white/90 rounded-bl-sm',
+                          : 'text-white/90 rounded-bl-sm',
                       ].join(' ')}
+                      style={
+                        isMine
+                          ? undefined
+                          : avatarColor
+                            ? {
+                                background: `color-mix(in srgb, ${avatarColor} 10%, rgba(255,255,255,0.05))`,
+                                border: `1px solid color-mix(in srgb, ${avatarColor} 28%, rgba(255,255,255,0.08))`,
+                                borderLeft: `3px solid ${avatarColor}`,
+                              }
+                            : {
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                              }
+                      }
                     >
                       {msg.text}
                     </div>

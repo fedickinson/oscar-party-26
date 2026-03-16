@@ -8,6 +8,12 @@ interface PhaseExplainerProps {
   onContinue: () => void
 }
 
+const GAME_LABEL: Record<Phase, string> = {
+  draft: 'Game One',
+  confidence: 'Game Two',
+  bingo: 'Game Three',
+}
+
 const CONTENT: Record<Phase, {
   icon: React.ReactNode
   title: string
@@ -55,6 +61,14 @@ export default function PhaseExplainer({ phase, onContinue }: PhaseExplainerProp
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
+        {/* Game number eyebrow label */}
+        <p
+          className="text-center text-xs font-semibold uppercase tracking-widest"
+          style={{ color: '#D4AF37' }}
+        >
+          {GAME_LABEL[phase]}
+        </p>
+
         {/* Phase icon */}
         <div className="flex justify-center pt-1">
           {icon}
