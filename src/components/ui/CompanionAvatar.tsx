@@ -25,7 +25,7 @@
 import type { ReactNode } from 'react'
 
 type CompanionId = 'meryl' | 'nikki' | 'will' | 'the-academy'
-type CompanionSize = 'sm' | 'md' | 'lg'
+type CompanionSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface Props {
   companionId: string
@@ -38,6 +38,7 @@ const SIZE_PX: Record<CompanionSize, number> = {
   sm: 32,
   md: 40,
   lg: 48,
+  xl: 56,
 }
 
 // ─── Companion brand colors ───────────────────────────────────────────────────
@@ -47,13 +48,15 @@ interface CompanionBrand {
   gradientTo: string
   /** Optional photo. Place file at public/companions/<id>.jpg and set this path. */
   imageUrl?: string
+  /** CSS objectPosition for cropping the photo toward the subject's face. */
+  imagePosition?: string
 }
 
 const BRANDS: Record<CompanionId, CompanionBrand> = {
-  meryl: { gradientFrom: '#C9A84C', gradientTo: '#A68B3A', imageUrl: '/avatars/companions/gloria-perfume.png' },
-  nikki: { gradientFrom: '#EC4899', gradientTo: '#DB2777', imageUrl: '/avatars/companions/razor-spotlight.png' },
-  will: { gradientFrom: '#EAB308', gradientTo: '#CA8A04', imageUrl: '/avatars/companions/buddy-microphone.png' },
-  'the-academy': { gradientFrom: '#D4AF37', gradientTo: '#B8960C', imageUrl: '/avatars/companions/academy-statuette.png' },
+  meryl:        { gradientFrom: '#C9A84C', gradientTo: '#A68B3A', imageUrl: '/avatars/companions/gloria-perfume.png',    imagePosition: 'center 40%' },
+  nikki:        { gradientFrom: '#EC4899', gradientTo: '#DB2777', imageUrl: '/avatars/companions/razor-spotlight.png',  imagePosition: 'center 28%' },
+  will:         { gradientFrom: '#EAB308', gradientTo: '#CA8A04', imageUrl: '/avatars/companions/buddy-microphone.png', imagePosition: 'center 32%' },
+  'the-academy':{ gradientFrom: '#D4AF37', gradientTo: '#B8960C', imageUrl: '/avatars/companions/academy-statuette.png', imagePosition: 'center 33%' },
 }
 
 // ─── Gloria icon ─────────────────────────────────────────────────────────────
@@ -299,7 +302,7 @@ export default function CompanionAvatar({ companionId, size = 'md' }: Props) {
         <img
           src={brand.imageUrl}
           alt={companionId}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: brand.imagePosition ?? 'center' }}
         />
       ) : (
         <>

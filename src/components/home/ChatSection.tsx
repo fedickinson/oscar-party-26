@@ -109,7 +109,7 @@ function SingleCompanionTyping({ companionId, onProfile }: { companionId: string
         onClick={() => onProfile(c.id)}
         className="flex-shrink-0 mb-0.5"
       >
-        <CompanionAvatar companionId={c.id} size="md" />
+        <CompanionAvatar companionId={c.id} size="xl" />
       </motion.button>
       <div className="flex flex-col gap-0.5">
         <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
@@ -320,7 +320,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                         whileTap={{ scale: 0.92 }}
                         onClick={() => setProfileCompanionId(msg.player_id)}
                       >
-                        <CompanionAvatar companionId={msg.player_id} size="md" />
+                        <CompanionAvatar companionId={msg.player_id} size="xl" />
                       </motion.button>
                     ) : (
                       <Avatar avatarId={avatarId} size="sm" />
