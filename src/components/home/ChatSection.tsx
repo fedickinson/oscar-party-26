@@ -227,16 +227,6 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
         className={['overflow-y-auto px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
-        <AnimatePresence>
-          {typingCompanionIds.map((id) => (
-            <SingleCompanionTyping
-              key={id}
-              companionId={id}
-              onProfile={setProfileCompanionId}
-            />
-          ))}
-        </AnimatePresence>
-
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
             // ── System divider messages ──────────────────────────────────
@@ -406,6 +396,16 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
               </motion.div>
             )
           })}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {typingCompanionIds.map((id) => (
+            <SingleCompanionTyping
+              key={id}
+              companionId={id}
+              onProfile={setProfileCompanionId}
+            />
+          ))}
         </AnimatePresence>
 
         <div ref={bottomRef} />
