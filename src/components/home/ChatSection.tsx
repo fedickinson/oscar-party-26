@@ -56,6 +56,66 @@ function renderFormattedText(text: string): React.ReactNode[] {
   })
 }
 
+// ─── Companions typing indicator ─────────────────────────────────────────────
+// Shown immediately when the chat is empty so the user knows companions are
+// about to speak. Disappears automatically once the first message arrives.
+
+const TYPING_COMPANIONS: { id: string; name: string; color: string }[] = [
+  { id: 'the-academy', name: 'The Academy', color: '#D4AF37' },
+  { id: 'meryl',       name: 'Gloria',      color: '#C9A84C' },
+  { id: 'nikki',       name: 'Razor',       color: '#EC4899' },
+  { id: 'will',        name: 'Buddy',       color: '#EAB308' },
+]
+
+function TypingDots({ color }: { color: string }) {
+  return (
+    <div
+      className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm flex items-center gap-1.5"
+      style={{
+        background: `color-mix(in srgb, ${color} 8%, rgba(255,255,255,0.04))`,
+        border: `1px solid color-mix(in srgb, ${color} 18%, rgba(255,255,255,0.08))`,
+        borderLeft: `3px solid ${color}`,
+      }}
+    >
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ backgroundColor: color }}
+          animate={{ y: [0, -4, 0], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function CompanionsTyping() {
+  return (
+    <div className="flex flex-col gap-3 py-2">
+      {TYPING_COMPANIONS.map((c, i) => (
+        <motion.div
+          key={c.id}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.12, duration: 0.2 }}
+          className="flex gap-2 items-end"
+        >
+          <div className="flex-shrink-0 mb-0.5">
+            <CompanionAvatar companionId={c.id} size="sm" />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
+              {c.name}
+            </span>
+            <TypingDots color={c.color} />
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Companion role labels ────────────────────────────────────────────────────
 
 const COMPANION_ROLES: Record<string, string> = {
@@ -141,9 +201,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
         {!isLoading && messages.length === 0 && (
-          <p className="text-white/40 text-sm text-center py-6">
-            No messages yet. Say something!
-          </p>
+          <CompanionsTyping />
         )}
 
         <AnimatePresence initial={false}>

@@ -217,7 +217,7 @@ export function useAICompanions(
         ),
         1400,
       )
-    }, 2000)
+    }, 300)
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
