@@ -147,6 +147,7 @@ export function useDraft(roomId: string | undefined): DraftState {
   const pickStartTimeRef = useRef(Date.now())
   const isPickingRef = useRef(false) // double-tap guard
   const roomRef = useRef(room)
+  const totalDraftPicksRef = useRef(0)
   useEffect(() => {
     roomRef.current = room
   })
@@ -256,6 +257,9 @@ export function useDraft(roomId: string | undefined): DraftState {
   const isDraftComplete =
     room != null && entities.length > 0 && currentPick >= totalDraftPicks
 
+  // Keep ref in sync so the timer callback can read it without a stale closure
+  totalDraftPicksRef.current = totalDraftPicks
+
   // Which sub-draft are we currently in?
   const draftSubPhase: 'films' | 'people' | 'complete' =
     currentPick >= totalDraftPicks
@@ -309,6 +313,11 @@ export function useDraft(roomId: string | undefined): DraftState {
       if (remaining === 0 && player?.is_host && roomRef.current) {
         const currentRoom = roomRef.current
         const pick = currentRoom.current_pick
+
+        // Never auto-skip the last pick — let the player claim it themselves.
+        const isLastPick = pick >= totalDraftPicksRef.current - 1
+        if (isLastPick) return
+
         // Advance current_pick — only succeeds if nobody else already did
         supabase
           .from('rooms')
