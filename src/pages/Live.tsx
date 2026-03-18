@@ -196,6 +196,9 @@ export default function Live() {
   const prevSpotlightCategoryIdRef = useRef<number | null>(null)
   const [showSpotlightNotification, setShowSpotlightNotification] = useState(false)
   const [notificationCategory, setNotificationCategory] = useState<{ name: string; tier: number } | null>(null)
+  // SpotlightView only renders after the notification banner finishes — prevents
+  // the banner from overlapping the SpotlightView content mid-slide-in.
+  const [spotlightDisplayId, setSpotlightDisplayId] = useState<number | null>(null)
 
   useEffect(() => {
     const prev = prevSpotlightCategoryIdRef.current
@@ -206,12 +209,19 @@ export default function Live() {
       if (cat) {
         setNotificationCategory({ name: cat.name, tier: cat.tier })
         setShowSpotlightNotification(true)
+        // Clear display id so SpotlightView unmounts until notification completes
+        setSpotlightDisplayId(null)
       }
+    } else if (spotlightCategoryId == null && prev != null) {
+      // Spotlight closed — clear display id immediately
+      setSpotlightDisplayId(null)
     }
   }, [spotlightCategoryId, scores.categories])
 
   function handleSpotlightNotificationComplete() {
     setShowSpotlightNotification(false)
+    // Now safe to show SpotlightView — notification is gone
+    setSpotlightDisplayId(spotlightCategoryIdRef.current)
     selectTab(0)
   }
 
@@ -549,7 +559,7 @@ export default function Live() {
                   onNavigateToBingo={handleNavigateToBingo}
                   showStarted={showStarted}
                   onStartShow={handleStartShow}
-                  spotlightCategoryId={spotlightCategoryId}
+                  spotlightCategoryId={spotlightDisplayId}
                   spotlightNomineeIds={spotlightNomineeIds}
                   isHost={isHost}
                   openSpotlight={openSpotlight}

@@ -65,9 +65,9 @@ export default function EntityCard({
               <FilmIcon filmName={entity.name} size={16} />
             </div>
           ) : (
-            <span className="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300">
-              Person
-            </span>
+            <div className={['p-1.5 rounded-lg', isAvailable ? 'bg-white/10 text-white/60' : 'bg-white/5 text-white/25'].join(' ')}>
+              <FilmIcon filmName={entity.film_name ?? ''} size={16} />
+            </div>
           )}
         </div>
 

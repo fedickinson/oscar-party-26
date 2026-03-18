@@ -58,15 +58,17 @@ function renderFormattedText(text: string): React.ReactNode[] {
 }
 
 // ─── Companions typing indicator ─────────────────────────────────────────────
-// Shown immediately when the chat is empty so the user knows companions are
-// about to speak. Disappears automatically once the first message arrives.
+// Shows the next companion in intro sequence who hasn't spoken yet.
+// Starts with just The Academy, then advances as each message arrives.
 
-const TYPING_COMPANIONS: { id: string; name: string; color: string }[] = [
+const INTRO_COMPANIONS: { id: string; name: string; color: string }[] = [
   { id: 'the-academy', name: 'The Academy', color: '#D4AF37' },
   { id: 'meryl',       name: 'Gloria',      color: '#C9A84C' },
   { id: 'nikki',       name: 'Razor',       color: '#EC4899' },
   { id: 'will',        name: 'Buddy',       color: '#EAB308' },
 ]
+
+const INTRO_COMPANION_IDS = INTRO_COMPANIONS.map((c) => c.id)
 
 function TypingDots({ color }: { color: string }) {
   return (
@@ -91,33 +93,31 @@ function TypingDots({ color }: { color: string }) {
   )
 }
 
-function CompanionsTyping({ onProfile }: { onProfile: (id: string) => void }) {
+function SingleCompanionTyping({ companionId, onProfile }: { companionId: string; onProfile: (id: string) => void }) {
+  const c = INTRO_COMPANIONS.find((x) => x.id === companionId)
+  if (!c) return null
   return (
-    <div className="flex flex-col gap-3 py-2">
-      {TYPING_COMPANIONS.map((c, i) => (
-        <motion.div
-          key={c.id}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.12, duration: 0.2 }}
-          className="flex gap-2 items-end"
-        >
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={() => onProfile(c.id)}
-            className="flex-shrink-0 mb-0.5"
-          >
-            <CompanionAvatar companionId={c.id} size="md" />
-          </motion.button>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
-              {c.name}
-            </span>
-            <TypingDots color={c.color} />
-          </div>
-        </motion.div>
-      ))}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="flex gap-2 items-end py-1"
+    >
+      <motion.button
+        whileTap={{ scale: 0.92 }}
+        onClick={() => onProfile(c.id)}
+        className="flex-shrink-0 mb-0.5"
+      >
+        <CompanionAvatar companionId={c.id} size="md" />
+      </motion.button>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
+          {c.name}
+        </span>
+        <TypingDots color={c.color} />
+      </div>
+    </motion.div>
   )
 }
 
@@ -168,14 +168,28 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const prevMessageCountRef = useRef(0)
 
+  // Which intro companion should show a typing indicator right now?
+  // Find the first in sequence that hasn't sent a message yet.
+  const spokCompanions = new Set(messages.filter((m) => INTRO_COMPANION_IDS.includes(m.player_id)).map((m) => m.player_id))
+  const nextTypingCompanionId = !isLoading ? INTRO_COMPANION_IDS.find((id) => !spokCompanions.has(id)) : undefined
+
   const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
-  // Scroll to bottom instantly on mount (no visible pan), smooth only for new messages
+  // Scroll to bottom on new messages.
+  // Dividers (category start, winner) jump instantly — they open new sections and may be
+  // far from the current scroll position. Companion/player messages scroll smoothly.
   useEffect(() => {
     if (!bottomRef.current) return
     const isNewMessage = messages.length > prevMessageCountRef.current
     prevMessageCountRef.current = messages.length
-    bottomRef.current.scrollIntoView({ behavior: isNewMessage ? 'smooth' : 'instant' })
+    if (!isNewMessage) {
+      bottomRef.current.scrollIntoView({ behavior: 'instant' })
+      return
+    }
+    const newest = messages[messages.length - 1]
+    const isSectionStart =
+      newest?.player_id === 'system' || newest?.player_id === 'winner-divider'
+    bottomRef.current.scrollIntoView({ behavior: isSectionStart ? 'instant' : 'smooth' })
   }, [messages])
 
   async function handleSend() {
@@ -202,9 +216,15 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
         className={['overflow-y-auto px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
-        {!isLoading && messages.length === 0 && (
-          <CompanionsTyping onProfile={setProfileCompanionId} />
-        )}
+        <AnimatePresence>
+          {nextTypingCompanionId && (
+            <SingleCompanionTyping
+              key={nextTypingCompanionId}
+              companionId={nextTypingCompanionId}
+              onProfile={setProfileCompanionId}
+            />
+          )}
+        </AnimatePresence>
 
         <AnimatePresence initial={false}>
           {messages.map((msg) => {

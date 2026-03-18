@@ -244,13 +244,12 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
     if (match) {
       setActiveHighlight(match.id)
 
-      // Scroll to the card after a brief delay so the tab switch + expand can complete
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const el = cardRefs.current.get(match.id)
-          el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }, 150)
-      })
+      // Scroll to the card after the tab transition completes (~180ms) + expand animation.
+      // block: 'start' puts the card at the top of the viewport, not the center.
+      setTimeout(() => {
+        const el = cardRefs.current.get(match.id)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
 
       // Clear highlight after 3 seconds
       const timer = setTimeout(() => {
