@@ -37,6 +37,7 @@ import type {
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
 import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
+import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
 
 export function useAICompanions(
   categories: CategoryRow[],
@@ -158,7 +159,10 @@ export function useAICompanions(
         if (msg.delay_seconds === 0) {
           await insertCompanionMessage(msg.companion_id, msg.text)
         } else {
+          // Show typing indicator immediately, remove it when the message actually posts
+          addPendingCompanion(msg.companion_id)
           const tid = setTimeout(() => {
+            removePendingCompanion(msg.companion_id)
             insertCompanionMessage(msg.companion_id, msg.text)
           }, msg.delay_seconds * 1000)
           pendingTimeoutsRef.current.push(tid)
@@ -174,6 +178,7 @@ export function useAICompanions(
     return () => {
       pendingTimeoutsRef.current.forEach(clearTimeout)
       pendingTimeoutsRef.current = []
+      clearPendingCompanions()
     }
   }, [])
 

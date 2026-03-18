@@ -17,6 +17,7 @@ import CompanionAvatar from './CompanionAvatar'
 import CompanionProfileModal from './CompanionProfileModal'
 import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
 import { getAvatarById } from '../../lib/avatar-utils'
+import { usePendingCompanions } from '../../hooks/companionTypingStore'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -173,6 +174,16 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const spokCompanions = new Set(messages.filter((m) => INTRO_COMPANION_IDS.includes(m.player_id)).map((m) => m.player_id))
   const nextTypingCompanionId = !isLoading ? INTRO_COMPANION_IDS.find((id) => !spokCompanions.has(id)) : undefined
 
+  // Companions with pending delayed messages (host-side, from useAICompanions)
+  const pendingCompanionIds = usePendingCompanions()
+
+  // All typing indicators to show — pending delayed companions first (in natural order),
+  // then the intro companion if not already covered, deduplicated.
+  const typingCompanionIds = [
+    ...INTRO_COMPANION_IDS.filter((id) => pendingCompanionIds.includes(id)),
+    ...(nextTypingCompanionId && !pendingCompanionIds.includes(nextTypingCompanionId) ? [nextTypingCompanionId] : []),
+  ]
+
   const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
   // Scroll to bottom on new messages.
@@ -217,13 +228,13 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
         <AnimatePresence>
-          {nextTypingCompanionId && (
+          {typingCompanionIds.map((id) => (
             <SingleCompanionTyping
-              key={nextTypingCompanionId}
-              companionId={nextTypingCompanionId}
+              key={id}
+              companionId={id}
               onProfile={setProfileCompanionId}
             />
-          )}
+          ))}
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
@@ -309,7 +320,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                 className={[
                   'flex gap-2 items-end',
                   isMine ? 'flex-row-reverse' : 'flex-row',
-                  isCompanion ? 'mb-1' : '',
+                  isCompanion ? 'mb-3' : '',
                 ].join(' ')}
               >
                 {/* Avatar — companion icon or player avatar (hidden on own messages) */}
