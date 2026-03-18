@@ -17,23 +17,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, X } from 'lucide-react'
 import type { BingoMarkRow, BingoSquareRow } from '../../types/database'
-import { BINGO_LINES, FREE_CENTER_INDEX } from '../../lib/bingo-utils'
+import { BINGO_LINE_PALETTE, BINGO_LINES, FREE_CENTER_INDEX } from '../../lib/bingo-utils'
 import BingoSquare from './BingoSquare'
-
-// ─── Bingo band palette ───────────────────────────────────────────────────────
-// Colors for each bingo line band overlay (1st, 2nd, 3rd, 4th, 5th+)
-
-const BAND_COLORS = [
-  'rgba(212,175,55,0.35)',  // gold — 1st
-  'rgba(236,72,153,0.32)',  // pink — 2nd
-  'rgba(59,130,246,0.32)',  // blue — 3rd
-  'rgba(139,92,246,0.32)',  // purple — 4th
-  'rgba(16,185,129,0.30)',  // emerald — 5th+
-]
-
-function getBandColor(index: number): string {
-  return BAND_COLORS[Math.min(index, BAND_COLORS.length - 1)]
-}
 
 // Determine if a BINGO_LINES line is a row, column, or diagonal
 function getLineType(line: number[]): 'row' | 'col' | 'diag-tl' | 'diag-tr' {
@@ -186,7 +171,11 @@ export default function BingoCard({
               </defs>
               {bingoLines.map((completedLine, bandIdx) => {
                 const lineType = getLineType(completedLine)
-                const color = getBandColor(bandIdx)
+                const lineIdx = BINGO_LINES.findIndex(
+                  (l) => l.length === completedLine.length && l.every((v, i) => v === completedLine[i]),
+                )
+                const palette = lineIdx >= 0 ? BINGO_LINE_PALETTE[lineIdx] : BINGO_LINE_PALETTE[0]
+                const color = palette.bg
                 const key = `band-svg-${completedLine.join('-')}`
 
                 // Cell size in % (5 cells = 100%, ignoring gap for overlay purposes)
