@@ -30,17 +30,31 @@ export interface CompanionMessage {
   delay_seconds: number
 }
 
+// Fallback map in case Claude uses display names instead of IDs
+const COMPANION_ID_ALIASES: Record<string, string> = {
+  gloria: 'meryl',
+  razor: 'nikki',
+  buddy: 'will',
+  academy: 'the-academy',
+  'the academy': 'the-academy',
+}
+
 export function parseCompanionResponse(raw: string): CompanionMessage[] {
   try {
     const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed = JSON.parse(cleaned)
     if (!Array.isArray(parsed.messages)) return []
-    return parsed.messages.filter(
-      (m: unknown) =>
-        typeof (m as CompanionMessage).companion_id === 'string' &&
-        typeof (m as CompanionMessage).text === 'string' &&
-        typeof (m as CompanionMessage).delay_seconds === 'number',
-    )
+    return parsed.messages
+      .filter(
+        (m: unknown) =>
+          typeof (m as CompanionMessage).companion_id === 'string' &&
+          typeof (m as CompanionMessage).text === 'string' &&
+          typeof (m as CompanionMessage).delay_seconds === 'number',
+      )
+      .map((m: CompanionMessage) => {
+        const normalized = COMPANION_ID_ALIASES[m.companion_id.toLowerCase()]
+        return normalized ? { ...m, companion_id: normalized } : m
+      })
   } catch {
     return []
   }
@@ -78,8 +92,14 @@ RULES:
 - THE ACADEMY always appears first in the messages array at delay_seconds: 0
 - CRITICAL: No companion has access to the live broadcast. Do NOT reference specific things happening on screen right now — no speech content, no what someone just said at the podium, no who is crying, no what the host just did, no set details, no wardrobe. React based only on the winner announcement data provided and your training knowledge about the films and nominees.
 
+COMPANION IDs — use these exact strings in the companion_id field:
+- The Academy → "the-academy"
+- Gloria       → "meryl"
+- Razor        → "nikki"
+- Buddy        → "will"
+
 Return ONLY this JSON structure:
-{"messages": [{"companion_id": "the-academy", "text": "...", "delay_seconds": 0}, {"companion_id": "nikki", "text": "...", "delay_seconds": 3}]}`
+{"messages": [{"companion_id": "the-academy", "text": "...", "delay_seconds": 0}, {"companion_id": "nikki", "text": "...", "delay_seconds": 3}, {"companion_id": "meryl", "text": "...", "delay_seconds": 8}, {"companion_id": "will", "text": "...", "delay_seconds": 15}]}`
 
 // ─── buildPreCeremonyPrompt ───────────────────────────────────────────────────
 
