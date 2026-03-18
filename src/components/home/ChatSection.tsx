@@ -14,6 +14,7 @@ import { useGame } from '../../context/GameContext'
 import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
 import CompanionAvatar from './CompanionAvatar'
+import CompanionProfileModal from './CompanionProfileModal'
 import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
 import { getAvatarById } from '../../lib/avatar-utils'
 
@@ -90,7 +91,7 @@ function TypingDots({ color }: { color: string }) {
   )
 }
 
-function CompanionsTyping() {
+function CompanionsTyping({ onProfile }: { onProfile: (id: string) => void }) {
   return (
     <div className="flex flex-col gap-3 py-2">
       {TYPING_COMPANIONS.map((c, i) => (
@@ -101,9 +102,13 @@ function CompanionsTyping() {
           transition={{ delay: i * 0.12, duration: 0.2 }}
           className="flex gap-2 items-end"
         >
-          <div className="flex-shrink-0 mb-0.5">
-            <CompanionAvatar companionId={c.id} size="sm" />
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={() => onProfile(c.id)}
+            className="flex-shrink-0 mb-0.5"
+          >
+            <CompanionAvatar companionId={c.id} size="md" />
+          </motion.button>
           <div className="flex flex-col gap-0.5">
             <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
               {c.name}
@@ -116,13 +121,7 @@ function CompanionsTyping() {
   )
 }
 
-// ─── Companion role labels ────────────────────────────────────────────────────
-
-const COMPANION_ROLES: Record<string, string> = {
-  meryl: 'The Legend',
-  nikki: 'The Roaster',
-  will:  'The Goofball',
-}
+// ─── Companion role labels ───────────────────────────────────────────────────
 
 // ─── Companion bubble styles ──────────────────────────────────────────────────
 
@@ -164,9 +163,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const { room, player, players } = useGame()
   const { messages, sendMessage, isLoading } = useChat(room?.id)
   const [input, setInput] = useState('')
+  const [profileCompanionId, setProfileCompanionId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const prevMessageCountRef = useRef(0)
+
+  const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
   // Scroll to bottom instantly on mount (no visible pan), smooth only for new messages
   useEffect(() => {
@@ -201,7 +203,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
         {!isLoading && messages.length === 0 && (
-          <CompanionsTyping />
+          <CompanionsTyping onProfile={setProfileCompanionId} />
         )}
 
         <AnimatePresence initial={false}>
@@ -294,7 +296,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                 {!isMine && (
                   <div className="flex-shrink-0 mb-0.5">
                     {isCompanion ? (
-                      <CompanionAvatar companionId={msg.player_id} size="sm" />
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => setProfileCompanionId(msg.player_id)}
+                      >
+                        <CompanionAvatar companionId={msg.player_id} size="md" />
+                      </motion.button>
                     ) : (
                       <Avatar avatarId={avatarId} size="sm" />
                     )}
@@ -308,12 +315,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                       <span style={companion ? { color: companion.colorPrimary } : { color: 'rgba(255,255,255,0.45)' }}>
                         {senderName}
                       </span>
-                      {companion && COMPANION_ROLES[companion.id] && (
+                      {companion && companion.role && (
                         <span
                           className="text-[11px] font-normal"
                           style={{ color: companion.colorPrimary, opacity: 0.5 }}
                         >
-                          ({COMPANION_ROLES[companion.id]})
+                          ({companion.role})
                         </span>
                       )}
                     </span>
@@ -395,6 +402,17 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
           <Send size={16} className="text-oscar-gold" />
         </motion.button>
       </div>
+
+      {/* Companion profile modal */}
+      <AnimatePresence>
+        {profileCompanion && (
+          <CompanionProfileModal
+            key={profileCompanion.id}
+            companion={profileCompanion}
+            onClose={() => setProfileCompanionId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
