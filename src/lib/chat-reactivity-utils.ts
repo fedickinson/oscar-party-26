@@ -34,10 +34,10 @@ export interface AmbientTrigger {
 
 const MENTION_MAP: [string, string][] = [
   ['meryl', 'meryl'],
-  ['streep', 'meryl'],
+  ['gloria', 'meryl'],
   ['nikki', 'nikki'],
-  ['glaser', 'nikki'],
-  ['ferrell', 'will'],
+  ['razor', 'nikki'],
+  ['buddy', 'will'],
   ['academy', 'the-academy'],
 ]
 
@@ -59,8 +59,8 @@ const WILL_NAME_PATTERNS: RegExp[] = [
   /\b(?:right|thanks|love|miss|agree|disagree|sure|ok|okay|yes|no|stop|please)\s+will\b/i,
   // "Will" surrounded by quotes or after colon
   /[:"']\s*will\b/i,
-  // Ferrell (always a name reference)
-  /\bferrell\b/i,
+  // Buddy (always a name reference)
+  /\bbuddy\b/i,
 ]
 
 export function detectMentions(text: string): string[] {

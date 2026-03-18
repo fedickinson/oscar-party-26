@@ -28,6 +28,7 @@ import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
 import Avatar from '../components/Avatar'
 import PhaseExplainer from '../components/PhaseExplainer'
 import ReadyUpScreen from '../components/ReadyUpScreen'
+import ModeSelectPanel from '../components/ModeSelectPanel'
 import type { PlayerRow } from '../types/database'
 
 export default function Room() {
@@ -91,24 +92,15 @@ export default function Room() {
   }
 
   // Called when a player taps "Got it" on the draft explainer.
-  // We re-fetch the current ready_players from Supabase right before appending
-  // so that two players tapping simultaneously don't overwrite each other's entry
-  // (a classic client-side read-modify-write race on a shared array).
+  // Uses an atomic DB function (mark_player_ready) to append the player_id
+  // with a NOT-already-present guard, avoiding read-modify-write races when
+  // multiple players tap simultaneously.
   async function markReady() {
     if (!room || !player) return
-
-    const { data: freshRoom } = await supabase
-      .from('rooms')
-      .select('ready_players')
-      .eq('id', room.id)
-      .single()
-
-    const current = (freshRoom?.ready_players as string[] | null) ?? []
-    if (current.includes(player.id)) return
-    await supabase
-      .from('rooms')
-      .update({ ready_players: [...current, player.id] })
-      .eq('id', room.id)
+    await supabase.rpc('mark_player_ready', {
+      p_room_id: room.id,
+      p_player_id: player.id,
+    })
   }
 
   // Called by the host after the countdown completes — moves everyone to the draft.
@@ -218,6 +210,9 @@ export default function Room() {
           )}
         </div>
 
+        {/* Game Settings — mode selection (host interactive, guests read-only) */}
+        <ModeSelectPanel room={room} isHost={isHost} />
+
         {/* Host action / waiting state */}
         <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5">
           {isHost ? (
@@ -275,7 +270,11 @@ export default function Room() {
         {isPreDraft && !playerIsReady && (
           <PhaseExplainer key="explainer" phase="draft" onContinue={markReady} />
         )}
-        {isPreDraft && playerIsReady && (
+        {/* Keep ReadyUpScreen mounted through the 'draft' phase too so the
+            overlay stays up while navigate() runs. Without this, isPreDraft
+            flips false the instant the phase update arrives, briefly exposing
+            the lobby before navigation completes. */}
+        {(isPreDraft || room?.phase === 'draft') && playerIsReady && (
           <ReadyUpScreen
             key="readyup"
             players={players}
@@ -311,7 +310,7 @@ function PlayerCard({
       <div className="flex items-center gap-3 py-1.5">
         <Avatar
           avatarId={player.avatar_id}
-          size="lg"
+          size="md"
           emotion="neutral"
           highlighted={isCurrentPlayer}
         />

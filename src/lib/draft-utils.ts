@@ -45,8 +45,8 @@ export function generateSnakeOrder(playerIds: string[], rounds: number): string[
 export function getCurrentDrafter(
   snakeOrder: string[],
   pickNumber: number,
-): string {
-  return snakeOrder[pickNumber] ?? snakeOrder[0] ?? ''
+): string | null {
+  return snakeOrder[pickNumber] ?? snakeOrder[0] ?? null
 }
 
 /**

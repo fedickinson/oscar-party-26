@@ -82,6 +82,10 @@ export function generateBingoCard(
     }
   }
 
+  if (allSquares.length < 24) {
+    console.error(`generateBingoCard: need at least 24 squares, got ${allSquares.length}`)
+  }
+
   // Sort by frequency ascending; tie-break randomly for variety
   const sorted = [...allSquares].sort((a, b) => {
     const diff = (freq.get(a.id) ?? 0) - (freq.get(b.id) ?? 0)
@@ -178,6 +182,14 @@ export function computeBingoScore(
  *
  * Unrecognized patterns conservatively return false — the host approves manually.
  */
+// Returns true if `nameStr` contains `target` as a whole word (not a substring
+// of another word). e.g. "ryan" matches "Ryan Coogler" but not "Renée Zellweger".
+function nameMatchesTarget(nameStr: string, target: string): boolean {
+  // Escape regex metacharacters in target before building the word-boundary pattern
+  const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`\\b${escaped}\\b`).test(nameStr)
+}
+
 export function checkObjectiveCondition(
   squareText: string,
   categories: CategoryRow[],
@@ -201,8 +213,8 @@ export function checkObjectiveCondition(
     const target = winsAnyMatch[1]
     return winningNominees.some(
       (n) =>
-        n.name.toLowerCase().includes(target) ||
-        n.film_name.toLowerCase().includes(target),
+        nameMatchesTarget(n.name.toLowerCase(), target) ||
+        nameMatchesTarget(n.film_name.toLowerCase(), target),
     )
   }
 
@@ -210,7 +222,7 @@ export function checkObjectiveCondition(
   const podiumMatch = text.match(/^(.+?)\s+(?:speaks at|at)\s+the podium/)
   if (podiumMatch) {
     const target = podiumMatch[1]
-    return winningNominees.some((n) => n.name.toLowerCase().includes(target))
+    return winningNominees.some((n) => nameMatchesTarget(n.name.toLowerCase(), target))
   }
 
   // ── Pattern: "[person] wins [category name]" ─────────────────────────────
@@ -228,12 +240,12 @@ export function checkObjectiveCondition(
       const winner = nominees.find((n) => n.id === cat.winner_id)
       const tieWinner = cat.tie_winner_id ? nominees.find((n) => n.id === cat.tie_winner_id) : null
       const matchesWinner = winner
-        ? winner.name.toLowerCase().includes(personTarget) ||
-            winner.film_name.toLowerCase().includes(personTarget)
+        ? nameMatchesTarget(winner.name.toLowerCase(), personTarget) ||
+            nameMatchesTarget(winner.film_name.toLowerCase(), personTarget)
         : false
       const matchesTie = tieWinner
-        ? tieWinner.name.toLowerCase().includes(personTarget) ||
-            tieWinner.film_name.toLowerCase().includes(personTarget)
+        ? nameMatchesTarget(tieWinner.name.toLowerCase(), personTarget) ||
+            nameMatchesTarget(tieWinner.film_name.toLowerCase(), personTarget)
         : false
       return matchesWinner || matchesTie
     }

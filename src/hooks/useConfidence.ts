@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import { filterPrestigeCategories, getConfidenceRange } from '../lib/mode-utils'
 import type { CategoryWithNominees } from '../types/game'
 import type { ConfidencePickRow, ConfidencePickInsert } from '../types/database'
 
@@ -80,11 +81,13 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
             .map((cn: any) => cn.nominees)
             .filter(Boolean),
         }))
-        setCategories(hydrated)
+        const prestigeMode = room?.prestige_mode ?? 'full'
+        const filtered = filterPrestigeCategories(hydrated as any, prestigeMode) as CategoryWithNominees[]
+        setCategories(filtered)
 
         // Pre-allocate empty local pick slots for each category
         const initial: LocalPicksMap = {}
-        hydrated.forEach((cat) => {
+        filtered.forEach((cat) => {
           initial[cat.id] = { nominee_id: null, confidence: null }
         })
         setLocalPicks(initial)
@@ -150,7 +153,8 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     .map((p) => p.confidence)
     .filter((c): c is number => c != null)
 
-  const availableConfidenceNumbers = Array.from({ length: 24 }, (_, i) => i + 1).filter(
+  const confidenceRange = getConfidenceRange(room?.prestige_mode ?? 'full')
+  const availableConfidenceNumbers = Array.from({ length: confidenceRange }, (_, i) => i + 1).filter(
     (n) => !assignedNumbers.includes(n),
   )
 
@@ -203,14 +207,17 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     if (!roomId || !player || submittingRef.current || myHasSubmitted) return
     submittingRef.current = true
 
-    // Use first nominee as fallback for any unselected categories
-    const rows: ConfidencePickInsert[] = categories.map((cat, i) => ({
-      room_id: roomId,
-      player_id: player.id,
-      category_id: cat.id,
-      nominee_id: localPicks[cat.id]?.nominee_id ?? cat.nominees[0]?.id ?? '',
-      confidence: localPicks[cat.id]?.confidence ?? i + 1,
-    }))
+    // Only include categories with nominees — empty nominee_id violates the FK.
+    // Use first nominee as fallback for any unselected categories.
+    const rows: ConfidencePickInsert[] = categories
+      .filter((cat) => cat.nominees.length > 0)
+      .map((cat, i) => ({
+        room_id: roomId,
+        player_id: player.id,
+        category_id: cat.id,
+        nominee_id: localPicks[cat.id]?.nominee_id ?? cat.nominees[0].id,
+        confidence: localPicks[cat.id]?.confidence ?? i + 1,
+      }))
 
     const { error } = await supabase.from('confidence_picks').insert(rows)
     submittingRef.current = false
@@ -222,9 +229,10 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
 
     const unsubmittedPlayers = players.filter((p) => !submittedPlayerIds.has(p.id))
 
+    const range = getConfidenceRange(room?.prestige_mode ?? 'full')
     for (const p of unsubmittedPlayers) {
       // Random confidence assignment for auto-fill
-      const shuffled = Array.from({ length: 24 }, (_, i) => i + 1).sort(
+      const shuffled = Array.from({ length: range }, (_, i) => i + 1).sort(
         () => Math.random() - 0.5,
       )
       // Only include categories that have at least one nominee so we don't

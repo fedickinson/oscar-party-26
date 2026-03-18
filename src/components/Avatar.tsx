@@ -45,7 +45,7 @@ interface Props {
 
 const SIZES: Record<AvatarSize, number> = {
   sm: 32,
-  md: 48,
+  md: 40,
   lg: 80,
   xl: 120,
 }
@@ -100,9 +100,9 @@ export default function Avatar({
       className={className}
       style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}
     >
-      {/* Avatar circle */}
+      {/* Avatar square with rounded corners */}
       <div
-        className="relative rounded-full flex-shrink-0"
+        className="relative rounded-xl flex-shrink-0"
         style={{
           width: px,
           height: px,

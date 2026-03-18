@@ -1,13 +1,13 @@
 /**
  * useAICompanions — fires AI chat companion messages in response to game events.
  *
- * Characters: Meryl (industry context), Nikki (hot takes), Will (confused enthusiasm).
+ * Characters: Gloria (industry context), Razor (hot takes), Buddy (enthusiastic cheerleader).
  * Messages are inserted into the messages table as non-UUID player_ids
  * ('meryl', 'nikki', 'will') and flow through the existing useChat subscription.
  *
  * Four triggers:
  *   1. Pre-ceremony: intro messages when no winners exist yet (mount once)
- *   2. Winner reactions: Nikki immediately, Meryl at 12s, Will at 25s (tier 1 only)
+ *   2. Winner reactions: Razor immediately, Gloria at 12s, Buddy at 25s (tier 1 only)
  *   3. Milestones: halfway (12 winners), final stretch (18 winners)
  *   4. Lead change: when the leaderboard #1 changes
  *
@@ -52,6 +52,9 @@ export function useAICompanions(
   const { room, players } = useGame()
   const isHostRef = useRef(isHost)
   isHostRef.current = isHost
+
+  // Tracks delayed companion message timeouts so they can be cancelled on unmount
+  const pendingTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // ── State in refs to avoid stale closures and unnecessary re-renders ─────────
   const previousWinnersRef = useRef<Set<number>>(new Set())
@@ -155,15 +158,24 @@ export function useAICompanions(
         if (msg.delay_seconds === 0) {
           await insertCompanionMessage(msg.companion_id, msg.text)
         } else {
-          setTimeout(() => {
+          const tid = setTimeout(() => {
             insertCompanionMessage(msg.companion_id, msg.text)
           }, msg.delay_seconds * 1000)
+          pendingTimeoutsRef.current.push(tid)
         }
       }
     } catch {
       // Companions are a nice-to-have — silently fail so the rest of the app works
     }
   }
+
+  // ── Cleanup: cancel all pending delayed messages on unmount ──────────────────
+  useEffect(() => {
+    return () => {
+      pendingTimeoutsRef.current.forEach(clearTimeout)
+      pendingTimeoutsRef.current = []
+    }
+  }, [])
 
   // ── Effect 1: Pre-ceremony intro (fires once per room, ever) ────────────────
   // Waits for room to be non-null (session restore complete), then delays 2s

@@ -192,6 +192,9 @@ export function useScores(roomId: string | undefined): ScoresState {
       }
 
       setIsLoading(false)
+    }).catch((err) => {
+      console.error('useScores initial load failed:', err)
+      setIsLoading(false)
     })
   }, [roomId])
 

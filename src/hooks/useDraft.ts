@@ -73,6 +73,7 @@ import {
   getCurrentDrafter,
   getRoundAndPick,
 } from '../lib/draft-utils'
+import { filterEnsembleEntities } from '../lib/mode-utils'
 import type { CategoryRow, DraftPickRow } from '../types/database'
 import type { DraftEntityWithDetails, DraftNomination } from '../types/game'
 
@@ -196,7 +197,9 @@ export function useDraft(roomId: string | undefined): DraftState {
         supabase.from('categories').select(),
       ])
       const categoryMap = new Map((categoryRows ?? []).map((c) => [c.id, c]))
-      setEntities((entityRows ?? []).map((row) => parseEntity(row, categoryMap)))
+      const ensembleMode = roomRef.current?.ensemble_mode ?? 'full'
+      const filteredEntities = filterEnsembleEntities(entityRows ?? [], ensembleMode)
+      setEntities(filteredEntities.map((row) => parseEntity(row, categoryMap)))
       setPicks(pickRows ?? [])
       setIsLoading(false)
     }
@@ -312,7 +315,9 @@ export function useDraft(roomId: string | undefined): DraftState {
           .update({ current_pick: pick + 1 })
           .eq('id', currentRoom.id)
           .eq('current_pick', pick)
-          .then()
+          .then(({ error }) => {
+            if (error) console.error('Auto-skip failed:', error)
+          })
       }
     }, 250) // 4Hz for smooth visual countdown
 
@@ -331,7 +336,13 @@ export function useDraft(roomId: string | undefined): DraftState {
     if (!player?.is_host) return
     if (!room || room.phase !== 'draft') return
 
-    supabase.from('rooms').update({ phase: 'confidence' }).eq('id', room.id).then()
+    supabase
+      .from('rooms')
+      .update({ phase: 'confidence' })
+      .eq('id', room.id)
+      .then(({ error }) => {
+        if (error) console.error('Draft phase transition failed:', error)
+      })
   }, [isDraftComplete, player?.is_host, room?.phase, room?.id])
 
   // ─── makePick ────────────────────────────────────────────────────────────────

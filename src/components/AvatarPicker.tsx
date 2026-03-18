@@ -1,30 +1,15 @@
 /**
- * AvatarPicker — grid of selectable avatar cards fetched from Supabase.
+ * AvatarPicker — grid of selectable avatar cards from static PLAYER_AVATARS config.
  *
- * Each card shows the stylized Avatar SVG (lg size), the character name,
- * actor name, and film. Taken avatars are dimmed and non-interactive.
- *
- * SELECTION ANIMATION:
- *   When a card becomes selected, a gold ring expands from the avatar center
- *   via a motion.div keyed to the selected state. The card border also
- *   switches to oscar-gold.
- *
- * TAKEN AVATARS:
- *   Red glassmorphism tint (bg-red-500/15, border-red-500/30) + subtle
- *   grayscale/opacity. Layout top-to-bottom: "TAKEN BY / Name" label, then
- *   avatar circle with lock overlay, then character + film details (muted).
- *
- * UPGRADE PATH:
- *   When image assets exist, Avatar.tsx handles the swap internally.
- *   No changes needed here.
+ * Each card shows the square character image with rounded corners, the character
+ * name (e.g. "The Director"), and the object name smaller (e.g. "Clapperboard").
+ * Selected avatar gets a 2px oscar-gold border. Character accent color appears as a small dot next to the name.
+ * Taken avatars are greyed out (opacity-50) and non-interactive.
  */
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Lock } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import Avatar from './Avatar'
-import type { AvatarRow } from '../types/database'
+import { PLAYER_AVATARS } from '../data/avatar-config'
 
 interface Props {
   onSelect: (avatarId: string) => void
@@ -35,47 +20,11 @@ interface Props {
 }
 
 export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy = {} }: Props) {
-  const [avatars, setAvatars] = useState<AvatarRow[]>([])
-  const [fetching, setFetching] = useState(true)
-
-  useEffect(() => {
-    supabase
-      .from('avatars')
-      .select()
-      .order('character_name')
-      .then(({ data }) => {
-        setAvatars(data ?? [])
-        setFetching(false)
-      })
-  }, [])
-
-  if (fetching) {
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-36 rounded-xl bg-white/5 border border-white/10 animate-pulse"
-          />
-        ))}
-      </div>
-    )
-  }
-
-  if (avatars.length === 0) {
-    return (
-      <p className="text-white/40 text-sm text-center py-4">
-        No avatars found — check that the avatars table has data.
-      </p>
-    )
-  }
-
   return (
     <div className="grid grid-cols-2 gap-3">
-      {avatars.map((avatar, i) => {
+      {PLAYER_AVATARS.map((avatar, i) => {
         const isTaken = takenIds.includes(avatar.id) && avatar.id !== selectedId
         const isSelected = avatar.id === selectedId
-
         const claimedBy = takenBy[avatar.id]
 
         return (
@@ -88,49 +37,33 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
             onClick={() => !isTaken && onSelect(avatar.id)}
             disabled={isTaken}
             className={[
-              'p-4 rounded-xl border-2 text-left transition-colors w-full relative overflow-hidden',
-              isSelected
-                ? 'border-oscar-gold bg-oscar-gold/8'
-                : isTaken
-                  ? 'border-red-500/30 bg-red-500/15 pointer-events-none cursor-not-allowed'
-                  : 'border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer',
+              'p-3 rounded-xl border-2 text-left transition-colors w-full relative overflow-hidden flex flex-col items-center gap-2',
+              isTaken
+                ? 'border-white/10 bg-white/5 pointer-events-none cursor-not-allowed'
+                : 'bg-white/5 hover:bg-white/8 cursor-pointer',
             ].join(' ')}
-            style={isTaken ? { opacity: 0.85, filter: 'grayscale(0.3)' } : undefined}
+            style={{
+              borderColor: isSelected ? '#D4AF37' : isTaken ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
+              opacity: isTaken ? 0.5 : 1,
+            }}
           >
-            {/* Gold ring expands from center on selection */}
-            <AnimatePresence>
-              {isSelected && (
-                <motion.div
-                  key="ring"
-                  initial={{ opacity: 0, scale: 0.4 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.4 }}
-                  transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-                  className="absolute inset-0 rounded-[10px] border-2 border-oscar-gold pointer-events-none"
+
+            {/* Avatar image — 80x80 square with rounded corners */}
+            <div className="relative">
+              <div
+                className="rounded-xl overflow-hidden flex-shrink-0"
+                style={{ width: 80, height: 80, background: `${avatar.color}22` }}
+              >
+                <img
+                  src={avatar.image}
+                  alt={avatar.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to color block if image missing
+                    e.currentTarget.style.display = 'none'
+                  }}
                 />
-              )}
-            </AnimatePresence>
-
-            {/* Taken-by label sits at the TOP, only rendered for taken cards */}
-            {isTaken && (
-              <div className="text-center mb-2">
-                <p className="text-[10px] uppercase tracking-wider text-red-300/80 leading-none mb-0.5">
-                  Taken by
-                </p>
-                <p className="text-sm font-bold leading-tight text-white truncate">
-                  {claimedBy ?? 'Someone'}
-                </p>
               </div>
-            )}
-
-            {/* Avatar visual */}
-            <div className="flex justify-center mb-3 relative">
-              <Avatar
-                avatarId={avatar.id}
-                size="lg"
-                emotion="neutral"
-                highlighted={isSelected}
-              />
               {/* Lock overlay for taken avatars */}
               {isTaken && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -141,22 +74,41 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
               )}
             </div>
 
-            {/* Character details — always shown, muted red-tint for taken cards */}
-            {isTaken ? (
-              <>
+            {/* Taken-by label */}
+            {isTaken && claimedBy && (
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-wider text-white/40 leading-none mb-0.5">
+                  Taken by
+                </p>
+                <p className="text-sm font-bold leading-tight text-white/50 truncate w-full">
+                  {claimedBy}
+                </p>
+              </div>
+            )}
+
+            {/* Character details */}
+            {!isTaken && (
+              <div className="text-center w-full">
+                <div className="flex items-center justify-center gap-1.5">
+                  <span
+                    className="rounded-full flex-shrink-0"
+                    style={{ width: 8, height: 8, background: avatar.color }}
+                  />
+                  <p className="text-sm font-bold leading-tight truncate text-white">
+                    {avatar.name}
+                  </p>
+                </div>
+                <p className="text-xs text-white/45 mt-0.5 truncate">{avatar.object}</p>
+              </div>
+            )}
+
+            {isTaken && !claimedBy && (
+              <div className="text-center w-full">
                 <p className="text-sm font-semibold leading-tight truncate text-white/50">
-                  {avatar.character_name}
+                  {avatar.name}
                 </p>
-                <p className="text-xs text-red-300/40 italic mt-0.5 truncate">{avatar.film_name}</p>
-              </>
-            ) : (
-              <>
-                <p className="text-sm font-bold leading-tight truncate text-white">
-                  {avatar.character_name}
-                </p>
-                <p className="text-xs text-white/55 mt-0.5 truncate">{avatar.actor_name}</p>
-                <p className="text-xs text-white/35 italic truncate">{avatar.film_name}</p>
-              </>
+                <p className="text-xs text-white/30 mt-0.5 truncate">{avatar.object}</p>
+              </div>
             )}
           </motion.button>
         )

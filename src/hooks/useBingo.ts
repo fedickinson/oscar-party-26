@@ -157,7 +157,7 @@ export function useBingo(
         // Card creation failed (network error, RLS, or duplicate). Attempt to
         // recover by fetching an existing card that may have been created by a
         // concurrent initCard() call (e.g. StrictMode double-invoke in dev).
-        const { data: recovery } = await supabase
+        const { data: recovery, error: recoveryError } = await supabase
           .from('bingo_cards')
           .select()
           .eq('room_id', roomId!)
@@ -166,8 +166,13 @@ export function useBingo(
         if (recovery) {
           setCard(recovery)
           await loadSquares(recovery)
+        } else {
+          console.error('Bingo card creation failed and recovery found no card.', {
+            insertError: cardInsertError,
+            recoveryError,
+          })
         }
-        // isLoading still goes false so we don't spin forever
+        // isLoading goes false regardless so the user isn't stuck on a spinner
       } else if (newCard) {
         setCard(newCard)
         await loadSquares(newCard)
@@ -269,16 +274,21 @@ export function useBingo(
         const autoApprove = async () => {
           // Delete any stale denied mark first
           if (existing?.status === 'denied') {
-            await supabase.from('bingo_marks').delete().eq('id', existing.id)
+            const { error } = await supabase.from('bingo_marks').delete().eq('id', existing.id)
+            if (error) {
+              console.error('Bingo auto-approve: failed to clear denied mark', error)
+              return
+            }
           }
-          await supabase.from('bingo_marks').insert({
+          const { error } = await supabase.from('bingo_marks').insert({
             card_id: currentCard.id,
             square_index: index,
             status: 'approved',
             marked_at: new Date().toISOString(),
           })
+          if (error) console.error('Bingo auto-approve: insert failed', error)
         }
-        autoApprove()
+        autoApprove().catch((err) => console.error('Bingo auto-approve threw:', err))
       }
     })
   }, [categories, nominees]) // runs when a winner is announced

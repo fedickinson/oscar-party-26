@@ -213,7 +213,7 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
               <div className="flex items-center gap-2.5 flex-1 min-w-0">
                 <Avatar
                   avatarId={entry.player.avatar_id}
-                  size="sm"
+                  size="md"
                   emotion={playerEmotions?.[entry.player.id] ?? 'neutral'}
                 />
                 <span

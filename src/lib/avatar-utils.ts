@@ -10,6 +10,7 @@
 
 import { AVATAR_CONFIGS } from '../data/avatars'
 import type { AvatarConfig } from '../data/avatars'
+import { PLAYER_AVATARS } from '../data/avatar-config'
 
 export type AvatarEmotion = 'happy' | 'sad' | 'shocked' | 'neutral'
 
@@ -19,7 +20,24 @@ export interface GameEvent {
 }
 
 export function getAvatarById(id: string): AvatarConfig | undefined {
-  return AVATAR_CONFIGS.find((a) => a.id === id)
+  const legacy = AVATAR_CONFIGS.find((a) => a.id === id)
+  if (legacy) return legacy
+
+  const player = PLAYER_AVATARS.find((a) => a.id === id)
+  if (player) {
+    return {
+      id: player.id,
+      characterName: player.name,
+      actorName: '',
+      filmName: '',
+      initials: player.name.replace(/^The /, '').slice(0, 2).toUpperCase(),
+      colorPrimary: player.color,
+      colorSecondary: player.color,
+      imageUrl: player.image,
+    }
+  }
+
+  return undefined
 }
 
 export function getAvatarEmotion(recentEvents: GameEvent[]): AvatarEmotion {

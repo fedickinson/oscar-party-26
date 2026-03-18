@@ -6,6 +6,9 @@ export type RoomPhase =
   | 'live'
   | 'finished'
 
+export type EnsembleMode = 'full' | 'stars_and_films' | 'films_only'
+export type PrestigeMode = 'full' | 'main_stage' | 'big_night'
+
 export type EntityType = 'person' | 'film'
 
 export type BingoMarkStatus = 'pending' | 'approved' | 'denied'
@@ -17,12 +20,15 @@ export interface RoomRow {
   code: string
   host_id: string
   phase: RoomPhase
-  draft_order: unknown // jsonb — array of player ids
+  draft_order: string[] // jsonb — array of player ids
   current_pick: number
-  ready_players: unknown // jsonb — array of player ids who tapped "Got it"
+  ready_players: string[] // jsonb — array of player ids who tapped "Got it"
   active_spotlight_category_id: number | null
   show_started: boolean
   created_at: string
+  // Game depth modes — added in migration add_game_modes.sql
+  ensemble_mode?: EnsembleMode
+  prestige_mode?: PrestigeMode
 }
 
 export interface RoomInsert {
@@ -30,12 +36,14 @@ export interface RoomInsert {
   code: string
   host_id: string
   phase?: RoomPhase
-  draft_order?: unknown
+  draft_order?: string[]
   current_pick?: number
-  ready_players?: unknown
+  ready_players?: string[]
   active_spotlight_category_id?: number | null
   show_started?: boolean
   created_at?: string
+  ensemble_mode?: EnsembleMode
+  prestige_mode?: PrestigeMode
 }
 
 export interface RoomUpdate {
@@ -43,12 +51,14 @@ export interface RoomUpdate {
   code?: string
   host_id?: string
   phase?: RoomPhase
-  draft_order?: unknown
+  draft_order?: string[]
   current_pick?: number
-  ready_players?: unknown
+  ready_players?: string[]
   active_spotlight_category_id?: number | null
   show_started?: boolean
   created_at?: string
+  ensemble_mode?: EnsembleMode
+  prestige_mode?: PrestigeMode
 }
 
 // ─── players ─────────────────────────────────────────────────────────────────
@@ -162,11 +172,19 @@ export interface CategoryNomineeUpdate {
 
 // ─── draft_entities ──────────────────────────────────────────────────────────
 
+/** Shape of each entry in the draft_entities.nominations JSONB array */
+export interface DraftEntityNomination {
+  category_id: number
+  nominee_id?: string
+  category_name?: string
+  points?: number
+}
+
 export interface DraftEntityRow {
   id: string
   name: string
   type: EntityType
-  nominations: unknown // jsonb
+  nominations: DraftEntityNomination[] // jsonb
   film_name: string
   nom_count: number
 }
@@ -175,7 +193,7 @@ export interface DraftEntityInsert {
   id?: string
   name: string
   type: EntityType
-  nominations?: unknown
+  nominations?: DraftEntityNomination[]
   film_name: string
   nom_count?: number
 }
@@ -184,7 +202,7 @@ export interface DraftEntityUpdate {
   id?: string
   name?: string
   type?: EntityType
-  nominations?: unknown
+  nominations?: DraftEntityNomination[]
   film_name?: string
   nom_count?: number
 }

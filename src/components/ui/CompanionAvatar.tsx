@@ -50,13 +50,13 @@ interface CompanionBrand {
 }
 
 const BRANDS: Record<CompanionId, CompanionBrand> = {
-  meryl: { gradientFrom: '#C9A84C', gradientTo: '#A68B3A', imageUrl: '/companions/meryl.png' },
-  nikki: { gradientFrom: '#EC4899', gradientTo: '#DB2777', imageUrl: '/companions/nikki.png' },
-  will: { gradientFrom: '#EAB308', gradientTo: '#CA8A04', imageUrl: '/companions/will.png' },
-  'the-academy': { gradientFrom: '#D4AF37', gradientTo: '#B8960C', imageUrl: '/companions/the-academy.png' },
+  meryl: { gradientFrom: '#C9A84C', gradientTo: '#A68B3A', imageUrl: '/avatars/companions/gloria-perfume.png' },
+  nikki: { gradientFrom: '#EC4899', gradientTo: '#DB2777', imageUrl: '/avatars/companions/razor-spotlight.png' },
+  will: { gradientFrom: '#EAB308', gradientTo: '#CA8A04', imageUrl: '/avatars/companions/buddy-microphone.png' },
+  'the-academy': { gradientFrom: '#D4AF37', gradientTo: '#B8960C', imageUrl: '/avatars/companions/academy-statuette.png' },
 }
 
-// ─── Meryl Streep icon ────────────────────────────────────────────────────────
+// ─── Gloria icon ─────────────────────────────────────────────────────────────
 // Classic Hollywood glamour silhouette: elegant upswept hair, graceful neck,
 // one confident shoulder. Profile facing right. Fully filled white shape.
 
@@ -89,7 +89,7 @@ function MerylIcon() {
   )
 }
 
-// ─── Nikki Glaser icon ────────────────────────────────────────────────────────
+// ─── Razor icon ───────────────────────────────────────────────────────────────
 // Handheld microphone tilted ~15° right as if mid-gesture, with three small
 // energy arcs radiating from the capsule top. Sharp white fill + stroke combo.
 
@@ -150,7 +150,7 @@ function NikkiIcon() {
   )
 }
 
-// ─── Will Ferrell icon ────────────────────────────────────────────────────────
+// ─── Buddy icon ───────────────────────────────────────────────────────────────
 // Hand-drawn doodle: round head, dot eyes (slightly mismatched heights for
 // that confused goofy look), wavy grin, and a few messy hair spikes on top.
 // White stroke only — no fill — to preserve the sketchy feel.
@@ -287,7 +287,7 @@ export default function CompanionAvatar({ companionId, size = 'md' }: Props) {
       style={{
         width: px,
         height: px,
-        borderRadius: '50%',
+        borderRadius: '12px',
         flexShrink: 0,
         position: 'relative',
         boxShadow: `0 0 0 1.5px ${brand.gradientFrom}33, 0 2px 8px ${brand.gradientFrom}22`,
