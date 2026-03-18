@@ -19,6 +19,7 @@ interface Props {
   category: CategoryWithNominees
   localPicks: LocalPicksMap
   categories: CategoryWithNominees[]
+  maxConfidence: number
   onAssign: (confidence: number) => void
   onClose: () => void
 }
@@ -27,6 +28,7 @@ export default function ConfidenceNumberPicker({
   category,
   localPicks,
   categories,
+  maxConfidence,
   onAssign,
   onClose,
 }: Props) {
@@ -90,9 +92,12 @@ export default function ConfidenceNumberPicker({
             Higher numbers = more prestige. Tap a taken number to swap it.
           </p>
 
-          {/* 4×6 grid */}
-          <div className="grid grid-cols-6 gap-2">
-            {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => {
+          {/* Number grid — cols scale with range (6→6, 12→4, 6→3) */}
+          <div className={[
+            'grid gap-2',
+            maxConfidence <= 6 ? 'grid-cols-3' : maxConfidence <= 12 ? 'grid-cols-4' : 'grid-cols-6',
+          ].join(' ')}>
+            {Array.from({ length: maxConfidence }, (_, i) => i + 1).map((n) => {
               const isSelected = currentConfidence === n
               const takenBy = takenMap[n]
               const isTaken = !!takenBy

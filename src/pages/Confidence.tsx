@@ -34,6 +34,7 @@ import { Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useConfidence } from '../hooks/useConfidence'
+import { getConfidenceRange } from '../lib/mode-utils'
 import CategoryPickCard from '../components/confidence/CategoryPickCard'
 import ConfidenceNumberPicker from '../components/confidence/ConfidenceNumberPicker'
 import PicksReveal from '../components/confidence/PicksReveal'
@@ -113,7 +114,8 @@ export default function Confidence() {
   function handleRandomFill() {
     // Build the full picks map in one pass to avoid stale-closure issues with
     // sequential setLocalPicks calls that each read from the same snapshot.
-    const shuffledConfidence = Array.from({ length: 24 }, (_, i) => i + 1).sort(
+    const range = getConfidenceRange(room?.prestige_mode ?? 'full')
+    const shuffledConfidence = Array.from({ length: range }, (_, i) => i + 1).sort(
       () => Math.random() - 0.5,
     )
     const newPicks: import('../hooks/useConfidence').LocalPicksMap = {}
@@ -150,6 +152,8 @@ export default function Confidence() {
 
   if (!room || !player) return null
 
+  const confidenceRange = getConfidenceRange(room.prestige_mode ?? 'full')
+
   // ── Derived ────────────────────────────────────────────────────────────────
 
   // A pick is "complete" only when both a nominee AND a confidence number are assigned.
@@ -178,7 +182,7 @@ export default function Confidence() {
   return (
     <>
       {showExplainer && (
-        <PhaseExplainer phase="confidence" onContinue={() => setShowExplainer(false)} />
+        <PhaseExplainer phase="confidence" onContinue={() => setShowExplainer(false)} confidenceRange={confidenceRange} />
       )}
 
       <div className="flex flex-col" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
@@ -193,7 +197,7 @@ export default function Confidence() {
               <p className="text-sm font-semibold text-white mt-0.5">
                 {myHasSubmitted
                   ? 'Submitted — waiting for others'
-                  : 'Choose your winner pick and assign prestige points for all 24 categories'}
+                  : `Choose your winner pick and assign prestige points for all ${categories.length} categories`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -294,6 +298,7 @@ export default function Confidence() {
             category={pickerCategory}
             localPicks={localPicks}
             categories={categories}
+            maxConfidence={confidenceRange}
             onAssign={(confidence) => assignConfidence(pickerCategory.id, confidence)}
             onClose={() => setPickerCategoryId(null)}
           />
