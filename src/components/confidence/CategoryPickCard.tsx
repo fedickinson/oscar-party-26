@@ -98,8 +98,8 @@ export default function CategoryPickCard({
       {/* Header row */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-1.5 flex-1 mr-2 min-w-0">
-          <CategoryIcon categoryName={category.name} size={13} className={style.label} />
-          <span className="text-xs font-semibold text-white/80 leading-tight truncate">
+          <CategoryIcon categoryName={category.name} size={14} className={style.label} />
+          <span className="text-sm font-bold text-white leading-tight truncate">
             {category.name}
           </span>
         </div>
@@ -183,7 +183,7 @@ function NomineeRow({
         !isLast ? 'border-b border-white/5' : '',
       ].join(' ')}
     >
-      <span className={['text-sm font-medium leading-snug', isSelected ? 'text-oscar-gold' : 'text-white'].join(' ')}>
+      <span className={['text-sm leading-snug', isSelected ? 'text-oscar-gold font-medium' : 'text-white/75 font-normal'].join(' ')}>
         {nominee.name}
       </span>
       {showFilm && (
