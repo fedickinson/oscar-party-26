@@ -17,7 +17,8 @@ import CompanionAvatar from './CompanionAvatar'
 import CompanionProfileModal from './CompanionProfileModal'
 import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
 import { getAvatarById } from '../../lib/avatar-utils'
-import { usePendingCompanions } from '../../hooks/companionTypingStore'
+import { usePendingCompanions, addPendingCompanion, removePendingCompanion } from '../../hooks/companionTypingStore'
+import { supabase } from '../../lib/supabase'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -176,6 +177,19 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
 
   // Companions with pending delayed messages (host-side, from useAICompanions)
   const pendingCompanionIds = usePendingCompanions()
+
+  // Subscribe to host-broadcast typing events so guests see the same indicators
+  useEffect(() => {
+    if (!room?.id) return
+    const channel = supabase
+      .channel(`room-${room.id}-companion-typing`)
+      .on('broadcast', { event: 'companion_typing' }, ({ payload }) => {
+        if (payload?.typing) addPendingCompanion(payload.id)
+        else removePendingCompanion(payload.id)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [room?.id])
 
   // All typing indicators to show — pending delayed companions first (in natural order),
   // then the intro companion if not already covered, deduplicated.

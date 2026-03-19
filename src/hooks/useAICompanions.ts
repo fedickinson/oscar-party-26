@@ -38,6 +38,7 @@ import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
 import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export function useAICompanions(
   categories: CategoryRow[],
@@ -56,6 +57,19 @@ export function useAICompanions(
 
   // Tracks delayed companion message timeouts so they can be cancelled on unmount
   const pendingTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  // Broadcast channel — host sends typing events; all clients subscribe in ChatSection
+  const broadcastChannelRef = useRef<RealtimeChannel | null>(null)
+  useEffect(() => {
+    if (!room?.id) return
+    const ch = supabase.channel(`room-${room.id}-companion-typing`)
+    ch.subscribe()
+    broadcastChannelRef.current = ch
+    return () => {
+      supabase.removeChannel(ch)
+      broadcastChannelRef.current = null
+    }
+  }, [room?.id])
 
   // ── State in refs to avoid stale closures and unnecessary re-renders ─────────
   const previousWinnersRef = useRef<Set<number>>(new Set())
@@ -161,8 +175,18 @@ export function useAICompanions(
         } else {
           // Show typing indicator immediately, remove it when the message actually posts
           addPendingCompanion(msg.companion_id)
+          broadcastChannelRef.current?.send({
+            type: 'broadcast',
+            event: 'companion_typing',
+            payload: { id: msg.companion_id, typing: true },
+          })
           const tid = setTimeout(() => {
             removePendingCompanion(msg.companion_id)
+            broadcastChannelRef.current?.send({
+              type: 'broadcast',
+              event: 'companion_typing',
+              payload: { id: msg.companion_id, typing: false },
+            })
             insertCompanionMessage(msg.companion_id, msg.text)
           }, msg.delay_seconds * 1000)
           pendingTimeoutsRef.current.push(tid)
