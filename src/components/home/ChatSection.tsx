@@ -169,6 +169,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const prevMessageCountRef = useRef(0)
+  const initialScrollDoneRef = useRef(false)
 
   // Which intro companion should show a typing indicator right now?
   // Find the first in sequence that hasn't sent a message yet.
@@ -201,16 +202,26 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
   // Scroll to bottom on new messages.
-  // Dividers (category start, winner) jump instantly — they open new sections and may be
-  // far from the current scroll position. Companion/player messages scroll smoothly.
+  // On initial mount or remount (tab switch, spotlight open), jump instantly so we
+  // don't animate through the full message history. Only smooth-scroll for messages
+  // that arrive after we've already established the initial position.
   useEffect(() => {
     if (!bottomRef.current) return
     const isNewMessage = messages.length > prevMessageCountRef.current
     prevMessageCountRef.current = messages.length
+
+    if (!initialScrollDoneRef.current) {
+      // First render with messages — jump instantly regardless of count
+      bottomRef.current.scrollIntoView({ behavior: 'instant' })
+      if (messages.length > 0) initialScrollDoneRef.current = true
+      return
+    }
+
     if (!isNewMessage) {
       bottomRef.current.scrollIntoView({ behavior: 'instant' })
       return
     }
+
     const newest = messages[messages.length - 1]
     const isSectionStart =
       newest?.player_id === 'system' || newest?.player_id === 'winner-divider'
