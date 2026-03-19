@@ -37,7 +37,7 @@ export const AI_COMPANIONS: CompanionConfig[] = [
     colorSecondary: '#9D174D',
     iconName: 'Mic',
     role: 'The Roaster',
-    bio: 'Has put more people on the spot than anyone in the business. Roasts because she cares. Will find your weakest pick and make it her whole personality for the night. Also the first to get emotional — not that she would ever admit it.',
+    bio: 'Has put more people on the spot than anyone in the business. Roasts because he cares. Will find your weakest pick and make it his whole personality for the night. Also the first to get emotional — not that he would ever admit it.',
     imageUrl: '/avatars/companions/razor-spotlight.png',
   },
   {
