@@ -22,6 +22,21 @@ import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
 import type { DraftEntityWithDetails } from '../../types/game'
 
+// Returns a display-friendly short label for the Claim button.
+// Prefers the full name if it fits; otherwise truncates to the longest
+// run of words that stays within maxChars, so we never end on a stop-word.
+function claimLabel(name: string, maxChars = 14): string {
+  if (name.length <= maxChars) return name
+  const words = name.split(' ')
+  let label = ''
+  for (const word of words) {
+    const next = label ? `${label} ${word}` : word
+    if (next.length > maxChars) break
+    label = next
+  }
+  return label ? `${label}…` : `${name.slice(0, maxChars)}…`
+}
+
 interface Props {
   entity: DraftEntityWithDetails
   onConfirm: () => void
@@ -124,7 +139,7 @@ export default function ConfirmPickModal({
             disabled={isSubmitting}
             className="flex-[2] py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-60 hover:bg-oscar-gold-light transition-colors"
           >
-            {isSubmitting ? 'Claiming…' : `Claim ${entity.name.split(' ')[0]}`}
+            {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
           </button>
         </div>
       </motion.div>
