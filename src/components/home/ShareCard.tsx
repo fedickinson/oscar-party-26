@@ -433,7 +433,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             textTransform: 'uppercase',
           }}
         >
-          Oscars Party 26
+          Awards Party — Oscars 2026
         </div>
         <div
           style={{

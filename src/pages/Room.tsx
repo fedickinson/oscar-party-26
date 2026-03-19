@@ -157,7 +157,7 @@ export default function Room() {
       >
         {/* Header */}
         <div className="text-center pt-2">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Oscar Party</p>
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Awards Party</p>
           <h1 className="text-2xl font-bold text-white">Lobby</h1>
         </div>
 

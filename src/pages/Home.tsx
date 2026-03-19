@@ -223,7 +223,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          Oscar Party
+          Awards Party
         </motion.h1>
         <motion.p
           className="text-white/45 text-sm mt-2 tracking-wide"
@@ -231,7 +231,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
         >
-          98th Academy Awards Party Game
+          Oscars 2026
         </motion.p>
 
         {/* Star field — static decorative dots */}
