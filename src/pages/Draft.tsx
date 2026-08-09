@@ -22,16 +22,15 @@
  * No duplicate subscriptions to the same table.
  *
  * PHASE NAVIGATION:
- * When the host auto-transitions to 'live' (after all picks), the
- * useRoomSubscription callback sets room.phase = 'live' in context. The
+ * When the host auto-transitions to 'confidence' (beat activation), the
+ * useRoomSubscription callback updates room.phase in context. The
  * useEffect below catches that and navigates everyone simultaneously.
- * ('confidence' is still handled for the Oscars property, which kept that game.)
  */
 
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Trophy, Film, Users, Shuffle } from 'lucide-react'
+import { Trophy, Flame, Users, Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useDraft } from '../hooks/useDraft'
@@ -43,8 +42,8 @@ import type { DraftEntityWithDetails } from '../types/game'
 
 // ─── Character grouping ───────────────────────────────────────────────────────
 //
-// Previously grouped by Oscars acting category (Lead Actors, Supporting
-// Actresses, Craft) derived from nomination names. For this property every
+// Previously grouped by Oscars award lanes (Lead Actors, Supporting
+// Actresses, Craft). For this property every
 // character would fall through to "Craft", putting all 27 in one bucket.
 // Faction is the grouping that actually helps you draft: it is how the board is
 // divided, and it makes the shape of your roster legible at a glance.
@@ -82,6 +81,7 @@ export default function Draft() {
     entities,
     availableEntities,
     myRoster,
+    beatsByEntityId,
     picksMap,
     isMyTurn,
     isDraftComplete,
@@ -206,7 +206,7 @@ export default function Draft() {
           >
             <div className="flex items-center gap-2">
               {isDragonPhase
-                ? <Film size={14} className="text-accent" />
+                ? <Flame size={14} className="text-accent" />
                 : <Users size={14} className="text-accent" />
               }
               <span className="text-xs font-semibold text-accent uppercase tracking-widest">
@@ -242,7 +242,7 @@ export default function Draft() {
               >
                 <Trophy size={48} className="text-accent mx-auto mb-3" />
                 <p className="text-xl font-bold text-accent mb-1">Roster complete</p>
-                <p className="text-white/50 text-sm">Taking you to the episode…</p>
+                <p className="text-white/50 text-sm">Taking you to choose your bets…</p>
               </motion.div>
             ) : isDragonPhase ? (
               /* ── Dragons sub-draft ── */
@@ -261,6 +261,7 @@ export default function Draft() {
                     <EntityCard
                       key={entity.id}
                       entity={entity}
+                      beats={beatsByEntityId.get(entity.id) ?? []}
                       isAvailable={true}
                       isMyTurn={isMyTurn}
                       draftedBy={null}
@@ -292,6 +293,7 @@ export default function Draft() {
                         <EntityCard
                           key={entity.id}
                           entity={entity}
+                          beats={beatsByEntityId.get(entity.id) ?? []}
                           isAvailable={true}
                           isMyTurn={isMyTurn}
                           draftedBy={null}
@@ -316,6 +318,7 @@ export default function Draft() {
                     <EntityCard
                       key={entity.id}
                       entity={entity}
+                      beats={beatsByEntityId.get(entity.id) ?? []}
                       isAvailable={false}
                       isMyTurn={false}
                       draftedBy={players.find((p) => p.id === picksMap.get(entity.id)) ?? null}
@@ -334,6 +337,7 @@ export default function Draft() {
           roster={myRoster}
           totalPickSlots={myTotalPickSlots}
           playerColor={player.color}
+          beatsByEntityId={beatsByEntityId}
         />
       </div>
 
@@ -342,6 +346,7 @@ export default function Draft() {
         {selectedEntity && (
           <ConfirmPickModal
             entity={selectedEntity}
+            beats={beatsByEntityId.get(selectedEntity.id) ?? []}
             onConfirm={handleConfirmPick}
             onCancel={() => {
               if (!isConfirming) {

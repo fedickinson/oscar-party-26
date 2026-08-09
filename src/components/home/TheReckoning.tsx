@@ -14,7 +14,8 @@
  */
 
 import { motion } from 'framer-motion'
-import { Crown, Quote, Share2, Skull, TrendingUp } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowUpRight, Check, Crown, Quote, Share2, Skull, TrendingUp } from 'lucide-react'
 import Avatar from '../Avatar'
 import CompanionAvatar from '../ui/CompanionAvatar'
 import { getCompanionById } from '../../data/ai-companions'
@@ -31,6 +32,10 @@ interface Props {
   currentPlayerId?: string
   /** Absent on the public view, which has no card of its own to share. */
   onSharePlayerCard?: (playerId: string) => void
+  /** True for ~2s after a capture completes. Drives the confirmation state. */
+  isCopied?: boolean
+  /** Room code. Present only where the per-player keepsake is linkable. */
+  roomCode?: string
 }
 
 const CHARACTER_AWARD_ICONS = {
@@ -52,6 +57,8 @@ export default function TheReckoning({
   players,
   currentPlayerId,
   onSharePlayerCard,
+  isCopied,
+  roomCode,
 }: Props) {
   if (playerAwards.length === 0) return null
 
@@ -114,6 +121,20 @@ export default function TheReckoning({
 
                     {/* Only your own card is shareable. Posting somebody else's
                         verdict about them is theirs to do, not yours. */}
+                    {/* Everyone's page is linkable — reading what a companion
+                        wrote about someone else is half the fun at the table. */}
+                    {roomCode && (
+                      <Link
+                        to={`/recap/${roomCode}/${award.playerId}`}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full
+                                   bg-white/5 border border-white/10 text-[11px]
+                                   font-medium text-white/70 min-h-[32px]"
+                      >
+                        {isMe ? 'My full page' : `${award.playerName}'s page`}
+                        <ArrowUpRight className="w-3 h-3" />
+                      </Link>
+                    )}
+
                     {isMe && onSharePlayerCard && (
                       <motion.button
                         whileTap={{ scale: 0.97 }}
@@ -122,8 +143,20 @@ export default function TheReckoning({
                                    bg-accent/10 border border-accent/30 text-[11px]
                                    font-medium text-accent min-h-[32px]"
                       >
-                        <Share2 className="w-3 h-3" />
-                        Share my card
+                        {/* Capturing the card takes a beat and, on desktop, ends
+                            in a silent file download with nothing on screen to
+                            show for it. Without this the button looked broken. */}
+                        {isCopied ? (
+                          <>
+                            <Check className="w-3 h-3" />
+                            Card saved
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-3 h-3" />
+                            Share my card
+                          </>
+                        )}
                       </motion.button>
                     )}
                   </div>

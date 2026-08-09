@@ -18,22 +18,28 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
+import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
 interface Props {
   roster: DraftEntityWithDetails[]
   totalPickSlots: number
   playerColor: string
+  beatsByEntityId: Map<string, SignatureBeatRow[]>
 }
 
-export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, playerColor }: Props) {
+export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, playerColor, beatsByEntityId }: Props) {
   const [expanded, setExpanded] = useState(false)
 
   const peoplePicks = roster.filter((e) => e.type === 'person')
   const dragonPicks = roster.filter((e) => e.type === 'film')
 
   const totalPotentialPoints = roster.reduce(
-    (sum, e) => sum + e.nominations.reduce((s, n) => s + (n.points ?? 0), 0),
+    (sum, e) => {
+      const beats = beatsByEntityId.get(e.id) ?? []
+      const scoringBeats = e.type === 'film' ? beats : beats.slice(0, 3)
+      return sum + scoringBeats.reduce((beatSum, beat) => beatSum + beat.points, 0)
+    },
     0,
   )
 
@@ -96,10 +102,10 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
               ) : (
                 <>
                   {peoplePicks.length > 0 && (
-                    <RosterSection label="People" entities={peoplePicks} />
+                    <RosterSection label="People" entities={peoplePicks} beatsByEntityId={beatsByEntityId} />
                   )}
                   {dragonPicks.length > 0 && (
-                    <RosterSection label="Dragons" entities={dragonPicks} />
+                    <RosterSection label="Dragons" entities={dragonPicks} beatsByEntityId={beatsByEntityId} />
                   )}
                 </>
               )}
@@ -116,16 +122,20 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
 function RosterSection({
   label,
   entities,
+  beatsByEntityId,
 }: {
   label: string
   entities: import('../../types/game').DraftEntityWithDetails[]
+  beatsByEntityId: Map<string, SignatureBeatRow[]>
 }) {
   return (
     <div className="mb-3 last:mb-0">
       <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1.5">{label}</p>
       <div className="space-y-0">
         {entities.map((entity) => {
-          const pts = entity.nominations.reduce((s, n) => s + (n.points ?? 0), 0)
+          const beats = beatsByEntityId.get(entity.id) ?? []
+          const scoringBeats = entity.type === 'film' ? beats : beats.slice(0, 3)
+          const pts = scoringBeats.reduce((sum, beat) => sum + beat.points, 0)
           return (
             <div
               key={entity.id}
@@ -140,7 +150,9 @@ function RosterSection({
                   </div>
                 )}
                 <p className="text-xs text-white/30 mt-0.5">
-                  {entity.nom_count} nom{entity.nom_count !== 1 ? 's' : ''}
+                  {entity.type === 'film'
+                    ? `${beats.length} live beat${beats.length !== 1 ? 's' : ''}`
+                    : `choose 3 of ${beats.length} beats`}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">

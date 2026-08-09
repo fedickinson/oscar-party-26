@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Film, Grid3x3, Target, Trophy, Users } from 'lucide-react'
+import { ChevronDown, Grid3x3, Swords, Target, Trophy, Users } from 'lucide-react'
 
 interface ScoringSection {
   icon: ReactNode
@@ -58,7 +58,7 @@ export default function ScoringExplainer() {
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5">
-          <Film size={15} className="text-accent flex-shrink-0" />
+          <Swords size={15} className="text-accent flex-shrink-0" />
           <span className="text-sm font-semibold text-white/80">How scoring works</span>
         </div>
         <motion.div

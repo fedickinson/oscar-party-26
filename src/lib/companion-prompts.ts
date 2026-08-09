@@ -322,7 +322,11 @@ export function buildPreCeremonyPrompt(
       .map((p) => draftEntities.find((e) => e.id === p.entity_id))
       .filter((e): e is DraftEntityRow => !!e)
       .map((e) => e.name)
-    if (names.length) rosterLines.push(`${player.name} drafted: ${names.join(', ')}`)
+    const side =
+      player.team === 'black' ? ' — declared for Team Black'
+      : player.team === 'green' ? ' — declared for Team Green'
+      : ''
+    if (names.length) rosterLines.push(`${player.name} drafted: ${names.join(', ')}${side}`)
   }
 
   const playerNames = players.map((p) => p.name).join(', ')
@@ -1201,4 +1205,72 @@ ${blocks.join('\n\n')}
 Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'}, one per slot, in the JSON format specified.`
 
   return { system: VERDICT_SYSTEM, user, slots }
+}
+
+// ─── Player arrivals and defections ───────────────────────────────────────────
+//
+// Both ride CHAT_REACTIVE_SYSTEM (already cached from the reply path): each is
+// ONE companion producing ONE short message. The welcome is a player's first
+// moment of being SEEN by the cast — it lands minutes after they reach the
+// live room, threaded between the companions' own entrances. The defection is
+// its evil twin: the roster is handed over precisely so the companion can
+// point out what the player is still holding.
+
+export function buildPlayerWelcomePrompt(
+  companionId: string,
+  playerName: string,
+  team: 'black' | 'green' | null,
+  rosterNames: string[],
+): { system: string; user: string } {
+  const companionName =
+    AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
+  const teamLine =
+    team === 'black' ? 'They have declared for Team Black — Rhaenyra’s claim.'
+    : team === 'green' ? 'They have declared for Team Green — Aegon’s claim.'
+    : 'They have not declared for either side yet.'
+
+  const user = `A player named ${playerName} has settled into the chat for tonight's episode. This is the cast's first direct acknowledgement of them — nobody has spoken TO them yet.
+
+${teamLine}
+${rosterNames.length
+    ? `Their drafted roster: ${rosterNames.join(', ')}.`
+    : 'They have not drafted anyone.'}
+
+${companionName} greets them — ONE message, in character, 1-2 sentences:
+- Address ${playerName} by name.
+- React to their allegiance: approve, disapprove, or (if undeclared) needle them for sitting on the fence. Stay true to your own loyalties.
+- Mention AT MOST ONE name from their roster — the one you have the strongest opinion about. Judge the pick, not the list.
+- This is a greeting with an edge, not an interrogation. Make them feel seen; make it funny or sharp; do not lecture.
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
+
+  return { system: CHAT_REACTIVE_SYSTEM, user }
+}
+
+export function buildTeamChangePrompt(
+  companionId: string,
+  playerName: string,
+  fromTeam: 'black' | 'green' | null,
+  toTeam: 'black' | 'green',
+  rosterNames: string[],
+): { system: string; user: string } {
+  const companionName =
+    AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
+  const label = (t: 'black' | 'green') =>
+    t === 'black' ? 'Team Black (Rhaenyra)' : 'Team Green (Aegon)'
+
+  const user = fromTeam
+    ? `MID-EPISODE DEFECTION: ${playerName} just switched allegiance from ${label(fromTeam)} to ${label(toTeam)}, in front of everyone, while the war is still being fought on screen.
+${rosterNames.length ? `They are still holding their drafted roster: ${rosterNames.join(', ')}.` : ''}
+
+${companionName} reacts — ONE message, 1-2 sentences, in character. Treachery mid-war is the single most on-theme thing a player can do tonight: relish it, condemn it, price it, or welcome them with exactly the warmth a turncloak deserves — whatever fits your voice and your own loyalties. If a name on their roster now sits awkwardly with their new side, that is the knife: use it.
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
+    : `${playerName} just declared for ${label(toTeam)} — they had been sitting on the fence and have finally picked a side.
+
+${companionName} reacts — ONE message, 1-2 sentences, in character. Approve or disapprove according to your own loyalties.
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
+
+  return { system: CHAT_REACTIVE_SYSTEM, user }
 }

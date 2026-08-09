@@ -16,7 +16,7 @@ import {
   Bar,
   Cell,
 } from 'recharts'
-import { Brain, Clapperboard, Grid3X3 } from 'lucide-react'
+import { Brain, Grid3X3, Swords } from 'lucide-react'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { PlayerRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
@@ -227,7 +227,7 @@ export default function MiniTimelines({
         Game Breakdown
       </p>
       <MiniLineChart title="Confidence Picks" icon={Brain} data={confidenceData} players={players} />
-      <MiniLineChart title="Ensemble" icon={Clapperboard} data={draftData} players={players} />
+      <MiniLineChart title="Ensemble" icon={Swords} data={draftData} players={players} />
       <BingoBarChart leaderboard={leaderboard} />
     </div>
   )

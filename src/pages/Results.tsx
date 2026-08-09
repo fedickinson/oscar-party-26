@@ -281,6 +281,7 @@ export default function Results() {
       characterAwards={awards.characterAwards}
       verdicts={verdicts}
       currentPlayerId={player.id}
+      roomCode={room.code}
       onSharePlayerCard={(playerId) => {
         const award = awards.playerAwards.find((a) => a.playerId === playerId)
         if (!award || !room) return

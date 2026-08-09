@@ -186,8 +186,8 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
               {/* Expanded by default — reading someone else's card is a browse,
                   not a decision, so there is no reason to hold anything back. */}
               <SquareRule
+                key={tappedIndex}
                 winCondition={squares[tappedIndex]!.win_condition ?? squares[tappedIndex]!.text}
-                tier={squares[tappedIndex]!.likelihood_tier}
                 probabilityPct={squares[tappedIndex]!.probability_pct}
                 defaultExpanded
               />

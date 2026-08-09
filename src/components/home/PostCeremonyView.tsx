@@ -51,6 +51,8 @@ interface Props {
   verdicts?: Map<string, PlayerVerdictRow>
   currentPlayerId?: string
   onSharePlayerCard?: (playerId: string) => void
+  /** Enables per-player keepsake links inside The Reckoning. */
+  roomCode?: string
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -79,6 +81,7 @@ export default function PostCeremonyView({
   verdicts = new Map(),
   currentPlayerId,
   onSharePlayerCard,
+  roomCode,
 }: Props) {
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
@@ -668,6 +671,8 @@ export default function PostCeremonyView({
           players={players}
           currentPlayerId={currentPlayerId}
           onSharePlayerCard={onSharePlayerCard}
+          isCopied={isCopied}
+          roomCode={roomCode}
         />
       </div>
 

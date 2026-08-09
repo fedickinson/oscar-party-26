@@ -11,11 +11,9 @@
  *   Correct = green check + gold number. Wrong = red cross + strikethrough + 0.
  *   Pending = clock icon + muted number.
  *
- * Section 2: Draft Roster
- *   Each drafted entity with a status badge:
- *   "won"        — entity earned this player points in at least one announced category
- *   "in_play"    — at least one nominated category still unannounced
- *   "eliminated" — all nominated categories announced, entity won none
+ * Section 2: Roster browser
+ *   Browse any player and compare their live signature beats with the ones
+ *   they passed on before the episode.
  *
  * "View Bingo Card" shortcut switches the parent to tab 0.
  */
@@ -25,14 +23,18 @@ import { CheckCircle, XCircle, Clock, ChevronRight, ChevronDown } from 'lucide-r
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
-import { findDraftPointsForWinner } from '../../lib/scoring'
+import Avatar from '../Avatar'
+import TeamPicker from '../TeamPicker'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type {
+  BeatActivationRow,
   CategoryRow,
   NomineeRow,
   ConfidencePickRow,
   DraftPickRow,
   DraftEntityRow,
+  PlayerRow,
+  SignatureBeatRow,
 } from '../../types/database'
 
 interface Props {
@@ -43,10 +45,13 @@ interface Props {
   confidencePicks: ConfidencePickRow[]
   draftPicks: DraftPickRow[]
   draftEntities: DraftEntityRow[]
+  players: PlayerRow[]
+  signatureBeats: SignatureBeatRow[]
+  beatActivations: BeatActivationRow[]
   onSwitchToBingo: () => void
 }
 
-type EntityStatus = 'won' | 'in_play' | 'eliminated'
+type EntityStatus = 'won' | 'in_play'
 
 function ordinal(n: number): string {
   const s = ['th', 'st', 'nd', 'rd']
@@ -56,49 +61,47 @@ function ordinal(n: number): string {
 
 function getEntityStatus(
   entity: DraftEntityRow,
-  playerId: string,
   categories: CategoryRow[],
   nominees: NomineeRow[],
-  draftEntities: DraftEntityRow[],
-  draftPicks: DraftPickRow[],
+  beats: SignatureBeatRow[],
 ): EntityStatus {
-  const noms = entity.nominations as Array<{ category_id?: number }>
-  const nominatedCatIds: number[] = Array.isArray(noms)
-    ? (noms.map((n) => n.category_id).filter((id): id is number => id != null))
-    : []
-
-  for (const catId of nominatedCatIds) {
-    const cat = categories.find((c) => c.id === catId)
-    if (!cat?.winner_id) continue
-    const { playerId: winnerId } = findDraftPointsForWinner(
-      catId,
-      cat.winner_id,
-      categories,
-      nominees,
-      draftEntities,
-      draftPicks,
+  const nominee = nominees.find((candidate) => candidate.name === entity.name)
+  if (!nominee) return 'in_play'
+  const entityBeats = beats.filter((beat) => beat.entity_id === entity.id || beat.partner_entity_id === entity.id)
+  const scored = categories.some((category) => {
+    if (category.winner_id !== nominee.id && category.tie_winner_id !== nominee.id) return false
+    return entityBeats.some((beat) =>
+      category.name === beat.name || category.name.startsWith(`${beat.name} — `),
     )
-    if (winnerId === playerId) return 'won'
-    // Check tie winner too
-    if (cat.tie_winner_id) {
-      const { playerId: tieWinnerId } = findDraftPointsForWinner(
-        catId,
-        cat.tie_winner_id,
-        categories,
-        nominees,
-        draftEntities,
-        draftPicks,
-      )
-      if (tieWinnerId === playerId) return 'won'
-    }
-  }
-
-  const hasLive = nominatedCatIds.some((catId) => {
-    const cat = categories.find((c) => c.id === catId)
-    return cat && cat.winner_id === null
   })
+  return scored ? 'won' : 'in_play'
+}
 
-  return hasLive ? 'in_play' : 'eliminated'
+function oddsLabel(odds: string): string {
+  const labels: Record<string, string> = {
+    likely: 'Likely',
+    coin_flip: 'Coin flip',
+    'coin flip': 'Coin flip',
+    long_shot: 'Long shot',
+    'long shot': 'Long shot',
+    wild: 'Wild',
+    chaos: 'Wild',
+  }
+  return labels[odds.toLowerCase()] ?? odds
+}
+
+function beatWasHit(
+  beat: SignatureBeatRow,
+  entity: DraftEntityRow,
+  categories: CategoryRow[],
+  nominees: NomineeRow[],
+): boolean {
+  const nominee = nominees.find((candidate) => candidate.name === entity.name)
+  if (!nominee) return false
+  return categories.some((category) =>
+    (category.winner_id === nominee.id || category.tie_winner_id === nominee.id)
+    && (category.name === beat.name || category.name.startsWith(`${beat.name} — `)),
+  )
 }
 
 export default function MyPicksTab({
@@ -109,22 +112,27 @@ export default function MyPicksTab({
   confidencePicks,
   draftPicks,
   draftEntities,
+  players,
+  signatureBeats,
+  beatActivations,
   onSwitchToBingo,
 }: Props) {
   const myConfidencePicks = confidencePicks
     .filter((p) => p.player_id === currentPlayerId)
     .sort((a, b) => b.confidence - a.confidence)
 
-  const myDraftEntityIds = draftPicks
-    .filter((p) => p.player_id === currentPlayerId)
+  const [selectedPlayerId, setSelectedPlayerId] = useState(currentPlayerId)
+  const rosterPlayerId = selectedPlayerId || currentPlayerId
+  const selectedDraftEntityIds = draftPicks
+    .filter((p) => p.player_id === rosterPlayerId)
     .map((p) => p.entity_id)
 
-  const myDraftEntities = draftEntities.filter((e) => myDraftEntityIds.includes(e.id))
+  const selectedDraftEntities = draftEntities.filter((e) => selectedDraftEntityIds.includes(e.id))
 
   const [showConfidence, setShowConfidence] = useState(true)
   const [showDraft, setShowDraft] = useState(true)
   const [confidenceFilter, setConfidenceFilter] = useState<'all' | 'won' | 'lost' | 'waiting'>('all')
-  const [draftFilter, setDraftFilter] = useState<'all' | 'won' | 'in_play' | 'eliminated'>('all')
+  const [draftFilter, setDraftFilter] = useState<'all' | 'won' | 'in_play'>('all')
 
   // Score card data
   const rank = leaderboard.findIndex((e) => e.player.id === currentPlayerId) + 1
@@ -135,6 +143,10 @@ export default function MyPicksTab({
 
   return (
     <div className="flex flex-col gap-5 py-2">
+
+      {/* Allegiance — always reachable so a mid-episode defection is one tap.
+          The host client turns the change into a chat event. */}
+      <TeamPicker compact />
 
       {/* ── Score Card ───────────────────────────────────────────────────── */}
       {myScore && rank > 0 && (
@@ -346,6 +358,32 @@ export default function MyPicksTab({
         </AnimatePresence>
       </section>
 
+      {/* ── Player roster browser ─────────────────────────────────────────── */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {players.map((roomPlayer) => {
+          const selected = roomPlayer.id === rosterPlayerId
+          return (
+            <motion.button
+              key={roomPlayer.id}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => {
+                setSelectedPlayerId(roomPlayer.id)
+                setDraftFilter('all')
+              }}
+              className={[
+                'min-h-11 flex-shrink-0 flex items-center gap-2 rounded-xl border px-2.5 transition-colors',
+                selected ? 'bg-accent/10 border-accent/60' : 'bg-white/5 border-white/10',
+              ].join(' ')}
+            >
+              <Avatar avatarId={roomPlayer.avatar_id} size="sm" highlighted={selected} />
+              <span className={selected ? 'text-sm font-semibold text-accent' : 'text-sm text-white/60'}>
+                {roomPlayer.name.split(' ')[0]}
+              </span>
+            </motion.button>
+          )
+        })}
+      </div>
+
       {/* ── Draft roster ──────────────────────────────────────────────────── */}
       <section className="pb-4">
         <button
@@ -354,11 +392,13 @@ export default function MyPicksTab({
         >
           <div className="flex items-center gap-2">
             <p className="text-xs text-white/35 uppercase tracking-widest">
-              My Ensemble
+              {rosterPlayerId === currentPlayerId
+                ? 'My Ensemble'
+                : `${players.find((roomPlayer) => roomPlayer.id === rosterPlayerId)?.name.split(' ')[0] ?? 'Player'}'s Ensemble`}
             </p>
-            {myDraftEntities.length > 0 && (
+            {selectedDraftEntities.length > 0 && (
               <span className="text-[10px] text-white/25 bg-white/5 border border-white/8 rounded-full px-1.5 py-0.5 tabular-nums">
-                {myDraftEntities.length}
+                {selectedDraftEntities.length}
               </span>
             )}
           </div>
@@ -379,23 +419,19 @@ export default function MyPicksTab({
               transition={{ duration: 0.22, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-          {myDraftEntities.length > 0 && (() => {
-            const statuses = myDraftEntities.map((e) =>
-              getEntityStatus(e, currentPlayerId, categories, nominees, draftEntities, draftPicks)
+          {selectedDraftEntities.length > 0 && (() => {
+            const statuses = selectedDraftEntities.map((entity) =>
+              getEntityStatus(entity, categories, nominees, signatureBeats)
             )
             const counts = {
-              all: myDraftEntities.length,
+              all: selectedDraftEntities.length,
               won: statuses.filter(s => s === 'won').length,
               in_play: statuses.filter(s => s === 'in_play').length,
-              eliminated: statuses.filter(s => s === 'eliminated').length,
             }
             return (
               <div className="flex gap-1.5 mb-3 mt-1">
-                {(['all', 'won', 'in_play', 'eliminated'] as const).map((f) => {
-                  // 'Scored' / 'Yet to score': a character cannot be eliminated in an episode
-                  // the way a nominee loses a category — they simply have not done
-                  // anything scoreable yet.
-                  const labels = { all: 'All', won: 'Scored', in_play: 'Yet to score', eliminated: 'Out' }
+                {(['all', 'won', 'in_play'] as const).map((f) => {
+                  const labels = { all: 'All', won: 'Scored', in_play: 'Yet to score' }
                   const active = draftFilter === f
                   return (
                     <button
@@ -406,7 +442,6 @@ export default function MyPicksTab({
                         active
                           ? f === 'won' ? 'bg-accent/15 border-accent/30 text-accent'
                             : f === 'in_play' ? 'bg-white/10 border-white/20 text-white/60'
-                            : f === 'eliminated' ? 'bg-red-500/10 border-red-500/20 text-red-400/70'
                             : 'bg-white/12 border-white/20 text-white'
                           : 'bg-white/4 border-white/8 text-white/30',
                       ].join(' ')}
@@ -421,76 +456,93 @@ export default function MyPicksTab({
               </div>
             )
           })()}
-        {myDraftEntities.length === 0 ? (
+        {selectedDraftEntities.length === 0 ? (
           <p className="text-sm text-white/30 text-center py-6">No ensemble picks</p>
         ) : (
-          <div className="space-y-1.5">
-            {myDraftEntities.map((entity) => {
-              const status = getEntityStatus(
-                entity,
-                currentPlayerId,
-                categories,
-                nominees,
-                draftEntities,
-                draftPicks,
-              )
+          <div className="space-y-3">
+            {selectedDraftEntities.map((entity) => {
+              const status = getEntityStatus(entity, categories, nominees, signatureBeats)
               if (draftFilter !== 'all' && status !== draftFilter) return null
+              const entityBeats = signatureBeats.filter((beat) =>
+                beat.entity_id === entity.id || beat.partner_entity_id === entity.id,
+              )
+              const activatedIds = new Set(
+                beatActivations
+                  .filter((activation) => activation.player_id === rosterPlayerId)
+                  .map((activation) => activation.beat_id),
+              )
+              const liveBeats = entityBeats.filter((beat) =>
+                entity.type === 'film' || beat.partner_entity_id != null || activatedIds.has(beat.id),
+              )
+              const passedBeats = entity.type === 'person'
+                ? entityBeats.filter((beat) => beat.partner_entity_id == null && !activatedIds.has(beat.id))
+                : []
               return (
                 <div
                   key={entity.id}
                   className={[
-                    'flex items-center gap-3 backdrop-blur-lg rounded-xl px-3 py-2.5 border',
+                    'backdrop-blur-lg rounded-2xl p-4 border',
                     status === 'won'
                       ? 'bg-accent/8 border-accent/25'
-                      : status === 'eliminated'
-                      ? 'bg-white/3 border-white/6'
                       : 'bg-white/5 border-white/10',
                   ].join(' ')}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={[
-                        'text-sm font-medium truncate',
-                        status === 'won'
-                          ? 'text-white'
-                          : status === 'eliminated'
-                          ? 'text-white/35'
-                          : 'text-white/80',
-                      ].join(' ')}
-                    >
-                      {entity.name}
-                    </p>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{entity.name}</p>
                     {entity.film_name && entity.type === 'person' && (
                       <div className="flex items-center gap-1 mt-0.5">
-                        <FilmIcon
-                          filmName={entity.film_name}
-                          size={10}
-                          className={status === 'eliminated' ? 'text-white/15 flex-shrink-0' : 'text-white/28 flex-shrink-0'}
-                        />
-                        <p className={['text-xs truncate', status === 'eliminated' ? 'text-white/20' : 'text-white/35'].join(' ')}>
-                          {entity.film_name}
-                        </p>
+                        <FilmIcon filmName={entity.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                        <p className="text-xs text-white/35 truncate">{entity.film_name}</p>
                       </div>
                     )}
+                    </div>
+                    <span className={[
+                      'text-[10px] uppercase tracking-wider rounded-full border px-2 py-0.5 whitespace-nowrap',
+                      status === 'won'
+                        ? 'font-bold text-accent bg-accent/15 border-accent/30'
+                        : 'font-medium text-white/40 bg-white/5 border-white/10',
+                    ].join(' ')}>
+                      {status === 'won' ? 'Scored' : 'In play'}
+                    </span>
                   </div>
 
-                  <div className="flex-shrink-0">
-                    {status === 'won' && (
-                      <span className="text-[10px] font-bold text-accent bg-accent/15 border border-accent/30 rounded-full px-2 py-0.5 uppercase tracking-wider">
-                        Won
-                      </span>
-                    )}
-                    {status === 'in_play' && (
-                      <span className="text-[10px] font-medium text-white/40 bg-white/5 border border-white/10 rounded-full px-2 py-0.5 uppercase tracking-wider">
-                        In Play
-                      </span>
-                    )}
-                    {status === 'eliminated' && (
-                      <span className="text-[10px] font-medium text-white/20 bg-white/3 border border-white/8 rounded-full px-2 py-0.5 uppercase tracking-wider">
-                        Out
-                      </span>
-                    )}
+                  <div className="space-y-1.5">
+                    {liveBeats.map((beat) => {
+                      const hit = beatWasHit(beat, entity, categories, nominees)
+                      return (
+                        <div key={beat.id} className="min-h-11 flex items-center gap-2 rounded-xl bg-white/5 border border-white/8 px-3 py-2">
+                          {hit
+                            ? <CheckCircle size={15} className="text-emerald-400 flex-shrink-0" />
+                            : <Clock size={15} className="text-white/20 flex-shrink-0" />}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-white/80">{beat.name}</p>
+                            <p className="text-[10px] text-white/35">{oddsLabel(beat.odds)}{entity.type === 'film' ? ' · always live' : ''}</p>
+                          </div>
+                          <span className={hit ? 'text-sm font-bold text-accent' : 'text-sm font-bold text-white/45'}>
+                            {beat.points} pts
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
+
+                  {passedBeats.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-white/8">
+                      <p className="text-[10px] uppercase tracking-widest text-white/25 mb-1.5">Passed on</p>
+                      <div className="space-y-1">
+                        {passedBeats.map((beat) => (
+                          <div key={beat.id} className="flex items-center justify-between gap-3 px-2 py-1.5 text-white/25">
+                            <div className="min-w-0">
+                              <p className="text-xs truncate">{beat.name}</p>
+                              <p className="text-[9px]">{oddsLabel(beat.odds)}</p>
+                            </div>
+                            <span className="text-xs font-medium whitespace-nowrap">{beat.points} pts</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}

@@ -19,9 +19,10 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Grid3X3, Trophy, Clapperboard, ChevronDown, ChevronUp, BarChart2, Play } from 'lucide-react'
+import { Grid3X3, Trophy, Flame, ChevronDown, ChevronUp, BarChart2, Play } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import ChatSection from './ChatSection'
+import TeamPicker from '../TeamPicker'
 import QuickStats from './QuickStats'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
@@ -156,7 +157,7 @@ export default function PreCeremonyView({
                 transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                 className="w-10 h-10 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0"
               >
-                <Clapperboard size={18} className="text-emerald-400" />
+                <Flame size={18} className="text-emerald-400" />
               </motion.div>
             ) : (
               <motion.div
@@ -236,6 +237,9 @@ export default function PreCeremonyView({
             View your Bingo card
           </motion.button>
         </div>
+
+        {/* Allegiance — declared here, defected from anywhere */}
+        <TeamPicker />
 
         {/* Collapsible pre-show stats */}
         <CollapsibleStats

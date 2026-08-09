@@ -22,7 +22,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Clock, Star } from 'lucide-react'
-import { BINGO_LINE_PALETTE, PIP_OPACITY, PIP_TIERS, TIER_STYLE } from '../../lib/bingo-utils'
+import { BINGO_LINE_PALETTE, PIP_OPACITY, PIP_TIERS, TIER_STYLE, hyphenateForTile } from '../../lib/bingo-utils'
 import type { LikelihoodTier } from '../../types/database'
 
 type MarkStatus = 'unmarked' | 'pending' | 'approved' | 'denied' | 'free'
@@ -211,12 +211,19 @@ export default function BingoSquare({
       {!isFree && (
         <p
           className={[
-            'text-[10px] leading-tight text-center font-medium line-clamp-3 overflow-hidden w-full',
+            // The master pool's titles carry words the old hand-written ones
+            // never did — "Sheepstealer", "Witchcraft", "Everything" — and a
+            // 45px tile clips anything past about nine characters. Soft hyphens
+            // (hyphenateForTile) break those at a syllable; break-words is the
+            // backstop so nothing can ever clip. The 4th line is free: four
+            // lines at 10px/leading-tight is 50px inside a 60px tile.
+            'text-[10px] leading-tight text-center font-medium break-words',
+            'line-clamp-4 overflow-hidden w-full',
             textClass,
             isObjective && isUnmarked ? 'italic' : '',
           ].join(' ')}
         >
-          {shortText}
+          {hyphenateForTile(shortText)}
         </p>
       )}
     </motion.button>

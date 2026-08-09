@@ -4,7 +4,7 @@
  * WHY A CONFIRMATION STEP?
  * In a draft under time pressure, accidental taps are common. The confirm
  * step prevents a misclick from ruining your strategy. It also shows full
- * nomination details (categories + points) so you can make an informed pick.
+ * signature beat details so you can make an informed pick.
  *
  * DOUBLE-TAP PREVENTION:
  * Once "Draft [Name]" is tapped, `isSubmitting` goes true and the button
@@ -20,6 +20,7 @@
 
 import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
+import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
 // Returns a display-friendly short label for the Claim button.
@@ -39,6 +40,7 @@ function claimLabel(name: string, maxChars = 14): string {
 
 interface Props {
   entity: DraftEntityWithDetails
+  beats: SignatureBeatRow[]
   onConfirm: () => void
   onCancel: () => void
   isSubmitting: boolean
@@ -46,12 +48,14 @@ interface Props {
 
 export default function ConfirmPickModal({
   entity,
+  beats,
   onConfirm,
   onCancel,
   isSubmitting,
 }: Props) {
   const isFilm = entity.type === 'film'
-  const totalPoints = entity.nominations.reduce((sum, n) => sum + (n.points ?? 0), 0)
+  const scoringBeats = isFilm ? beats : beats.slice(0, 3)
+  const totalPoints = scoringBeats.reduce((sum, beat) => sum + beat.points, 0)
 
   return (
     <motion.div
@@ -99,27 +103,27 @@ export default function ConfirmPickModal({
           )}
         </div>
 
-        {/* Nominations list */}
-        {entity.nominations.length > 0 ? (
+        {/* Signature beats list */}
+        {beats.length > 0 ? (
           <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 space-y-2">
-            <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Nominations</p>
-            {entity.nominations.map((nom) => (
-              <div key={nom.category_id} className="flex justify-between items-center">
-                <span className="text-sm text-white/80 flex-1 mr-3">{nom.category_name}</span>
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Signature beats</p>
+            {beats.map((beat) => (
+              <div key={beat.id} className="flex justify-between items-center">
+                <span className="text-sm text-white/80 flex-1 mr-3">{beat.name}</span>
                 <span className="text-sm font-bold text-accent flex-shrink-0">
-                  +{nom.points} pts
+                  +{beat.points} pts
                 </span>
               </div>
             ))}
             <div className="border-t border-white/10 pt-2 mt-2 flex justify-between">
-              <span className="text-sm text-white/50">Max potential</span>
+              <span className="text-sm text-white/50">{isFilm ? 'All beats live' : 'Best 3 total'}</span>
               <span className="text-sm font-bold text-accent">{totalPoints} pts</span>
             </div>
           </div>
         ) : (
           <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5">
             <p className="text-white/30 text-sm text-center">
-              {entity.nom_count} nomination{entity.nom_count !== 1 ? 's' : ''} — details loading
+              Signature beats loading
             </p>
           </div>
         )}

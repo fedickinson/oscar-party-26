@@ -35,11 +35,12 @@ import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import Room from './pages/Room'
 import Draft from './pages/Draft'
-import Confidence from './pages/Confidence'
+import Activate from './pages/Activate'
 import Live from './pages/Live'
 import Admin from './pages/Admin'
 import Results from './pages/Results'
 import PublicResults from './pages/PublicResults'
+import PlayerRecap from './pages/PlayerRecap'
 
 // ─── Page wrapper ─────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ function AppInner() {
             <Route path="/how-it-works" element={<PageWrap><HowItWorks /></PageWrap>} />
             <Route path="/room/:code" element={<PageWrap><Room /></PageWrap>} />
             <Route path="/room/:code/draft" element={<PageWrap><Draft /></PageWrap>} />
-            <Route path="/room/:code/confidence" element={<PageWrap><Confidence /></PageWrap>} />
+            <Route path="/room/:code/confidence" element={<PageWrap><Activate /></PageWrap>} />
             <Route path="/room/:code/live" element={<PageWrap><Live /></PageWrap>} />
             <Route path="/room/:code/admin" element={<PageWrap><Admin /></PageWrap>} />
             <Route path="/room/:code/results" element={<PageWrap><Results /></PageWrap>} />
@@ -119,6 +120,8 @@ function AppInner() {
                 those routes all assume a player session and redirect without one,
                 which is exactly what made shared links dead on arrival. */}
             <Route path="/recap/:code" element={<PageWrap><PublicResults /></PageWrap>} />
+            {/* One player's keepsake. Same public, session-free contract. */}
+            <Route path="/recap/:code/:playerId" element={<PageWrap><PlayerRecap /></PageWrap>} />
           </Routes>
         </AnimatePresence>
       </div>

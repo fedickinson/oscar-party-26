@@ -131,6 +131,8 @@ export interface PlayerRow {
   /** Which screen this player watches on. Players sharing a group share a playback. */
   watch_group?: string | null
   episode_started_at?: string | null
+  team?: 'black' | 'green' | null
+  welcomed_at?: string | null
   /** The one person per watch group who controls playback. */
   is_remote_holder?: boolean
 }
@@ -146,6 +148,8 @@ export interface PlayerInsert {
   /** Which screen this player watches on. Players sharing a group share a playback. */
   watch_group?: string | null
   episode_started_at?: string | null
+  team?: 'black' | 'green' | null
+  welcomed_at?: string | null
   /** The one person per watch group who controls playback. */
   is_remote_holder?: boolean
 }
@@ -161,6 +165,8 @@ export interface PlayerUpdate {
   /** Which screen this player watches on. Players sharing a group share a playback. */
   watch_group?: string | null
   episode_started_at?: string | null
+  team?: 'black' | 'green' | null
+  welcomed_at?: string | null
   /** The one person per watch group who controls playback. */
   is_remote_holder?: boolean
 }
@@ -279,6 +285,41 @@ export interface DraftEntityUpdate {
   nom_count?: number
 }
 
+// ─── signature_beats ─────────────────────────────────────────────────────────
+
+export interface SignatureBeatRow {
+  id: number
+  entity_id: string
+  name: string
+  trigger_text: string
+  odds: string
+  points: number
+  pitch: string
+  partner_entity_id: string | null
+}
+
+export interface SignatureBeatInsert {
+  id?: number
+  entity_id: string
+  name: string
+  trigger_text: string
+  odds: string
+  points: number
+  pitch: string
+  partner_entity_id?: string | null
+}
+
+export interface SignatureBeatUpdate {
+  id?: number
+  entity_id?: string
+  name?: string
+  trigger_text?: string
+  odds?: string
+  points?: number
+  pitch?: string
+  partner_entity_id?: string | null
+}
+
 // ─── draft_picks ─────────────────────────────────────────────────────────────
 
 export interface DraftPickRow {
@@ -308,6 +349,29 @@ export interface DraftPickUpdate {
   entity_id?: string
   round?: number
   pick_number?: number
+  created_at?: string
+}
+
+// ─── beat_activations ────────────────────────────────────────────────────────
+
+export interface BeatActivationRow {
+  room_id: string
+  player_id: string
+  beat_id: number
+  created_at: string
+}
+
+export interface BeatActivationInsert {
+  room_id: string
+  player_id: string
+  beat_id: number
+  created_at?: string
+}
+
+export interface BeatActivationUpdate {
+  room_id?: string
+  player_id?: string
+  beat_id?: number
   created_at?: string
 }
 
@@ -579,7 +643,9 @@ export interface Database {
       nominees: { Row: NomineeRow; Insert: NomineeInsert; Update: NomineeUpdate }
       category_nominees: { Row: CategoryNomineeRow; Insert: CategoryNomineeInsert; Update: CategoryNomineeUpdate }
       draft_entities: { Row: DraftEntityRow; Insert: DraftEntityInsert; Update: DraftEntityUpdate }
+      signature_beats: { Row: SignatureBeatRow; Insert: SignatureBeatInsert; Update: SignatureBeatUpdate }
       draft_picks: { Row: DraftPickRow; Insert: DraftPickInsert; Update: DraftPickUpdate }
+      beat_activations: { Row: BeatActivationRow; Insert: BeatActivationInsert; Update: BeatActivationUpdate }
       player_verdicts: { Row: PlayerVerdictRow; Insert: PlayerVerdictInsert; Update: Partial<PlayerVerdictInsert> }
       confidence_picks: { Row: ConfidencePickRow; Insert: ConfidencePickInsert; Update: ConfidencePickUpdate }
       bingo_squares: { Row: BingoSquareRow; Insert: BingoSquareInsert; Update: BingoSquareUpdate }

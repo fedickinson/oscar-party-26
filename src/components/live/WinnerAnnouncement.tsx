@@ -15,10 +15,10 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Star, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import confetti from 'canvas-confetti'
-import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
+import { Hallmark } from '../ui/Hallmarks'
 
 const DISMISS_MS = 8000
 
@@ -66,12 +66,21 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
     draftResult?.isCurrentPlayer
 
   useEffect(() => {
+    const rootStyles = getComputedStyle(document.documentElement)
+    const tokenColor = (token: string) => rootStyles.getPropertyValue(token).trim()
+    const celebrationColors = [
+      tokenColor('--t-wax'),
+      tokenColor('--t-vellum-light'),
+      tokenColor('--t-ornament'),
+      tokenColor('--t-vellum-deep'),
+    ]
+
     // Always fire a gentle burst for the announcement
     confetti({
       particleCount: scored ? 160 : 60,
       spread: scored ? 80 : 55,
       origin: { y: 0.5, x: 0.5 },
-      colors: ['#D4AF37', '#ffffff', '#F5E6A3', '#E8CC6A'],
+      colors: celebrationColors,
       startVelocity: scored ? 38 : 22,
       gravity: 0.9,
       scalar: scored ? 1.1 : 0.85,
@@ -84,7 +93,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
           particleCount: 55,
           spread: 60,
           origin: { y: 0.6, x: 0.15 },
-          colors: ['#D4AF37', '#F5E6A3', '#ffffff'],
+          colors: celebrationColors.slice(0, 3),
           startVelocity: 30,
           angle: 55,
         })
@@ -92,7 +101,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
           particleCount: 55,
           spread: 60,
           origin: { y: 0.6, x: 0.85 },
-          colors: ['#D4AF37', '#F5E6A3', '#ffffff'],
+          colors: celebrationColors.slice(0, 3),
           startVelocity: 30,
           angle: 125,
         })
@@ -111,375 +120,273 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.28 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(2,4,16,0.92)', backdropFilter: 'blur(20px)' }}
+      style={{ background: 'var(--t-overlay)', backdropFilter: 'blur(20px)' }}
       onClick={onDismiss}
     >
-      {/* Decorative radial glow behind card */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: scored ? 0.22 : 0.1, scale: 1 }}
-        transition={{ duration: 0.7, ease: 'easeOut' }}
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: scored
-            ? 'radial-gradient(ellipse 55% 42% at 50% 50%, rgba(212,175,55,1) 0%, transparent 100%)'
-            : 'radial-gradient(ellipse 50% 38% at 50% 50%, rgba(255,255,255,0.4) 0%, transparent 100%)',
-        }}
-      />
-
-      <motion.div
-        initial={{ scale: 0.68, opacity: 0, y: 36 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
+        initial={{ scaleX: 0.96, scaleY: 0.2, opacity: 0, y: -12 }}
+        animate={{ scaleX: 1, scaleY: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.94, opacity: 0, y: -16, transition: { duration: 0.22, ease: 'easeIn' } }}
         transition={{ type: 'spring', stiffness: 340, damping: 24, mass: 0.85 }}
-        className="relative backdrop-blur-xl rounded-3xl w-full max-w-sm overflow-hidden"
-        style={{
-          background: scored
-            ? 'linear-gradient(150deg, rgba(16,12,4,0.99) 0%, rgba(22,18,6,0.99) 60%, rgba(14,18,50,0.99) 100%)'
-            : 'linear-gradient(150deg, rgba(10,14,39,0.99) 0%, rgba(14,18,50,0.99) 100%)',
-          border: scored
-            ? '1px solid rgba(212,175,55,0.50)'
-            : '1px solid rgba(255,255,255,0.12)',
-          boxShadow: scored
-            ? '0 0 80px 16px rgba(212,175,55,0.16), 0 0 32px 4px rgba(212,175,55,0.12), 0 12px 48px rgba(0,0,0,0.6)'
-            : '0 12px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)',
-        }}
+        className="relative w-full max-w-sm origin-top"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Gold shimmer sweep — scored */}
-        {scored && (
+        <section
+          className="material-vellum deckled scribe-ruled relief-raised relative max-h-[calc(100dvh-2rem)] overflow-y-auto px-5 pb-5 pt-6 text-center"
+          style={{ color: 'var(--t-ink)' }}
+          aria-label="Scoring result"
+        >
+          <div className="motif-band narrow mb-4" aria-hidden />
+
           <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(108deg, transparent 20%, rgba(212,175,55,0.12) 48%, rgba(245,230,163,0.07) 52%, transparent 78%)',
-            }}
-            animate={{ x: ['-140%', '240%'] }}
-            transition={{ duration: 1.1, delay: 0.3, ease: 'easeOut' }}
-          />
-        )}
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1, opacity: scored ? 1 : 0.72 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
+            className="wax-seal relief-seal"
+          >
+            <Hallmark id="hallmark-iron-throne" size={62} />
+          </motion.div>
 
-        {/* Second shimmer pass */}
-        {scored && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(108deg, transparent 20%, rgba(212,175,55,0.07) 50%, transparent 78%)',
-            }}
-            animate={{ x: ['-140%', '240%'] }}
-            transition={{ duration: 1.1, delay: 1.4, ease: 'easeOut' }}
-          />
-        )}
+          <motion.p
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, duration: 0.2 }}
+            className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.18em]"
+            style={{ color: 'var(--t-ink-muted)' }}
+          >
+            {categoryName}
+          </motion.p>
 
-        {/* ── Top accent bar ──────────────────────────────────────────────── */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.45, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
-          className="h-0.5 origin-left"
-          style={{
-            background: scored
-              ? 'linear-gradient(90deg, transparent, #D4AF37 30%, #F5E6A3 50%, #D4AF37 70%, transparent)'
-              : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18) 50%, transparent)',
-          }}
-        />
-
-        <div className="p-5 pb-4">
-
-          {/* ── Winner ──────────────────────────────────────────────────────── */}
-          <div className="text-center mb-5">
-
-            {/* Category label */}
-            <motion.p
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08, duration: 0.2 }}
-              className="text-[10px] text-white/35 uppercase tracking-[0.24em] mb-3 font-medium"
-            >
-              {categoryName}
-            </motion.p>
-
-            {/* Category icon */}
-            <motion.div
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
-              className="flex justify-center mb-3"
-            >
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center relative"
-                style={{
-                  background: scored
-                    ? 'linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.10) 100%)'
-                    : 'rgba(255,255,255,0.07)',
-                  border: scored
-                    ? '1px solid rgba(212,175,55,0.45)'
-                    : '1px solid rgba(255,255,255,0.12)',
-                  boxShadow: scored
-                    ? '0 0 32px 6px rgba(212,175,55,0.20), inset 0 1px 0 rgba(212,175,55,0.18)'
-                    : undefined,
-                }}
-              >
-                <CategoryIcon
-                  categoryName={categoryName}
-                  size={26}
-                  className={scored ? 'text-accent' : 'text-white/55'}
-                />
-                {/* Star burst for scored */}
-                {scored && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 0] }}
-                    transition={{ duration: 0.55, delay: 0.2 }}
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  >
-                    <Star size={48} className="text-accent" fill="rgba(212,175,55,0.15)" />
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Winner name — the big reveal */}
-            <motion.h2
-              initial={{ opacity: 0, scale: 0.78, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.16 }}
-              className={[
-                'font-extrabold text-accent leading-tight tracking-tight',
-                isTie ? 'text-xl' : 'text-3xl',
-              ].join(' ')}
-              style={{
-                textShadow: scored
-                  ? '0 0 32px rgba(212,175,55,0.55), 0 0 64px rgba(212,175,55,0.22)'
-                  : '0 0 20px rgba(212,175,55,0.28)',
-              }}
-            >
-              {winnerName}
-              {isTie && (
-                <>
-                  <span className="text-white/25 text-lg mx-1.5 font-normal">&</span>
-                  {tieWinnerName}
-                </>
-              )}
-            </motion.h2>
-
+          <motion.h2
+            initial={{ opacity: 0, scale: 0.78, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.16 }}
+            className={[
+              'font-display font-extrabold leading-tight',
+              isTie ? 'text-[24px]' : 'text-[28px]',
+            ].join(' ')}
+          >
+            {winnerName}
             {isTie && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.22, duration: 0.2 }}
-                className="text-[10px] text-amber-400/75 uppercase tracking-widest mt-1.5 font-bold"
-              >
-                Tie
-              </motion.p>
-            )}
-
-            {winnerFilm && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.26, duration: 0.22 }}
-                className="flex items-center justify-center gap-1.5 mt-1.5"
-              >
-                <FilmIcon filmName={winnerFilm} size={11} className="text-white/28 flex-shrink-0" />
-                <p className="text-sm text-white/40 leading-tight">
-                  {winnerFilm}
-                  {isTie && tieWinnerFilm && tieWinnerFilm !== winnerFilm && (
-                    <span className="text-white/22"> / {tieWinnerFilm}</span>
-                  )}
-                </p>
-              </motion.div>
-            )}
-          </div>
-
-          {/* Divider */}
-          <motion.div
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: 0.35, delay: 0.28 }}
-            className="h-px mx-1 mb-4 origin-center"
-            style={{
-              background: scored
-                ? 'linear-gradient(90deg, transparent, rgba(212,175,55,0.18) 50%, transparent)'
-                : 'rgba(255,255,255,0.06)',
-            }}
-          />
-
-          {/* ── Score sections ──────────────────────────────────────────────── */}
-          <div className="space-y-2 mb-4">
-
-            {/* Confidence Picks — all players */}
-            {allConfidenceResults.length > 0 && (
-              <div>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-[9px] text-white/25 uppercase tracking-[0.18em] mb-1.5 px-0.5 font-semibold"
+              <>
+                <span
+                  className="mx-1.5 text-[18px] font-normal"
+                  style={{ color: 'var(--t-ink-muted)' }}
                 >
-                  Confidence Picks
-                </motion.p>
-                <div className="space-y-1">
-                  {allConfidenceResults.map((result, index) => (
-                    <motion.div
-                      key={result.playerId}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 340,
-                        damping: 28,
-                        delay: 0.32 + index * 0.07,
-                      }}
-                      className={[
-                        'px-3 py-2.5 rounded-xl flex items-center gap-2.5 border relative overflow-hidden',
-                        result.isCorrect
-                          ? 'border-emerald-500/20'
-                          : 'border-white/6',
-                      ].join(' ')}
-                      style={{
-                        background: result.isCorrect
-                          ? 'linear-gradient(135deg, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.06) 100%)'
-                          : 'rgba(255,255,255,0.03)',
-                      }}
-                    >
-                      {/* Correct row left-edge accent */}
-                      {result.isCorrect && (
-                        <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl bg-emerald-500/50" />
-                      )}
-
-                      {/* Player color dot */}
-                      <div
-                        className="w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/10"
-                        style={{ background: result.playerColor + 'cc' }}
-                      />
-
-                      {/* Name + picked */}
-                      <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
-                        <span
-                          className={[
-                            'text-[13px] font-bold leading-none flex-shrink-0',
-                            result.isCurrentPlayer
-                              ? result.isCorrect ? 'text-white' : 'text-white/85'
-                              : 'text-white/60',
-                          ].join(' ')}
-                        >
-                          {result.isCurrentPlayer ? 'You' : result.playerName}
-                        </span>
-                        <span className="text-[11px] text-white/34 truncate leading-none">
-                          {'→ ' + result.pickedName}
-                        </span>
-                      </div>
-
-                      {/* Confidence multiplier pill (correct only) */}
-                      {result.isCorrect && (
-                        <motion.span
-                          initial={{ scale: 0.5, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.38 + index * 0.07 }}
-                          className="text-[10px] font-extrabold text-emerald-400/80 bg-emerald-400/10 border border-emerald-400/18 px-1.5 py-0.5 rounded-md flex-shrink-0"
-                        >
-                          {result.confidence}×
-                        </motion.span>
-                      )}
-
-                      {/* Points badge */}
-                      <span
-                        className={[
-                          'text-[11px] font-bold flex-shrink-0 tabular-nums',
-                          result.isCorrect ? 'text-emerald-400' : 'text-white/18',
-                        ].join(' ')}
-                      >
-                        {result.isCorrect ? `+${result.confidence}` : '0'} pts
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
+                  &amp;
+                </span>
+                {tieWinnerName}
+              </>
             )}
+          </motion.h2>
 
-            {/* Ensemble Draft */}
-            {draftResult && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 26, delay: 0.38 + allConfidenceResults.length * 0.07 }}
-              >
-                <p className="text-[9px] text-white/25 uppercase tracking-[0.18em] mb-1.5 px-0.5 font-semibold">
-                  Ensemble Draft
-                </p>
-                <div
-                  className={[
-                    'rounded-2xl px-3.5 py-3 flex items-center gap-3 border relative overflow-hidden',
-                    draftResult.isCurrentPlayer
-                      ? 'bg-accent/10 border-accent/28'
-                      : 'bg-white/3 border-white/7',
-                  ].join(' ')}
-                >
-                  {draftResult.isCurrentPlayer && (
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl bg-accent/50" />
-                  )}
+          {isTie && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.22, duration: 0.2 }}
+              className="mt-1.5 text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: 'var(--t-ink-muted)' }}
+            >
+              Tie
+            </motion.p>
+          )}
 
-                  {/* Player color swatch */}
-                  <div
-                    className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center"
-                    style={{
-                      background: draftResult.playerColor + '44',
-                      border: `1px solid ${draftResult.playerColor}28`,
-                    }}
+          {winnerFilm && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.26, duration: 0.22 }}
+              className="mt-2 flex items-center justify-center gap-1.5 font-manuscript"
+              style={{ color: 'var(--t-ink-muted)' }}
+            >
+              <FilmIcon filmName={winnerFilm} size={12} className="flex-shrink-0" />
+              <p className="text-[16px] font-bold leading-tight">
+                {winnerFilm}
+                {isTie && tieWinnerFilm && tieWinnerFilm !== winnerFilm && (
+                  <span> / {tieWinnerFilm}</span>
+                )}
+              </p>
+            </motion.div>
+          )}
+
+          {(allConfidenceResults.length > 0 || draftResult) && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.28 }}
+              className="relief-glass mt-5 space-y-4 p-3 text-left font-sans"
+              style={{ color: 'var(--t-text)' }}
+            >
+              {allConfidenceResults.length > 0 && (
+                <div>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="mb-1.5 px-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: 'var(--t-text-dim)' }}
                   >
-                    <User
-                      size={14}
-                      className={draftResult.isCurrentPlayer ? 'text-accent' : 'text-white/30'}
-                    />
-                  </div>
+                    Confidence Picks
+                  </motion.p>
 
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={[
-                        'text-base font-bold leading-none truncate',
-                        draftResult.isCurrentPlayer ? 'text-accent' : 'text-white/50',
-                      ].join(' ')}
-                    >
-                      {draftResult.isCurrentPlayer ? 'You' : draftResult.playerName}
-                    </p>
-                    <p className="text-[11px] text-white/28 mt-0.5">
-                      +{draftResult.points} ensemble pts
-                    </p>
-                  </div>
+                  <div>
+                    {allConfidenceResults.map((result, index) => (
+                      <motion.div
+                        key={result.playerId}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 340,
+                          damping: 28,
+                          delay: 0.32 + index * 0.07,
+                        }}
+                        className="relative flex min-h-11 items-center gap-2.5 border-b px-1 py-2 last:border-b-0"
+                        style={{ borderColor: 'var(--t-line-soft)' }}
+                      >
+                        {result.isCorrect && (
+                          <div
+                            className="absolute bottom-2 left-0 top-2 w-0.5"
+                            style={{ background: 'var(--t-positive)' }}
+                          />
+                        )}
 
-                  {draftResult.isCurrentPlayer && (
-                    <motion.span
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.48 }}
-                      className="text-[11px] font-extrabold text-accent/80 bg-accent/10 border border-accent/22 px-2 py-1 rounded-lg flex-shrink-0"
-                    >
-                      +{draftResult.points}
-                    </motion.span>
-                  )}
+                        <div
+                          className="h-3.5 w-3.5 flex-shrink-0 rounded-full"
+                          style={{ background: result.playerColor, opacity: 0.8 }}
+                        />
+
+                        <div className="flex min-w-0 flex-1 items-baseline gap-1.5 overflow-hidden">
+                          <span
+                            className="flex-shrink-0 text-[13px] font-bold leading-none"
+                            style={{ color: result.isCurrentPlayer ? 'var(--t-text)' : 'var(--t-text-muted)' }}
+                          >
+                            {result.isCurrentPlayer ? 'You' : result.playerName}
+                          </span>
+                          <span
+                            className="truncate text-[11px] leading-none"
+                            style={{ color: 'var(--t-text-dim)' }}
+                          >
+                            {'→ ' + result.pickedName}
+                          </span>
+                        </div>
+
+                        {result.isCorrect && (
+                          <motion.span
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.38 + index * 0.07 }}
+                            className="flex-shrink-0 border px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums"
+                            style={{
+                              background: 'var(--t-positive-soft)',
+                              borderColor: 'var(--t-positive)',
+                              color: 'var(--t-positive)',
+                            }}
+                          >
+                            {result.confidence}×
+                          </motion.span>
+                        )}
+
+                        <span
+                          className="flex-shrink-0 text-[11px] font-bold tabular-nums"
+                          style={{ color: result.isCorrect ? 'var(--t-positive)' : 'var(--t-negative)' }}
+                        >
+                          {result.isCorrect ? `+${result.confidence}` : '0'} pts
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
-            )}
+              )}
 
-          </div>
+              {draftResult && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 26, delay: 0.38 + allConfidenceResults.length * 0.07 }}
+                >
+                  <p
+                    className="mb-1.5 px-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: 'var(--t-text-dim)' }}
+                  >
+                    Ensemble Draft
+                  </p>
 
-          {/* Auto-dismiss progress bar */}
-          <div className="h-0.5 bg-white/6 rounded-full overflow-hidden mb-2.5">
+                  <div
+                    className="relative flex min-h-11 items-center gap-3 border-t px-1 pt-3"
+                    style={{ borderColor: 'var(--t-line-soft)' }}
+                  >
+                    {draftResult.isCurrentPlayer && (
+                      <div
+                        className="absolute bottom-0 left-0 top-3 w-0.5"
+                        style={{ background: 'var(--t-positive)' }}
+                      />
+                    )}
+
+                    <div
+                      className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border"
+                      style={{
+                        background: draftResult.playerColor,
+                        borderColor: 'var(--t-line-strong)',
+                      }}
+                    >
+                      <User size={14} style={{ color: 'var(--t-text)' }} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-bold leading-none">
+                        {draftResult.isCurrentPlayer ? 'You' : draftResult.playerName}
+                      </p>
+                      <p
+                        className="mt-1 text-[11px] tabular-nums"
+                        style={{ color: 'var(--t-text-dim)' }}
+                      >
+                        +{draftResult.points} ensemble pts
+                      </p>
+                    </div>
+
+                    {draftResult.isCurrentPlayer && (
+                      <motion.span
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.48 }}
+                        className="flex-shrink-0 border px-2 py-1 text-[11px] font-extrabold tabular-nums"
+                        style={{
+                          background: 'var(--t-positive-soft)',
+                          borderColor: 'var(--t-positive)',
+                          color: 'var(--t-positive)',
+                        }}
+                      >
+                        +{draftResult.points}
+                      </motion.span>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          <div
+            className="mt-4 h-0.5 overflow-hidden rounded-full"
+            style={{ background: 'var(--t-vellum-deep)' }}
+          >
             <motion.div
               className="h-full rounded-full"
-              style={{
-                background: scored
-                  ? 'linear-gradient(90deg, #D4AF37, #F5E6A3)'
-                  : 'rgba(255,255,255,0.25)',
-              }}
+              style={{ background: scored ? 'var(--t-ink)' : 'var(--t-ink-muted)' }}
               initial={{ width: '100%' }}
               animate={{ width: '0%' }}
               transition={{ duration: DISMISS_MS / 1000, ease: 'linear' }}
             />
           </div>
 
-          <p className="text-[10px] text-white/16 text-center tracking-wide">Tap anywhere to dismiss</p>
-        </div>
+          <p
+            className="mt-2.5 text-center text-[10px] tracking-wide"
+            style={{ color: 'var(--t-ink-muted)' }}
+          >
+            Tap anywhere to dismiss
+          </p>
+        </section>
       </motion.div>
     </motion.div>
   )

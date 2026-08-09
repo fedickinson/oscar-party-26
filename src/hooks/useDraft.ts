@@ -74,18 +74,16 @@ import {
   getRoundAndPick,
 } from '../lib/draft-utils'
 import { filterEnsembleEntities } from '../lib/mode-utils'
-import type { CategoryRow, DraftPickRow } from '../types/database'
-import type { DraftEntityWithDetails, DraftNomination } from '../types/game'
+import type { DraftPickRow, SignatureBeatRow } from '../types/database'
+import type { DraftEntityWithDetails } from '../types/game'
 
 const TURN_DURATION = 45 // seconds per pick
 
 // ─── Entity parsing ───────────────────────────────────────────────────────────
 
 /**
- * Parses the raw DB row into a typed entity. The nominations jsonb field
- * contains { category_id, nominee_id } entries — no category_name or points.
- * We enrich each entry from the categoryMap so the modal can display them.
- * Falls back to an empty array if the shape is wrong or missing.
+ * Draft displays are driven by signature beats. Keep the legacy nominations
+ * field empty here so no Oscars-era category data leaks into this flow.
  */
 function parseEntity(
   raw: {
@@ -96,17 +94,8 @@ function parseEntity(
     film_name: string
     nom_count: number
   },
-  categoryMap: Map<number, CategoryRow>,
 ): DraftEntityWithDetails {
-  const rawNoms = Array.isArray(raw.nominations)
-    ? (raw.nominations as { category_id: number; nominee_id?: string }[])
-    : []
-  const nominations: DraftNomination[] = rawNoms.flatMap((n) => {
-    const cat = categoryMap.get(n.category_id)
-    if (!cat) return []
-    return [{ category_id: n.category_id, category_name: cat.name, points: cat.points }]
-  })
-  return { ...raw, nominations }
+  return { ...raw, nominations: [] }
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -116,6 +105,8 @@ export interface DraftState {
   availableEntities: DraftEntityWithDetails[]
   myRoster: DraftEntityWithDetails[]
   picks: DraftPickRow[]
+  /** Non-collision signature beats keyed by draft entity id. */
+  beatsByEntityId: Map<string, SignatureBeatRow[]>
   /** entityId → playerId for every drafted entity */
   picksMap: Map<string, string>
   isMyTurn: boolean
@@ -140,6 +131,7 @@ export function useDraft(roomId: string | undefined): DraftState {
 
   const [entities, setEntities] = useState<DraftEntityWithDetails[]>([])
   const [picks, setPicks] = useState<DraftPickRow[]>([])
+  const [beatsByEntityId, setBeatsByEntityId] = useState<Map<string, SignatureBeatRow[]>>(new Map())
   const [timeRemaining, setTimeRemaining] = useState(TURN_DURATION)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -192,15 +184,20 @@ export function useDraft(roomId: string | undefined): DraftState {
 
     // Initial fetch runs after subscription is live to close the race window
     async function load() {
-      const [{ data: entityRows }, { data: pickRows }, { data: categoryRows }] = await Promise.all([
+      const [{ data: entityRows }, { data: pickRows }, { data: beatRows }] = await Promise.all([
         supabase.from('draft_entities').select().order('nom_count', { ascending: false }),
         supabase.from('draft_picks').select().eq('room_id', roomId!),
-        supabase.from('categories').select(),
+        supabase.from('signature_beats').select().order('points', { ascending: false }),
       ])
-      const categoryMap = new Map((categoryRows ?? []).map((c) => [c.id, c]))
       const ensembleMode = roomRef.current?.ensemble_mode ?? 'full'
       const filteredEntities = filterEnsembleEntities(entityRows ?? [], ensembleMode)
-      setEntities(filteredEntities.map((row) => parseEntity(row, categoryMap)))
+      setEntities(filteredEntities.map((row) => parseEntity(row)))
+      const nextBeats = new Map<string, SignatureBeatRow[]>()
+      for (const beat of (beatRows ?? []) as SignatureBeatRow[]) {
+        if (beat.partner_entity_id != null) continue
+        nextBeats.set(beat.entity_id, [...(nextBeats.get(beat.entity_id) ?? []), beat])
+      }
+      setBeatsByEntityId(nextBeats)
       setPicks(pickRows ?? [])
       setIsLoading(false)
     }
@@ -347,18 +344,16 @@ export function useDraft(roomId: string | undefined): DraftState {
     return () => clearInterval(interval)
   }, [isDraftComplete, player?.is_host])
 
-  // ─── Draft complete → trigger live phase ────────────────────────────────────
+  // ─── Draft complete → trigger beat activation phase ────────────────────────
   //
   // Only the host writes the phase change. This fires as a side effect, not
   // from a button press. The Realtime subscription (in useRoomSubscription,
   // called from Draft.tsx) broadcasts the phase change to all clients, and
   // Draft.tsx's useEffect on room.phase navigates everyone.
   //
-  // Goes straight to 'live', skipping 'confidence'. The confidence game is
-  // structurally Oscars-only — it requires N categories each with a fixed
-  // nominee slate and confidence values 1..N used exactly once, which a single
-  // episode has no equivalent of. The phase remains in the state machine for
-  // the Oscars property.
+  // The existing 'confidence' state-machine slot is the synchronized beat-
+  // activation step for this property. Draft.tsx observes that phase and sends
+  // every client to the activation route.
 
   useEffect(() => {
     if (!isDraftComplete) return
@@ -367,7 +362,7 @@ export function useDraft(roomId: string | undefined): DraftState {
 
     supabase
       .from('rooms')
-      .update({ phase: 'live' })
+      .update({ phase: 'confidence' })
       .eq('id', room.id)
       .then(({ error }) => {
         if (error) console.error('Draft phase transition failed:', error)
@@ -471,6 +466,7 @@ export function useDraft(roomId: string | undefined): DraftState {
     availableEntities,
     myRoster,
     picks,
+    beatsByEntityId,
     picksMap,
     isMyTurn,
     isDraftComplete,

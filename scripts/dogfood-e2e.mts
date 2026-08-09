@@ -117,6 +117,18 @@ async function main() {
   check('handover leaves exactly one holder on that screen', nyHolders.length === 1, `got ${nyHolders.length}`)
   check('the other screen was not touched', remoteHolderIds(roster).length === 2)
 
+  // Team allegiance — a plain column, but the CHECK constraint is load-bearing:
+  // it is the only thing stopping a typo'd team value from silently breaking
+  // the defection watcher's black/green comparison.
+  await db(`players?id=eq.${players[0].id}`, { method: 'PATCH', body: JSON.stringify({ team: 'black' }) })
+  check('team allegiance persists',
+    (await db(`players?id=eq.${players[0].id}&select=team`))[0].team === 'black')
+  let rejected = false
+  try {
+    await db(`players?id=eq.${players[0].id}`, { method: 'PATCH', body: JSON.stringify({ team: 'dorne' }) })
+  } catch { rejected = true }
+  check('invalid team rejected by CHECK constraint', rejected)
+
   // ── 3. Draft ──────────────────────────────────────────────────────────────
   console.log('\n\x1b[1m3. Draft\x1b[0m')
   const entities: any[] = await db('draft_entities?select=*')

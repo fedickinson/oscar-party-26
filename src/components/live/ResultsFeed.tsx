@@ -9,7 +9,7 @@
  */
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { Award, Trophy } from 'lucide-react'
+import { ScrollText, Trophy } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
 import type { RecentResult } from '../../hooks/useScores'
 
@@ -34,7 +34,7 @@ export default function ResultsFeed({ results }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-2.5">
         <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center">
-          <Award size={20} className="text-white/15" />
+          <ScrollText size={20} className="text-white/15" />
         </div>
         <p className="text-sm text-white/30 font-medium">No winners announced yet</p>
         <p className="text-xs text-white/20">Waiting for the ceremony to begin</p>
@@ -125,7 +125,7 @@ export default function ResultsFeed({ results }: Props) {
                     {big ? (
                       <Trophy size={12} className="text-accent" />
                     ) : (
-                      <Award size={12} className="text-white/35" />
+                      <ScrollText size={12} className="text-white/35" />
                     )}
                   </div>
 

@@ -67,34 +67,42 @@ const TONIGHT = {
   /** Who has the console and the final word on what happened. */
   gameMaster: 'Franklin',
   /**
-   * Flip to true once the draft scoring is locked. While false the draft's
-   * scoring disclosure carries a "still being tuned" note, so nobody memorises
-   * numbers that are about to change.
+   * The Signature Beats SYSTEM is settled (see the v4 variety pass); the beat
+   * content is still being loaded into the app. While this is false the draft
+   * card carries a note saying individual beats may still move, so nobody
+   * memorises a list that is about to change. The rules above it are safe.
    */
-  draftRulesFinal: false,
+  draftBeatsLive: false,
+  /**
+   * Times carry ET explicitly on every row. We are not all in one timezone —
+   * the watch groups tonight span at least two — and a bare "8:00" in an
+   * explainer is exactly the ambiguity that puts somebody in the room an hour
+   * after the draft finished.
+   */
   schedule: [
     {
-      time: null as string | null,
+      time: '8:00pm ET' as string | null,
       title: 'Room opens',
       detail:
-        'Join whenever you like. The room keeps your spot, so you can pick your avatar now and close the tab.',
+        'Join and pick an avatar. Nothing to be on time for yet — the room keeps your spot, so you can do this now and close the tab.',
     },
     {
-      time: null as string | null,
-      title: 'The draft',
+      time: '8:20pm ET' as string | null,
+      title: 'The draft, then activation',
       detail:
-        'The one part where everyone has to be in the app at the same time. It goes in turns and it does not wait.',
+        'Pick a dragon and four characters in turns, then choose the three moments each character scores on. The one part where everyone has to be in the app at once, and it does not wait.',
     },
     {
-      time: null as string | null,
+      time: '8:50pm ET' as string | null,
       title: 'Say where you are',
       detail:
         'Two taps: the place you are watching from, and whether you are the one holding the remote there.',
     },
     {
-      time: null as string | null,
+      time: '9:00pm ET' as string | null,
       title: 'Press play together',
-      detail: 'Both screens start on the same count. After that, just watch.',
+      detail:
+        'The episode is out at nine. We start it when everyone is actually ready rather than at nine sharp — both screens count down and press play on the same beat.',
     },
   ],
 }
@@ -137,6 +145,18 @@ const TIERS = [
   { label: 'Toss-up', chance: '40–59%', perCard: 9, points: 2 },
   { label: 'Long shot', chance: '20–39%', perCard: 6, points: 3 },
   { label: 'Chaos', chance: 'under 20%', perCard: 2, points: 5 },
+]
+
+// ─── Draft odds ladder ────────────────────────────────────────────────────────
+// From the Signature Beats v4 variety pass (`game.odds_ladder`). A separate
+// ladder from the bingo tiers above, and deliberately so: bingo prices a square
+// you were dealt, this prices a bet you chose.
+
+const BEAT_ODDS = [
+  { label: 'Likely', chance: 'better than 55%', points: 20 },
+  { label: 'Coin flip', chance: '30–55%', points: 25 },
+  { label: 'Long shot', chance: '10–30%', points: 35 },
+  { label: 'Wild', chance: 'under 10%', points: 45 },
 ]
 
 // ─── Small pieces ─────────────────────────────────────────────────────────────
@@ -255,6 +275,43 @@ function Disclosure({
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+/**
+ * A points ladder: name, the odds behind it, the payout on the right.
+ *
+ * Both games price things by likelihood, so both get the same shape — the
+ * reader learns the layout once and can then read either one at a glance.
+ */
+function Ladder({
+  rows,
+}: {
+  rows: Array<{ label: string; note: string; value: string }>
+}) {
+  return (
+    <ul className="flex flex-col gap-1.5">
+      {rows.map((row) => (
+        <li
+          key={row.label}
+          className="flex items-baseline gap-2 text-[14px]"
+          style={{ color: 'var(--t-text-muted)' }}
+        >
+          <span className="font-semibold" style={{ color: 'var(--t-text)' }}>
+            {row.label}
+          </span>
+          <span className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
+            {row.note}
+          </span>
+          <span
+            className="ml-auto tabular-nums font-semibold whitespace-nowrap"
+            style={{ color: 'var(--t-accent-light)' }}
+          >
+            {row.value}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -409,52 +466,108 @@ export default function HowItWorks() {
         </P>
 
         <div className="flex flex-col gap-3">
-          {/* Draft — rules still moving, so the detail is flagged as provisional. */}
+          {/* Draft — Signature Beats. The system is locked; the beat lists are
+              still being loaded, hence the draftBeatsLive note at the bottom. */}
           <GameCard
             icon={<Users size={18} />}
             title="Before — you draft"
             summary={
               <>
-                One dragon each, then four characters each, taken in turns. When your pick
-                does something tonight &mdash; a kill, a betrayal, a death, a dragon
-                falling &mdash; you score.
+                One dragon each, then four characters each, taken in turns. Drafting the
+                character is only half of it: for every character you take, you then choose
+                exactly <strong style={{ color: 'var(--t-text)' }}>three</strong> of their
+                Signature Beats &mdash; specific moments only that character can trigger.
+                An activated beat scores if it happens tonight. A beat you left off pays
+                nothing, however loudly it happens.
               </>
             }
           >
-            <Disclosure label="Why there is no obvious best pick">
+            <Disclosure label="Why no character is the best pick">
               <P>
-                Every character is priced to be worth roughly the same, so the headline
-                number on a card tells you nothing. What differs is the shape of the bet: a
-                main character might carry three moments that are each likely to happen,
-                while somebody with four lines carries one wild swing worth far more.
+                Every legal set of three lands in the same 60&ndash;90 point band. How many
+                beats you get to choose <em>between</em> depends on the character &mdash;
+                seven for a central one, six for a major support, five for a support &mdash;
+                but the totals match either way, so the headline number on a card tells you
+                nothing about who is worth taking.
               </P>
               <P>
-                So the question is not &ldquo;who is better.&rdquo; It is whether you want
-                three coin flips or one lottery ticket. That is a different answer for
-                every person at the table, which is the entire point.
+                What differs is the shape of the bet. Three likely moments at 20 each, or
+                one long shot at 35 with two safer ones behind it. Same card value, wildly
+                different night. You are drafting a character and then building a portfolio
+                for them, and the second half is where the game actually is.
               </P>
             </Disclosure>
-            <Disclosure label="How the draft runs">
+            <Disclosure label="What a beat is worth">
+              <P>Beats are priced by how likely they are to happen:</P>
+              <Ladder
+                rows={BEAT_ODDS.map((o) => ({
+                  label: o.label,
+                  note: o.chance,
+                  value: `${o.points} pts`,
+                }))}
+              />
               <P>
-                Dragons go first and there are only eleven of them, so somebody is not
-                getting the one they wanted. Then four rounds of characters, snake order,
-                45 seconds a pick &mdash; miss the clock and it moves on without you.
+                Characters score at one and a half times, so a 45-point wild beat actually
+                pays 67 &mdash; enough to swing the whole night on one moment. That is
+                deliberate, and it is why the wild band has to stay genuinely unlikely.
+                Dragons pay at face value.
+              </P>
+            </Disclosure>
+            <Disclosure label="You are allowed to bet both ways">
+              <P>
+                Beats come in forks. Daemon can make peace with Rhaenyra or openly defy her.
+                Rhaena&rsquo;s Sheepstealer can take her back or turn on her. Alicent can
+                fight to save Aemond or leave him where he lies.
               </P>
               <P>
-                This is the only part of the night that needs everyone in the app at the
-                same time.
+                You may activate both sides of a fork. It nearly guarantees you a payout on
+                that storyline, and it costs you a slot you could have spent somewhere else
+                on the same character. Deciding when that trade is worth it is the whole
+                game.
               </P>
-              {!TONIGHT.draftRulesFinal && (
+            </Disclosure>
+            <Disclosure label="Some beats pay two people">
+              <P>
+                Eight beats name two characters, and both drafters score. If a conscious
+                Aemond confronts Alicent about the poisoning, whoever holds Aemond and
+                whoever holds Alicent each take 35.
+              </P>
+              <P>
+                These sit on top of your three activated beats &mdash; you do not spend a
+                slot on them and you cannot choose them. They are there so that two people
+                at the table have a stake in the same shot, which is when a room actually
+                shouts.
+              </P>
+            </Disclosure>
+            <Disclosure label="Dragons work differently">
+              <P>
+                Dragons go first, everyone gets exactly one, and there are only eleven, so
+                somebody is not getting the one they wanted. Take that round seriously.
+              </P>
+              <P>
+                A dragon has one or two beats and they are always live &mdash; no activation
+                choice to make, because there is nothing to choose between. They score at
+                face value rather than one and a half times.
+              </P>
+            </Disclosure>
+            <Disclosure label="How the round actually runs">
+              <P>
+                Snake order, 45 seconds a pick &mdash; miss the clock and it moves on
+                without you. This is the only part of the night that needs everyone in the
+                app at the same time.
+              </P>
+              <P>
+                Activation happens after the picking and before the episode starts. Once the
+                episode is running, your three are locked.
+              </P>
+              {!TONIGHT.draftBeatsLive && (
                 <p
                   className="text-[12px] leading-relaxed border-l-2 pl-3"
-                  style={{
-                    color: 'var(--t-pending)',
-                    borderColor: 'var(--t-pending)',
-                  }}
+                  style={{ color: 'var(--t-pending)', borderColor: 'var(--t-pending)' }}
                 >
-                  Scoring for the draft is still being tuned. The final numbers land in the
-                  app before the draft starts, and they will be on your card while you pick
-                  &mdash; nothing here is worth memorising yet.
+                  The beat lists are still being loaded into the app. Everything above is
+                  settled; a few individual beats may still move before the draft, and
+                  whatever is on your card at the time is what counts.
                 </p>
               )}
             </Disclosure>
@@ -492,28 +605,13 @@ export default function HowItWorks() {
                 expected score before the episode starts. What differs is what actually
                 happens and who catches it.
               </P>
-              <ul className="flex flex-col gap-1.5">
-                {TIERS.map((tier) => (
-                  <li
-                    key={tier.label}
-                    className="flex items-baseline gap-2 text-[14px]"
-                    style={{ color: 'var(--t-text-muted)' }}
-                  >
-                    <span className="font-semibold" style={{ color: 'var(--t-text)' }}>
-                      {tier.label}
-                    </span>
-                    <span className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
-                      {tier.chance} &middot; {tier.perCard} on your card
-                    </span>
-                    <span
-                      className="ml-auto tabular-nums font-semibold"
-                      style={{ color: 'var(--t-accent-light)' }}
-                    >
-                      {tier.points} pt{tier.points === 1 ? '' : 's'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <Ladder
+                rows={TIERS.map((tier) => ({
+                  label: tier.label,
+                  note: `${tier.chance} · ${tier.perCard} on your card`,
+                  value: `${tier.points} pt${tier.points === 1 ? '' : 's'}`,
+                }))}
+              />
               <P>
                 The long shots and the chaos squares carry a small mark in the corner of the
                 grid. Those eight are the ones worth watching for.
@@ -732,6 +830,13 @@ export default function HowItWorks() {
 
       {/* ── Timeline ─────────────────────────────────────────────────────── */}
       <Section eyebrow="Tonight" title="The shape of it">
+        <P>
+          The episode drops at nine, and we are opening the room an hour early on purpose.
+          That hour is the whole plan: it absorbs late arrivals, it gets the draft done
+          without anybody rushing their activations, and it means nine o&rsquo;clock is a
+          starting gun rather than a scramble.
+        </P>
+
         <ol className="flex flex-col">
           {TONIGHT.schedule.map((slot, i) => (
             <li key={slot.title} className="flex gap-4">

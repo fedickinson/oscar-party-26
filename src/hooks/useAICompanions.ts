@@ -20,8 +20,10 @@ import React, { useEffect, useRef } from 'react'
 import { useGame } from '../context/GameContext'
 import { supabase } from '../lib/supabase'
 import {
+  buildPlayerWelcomePrompt,
   buildPreCeremonyPrompt,
   buildShowStartedPrompt,
+  buildTeamChangePrompt,
   buildWinnerReactionPrompt,
   buildPreCategoryPrompt,
   buildMilestonePrompt,
@@ -328,6 +330,154 @@ export function useAICompanions(
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showStarted])
+
+  // ── Effect 1c: Player welcomes ──────────────────────────────────────────────
+  //
+  // Each player gets ONE first-acknowledgement from the cast: their name, their
+  // allegiance, a verdict on somebody they drafted. Spaced ~85s apart so they
+  // thread BETWEEN the companion entrances instead of landing as a roll call,
+  // and the greeter is drawn only from companions who have already introduced
+  // themselves — a welcome from someone who has not arrived yet would both read
+  // wrong and blow the late-arrival surprise.
+  //
+  // welcomed_at is claimed in the DB before the API call, so a host reload
+  // mid-pre-show cannot re-welcome anyone. The claim is conditional
+  // (is welcomed_at null), which also makes two racing host tabs safe.
+  const welcomeTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const nextWelcomeAtRef = useRef(0)
+  const lastGreeterRef = useRef<string | null>(null)
+
+  async function spokenCompanionIds(): Promise<string[]> {
+    const { data } = await supabase
+      .from('messages')
+      .select('player_id')
+      .eq('room_id', roomRef.current?.id ?? '')
+      .in('player_id', [...COMPANION_IDS])
+    return [...new Set((data ?? []).map((m) => m.player_id as string))]
+  }
+
+  useEffect(() => {
+    if (!isHost || !room) return
+    const unwelcomed = players.filter(
+      (p) => !p.welcomed_at && !welcomeTimersRef.current.has(p.id),
+    )
+    if (!unwelcomed.length) return
+
+    for (const p of unwelcomed) {
+      // Pre-show, the queue paces itself around the 8-minute entrance arc;
+      // once the episode is running, arrivals (late joiners) get greeted sooner.
+      const spacing = showStartedRef.current ? 45_000 : 85_000
+      const minDelay = showStartedRef.current ? 20_000 : 40_000
+      const at = Math.max(Date.now() + minDelay, nextWelcomeAtRef.current)
+      nextWelcomeAtRef.current = at + spacing + Math.random() * 15_000
+
+      const fire = async () => {
+        welcomeTimersRef.current.delete(p.id)
+        try {
+          // Nobody on stage yet (companion intros still in flight)? Try again
+          // shortly — a greeting from an empty room reads as a bug.
+          const spoken = await spokenCompanionIds()
+          if (!spoken.length) {
+            const retry = setTimeout(fire, 30_000)
+            welcomeTimersRef.current.set(p.id, retry)
+            return
+          }
+          // Claim before calling the API — this is the reload guard.
+          const { data: claimed } = await supabase
+            .from('players')
+            .update({ welcomed_at: new Date().toISOString() })
+            .eq('id', p.id)
+            .is('welcomed_at', null)
+            .select('id')
+          if (!claimed?.length) return
+
+          // Freshest state at fire time, not schedule time — the player may
+          // have picked a team in the minutes since this was queued.
+          const current = playersRef.current.find((x) => x.id === p.id) ?? p
+          const roster = draftPicksRef.current
+            .filter((dp) => dp.player_id === p.id)
+            .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
+            .filter((n): n is string => !!n)
+
+          // Vary the greeter; never the same voice twice in a row.
+          const pool = spoken.filter((id) => id !== lastGreeterRef.current)
+          const greeter = (pool.length ? pool : spoken)[
+            Math.floor(Math.random() * (pool.length ? pool.length : spoken.length))
+          ]
+          lastGreeterRef.current = greeter
+
+          await fireCompanionMessages(
+            buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster),
+            400,
+          )
+        } catch {
+          // Welcomes are decoration — never let one break the host client.
+        }
+      }
+      welcomeTimersRef.current.set(p.id, setTimeout(fire, at - Date.now()))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [players, isHost, room?.id])
+
+  useEffect(() => {
+    return () => {
+      welcomeTimersRef.current.forEach(clearTimeout)
+      welcomeTimersRef.current.clear()
+    }
+  }, [])
+
+  // ── Effect 1d: Team declarations and defections ─────────────────────────────
+  //
+  // Watches player UPDATEs for team transitions. A switch mid-episode is a
+  // little ceremony: a system divider states the fact, then one companion
+  // passes judgement a few seconds later. Baseline is seeded silently so a
+  // page load never announces existing allegiances, and per-player cooldown
+  // stops a rapid toggler from flooding the chat.
+  const prevTeamsRef = useRef<Map<string, 'black' | 'green' | null> | null>(null)
+  const lastTeamEventRef = useRef<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    if (!isHost || !players.length) return
+    if (prevTeamsRef.current === null) {
+      prevTeamsRef.current = new Map(players.map((p) => [p.id, p.team ?? null]))
+      return
+    }
+    const prev = prevTeamsRef.current
+    for (const p of players) {
+      if (!prev.has(p.id)) { prev.set(p.id, p.team ?? null); continue }
+      const was = prev.get(p.id) ?? null
+      const now = p.team ?? null
+      if (was === now) continue
+      prev.set(p.id, now)
+      if (!now) continue // clearing a team is not an event
+      // A declaration BEFORE the welcome is folded into the welcome itself.
+      if (!was && !p.welcomed_at) continue
+      const last = lastTeamEventRef.current.get(p.id) ?? 0
+      if (Date.now() - last < 90_000) continue
+      lastTeamEventRef.current.set(p.id, Date.now())
+
+      const label = now === 'black' ? 'Team Black' : 'Team Green'
+      void insertSystemDivider(`${p.name} ${was ? 'defects to' : 'declares for'} ${label}`)
+
+      const roster = draftPicksRef.current
+        .filter((dp) => dp.player_id === p.id)
+        .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
+        .filter((n): n is string => !!n)
+      const tid = setTimeout(async () => {
+        try {
+          const spoken = await spokenCompanionIds()
+          if (!spoken.length) return
+          const greeter = spoken[Math.floor(Math.random() * spoken.length)]
+          await fireCompanionMessages(
+            buildTeamChangePrompt(greeter, p.name, was, now, roster),
+            400,
+          )
+        } catch { /* decoration */ }
+      }, 6_000 + Math.random() * 6_000)
+      pendingTimeoutsRef.current.push(tid)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [players, isHost])
 
   // ── Effect 2: Winner reactions ────────────────────────────────────────────────
   // First meaningful data load: initialize seen set without firing reactions.

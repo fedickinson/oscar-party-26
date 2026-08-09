@@ -20,7 +20,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Clapperboard,
+  Flame,
   Clock,
   FastForward,
   RotateCcw,
@@ -264,7 +264,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                   <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Clapperboard size={14} />
+                    <Flame size={14} />
                     End Ceremony
                   </>
                 )}

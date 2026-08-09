@@ -21,7 +21,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Clapperboard, Copy, Crown } from 'lucide-react'
+import { Check, Copy, Crown, Flame } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
@@ -310,7 +310,7 @@ export default function Room() {
                   'Waiting on screens and remotes'
                 ) : canStart ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Clapperboard size={18} /> Start the Party
+                    <Flame size={18} /> Start the Party
                   </span>
                 ) : (
                   `Need ${2 - players.length} more player${2 - players.length === 1 ? '' : 's'}`

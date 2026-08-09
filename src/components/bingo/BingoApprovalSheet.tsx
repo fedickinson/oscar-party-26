@@ -155,7 +155,6 @@ export default function BingoApprovalSheet({ marks, onApprove, onDeny, onDismiss
                         </p>
                         <SquareRule
                           winCondition={mark.squareText}
-                          tier={mark.squareTier}
                           probabilityPct={mark.squareProbabilityPct}
                         />
                       </div>

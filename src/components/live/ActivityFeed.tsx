@@ -16,7 +16,7 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Award, ChevronDown, Crown } from 'lucide-react'
+import { ChevronDown, Crown, ScrollText } from 'lucide-react'
 import Avatar from '../Avatar'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
@@ -205,7 +205,7 @@ export default function ActivityFeed({ feed }: Props) {
   if (feed.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 gap-2">
-        <Award size={28} className="text-white/15" />
+        <ScrollText size={28} className="text-white/15" />
         <p className="text-sm text-white/30">No winners announced yet</p>
       </div>
     )

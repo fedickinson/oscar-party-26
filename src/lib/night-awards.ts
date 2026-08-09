@@ -63,7 +63,7 @@ export interface NightAwards {
 
 // ─── Per-entity point attribution ─────────────────────────────────────────────
 
-interface EntityTally {
+export interface EntityTally {
   entity: DraftEntityRow
   points: number
   ownerId: string | null
@@ -71,6 +71,15 @@ interface EntityTally {
   /** Draft round the owner spent on them. Null when undrafted. */
   round: number | null
   pickNumber: number | null
+  /**
+   * Every event this entity won, in resolution order.
+   *
+   * Recorded here rather than re-walked by callers so there is exactly one
+   * traversal of "which entity earned what" in the codebase. The awards only
+   * need the total; the personal recap needs the itemised list, and a second
+   * walk would drift from this one the first time the matcher changed.
+   */
+  wins: Array<{ event: string; points: number }>
 }
 
 /**
@@ -100,6 +109,7 @@ export function tallyEntityPoints(
       ownerName: pick ? (playerById.get(pick.player_id)?.name ?? null) : null,
       round: pick?.round ?? null,
       pickNumber: pick?.pick_number ?? null,
+      wins: [],
     })
   }
 
@@ -117,7 +127,10 @@ export function tallyEntityPoints(
       )
       if (!entityId) continue
       const tally = tallies.get(entityId)
-      if (tally) tally.points += points
+      if (tally) {
+        tally.points += points
+        tally.wins.push({ event: cat.name, points })
+      }
     }
   }
 

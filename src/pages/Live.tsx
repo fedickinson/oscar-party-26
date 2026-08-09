@@ -47,6 +47,7 @@ import SpotlightNotification from '../components/spotlight/SpotlightNotification
 import PhaseExplainer from '../components/PhaseExplainer'
 import WelcomeCard from '../components/live/WelcomeCard'
 import Toast, { useToast } from '../components/ui/Toast'
+import type { BeatActivationRow, SignatureBeatRow } from '../types/database'
 
 // Entering tab slides in from direction * 100%, exits to direction * -100%
 const tabVariants = {
@@ -81,6 +82,24 @@ export default function Live() {
   // Use a distinct channelKey so this subscription gets its own Supabase channel
   // instance — prevents ChatSection's removeChannel call from killing this one.
   const { messages } = useChat(roomId, 'live-badges')
+  const [signatureBeats, setSignatureBeats] = useState<SignatureBeatRow[]>([])
+  const [beatActivations, setBeatActivations] = useState<BeatActivationRow[]>([])
+
+  // Beat choices are frozen before the episode starts, so the live dashboard
+  // only needs one snapshot per room.
+  useEffect(() => {
+    if (!roomId) return
+    let cancelled = false
+    void Promise.all([
+      supabase.from('signature_beats').select().order('points', { ascending: false }),
+      supabase.from('beat_activations').select().eq('room_id', roomId),
+    ]).then(([beatRes, activationRes]) => {
+      if (cancelled) return
+      setSignatureBeats((beatRes.data ?? []) as SignatureBeatRow[])
+      setBeatActivations((activationRes.data ?? []) as BeatActivationRow[])
+    })
+    return () => { cancelled = true }
+  }, [roomId])
 
   // ── Tab badge notifications ─────────────────────────────────────────────────
   //
@@ -693,6 +712,9 @@ export default function Live() {
                     confidencePicks={scores.confidencePicks}
                     draftPicks={scores.draftPicks}
                     draftEntities={scores.draftEntities}
+                    players={players}
+                    signatureBeats={signatureBeats}
+                    beatActivations={beatActivations}
                     onSwitchToBingo={() => selectTab(1)}
                   />
                 </div>

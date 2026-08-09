@@ -240,9 +240,9 @@ export default function BingoCard({
       </div>
 
       {/* Confirmation panel — slides up from inside the card.
-          Shows the full win condition before the claim goes to the host, because
-          "does this count?" is the argument worth preventing, and every square in
-          the pool spells out what does not count. */}
+          Answers "does this count?" before the claim goes to the host, which is
+          the argument worth preventing. Leads with the fine print rather than
+          the whole rule; see SquareRule for why that half. */}
       <AnimatePresence>
         {selectedIndex !== null && selectedSquare && (
           <motion.div
@@ -257,16 +257,20 @@ export default function BingoCard({
               <p className="text-[15px] font-semibold text-white leading-snug">
                 {selectedSquare.title ?? selectedSquare.short_text}
               </p>
+              {/* No points on the chip here — the confirm button below already
+                  says "+3", and the same number twice reads as two numbers. */}
               {selectedSquare.likelihood_tier && (
                 <div className="flex-shrink-0 mt-0.5">
-                  <TierChip tier={selectedSquare.likelihood_tier} showPoints />
+                  <TierChip tier={selectedSquare.likelihood_tier} />
                 </div>
               )}
             </div>
 
+            {/* Keyed by square so the disclosure resets when you switch
+                squares — otherwise the panel silently changes height. */}
             <SquareRule
+              key={selectedSquare.id}
               winCondition={selectedSquare.win_condition ?? selectedSquare.text}
-              tier={selectedSquare.likelihood_tier}
               probabilityPct={selectedSquare.probability_pct}
             />
 

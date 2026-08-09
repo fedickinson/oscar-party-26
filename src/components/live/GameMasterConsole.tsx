@@ -23,6 +23,7 @@ import { useGameMaster, GM_POINT_TIERS } from '../../hooks/useGameMaster'
 import { useGame } from '../../context/GameContext'
 import { useWatchSync, formatEpisodeTime } from '../../hooks/useWatchSync'
 import { supabase } from '../../lib/supabase'
+import type { BeatActivationRow, DraftEntityRow, DraftPickRow, PlayerRow, SignatureBeatRow } from '../../types/database'
 
 const FREE_CENTER_INDEX = 12
 
@@ -67,26 +68,55 @@ export default function GameMasterConsole({
   // workstream; until its INSERTs land this map is empty and nothing renders.
   // Keyed by CHARACTER NAME because the picker above selects nominees while
   // beats reference draft_entities — the two tables share names, not ids.
-  const [beatsByName, setBeatsByName] = useState<Map<string, {
-    id: number; name: string; trigger_text: string; odds: string; points: number; pitch: string
-  }[]>>(new Map())
+  const [beatsByName, setBeatsByName] = useState<Map<string, SignatureBeatRow[]>>(new Map())
+  const [collisionBeats, setCollisionBeats] = useState<SignatureBeatRow[]>([])
+  const [entityByName, setEntityByName] = useState<Map<string, DraftEntityRow>>(new Map())
+  const [entityNameById, setEntityNameById] = useState<Map<string, string>>(new Map())
+  const [activatedBeatIds, setActivatedBeatIds] = useState<Set<number>>(new Set())
+  const [activationPlayerByBeat, setActivationPlayerByBeat] = useState<Map<number, PlayerRow>>(new Map())
+  const [drafterByEntityId, setDrafterByEntityId] = useState<Map<string, PlayerRow>>(new Map())
   useEffect(() => {
     void (async () => {
-      const [{ data: beats }, { data: ents }] = await Promise.all([
+      const [{ data: beats }, { data: ents }, { data: activations }, { data: picks }, { data: roomPlayers }] = await Promise.all([
         supabase.from('signature_beats').select(),
-        supabase.from('draft_entities').select('id, name'),
+        supabase.from('draft_entities').select(),
+        supabase.from('beat_activations').select().eq('room_id', roomId),
+        supabase.from('draft_picks').select().eq('room_id', roomId),
+        supabase.from('players').select().eq('room_id', roomId),
       ])
       if (!beats?.length || !ents?.length) return
-      const entityName = new Map(ents.map((e) => [e.id as string, e.name as string]))
-      const map = new Map<string, typeof beats>()
-      for (const b of beats) {
-        const n = entityName.get(b.entity_id as string)
+      const typedBeats = beats as SignatureBeatRow[]
+      const typedEntities = ents as DraftEntityRow[]
+      const typedPlayers = (roomPlayers ?? []) as PlayerRow[]
+      const playerMap = new Map(typedPlayers.map((roomPlayer) => [roomPlayer.id, roomPlayer]))
+      const entityName = new Map(typedEntities.map((entity) => [entity.id, entity.name]))
+      const map = new Map<string, SignatureBeatRow[]>()
+      for (const beat of typedBeats) {
+        if (beat.partner_entity_id != null) continue
+        const n = entityName.get(beat.entity_id)
         if (!n) continue
-        map.set(n, [...(map.get(n) ?? []), b])
+        map.set(n, [...(map.get(n) ?? []), beat])
       }
-      setBeatsByName(map as never)
+      const activationRows = (activations ?? []) as BeatActivationRow[]
+      setBeatsByName(map)
+      setCollisionBeats(typedBeats.filter((beat) => beat.partner_entity_id != null))
+      setEntityByName(new Map(typedEntities.map((entity) => [entity.name, entity])))
+      setEntityNameById(entityName)
+      setActivatedBeatIds(new Set(activationRows.map((activation) => activation.beat_id)))
+      setActivationPlayerByBeat(new Map(
+        activationRows.flatMap((activation) => {
+          const activatingPlayer = playerMap.get(activation.player_id)
+          return activatingPlayer ? [[activation.beat_id, activatingPlayer] as const] : []
+        }),
+      ))
+      setDrafterByEntityId(new Map(
+        ((picks ?? []) as DraftPickRow[]).flatMap((pick) => {
+          const draftingPlayer = playerMap.get(pick.player_id)
+          return draftingPlayer ? [[pick.entity_id, draftingPlayer] as const] : []
+        }),
+      ))
     })()
-  }, [])
+  }, [roomId])
   const [confirmingEnd, setConfirmingEnd] = useState(false)
 
   const canCommit = draft.trim().length > 0 && selectedCharacter !== null && !isLogging
@@ -146,6 +176,73 @@ export default function GameMasterConsole({
     } finally {
       setAutoRunning(false)
     }
+  }
+
+  const loggedNames = new Set(events.map((event) => event.category.name))
+
+  function collisionSides(beat: SignatureBeatRow) {
+    if (!beat.partner_entity_id) return null
+    const leftName = entityNameById.get(beat.entity_id)
+    const rightName = entityNameById.get(beat.partner_entity_id)
+    if (!leftName || !rightName) return null
+    const leftNominee = characters.find((character) => character.name === leftName)
+    const rightNominee = characters.find((character) => character.name === rightName)
+    if (!leftNominee || !rightNominee) return null
+    return { leftName, rightName, leftNominee, rightNominee }
+  }
+
+  function isCollisionUsed(beat: SignatureBeatRow): boolean {
+    const sides = collisionSides(beat)
+    if (!sides) return false
+    const leftEvent = `${beat.name} — ${sides.leftName.split(' ')[0]}`
+    const rightEvent = `${beat.name} — ${sides.rightName.split(' ')[0]}`
+    return loggedNames.has(leftEvent) || loggedNames.has(rightEvent)
+  }
+
+  async function awardCollision(beat: SignatureBeatRow): Promise<void> {
+    const sides = collisionSides(beat)
+    if (!sides || isCollisionUsed(beat) || isLogging) return
+    await logEvent(
+      `${beat.name} — ${sides.leftName.split(' ')[0]}`,
+      beat.points,
+      sides.leftNominee.id,
+    )
+    await logEvent(
+      `${beat.name} — ${sides.rightName.split(' ')[0]}`,
+      beat.points,
+      sides.rightNominee.id,
+    )
+    setDraft('')
+    setSelectedCharacter(null)
+  }
+
+  function renderCollisionBeat(beat: SignatureBeatRow) {
+    const sides = collisionSides(beat)
+    if (!sides) return null
+    const used = isCollisionUsed(beat)
+    return (
+      <motion.button
+        key={beat.id}
+        whileTap={{ scale: 0.98 }}
+        disabled={used || isLogging}
+        title={beat.trigger_text}
+        onClick={() => void awardCollision(beat)}
+        className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
+          ${used
+            ? 'bg-white/3 border-white/5 text-white/25 line-through'
+            : 'bg-violet-500/10 border-violet-400/30 text-white/85'}`}
+      >
+        <Swords className={`w-3.5 h-3.5 flex-shrink-0 ${used ? 'text-white/20' : 'text-violet-300'}`} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-medium truncate">{beat.name}</span>
+          <span className="block text-[10px] text-white/35 truncate">{sides.leftName} + {sides.rightName}</span>
+        </span>
+        <span className="text-[10px] uppercase tracking-wide text-white/35 flex-shrink-0">{beat.odds}</span>
+        <span className={`text-sm font-bold flex-shrink-0 ${used ? 'text-white/25' : 'text-accent'}`}>
+          {beat.points}
+        </span>
+      </motion.button>
+    )
   }
 
   if (isLoading) {
@@ -223,27 +320,28 @@ export default function GameMasterConsole({
             </div>
           </div>
 
-          {/* Signature beats for the selected character — one tap logs the
-              beat with its authored points, skipping both the text field and
-              the tier row. Greyed once fired: beats are once-only by nature,
-              and "already logged" is derived by name-matching tonight's events
-              rather than a state column, so practice rooms reset for free. */}
+          {/* Signature beats for the selected entity. Character beats must
+              have been activated before the show; dragon beats are always live. */}
           {(() => {
             const who = selectedCharacter ? characters.find((c) => c.id === selectedCharacter) : null
             const beats = who ? beatsByName.get(who.name) ?? [] : []
             if (!beats.length) return null
-            const loggedNames = new Set(events.map((e) => e.category.name))
+            const selectedEntity = who ? entityByName.get(who.name) : null
+            const isDragon = selectedEntity?.type === 'film'
             return (
               <div>
                 <p className="text-xs text-white/40 mb-2">{who!.name}'s signature beats</p>
                 <div className="space-y-1.5">
                   {beats.map((b) => {
                     const used = loggedNames.has(b.name)
+                    const active = isDragon || activatedBeatIds.has(b.id)
+                    const activatingPlayer = activationPlayerByBeat.get(b.id)
+                      ?? drafterByEntityId.get(b.entity_id)
                     return (
                       <motion.button
                         key={b.id}
                         whileTap={{ scale: 0.98 }}
-                        disabled={used || isLogging}
+                        disabled={used || !active || isLogging}
                         title={b.trigger_text}
                         onClick={() => {
                           void logEvent(b.name, b.points, selectedCharacter!).then(() => {
@@ -254,14 +352,25 @@ export default function GameMasterConsole({
                         className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
                           ${used
                             ? 'bg-white/3 border-white/5 text-white/25 line-through'
-                            : 'bg-accent/10 border-accent/30 text-white/85'}`}
+                            : !active
+                              ? 'bg-white/3 border-white/8 text-white/25'
+                              : 'bg-accent/10 border-accent/30 text-white/85'}`}
                       >
-                        <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${used ? 'text-white/20' : 'text-accent'}`} />
-                        <span className="text-xs font-medium flex-1 min-w-0 truncate">{b.name}</span>
-                        <span className="text-[10px] uppercase tracking-wide text-white/35 flex-shrink-0">{b.odds}</span>
-                        <span className={`text-sm font-bold flex-shrink-0 ${used ? 'text-white/25' : 'text-accent'}`}>
-                          {b.points}
+                        <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${used || !active ? 'text-white/20' : 'text-accent'}`} />
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-xs font-medium truncate">{b.name}</span>
+                          {active && !isDragon && activatingPlayer && (
+                            <span className="block text-[10px] text-white/35 truncate">Activated by {activatingPlayer.name}</span>
+                          )}
                         </span>
+                        <span className="text-[10px] uppercase tracking-wide text-white/35 flex-shrink-0">{b.odds}</span>
+                        {active ? (
+                          <span className={`text-sm font-bold flex-shrink-0 ${used ? 'text-white/25' : 'text-accent'}`}>
+                            {b.points}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-white/25 flex-shrink-0">not activated</span>
+                        )}
                       </motion.button>
                     )
                   })}
@@ -269,6 +378,31 @@ export default function GameMasterConsole({
               </div>
             )
           })()}
+
+          {(() => {
+            const who = selectedCharacter ? characters.find((character) => character.id === selectedCharacter) : null
+            const selectedEntity = who ? entityByName.get(who.name) : null
+            if (!selectedEntity) return null
+            const relevant = collisionBeats.filter((beat) =>
+              beat.entity_id === selectedEntity.id || beat.partner_entity_id === selectedEntity.id,
+            )
+            if (!relevant.length) return null
+            return (
+              <div>
+                <p className="text-xs text-white/40 mb-2">Collision beats</p>
+                <div className="space-y-1.5">{relevant.map(renderCollisionBeat)}</div>
+              </div>
+            )
+          })()}
+
+          {collisionBeats.length > 0 && (
+            <details className="rounded-xl bg-white/3 border border-white/8 px-3 py-2.5">
+              <summary className="min-h-11 flex items-center cursor-pointer text-xs font-medium text-white/45">
+                All collision beats
+              </summary>
+              <div className="space-y-1.5 pb-1">{collisionBeats.map(renderCollisionBeat)}</div>
+            </details>
+          )}
 
           {/* Commit — point tier doubles as the submit button */}
           <div>

@@ -7,8 +7,8 @@
  *  2. Available + not my turn → read-only, no hover state
  *  3. Already drafted         → greyed, shows who drafted it
  *
- * NOMINATION DISPLAY:
- *  People: up to 3 category names listed as small badges
+ * SIGNATURE BEAT DISPLAY:
+ *  People: up to 3 beat names listed as small badges
  *  Dragons: show "N ways to score" prominently
  *
  * The `index` prop drives stagger delay for entrance animation.
@@ -18,11 +18,12 @@
 
 import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
-import type { PlayerRow } from '../../types/database'
+import type { PlayerRow, SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
 interface Props {
   entity: DraftEntityWithDetails
+  beats: SignatureBeatRow[]
   isAvailable: boolean
   isMyTurn: boolean
   draftedBy: PlayerRow | null
@@ -32,6 +33,7 @@ interface Props {
 
 export default function EntityCard({
   entity,
+  beats,
   isAvailable,
   isMyTurn,
   draftedBy,
@@ -40,7 +42,8 @@ export default function EntityCard({
 }: Props) {
   // Dragons ride the 'film' slot of the entity schema — see the seed migration.
   const isDragon = entity.type === 'film'
-  const potentialPoints = entity.nominations.reduce((sum, n) => sum + (n.points ?? 0), 0)
+  const potentialPoints = (isDragon ? beats : beats.slice(0, 3))
+    .reduce((sum, beat) => sum + beat.points, 0)
   const isTappable = isAvailable && isMyTurn
 
   return (
@@ -90,7 +93,7 @@ export default function EntityCard({
             </div>
           )}
 
-          {/* Nominations display */}
+          {/* Signature beats display */}
           <div className="mt-2">
             {isDragon ? (
               // Dragons: how many scoring events they appear in
@@ -100,24 +103,27 @@ export default function EntityCard({
                   isAvailable ? 'text-accent' : 'text-white/30',
                 ].join(' ')}
               >
-                {entity.nom_count} way{entity.nom_count !== 1 ? 's' : ''} to score
+                {beats.length} way{beats.length !== 1 ? 's' : ''} to score
               </span>
             ) : (
-              // People: show category badges (max 3, then "+N more")
-              <div className="flex flex-wrap gap-1">
-                {entity.nominations.slice(0, 3).map((nom) => (
+              // People: show beat badges (max 3, then "+N more")
+              <div>
+                <div className="flex flex-wrap gap-1">
+                {beats.slice(0, 3).map((beat) => (
                   <span
-                    key={nom.category_id}
+                    key={beat.id}
                     className="text-[10px] text-white/50 bg-white/8 px-1.5 py-0.5 rounded"
                   >
-                    {nom.category_name}
+                    {beat.name}
                   </span>
                 ))}
-                {entity.nominations.length > 3 && (
+                {beats.length > 3 && (
                   <span className="text-[10px] text-white/30">
-                    +{entity.nominations.length - 3} more
+                    +{beats.length - 3} more
                   </span>
                 )}
+                </div>
+                <p className="text-[10px] text-white/35 mt-1">choose 3 of {beats.length}</p>
               </div>
             )}
           </div>
@@ -144,7 +150,7 @@ export default function EntityCard({
                   potentialPoints > 0 ? 'text-accent' : 'text-white/30',
                 ].join(' ')}
               >
-                {potentialPoints}
+                {isDragon ? potentialPoints : `up to ${potentialPoints}`}
               </p>
               <p className="text-[10px] text-white/30 mt-0.5">pts</p>
             </>

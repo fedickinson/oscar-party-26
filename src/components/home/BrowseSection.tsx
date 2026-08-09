@@ -7,7 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, AlertTriangle, BookOpen, Clapperboard } from 'lucide-react'
+import { ChevronDown, ChevronUp, AlertTriangle, BookOpen, Scroll } from 'lucide-react'
 import {
   filmEncyclopedia,
   ceremonyStorylines,
@@ -292,7 +292,7 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
           className="w-full flex items-center justify-between px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <Clapperboard size={16} className="text-accent" />
+            <Scroll size={16} className="text-accent" />
             <span className="text-sm font-semibold text-white/80">Shorts &amp; Specialty</span>
             <span className="text-xs text-white/40">{specialtyFilms.length}</span>
           </div>

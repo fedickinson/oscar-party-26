@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, Clapperboard, Clock, Info, Trophy, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clock, Info, Scroll, Trophy, X } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { supabase } from '../../lib/supabase'
 import ChatSection from './ChatSection'
@@ -265,7 +265,7 @@ function NextUpCard({
               <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
             ) : (
               <>
-                <Clapperboard size={14} />
+                <Scroll size={14} />
                 Reveal Final Results
               </>
             )}

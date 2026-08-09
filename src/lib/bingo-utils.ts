@@ -479,6 +479,48 @@ export function isBlackout(markedIndices: Set<number>): boolean {
   return effective.size === 25
 }
 
+// ─── hyphenateForTile ─────────────────────────────────────────────────────────
+
+/**
+ * Soft-hyphen break points for the pool words too wide for a grid tile.
+ *
+ * A tile gives a title about 45px. Eleven words in the 75-square pool are wider
+ * than that — "Sheepstealer" needs 63px, and still needs 54px at an unreadable
+ * 8.5px — so shrinking the type cannot save them. They have to break; the only
+ * question is whether they break well.
+ *
+ * Soft hyphens (U+00AD) rather than `hyphens: auto` because auto depends on a
+ * hyphenation dictionary the browser may not have: it silently no-ops in
+ * headless Chromium, and needs `-webkit-hyphens` on iOS before 17. The fallback
+ * when it no-ops is `break-words`, which gives you "Someon-e Burns". These
+ * render identically everywhere, and a soft hyphen is invisible unless the line
+ * actually breaks there, so short titles are untouched.
+ *
+ * Keyed by lowercase word. Anything not listed still has `break-words` behind it
+ * as a backstop, so a new square can never clip — it just breaks less prettily.
+ */
+const TILE_HYPHENATION: Record<string, string> = {
+  dreamfyre: 'Dream­fyre',
+  everything: 'Every­thing',
+  gratuitous: 'Gratu­itous',
+  harrenhal: 'Harren­hal',
+  northmen: 'North­men',
+  sheepstealer: 'Sheep­stealer',
+  suspicious: 'Suspi­cious',
+  tessarion: 'Tessa­rion',
+  tumbleton: 'Tumble­ton',
+  witchcraft: 'Witch­craft',
+  wounded: 'Wound­ed',
+}
+
+/** Inserts soft hyphens so long titles break at a syllable instead of mid-letter. */
+export function hyphenateForTile(text: string): string {
+  return text
+    .split(' ')
+    .map((word) => TILE_HYPHENATION[word.toLowerCase()] ?? word)
+    .join(' ')
+}
+
 // ─── splitWinCondition ────────────────────────────────────────────────────────
 
 /**

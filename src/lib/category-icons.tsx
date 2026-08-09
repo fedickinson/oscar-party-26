@@ -12,7 +12,7 @@ import type { ComponentType } from 'react'
 import {
   Aperture,
   BookOpen,
-  Clapperboard,
+  Swords,
   Film,
   Globe,
   Mic,
@@ -42,7 +42,7 @@ function resolveIcon(name: string): LucideIconType {
   const n = name.toLowerCase()
 
   if (n.includes('picture')) return OscarTrophy as LucideIconType
-  if (n.includes('director')) return Clapperboard
+  if (n.includes('director')) return Swords
 
   // Acting — check supporting before lead
   if (n.includes('supporting') && (n.includes('actress') || n.includes('actor'))) return User
@@ -75,7 +75,7 @@ function resolveIcon(name: string): LucideIconType {
   if (n.includes('visual effects')) return Wand2
 
   // Short films — live action fallback
-  if (n.includes('short')) return Clapperboard
+  if (n.includes('short')) return Swords
 
   return Film
 }

@@ -21,11 +21,9 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { splitWinCondition } from '../../lib/bingo-utils'
-import type { LikelihoodTier } from '../../types/database'
 
 interface Props {
   winCondition: string
-  tier?: LikelihoodTier | null
   probabilityPct?: number | null
   /** Start expanded — for the peek sheet, where reading is the whole point */
   defaultExpanded?: boolean
@@ -33,7 +31,6 @@ interface Props {
 
 export default function SquareRule({
   winCondition,
-  tier,
   probabilityPct,
   defaultExpanded = false,
 }: Props) {
@@ -45,8 +42,16 @@ export default function SquareRule({
     return <p className="text-sm text-white/75 leading-snug">{rule}</p>
   }
 
+  // The whole block is the target, not just the label. A 24px "Full rule" link
+  // fails the 44px touch minimum and asks for a precise tap from someone who is
+  // looking at a television; the paragraph is three lines of it and tapping text
+  // to see more of that text is the obvious gesture anyway.
   return (
-    <div>
+    <button
+      onClick={() => setExpanded((v) => !v)}
+      aria-expanded={expanded}
+      className="w-full text-left"
+    >
       <p className="text-sm text-white/75 leading-snug">{finePrint}</p>
 
       <AnimatePresence initial={false}>
@@ -62,19 +67,14 @@ export default function SquareRule({
             <p className="text-[13px] text-white/45 leading-snug pt-1.5">
               {rule}
               {typeof probabilityPct === 'number' && (
-                <span className="text-white/30">
-                  {' '}Roughly a {probabilityPct}% chance{tier ? '.' : ''}
-                </span>
+                <span className="text-white/30"> Roughly a {probabilityPct}% chance.</span>
               )}
             </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/35 mt-1.5 min-h-[24px]"
-      >
+      <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/35 mt-1.5">
         {expanded ? 'Less' : 'Full rule'}
         <motion.span
           animate={{ rotate: expanded ? 180 : 0 }}
@@ -83,7 +83,7 @@ export default function SquareRule({
         >
           <ChevronDown size={12} />
         </motion.span>
-      </button>
-    </div>
+      </span>
+    </button>
   )
 }
