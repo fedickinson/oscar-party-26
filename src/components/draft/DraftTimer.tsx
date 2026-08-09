@@ -53,12 +53,12 @@ export default function DraftTimer({
         isMyTurn && !isDraftComplete
           ? {
               boxShadow: [
-                '0 0 0px 0px rgba(212,175,55,0)',
-                '0 0 20px 5px rgba(212,175,55,0.4)',
-                '0 0 10px 2px rgba(212,175,55,0.2)',
+                '0 0 0px 0px rgba(185,134,63,0)',
+                '0 0 20px 5px rgba(185,134,63,0.4)',
+                '0 0 10px 2px rgba(185,134,63,0.2)',
               ],
             }
-          : { boxShadow: '0 0 0px 0px rgba(212,175,55,0)' }
+          : { boxShadow: '0 0 0px 0px rgba(185,134,63,0)' }
       }
       transition={
         isMyTurn && !isDraftComplete
@@ -69,8 +69,8 @@ export default function DraftTimer({
       style={
         isMyTurn && !isDraftComplete
           ? {
-              background: 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.06) 100%)',
-              border: '1.5px solid rgba(212,175,55,0.5)',
+              background: 'linear-gradient(135deg, rgba(185,134,63,0.18) 0%, rgba(185,134,63,0.06) 100%)',
+              border: '1.5px solid rgba(185,134,63,0.5)',
               backdropFilter: 'blur(12px)',
             }
           : {
@@ -96,7 +96,7 @@ export default function DraftTimer({
           </motion.div>
           <span
             className="text-sm font-extrabold uppercase tracking-[0.18em]"
-            style={{ color: '#D4AF37' }}
+            style={{ color: '#B9863F' }}
           >
             Your Turn
           </span>
@@ -138,7 +138,7 @@ export default function DraftTimer({
         </div>
 
         {/* Timer bar track */}
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isMyTurn && !isDraftComplete ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.08)' }}>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isMyTurn && !isDraftComplete ? 'rgba(185,134,63,0.15)' : 'rgba(255,255,255,0.08)' }}>
           <motion.div
             className="h-full rounded-full"
             style={{ backgroundColor: isMyTurn && !isDraftComplete ? color : 'rgba(255,255,255,0.3)' }}

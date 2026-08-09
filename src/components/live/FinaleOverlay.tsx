@@ -32,13 +32,13 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
       particleCount: 180,
       spread: 90,
       origin: { x: 0.3, y: 0.5 },
-      colors: ['#D4AF37', '#ffffff', '#F5E6A3', '#ffd700'],
+      colors: ['#B9863F', '#ffffff', '#D6A961', '#ffd700'],
     })
     confetti({
       particleCount: 180,
       spread: 90,
       origin: { x: 0.7, y: 0.5 },
-      colors: ['#D4AF37', '#ffffff', '#F5E6A3', '#ffd700'],
+      colors: ['#B9863F', '#ffffff', '#D6A961', '#ffd700'],
     })
 
     const timer = setTimeout(onDismiss, DISMISS_MS)
@@ -64,8 +64,8 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
         className="w-full max-w-sm rounded-3xl px-6 py-8 text-center overflow-hidden relative"
         style={{
           background: 'linear-gradient(155deg, rgba(10,14,39,0.99) 0%, rgba(15,19,52,0.99) 100%)',
-          border: '1px solid rgba(212,175,55,0.45)',
-          boxShadow: '0 0 72px 14px rgba(212,175,55,0.16), 0 12px 48px rgba(0,0,0,0.55)',
+          border: '1px solid rgba(185,134,63,0.45)',
+          boxShadow: '0 0 72px 14px rgba(185,134,63,0.16), 0 12px 48px rgba(0,0,0,0.55)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -73,7 +73,7 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(112deg, transparent 20%, rgba(212,175,55,0.10) 50%, transparent 80%)',
+            background: 'linear-gradient(112deg, transparent 20%, rgba(185,134,63,0.10) 50%, transparent 80%)',
           }}
           animate={{ x: ['-150%', '250%'] }}
           transition={{ duration: 1.6, delay: 0.35, ease: 'easeOut' }}
@@ -82,7 +82,7 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(112deg, transparent 20%, rgba(212,175,55,0.06) 50%, transparent 80%)',
+            background: 'linear-gradient(112deg, transparent 20%, rgba(185,134,63,0.06) 50%, transparent 80%)',
           }}
           animate={{ x: ['-150%', '250%'] }}
           transition={{ duration: 1.6, delay: 1.6, ease: 'easeOut' }}
@@ -98,9 +98,9 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
           <div
             className="rounded-2xl flex items-center justify-center relative"
             style={{
-              background: 'rgba(212,175,55,0.18)',
-              border: '1px solid rgba(212,175,55,0.40)',
-              boxShadow: '0 0 32px 6px rgba(212,175,55,0.22)',
+              background: 'rgba(185,134,63,0.18)',
+              border: '1px solid rgba(185,134,63,0.40)',
+              boxShadow: '0 0 32px 6px rgba(185,134,63,0.22)',
               width: 72,
               height: 72,
             }}
@@ -136,8 +136,8 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
             transition={{ type: 'spring', stiffness: 280, damping: 26, delay: 0.36 }}
             className="mt-6 rounded-2xl px-4 py-4 text-center"
             style={{
-              background: 'rgba(212,175,55,0.09)',
-              border: '1px solid rgba(212,175,55,0.22)',
+              background: 'rgba(185,134,63,0.09)',
+              border: '1px solid rgba(185,134,63,0.22)',
             }}
           >
             <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 mb-2">
@@ -148,8 +148,8 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
               <div
                 className="w-11 h-11 rounded-xl flex-shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${(leader.player.color ?? '#D4AF37')}66, ${(leader.player.color ?? '#D4AF37')}33)`,
-                  border: `1px solid ${(leader.player.color ?? '#D4AF37')}40`,
+                  background: `linear-gradient(135deg, ${(leader.player.color ?? '#B9863F')}66, ${(leader.player.color ?? '#B9863F')}33)`,
+                  border: `1px solid ${(leader.player.color ?? '#B9863F')}40`,
                 }}
               />
               <p className="text-xl font-extrabold text-white truncate">{leader.player.name}</p>

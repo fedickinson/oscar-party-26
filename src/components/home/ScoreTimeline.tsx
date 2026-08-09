@@ -26,7 +26,7 @@ interface Props {
 }
 
 // Four perceptually-distinct colors on a dark background, one per player slot
-const CHART_LINE_COLORS = ['#D4AF37', '#7B2FF7', '#22C55E', '#F97316']
+const CHART_LINE_COLORS = ['#B9863F', '#7B2FF7', '#22C55E', '#F97316']
 
 function getPlayerColor(_avatarId: string, playerIndex: number): string {
   return CHART_LINE_COLORS[playerIndex % CHART_LINE_COLORS.length]

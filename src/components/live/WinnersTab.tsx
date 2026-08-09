@@ -223,8 +223,8 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
               animate={{ width: `${totalCount > 0 ? (announcedCount / totalCount) * 100 : 0}%` }}
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
               style={{
-                background: 'linear-gradient(90deg, #D4AF37, #F5E6A3)',
-                boxShadow: announcedCount > 0 ? '0 0 8px 1px rgba(212,175,55,0.5)' : undefined,
+                background: 'linear-gradient(90deg, #B9863F, #D6A961)',
+                boxShadow: announcedCount > 0 ? '0 0 8px 1px rgba(185,134,63,0.5)' : undefined,
               }}
             />
           </div>
@@ -310,7 +310,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                   <div
                     className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl"
                     style={{
-                      background: 'linear-gradient(180deg, rgba(212,175,55,0.7) 0%, rgba(212,175,55,0.25) 100%)',
+                      background: 'linear-gradient(180deg, rgba(185,134,63,0.7) 0%, rgba(185,134,63,0.25) 100%)',
                     }}
                   />
                 )}
@@ -368,7 +368,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                     {hasWinner && winnerNominee ? (
                       <div>
                         <p className="text-[13px] font-bold text-accent leading-tight truncate"
-                          style={{ textShadow: '0 0 16px rgba(212,175,55,0.28)' }}
+                          style={{ textShadow: '0 0 16px rgba(185,134,63,0.28)' }}
                         >
                           {winnerNominee.name}
                           {hasTie && tieWinnerNominee && (

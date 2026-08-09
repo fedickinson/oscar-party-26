@@ -21,7 +21,7 @@ import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { PlayerRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
 
-const CHART_LINE_COLORS = ['#D4AF37', '#7B2FF7', '#22C55E', '#F97316']
+const CHART_LINE_COLORS = ['#B9863F', '#7B2FF7', '#22C55E', '#F97316']
 
 interface Props {
   confidenceData: Array<Record<string, number | string>>

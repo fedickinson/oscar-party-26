@@ -69,7 +69,7 @@ function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }:
       layout
       className={[
         'bg-white/5 backdrop-blur-lg border rounded-2xl overflow-hidden transition-shadow duration-700',
-        highlighted ? 'border-accent/60 shadow-[0_0_20px_3px_rgba(212,175,55,0.3)]' : nomAccentClass(film.nominations),
+        highlighted ? 'border-accent/60 shadow-[0_0_20px_3px_rgba(185,134,63,0.3)]' : nomAccentClass(film.nominations),
       ].join(' ')}
     >
       {/* Collapsed header — always visible */}

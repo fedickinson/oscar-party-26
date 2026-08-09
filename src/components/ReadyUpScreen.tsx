@@ -83,7 +83,7 @@ export default function ReadyUpScreen({
       particleCount: 120,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#D4AF37', '#ffffff', '#12163A'],
+      colors: ['#B9863F', '#ffffff', '#12163A'],
     })
   }, [stage])
 

@@ -94,7 +94,7 @@ export default function PostCeremonyView({
     const goldDefaults = {
       ticks: 120,
       zIndex: 9999,
-      colors: ['#D4AF37', '#FFD700', '#F5E6A3', '#ffffff', '#FFF8DC'],
+      colors: ['#B9863F', '#FFD700', '#D6A961', '#ffffff', '#FFF8DC'],
       gravity: 0.85,
       scalar: 1.05,
     }
@@ -164,7 +164,7 @@ export default function PostCeremonyView({
 
   // Rank medal colors for top 3
   const rankColors: Record<number, string> = {
-    1: '#D4AF37',
+    1: '#B9863F',
     2: '#C0C0C0',
     3: '#CD7F32',
   }
@@ -187,8 +187,8 @@ export default function PostCeremonyView({
                 left: p.x,
                 width: p.size,
                 height: p.size,
-                background: 'rgba(212,175,55,0.55)',
-                boxShadow: '0 0 6px 1px rgba(212,175,55,0.35)',
+                background: 'rgba(185,134,63,0.55)',
+                boxShadow: '0 0 6px 1px rgba(185,134,63,0.35)',
               }}
               initial={{ y: '100dvh', opacity: 0 }}
               animate={{
@@ -246,11 +246,11 @@ export default function PostCeremonyView({
             background: 'linear-gradient(150deg, rgba(25,20,5,0.98) 0%, rgba(18,14,4,0.98) 50%, rgba(10,14,39,0.98) 100%)',
             border: '1px solid transparent',
             backgroundClip: 'padding-box',
-            boxShadow: `0 0 90px 16px rgba(212,175,55,0.20), 0 0 48px 6px rgba(212,175,55,0.13), 0 8px 48px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(212,175,55,0.45)`,
+            boxShadow: `0 0 90px 16px rgba(185,134,63,0.20), 0 0 48px 6px rgba(185,134,63,0.13), 0 8px 48px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(185,134,63,0.45)`,
           } : {
             background: 'linear-gradient(150deg, rgba(25,20,5,0.98) 0%, rgba(18,14,4,0.98) 50%, rgba(10,14,39,0.98) 100%)',
-            border: '1px solid rgba(212,175,55,0.5)',
-            boxShadow: '0 0 80px 12px rgba(212,175,55,0.14), 0 0 40px 4px rgba(212,175,55,0.10), 0 8px 48px rgba(0,0,0,0.55)',
+            border: '1px solid rgba(185,134,63,0.5)',
+            boxShadow: '0 0 80px 12px rgba(185,134,63,0.14), 0 0 40px 4px rgba(185,134,63,0.10), 0 8px 48px rgba(0,0,0,0.55)',
           }}
         >
           {/* Tie: dual-color side-split glow overlay */}
@@ -270,15 +270,15 @@ export default function PostCeremonyView({
             className="absolute inset-0 rounded-3xl pointer-events-none"
             animate={isTie ? {
               boxShadow: [
-                '0 0 40px 6px rgba(212,175,55,0.14)',
-                '0 0 72px 18px rgba(212,175,55,0.28)',
-                '0 0 40px 6px rgba(212,175,55,0.14)',
+                '0 0 40px 6px rgba(185,134,63,0.14)',
+                '0 0 72px 18px rgba(185,134,63,0.28)',
+                '0 0 40px 6px rgba(185,134,63,0.14)',
               ],
             } : {
               boxShadow: [
-                '0 0 32px 4px rgba(212,175,55,0.10)',
-                '0 0 56px 12px rgba(212,175,55,0.20)',
-                '0 0 32px 4px rgba(212,175,55,0.10)',
+                '0 0 32px 4px rgba(185,134,63,0.10)',
+                '0 0 56px 12px rgba(185,134,63,0.20)',
+                '0 0 32px 4px rgba(185,134,63,0.10)',
               ],
             }}
             transition={{ duration: isTie ? 2.2 : 2.8, repeat: Infinity, ease: 'easeInOut' }}
@@ -292,8 +292,8 @@ export default function PostCeremonyView({
             className="h-0.5 origin-left"
             style={{
               background: isTie && winners.length >= 2
-                ? `linear-gradient(90deg, transparent 0%, ${getPlayerColor(winners[0].player.avatar_id)} 15%, ${getPlayerColor(winners[0].player.avatar_id)}cc 42%, #F5E6A3 50%, ${getPlayerColor(winners[1].player.avatar_id)}cc 58%, ${getPlayerColor(winners[1].player.avatar_id)} 85%, transparent 100%)`
-                : 'linear-gradient(90deg, transparent, #D4AF37 20%, #F5E6A3 50%, #D4AF37 80%, transparent)',
+                ? `linear-gradient(90deg, transparent 0%, ${getPlayerColor(winners[0].player.avatar_id)} 15%, ${getPlayerColor(winners[0].player.avatar_id)}cc 42%, #D6A961 50%, ${getPlayerColor(winners[1].player.avatar_id)}cc 58%, ${getPlayerColor(winners[1].player.avatar_id)} 85%, transparent 100%)`
+                : 'linear-gradient(90deg, transparent, #B9863F 20%, #D6A961 50%, #B9863F 80%, transparent)',
             }}
           />
 
@@ -301,7 +301,7 @@ export default function PostCeremonyView({
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(108deg, transparent 20%, rgba(212,175,55,0.11) 48%, rgba(245,230,163,0.07) 52%, transparent 78%)',
+              background: 'linear-gradient(108deg, transparent 20%, rgba(185,134,63,0.11) 48%, rgba(214,169,97,0.07) 52%, transparent 78%)',
             }}
             animate={{ x: ['-140%', '240%'] }}
             transition={{ duration: 1.3, delay: 0.55, ease: 'easeOut' }}
@@ -312,7 +312,7 @@ export default function PostCeremonyView({
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: 'linear-gradient(108deg, transparent 30%, rgba(212,175,55,0.06) 50%, transparent 70%)',
+                  background: 'linear-gradient(108deg, transparent 30%, rgba(185,134,63,0.06) 50%, transparent 70%)',
                 }}
                 animate={{ x: ['-140%', '240%'] }}
                 transition={{ duration: 2.8, delay: 2.8, repeat: Infinity, repeatDelay: 5.5, ease: 'easeInOut' }}
@@ -320,7 +320,7 @@ export default function PostCeremonyView({
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: 'linear-gradient(252deg, transparent 30%, rgba(212,175,55,0.05) 50%, transparent 70%)',
+                  background: 'linear-gradient(252deg, transparent 30%, rgba(185,134,63,0.05) 50%, transparent 70%)',
                 }}
                 animate={{ x: ['240%', '-140%'] }}
                 transition={{ duration: 2.8, delay: 5.6, repeat: Infinity, repeatDelay: 5.5, ease: 'easeInOut' }}
@@ -330,7 +330,7 @@ export default function PostCeremonyView({
             <motion.div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(108deg, transparent 30%, rgba(212,175,55,0.06) 50%, transparent 70%)',
+                background: 'linear-gradient(108deg, transparent 30%, rgba(185,134,63,0.06) 50%, transparent 70%)',
               }}
               animate={{ x: ['-140%', '240%'] }}
               transition={{ duration: 2.8, delay: 2.8, repeat: Infinity, repeatDelay: 4.5, ease: 'easeInOut' }}
@@ -341,7 +341,7 @@ export default function PostCeremonyView({
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse 70% 55% at 50% 30%, rgba(212,175,55,0.10) 0%, transparent 100%)',
+              background: 'radial-gradient(ellipse 70% 55% at 50% 30%, rgba(185,134,63,0.10) 0%, transparent 100%)',
             }}
           />
 
@@ -357,14 +357,14 @@ export default function PostCeremonyView({
                 <motion.div
                   className="flex items-center gap-2 px-5 py-1.5 rounded-full"
                   animate={{ boxShadow: [
-                    '0 0 18px 3px rgba(212,175,55,0.20)',
-                    '0 0 30px 7px rgba(212,175,55,0.35)',
-                    '0 0 18px 3px rgba(212,175,55,0.20)',
+                    '0 0 18px 3px rgba(185,134,63,0.20)',
+                    '0 0 30px 7px rgba(185,134,63,0.35)',
+                    '0 0 18px 3px rgba(185,134,63,0.20)',
                   ]}}
                   transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.28) 0%, rgba(212,175,55,0.14) 100%)',
-                    border: '1px solid rgba(212,175,55,0.55)',
+                    background: 'linear-gradient(135deg, rgba(185,134,63,0.28) 0%, rgba(185,134,63,0.14) 100%)',
+                    border: '1px solid rgba(185,134,63,0.55)',
                   }}
                 >
                   <Trophy size={11} className="text-accent flex-shrink-0" />
@@ -377,9 +377,9 @@ export default function PostCeremonyView({
                 <div
                   className="flex items-center gap-1.5 px-3 py-1 rounded-full"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.10) 100%)',
-                    border: '1px solid rgba(212,175,55,0.45)',
-                    boxShadow: '0 0 16px 2px rgba(212,175,55,0.18)',
+                    background: 'linear-gradient(135deg, rgba(185,134,63,0.22) 0%, rgba(185,134,63,0.10) 100%)',
+                    border: '1px solid rgba(185,134,63,0.45)',
+                    boxShadow: '0 0 16px 2px rgba(185,134,63,0.18)',
                   }}
                 >
                   <Trophy size={10} className="text-accent" />
@@ -437,14 +437,14 @@ export default function PostCeremonyView({
                         {/* "TIE" label between the two avatars (only after first, before last) */}
                         {idx < winners.length - 1 && (
                           <div className="flex flex-col items-center gap-1 flex-shrink-0 px-1">
-                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.45), transparent)' }} />
+                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(185,134,63,0.45), transparent)' }} />
                             <span
                               className="text-[9px] font-extrabold tracking-[0.30em] uppercase"
-                              style={{ color: 'rgba(212,175,55,0.70)' }}
+                              style={{ color: 'rgba(185,134,63,0.70)' }}
                             >
                               TIE
                             </span>
-                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.45), transparent)' }} />
+                            <div className="h-px w-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(185,134,63,0.45), transparent)' }} />
                           </div>
                         )}
                       </Fragment>
@@ -469,7 +469,7 @@ export default function PostCeremonyView({
                     className="absolute rounded-full pointer-events-none"
                     style={{
                       inset: '-5px',
-                      border: '2px solid rgba(212,175,55,0.55)',
+                      border: '2px solid rgba(185,134,63,0.55)',
                       borderRadius: '9999px',
                     }}
                     animate={{ opacity: [0.4, 0.85, 0.4], scale: [0.97, 1.03, 0.97] }}
@@ -499,17 +499,17 @@ export default function PostCeremonyView({
             >
               {isTie && (
                 <div className="flex items-center gap-2 mb-0.5">
-                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.40))' }} />
-                  <span className="text-[9px] font-extrabold tracking-[0.28em] uppercase" style={{ color: 'rgba(212,175,55,0.55)' }}>
+                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, transparent, rgba(185,134,63,0.40))' }} />
+                  <span className="text-[9px] font-extrabold tracking-[0.28em] uppercase" style={{ color: 'rgba(185,134,63,0.55)' }}>
                     tied at
                   </span>
-                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(212,175,55,0.40), transparent)' }} />
+                  <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(185,134,63,0.40), transparent)' }} />
                 </div>
               )}
               <div>
                 <span
                   className="text-5xl font-black tabular-nums text-accent"
-                  style={{ textShadow: '0 0 40px rgba(212,175,55,0.5), 0 0 80px rgba(212,175,55,0.2)' }}
+                  style={{ textShadow: '0 0 40px rgba(185,134,63,0.5), 0 0 80px rgba(185,134,63,0.2)' }}
                 >
                   {winners[0].totalScore}
                 </span>
@@ -534,8 +534,8 @@ export default function PostCeremonyView({
                   key={label}
                   className="flex flex-col items-center gap-1 rounded-xl px-3.5 py-2"
                   style={{
-                    background: 'rgba(212,175,55,0.08)',
-                    border: '1px solid rgba(212,175,55,0.20)',
+                    background: 'rgba(185,134,63,0.08)',
+                    border: '1px solid rgba(185,134,63,0.20)',
                   }}
                 >
                   <span className="text-[10px] text-accent/50 uppercase tracking-wide font-medium">{label}</span>
@@ -553,7 +553,7 @@ export default function PostCeremonyView({
             transition={{ duration: 0.55, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="h-px origin-right"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.3) 50%, transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(185,134,63,0.3) 50%, transparent)',
             }}
           />
         </motion.div>
@@ -580,7 +580,7 @@ export default function PostCeremonyView({
                 ].join(' ')}
                 style={
                   entry.rank === 1
-                    ? { boxShadow: '0 0 24px 2px rgba(212,175,55,0.07)' }
+                    ? { boxShadow: '0 0 24px 2px rgba(185,134,63,0.07)' }
                     : undefined
                 }
               >
@@ -602,7 +602,7 @@ export default function PostCeremonyView({
                     <div className="flex flex-col items-center leading-none">
                       <span
                         className="text-[8px] font-extrabold tracking-tight"
-                        style={{ color: medalColor ?? 'rgba(212,175,55,0.65)', opacity: 0.75 }}
+                        style={{ color: medalColor ?? 'rgba(185,134,63,0.65)', opacity: 0.75 }}
                       >
                         =
                       </span>
@@ -869,7 +869,7 @@ export default function PostCeremonyView({
               ].join(' ')}
               style={
                 !isCopied
-                  ? { boxShadow: '0 0 20px 2px rgba(212,175,55,0.08)' }
+                  ? { boxShadow: '0 0 20px 2px rgba(185,134,63,0.08)' }
                   : { boxShadow: '0 0 20px 2px rgba(34,197,94,0.10)' }
               }
             >

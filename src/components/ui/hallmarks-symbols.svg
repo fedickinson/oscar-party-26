@@ -130,4 +130,181 @@
     <symbol id="hallmark-device-baratheon" viewBox="0 0 100 100"><path fill="currentColor" d="M47 24 35 8l-4 18-17-9 8 20-15 4 20 12-7 27 21-9 9 24 9-24 21 9-7-27 20-12-15-4 8-20-17 9-4-18-12 16ZM30 45c8-12 32-16 43-1-9 0-15 3-20 10v28H43V54c-4-7-8-9-13-9Z"/></symbol>
     <symbol id="hallmark-device-blackwood" viewBox="0 0 100 100"><path fill="currentColor" d="M45 93V60L31 71l5-19-22 5 16-16-20-8 25-3-8-18 20 14L50 4l4 22 19-14-8 18 25 3-20 8 16 16-22-5 5 19-14-11v33ZM17 18c5-7 12-9 20-7-5 4-7 8-7 13-5-4-9-5-13-6Zm66 0c-5-7-12-9-20-7 5 4 7 8 7 13 5-4 9-5 13-6Z"/></symbol>
   </defs>
+<symbol id="hallmark-dance-hero" viewBox="0 0 140 140">
+  <title>The Dance — two dragons circling head-to-tail</title>
+  <desc>A Black dragon edged in madder and a Green dragon edged in beacon gold, composed for a dark stone ground.</desc>
+
+  <!-- Black dragon: the madder edge carries the near-black body off the wall. -->
+  <g aria-label="Black dragon">
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-lowlight)"
+      stroke-width="15"
+      stroke-linecap="round"
+      transform="translate(2 2)"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-madder)"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-jet)"
+      stroke-width="7"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18 60C16 39 32 21 54 19c13-1 25 3 34 11"
+      fill="none"
+      stroke="var(--t-madder-light)"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      transform="translate(-1.2 -1.2)"
+    />
+
+    <!-- Broad wing membrane with five readable fingers. -->
+    <path
+      d="M51 30C39 22 27 24 20 34l14 2-14 9 17 1-12 13 18-6-2 16 16-13 16-15Z"
+      fill="var(--t-madder)"
+      stroke="var(--t-lowlight)"
+      stroke-width="2.5"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m51 33 4 20M50 34 34 36l19 17M47 38 35 46l18 7M45 43l-4 12 12-2"
+      fill="none"
+      stroke="var(--t-jet)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M22 33c8-8 19-9 29-3"
+      fill="none"
+      stroke="var(--t-mortar)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Enlarged horned head and visibly open jaw. -->
+    <path
+      d="M77 30c9-7 20-5 27 3l13 2-7 6 11 4-12 5-10-3-6 9-6-9-13-3-10 6 4-11-8-6 15 1Z"
+      fill="var(--t-jet)"
+      stroke="var(--t-madder-light)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m101 47 14 6-10 6-13-7Z"
+      fill="var(--t-madder)"
+      stroke="var(--t-madder-light)"
+      stroke-width="2.2"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m81 32-2-9 7 7m10 0 5-8 1 11m6 8 9 4-10 2"
+      fill="none"
+      stroke="var(--t-madder)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="99" cy="37" r="2.8" fill="var(--t-beacon-light)" stroke="var(--t-mortar)" stroke-width="1" />
+    <path d="m46 80-13 4 9 5-4 9 16-10Z" fill="var(--t-madder)" stroke="var(--t-madder-light)" stroke-width="1.8" stroke-linejoin="round" />
+  </g>
+
+  <!-- Green dragon: same visual weight, rotated into the opposing orbit. -->
+  <g aria-label="Green dragon" transform="rotate(180 70 70)">
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-lowlight)"
+      stroke-width="15"
+      stroke-linecap="round"
+      transform="translate(-2 -2)"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-bottle)"
+      stroke-width="7"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18 60C16 39 32 21 54 19c13-1 25 3 34 11"
+      fill="none"
+      stroke="var(--t-beacon-light)"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      transform="translate(1.2 1.2)"
+    />
+
+    <path
+      d="M51 30C39 22 27 24 20 34l14 2-14 9 17 1-12 13 18-6-2 16 16-13 16-15Z"
+      fill="var(--t-bottle)"
+      stroke="var(--t-beacon)"
+      stroke-width="2.8"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m51 33 4 20M50 34 34 36l19 17M47 38 35 46l18 7M45 43l-4 12 12-2"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M22 33c8-8 19-9 29-3"
+      fill="none"
+      stroke="var(--t-beacon-light)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M77 30c9-7 20-5 27 3l13 2-7 6 11 4-12 5-10-3-6 9-6-9-13-3-10 6 4-11-8-6 15 1Z"
+      fill="var(--t-bottle)"
+      stroke="var(--t-beacon-light)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m101 47 14 6-10 6-13-7Z"
+      fill="var(--t-beacon)"
+      stroke="var(--t-beacon-light)"
+      stroke-width="2.2"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m81 32-2-9 7 7m10 0 5-8 1 11m6 8 9 4-10 2"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="99" cy="37" r="2.8" fill="var(--t-vellum-light)" stroke="var(--t-beacon-light)" stroke-width="1" />
+    <path d="m46 80-13 4 9 5-4 9 16-10Z" fill="var(--t-beacon)" stroke="var(--t-beacon-light)" stroke-width="1.8" stroke-linejoin="round" />
+  </g>
+
+  <!-- Four restrained registration cuts imply a roundel without restoring a disc. -->
+  <g fill="none" stroke="var(--t-ornament-muted)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M68 5h4M68 135h4M5 68v4M135 68v4" />
+  </g>
+</symbol>
 </svg>

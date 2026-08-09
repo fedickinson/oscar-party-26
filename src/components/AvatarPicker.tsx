@@ -43,7 +43,7 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
                 : 'bg-white/5 hover:bg-white/8 cursor-pointer',
             ].join(' ')}
             style={{
-              borderColor: isSelected ? '#D4AF37' : isTaken ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
+              borderColor: isSelected ? '#B9863F' : isTaken ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
               opacity: isTaken ? 0.5 : 1,
             }}
           >

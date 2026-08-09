@@ -41,7 +41,7 @@ export default function PlayerProfileModal({ playerName, avatarId, isSelf, onClo
         transition={{ type: 'spring', stiffness: 360, damping: 40 }}
         className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-ground/97 border border-white/15 rounded-t-3xl overflow-hidden pb-10">
+        <div className="relief-glass rounded-t-3xl overflow-hidden pb-10">
 
           {/* Large image / avatar with gradient fade */}
           <div className="relative h-52 w-full flex items-center justify-center overflow-hidden">

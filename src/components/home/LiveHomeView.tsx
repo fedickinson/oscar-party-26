@@ -238,8 +238,8 @@ function NextUpCard({
       <div
         className="rounded-2xl px-4 py-4 space-y-3"
         style={{
-          background: 'rgba(212,175,55,0.08)',
-          border: '1px solid rgba(212,175,55,0.25)',
+          background: 'rgba(185,134,63,0.08)',
+          border: '1px solid rgba(185,134,63,0.25)',
         }}
       >
         <div className="flex items-center gap-2">

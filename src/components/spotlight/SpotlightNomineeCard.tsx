@@ -74,8 +74,8 @@ export default function SpotlightNomineeCard({
           isTappable ? 'cursor-pointer' : 'cursor-default',
         ].join(' ')}
         style={isWinner ? {
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.06) 100%)',
-          boxShadow: '0 0 16px 2px rgba(212,175,55,0.25)',
+          background: 'linear-gradient(135deg, rgba(185,134,63,0.18) 0%, rgba(185,134,63,0.06) 100%)',
+          boxShadow: '0 0 16px 2px rgba(185,134,63,0.25)',
         } : undefined}
       >
         {/* Winner shimmer sweep */}
@@ -83,7 +83,7 @@ export default function SpotlightNomineeCard({
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(105deg, transparent 35%, rgba(212,175,55,0.18) 50%, transparent 65%)',
+              background: 'linear-gradient(105deg, transparent 35%, rgba(185,134,63,0.18) 50%, transparent 65%)',
             }}
             initial={{ x: '-100%' }}
             animate={{ x: '200%' }}

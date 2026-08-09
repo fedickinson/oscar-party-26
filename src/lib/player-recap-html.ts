@@ -23,6 +23,24 @@
 import type { PlayerRecapData } from './player-recap'
 
 /**
+ * The palette, in one place, because this file cannot use the app's theme.
+ *
+ * Every other surface reads --color-accent from index.css. A standalone HTML
+ * file opened from disk months later has no stylesheet to inherit from, so the
+ * values must be literal. Same constraint the share cards work under (they are
+ * rasterised by html-to-image, which has no cascade either).
+ *
+ * If the theme changes, these change by hand. Hoisted here so that is a
+ * four-line edit rather than a hunt through a template literal.
+ */
+const C = {
+  accent: '#D4AF37',
+  accentDim: 'rgba(212,175,55,.6)',
+  bgFrom: '#0A0E27',
+  bgVia: '#12163A',
+} as const
+
+/**
  * Escapes text for interpolation into HTML body content and quoted attributes.
  *
  * This file writes raw markup, so every value that came from a human MUST pass
@@ -128,7 +146,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   body {
     margin: 0;
     padding: 0 0 64px;
-    background: linear-gradient(160deg, #0A0E27 0%, #12163A 60%, #0A0E27 100%);
+    background: linear-gradient(160deg, ${C.bgFrom} 0%, ${C.bgVia} 60%, ${C.bgFrom} 100%);
     background-attachment: fixed;
     color: #fff;
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -158,7 +176,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   header { text-align: center; padding: 56px 0 8px; }
   .eyebrow {
     font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
-    color: rgba(212,175,55,.6); margin: 0 0 26px; font-weight: 600;
+    color: ${C.accentDim}; margin: 0 0 26px; font-weight: 600;
   }
   .avatar {
     width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px;
@@ -168,7 +186,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   }
   .name { font-size: 19px; font-weight: 600; color: rgba(255,255,255,.85); margin: 0; }
   .title {
-    font-size: 38px; font-weight: 800; color: #D4AF37;
+    font-size: 38px; font-weight: 800; color: ${C.accent};
     margin: 12px 0 0; line-height: 1.08; letter-spacing: -.01em;
   }
   .blurb { color: rgba(255,255,255,.6); font-size: 14px; line-height: 1.55; margin: 12px auto 0; max-width: 420px; }
@@ -189,7 +207,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
     color: rgba(255,255,255,.35); margin-top: 3px;
   }
-  .scoreline .accent .big { color: #D4AF37; }
+  .scoreline .accent .big { color: ${C.accent}; }
 
   /* ── Verdict ── */
   .verdict { border-color: rgba(212,175,55,.25); background: rgba(212,175,55,.06); }
@@ -198,12 +216,12 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
 
   /* ── Roster ── */
   .roster-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .pts { font-size: 24px; font-weight: 800; color: #D4AF37; font-variant-numeric: tabular-nums; }
+  .pts { font-size: 24px; font-weight: 800; color: ${C.accent}; font-variant-numeric: tabular-nums; }
   .pts.zero { color: rgba(255,255,255,.2); }
   .wins { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px solid rgba(255,255,255,.08); }
   .wins li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 3px 0; }
   .wins span { color: rgba(255,255,255,.7); }
-  .wins em { font-style: normal; color: #D4AF37; font-variant-numeric: tabular-nums; }
+  .wins em { font-style: normal; color: ${C.accent}; font-variant-numeric: tabular-nums; }
 
   /* ── Bingo ── */
   .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
@@ -214,9 +232,13 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     font-size: 8px; line-height: 1.2; color: rgba(255,255,255,.4);
     overflow: hidden;
   }
-  .cell.hit { background: rgba(212,175,55,.16); border-color: rgba(212,175,55,.4); color: rgba(255,255,255,.9); }
-  .cell.inline { background: rgba(212,175,55,.3); border-color: #D4AF37; }
-  .cell.free { color: rgba(212,175,55,.8); font-weight: 700; }
+  .cell.hit {
+    background: rgba(212,175,55,.28); border-color: rgba(212,175,55,.65);
+    color: #fff; font-weight: 600;
+  }
+  /* A completed line reads brightest — that is the thing worth pointing at. */
+  .cell.inline { background: rgba(212,175,55,.55); border-color: ${C.accent}; color: #0A0E27; font-weight: 700; }
+  .cell.free { color: ${C.accentDim}; font-weight: 700; }
 
   /* ── Lines ── */
   .line-text { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.82); margin: 0; }
@@ -228,10 +250,10 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     border-top: 1px solid rgba(255,255,255,.08);
     font-size: 11px; color: rgba(255,255,255,.28); line-height: 1.8;
   }
-  footer .url { color: rgba(212,175,55,.55); word-break: break-all; }
+  footer .url { color: ${C.accentDim}; word-break: break-all; }
 
   @media print {
-    body { background: #0A0E27; }
+    body { background: ${C.bgFrom}; }
     .card { break-inside: avoid; }
   }
 </style>

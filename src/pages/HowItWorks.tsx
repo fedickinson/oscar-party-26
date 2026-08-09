@@ -201,6 +201,47 @@ function Section({
   )
 }
 
+/**
+ * The v10 hallmark relief palette.
+ *
+ * Every mark paints from `--hm-*` with a `currentColor` fallback, and the app
+ * sets none of them — so by default the whole library renders as a flat
+ * silhouette. Binding the facet tokens is what turns a mark back into the
+ * carved drawing it was made as: pale upper-left planes, dark lower-right
+ * planes, faction device colour at the heads and wings.
+ *
+ * Declared here rather than in index.css on purpose. That file is about to be
+ * replaced wholesale by the design window's app-theme.css, and a stray block
+ * from this page would either be lost in the swap or conflict with it.
+ */
+const HALLMARK_RELIEF: React.CSSProperties = {
+  color: 'var(--t-ashlar)',
+  '--hm-base': 'var(--t-ashlar)',
+  '--hm-light': '#e6dcc8',
+  '--hm-shadow': '#3f3a33',
+  '--hm-cut': '#2a2622',
+  '--hm-device': 'var(--t-madder)',
+  '--hm-edge': 'var(--t-madder-light)',
+  '--hm-core': 'var(--t-vellum-light)',
+  '--hm-egg-cut': '#e6dcc8',
+  '--hm-eye': 'var(--t-jet)',
+  '--hm-impact': 'var(--t-vellum-light)',
+  '--hm-impression': 'var(--t-wax-dark)',
+  '--hm-metal': 'var(--t-mortar)',
+  '--hm-metal-light': 'var(--t-vellum-light)',
+  '--hm-metal-dark': 'var(--t-ashlar-deep)',
+  '--hm-rivet': 'var(--t-ornament-muted)',
+  '--hm-roundel': 'var(--t-ashlar-deep)',
+  '--hm-roundel-cut': 'var(--t-iron-dark)',
+  '--hm-team-a-device': 'var(--t-team-a-device)',
+  '--hm-team-a-field': 'var(--t-team-a-field)',
+  '--hm-team-b-device': 'var(--t-team-b-device)',
+  '--hm-team-b-field': 'var(--t-team-b-field)',
+  '--hm-wax': 'var(--t-wax)',
+  '--hm-wax-light': 'var(--t-wax-light)',
+  '--hm-wax-shadow': 'var(--t-wax-dark)',
+} as React.CSSProperties
+
 /** Body copy. One place, so the reading colour and measure stay consistent. */
 function P({ children }: { children: React.ReactNode }) {
   return (
@@ -362,10 +403,12 @@ export default function HowItWorks() {
         transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
         className="flex flex-col items-center text-center gap-3 pt-4"
       >
-        {/* Wrapped rather than styled directly: the mark resolves currentColor,
-            and Hallmark deliberately exposes only id/size/className. */}
-        <span style={{ color: 'var(--t-ornament)' }}>
-          <Hallmark id="hallmark-dance" size={72} />
+        {/* Wrapped rather than styled directly: Hallmark deliberately exposes
+            only id/size/className, and the relief tokens have to be inherited
+            from an ancestor. 88px sits inside the Dance's declared 48–160
+            drawing range, where its heads and membrane fingers actually read. */}
+        <span style={HALLMARK_RELIEF}>
+          <Hallmark id="hallmark-dance" size={88} />
         </span>
         <span
           className="text-[10px] font-semibold uppercase tracking-[0.3em]"

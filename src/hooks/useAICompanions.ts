@@ -39,7 +39,8 @@ import type {
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
-import { COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS } from '../data/ai-companions'
+import { COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, pickGreeterForHouse } from '../data/ai-companions'
+import { getAvatarById } from '../data/avatar-config'
 import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -399,15 +400,32 @@ export function useAICompanions(
             .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
             .filter((n): n is string => !!n)
 
-          // Vary the greeter; never the same voice twice in a row.
-          const pool = spoken.filter((id) => id !== lastGreeterRef.current)
-          const greeter = (pool.length ? pool : spoken)[
-            Math.floor(Math.random() * (pool.length ? pool.length : spoken.length))
-          ]
+          // The greeter is chosen BY HOUSE: the player's sigil is treated as
+          // their house, and whoever at the table has the sharpest personal
+          // angle on that house is the one who looks up — Ned takes the
+          // Arryns (fostered in the Vale), Olenna the Hightowers, Daenerys
+          // judges anyone wearing her own dragon. Random fallback only when
+          // the house is unknown or nobody with an angle is on stage yet.
+          const houseId = current.avatar_id
+          const angle = pickGreeterForHouse(houseId, spoken, lastGreeterRef.current)
+          let greeter: string
+          let house: { name: string; hook: string } | undefined
+          if (angle) {
+            greeter = angle.companionId
+            house = {
+              name: getAvatarById(houseId)?.name ?? houseId,
+              hook: angle.hook,
+            }
+          } else {
+            const pool = spoken.filter((id) => id !== lastGreeterRef.current)
+            greeter = (pool.length ? pool : spoken)[
+              Math.floor(Math.random() * (pool.length ? pool.length : spoken.length))
+            ]
+          }
           lastGreeterRef.current = greeter
 
           await fireCompanionMessages(
-            buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster),
+            buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster, house),
             400,
           )
         } catch {

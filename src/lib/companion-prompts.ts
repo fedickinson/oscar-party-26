@@ -1221,6 +1221,13 @@ export function buildPlayerWelcomePrompt(
   playerName: string,
   team: 'black' | 'green' | null,
   rosterNames: string[],
+  /**
+   * The player's house (their chosen sigil) and the greeter's specific angle
+   * on it. Present whenever the greeter was chosen BY house affinity — the
+   * hook is why this companion, of everyone at the table, is the one who
+   * looked up when this sigil walked in.
+   */
+  house?: { name: string; hook: string },
 ): { system: string; user: string } {
   const companionName =
     AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
@@ -1230,16 +1237,18 @@ export function buildPlayerWelcomePrompt(
     : 'They have not declared for either side yet.'
 
   const user = `A player named ${playerName} has settled into the chat for tonight's episode. This is the cast's first direct acknowledgement of them — nobody has spoken TO them yet.
-
+${house ? `\n${playerName} sits under the banner of HOUSE ${house.name.toUpperCase()} — treat them as being of that house, not merely a fan of it.` : ''}
 ${teamLine}
 ${rosterNames.length
     ? `Their drafted roster: ${rosterNames.join(', ')}.`
     : 'They have not drafted anyone.'}
 
-${companionName} greets them — ONE message, in character, 1-2 sentences:
+${companionName} greets them — ONE message, in character, 2-3 sentences:
 - Address ${playerName} by name.
-- React to their allegiance: approve, disapprove, or (if undeclared) needle them for sitting on the fence. Stay true to your own loyalties.
-- Mention AT MOST ONE name from their roster — the one you have the strongest opinion about. Judge the pick, not the list.
+${house ? `- Open through their HOUSE. Your specific angle, which is the whole reason you are the one greeting them: ${house.hook}
+  Ground the greeting in this — your history, your grudge, your kinship, your joke. Do not just compliment the sigil.` : ''}
+- React to their allegiance: approve, disapprove, or (if undeclared) needle them for sitting on the fence. Stay true to your own loyalties. One clause is enough.
+- You may mention AT MOST ONE name from their roster — only if it collides interestingly with their house or allegiance. Otherwise skip the roster entirely.
 - This is a greeting with an edge, not an interrogation. Make them feel seen; make it funny or sharp; do not lecture.
 
 Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`

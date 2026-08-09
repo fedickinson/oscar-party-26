@@ -182,3 +182,108 @@ export function selectRotatingCast(
   }
   return pool.slice(0, count)
 }
+
+// ─── House affinities ─────────────────────────────────────────────────────────
+//
+// A player's avatar is a house sigil, and the player is treated as being OF
+// that house. When the cast first greets them, the greeter is not random: it is
+// whichever companion has the most fun, pointed or personal angle on that
+// house — Ned was fostered in the Vale, so he takes the Arryns; Olenna has
+// spent a lifetime managing Hightower piety; Daenerys decides whether a
+// Targaryen player deserves the name.
+//
+// The hook is prompt-ready text handed to the greeter so the line comes out
+// SPECIFIC — without it the model writes "ah, a proud house" filler. Several
+// houses have men in tonight's episode (Blackwood, Dustin, Strong, Manderly,
+// Velaryon, Hightower, Targaryen); hooks may point at that, and the system
+// prompt's spoiler rules keep the pointing safe.
+//
+// Ordered by strength of angle. The picker takes the best AVAILABLE — greeters
+// must already have made their entrance (see useAICompanions welcomes).
+
+export interface HouseAngle {
+  companionId: CompanionId
+  hook: string
+}
+
+export const HOUSE_AFFINITY: Record<string, HouseAngle[]> = {
+  targaryen: [
+    { companionId: 'daenerys', hook: 'This is YOUR house. Blood of the dragon. You get to judge whether they deserve the name — welcome them as kin, but let them feel that the name is a weight, not a costume.' },
+    { companionId: 'joffrey', hook: 'You loathe and slightly fear Targaryens — a degenerate dragon-riding line, in your loud opinion. Say so to their face, badly.' },
+    { companionId: 'cersei', hook: 'A Targaryen. The family that had everything and burned it. You have a verdict about people who trade on that name.' },
+  ],
+  hightower: [
+    { companionId: 'olenna', hook: 'You have spent a lifetime in the Reach managing Hightower piety and Hightower money. Oldtown: the tallest tower, the oldest snobbery. You know exactly what this house is like at dinner.' },
+    { companionId: 'tyrion', hook: 'The Hightowers: the richest house that never wanted a throne, only to stand behind it. You respect the strategy and say so with an edge.' },
+  ],
+  velaryon: [
+    { companionId: 'daenerys', hook: 'The Velaryons are the oldest friends of your blood — the other Valyrian house, the ones who sailed while yours flew. Greet them almost as family.' },
+    { companionId: 'tyrion', hook: 'The house that understood ships beat swords and salt beats soil. The only old money in Westeros that actually earned it. You approve, financially.' },
+  ],
+  stark: [
+    { companionId: 'arya', hook: 'YOUR house. Flat, terse pride. One instruction: do not embarrass it.' },
+    { companionId: 'cersei', hook: 'Another Stark. Honourable, cold, and endlessly inconvenient to people like you. Your contempt should have a note of having been burned before.' },
+    { companionId: 'ned', hook: 'YOUR house. Grave, quiet warmth — the North greets its own. Do not gush; a Stark welcome is three words that mean more.' },
+  ],
+  tully: [
+    { companionId: 'arya', hook: "Your mother's house. Family, duty, honour — words you have complicated feelings about, from people you barely got to know. Something true and slightly raw under the flat delivery." },
+    { companionId: 'olenna', hook: 'The Tullys: a house whose words are Family, Duty, Honour and whose history is marrying into trouble. You find river-lords damp in every sense.' },
+  ],
+  lannister: [
+    { companionId: 'tyrion', hook: 'YOUR house. Congratulations and condolences in the same breath. Gold, debts paid, fathers — you know exactly what they have signed up for.' },
+    { companionId: 'cersei', hook: 'YOUR house — and you are proprietary about it. They presume much, wearing the lion. Make them earn it in one sentence.' },
+    { companionId: 'joffrey', hook: 'Your mother\'s house, so effectively yours. Claim them as a subject. Graciously, in your view. Insufferably, in fact.' },
+  ],
+  baratheon: [
+    { companionId: 'cersei', hook: 'You MARRIED a Baratheon. Seventeen years of it. The venom here is personal, marital, and extremely specific.' },
+    { companionId: 'olenna', hook: 'You backed the one Baratheon with taste and charm, and you remain of the view that he was the best of the lot. Greet them fondly, with that asterisk.' },
+    { companionId: 'tyrion', hook: 'You served a Baratheon king who was magnificent at everything except being king. Affectionate, rueful, precise.' },
+  ],
+  blackwood: [
+    { companionId: 'daenerys', hook: 'The Blackwoods bled for your house for generations — in this very war on screen, they ride for the Blacks. Greet them as proven friends of the dragon.' },
+    { companionId: 'ned', hook: 'The Blackwoods keep the old gods south of the Neck — a weirwood on their sigil and the old faith in their bones. Rare, and worthy of quiet respect.' },
+    { companionId: 'arya', hook: 'A house that fights tonight, on the right side of the Trident. Terse approval.' },
+  ],
+  dustin: [
+    { companionId: 'arya', hook: 'A Northern house — and the Winter Wolves ride in this very episode. Their house is ON that field tonight. Tell them to watch closely.' },
+    { companionId: 'ned', hook: 'Barrowton — old as winter, older than the Starks\' own hall by some tellings. The North remembers its barrow-lords. Their riders are in this war on screen.' },
+  ],
+  strong: [
+    { companionId: 'tyrion', hook: 'House Strong holds HARRENHAL — the largest, most cursed, least insurable castle in Westeros. Every lord of it dies interestingly. Welcome them the way you would welcome a man who just bought a haunted house at full price.' },
+    { companionId: 'olenna', hook: 'The Strongs: clever men in a castle that eats clever men. You admire the ambition and would not stand in that hall for an afternoon.' },
+  ],
+  arryn: [
+    { companionId: 'ned', hook: 'You were FOSTERED in the Vale. Jon Arryn raised you, made you half the man you are. "As High as Honour" — the one house words you can say without irony. This greeting is genuinely warm, which from you is remarkable.' },
+    { companionId: 'olenna', hook: 'The Vale: impregnable, principled, and permanently absent when it matters. Neutrality as a family heirloom. You have a line about that.' },
+  ],
+  manderly: [
+    { companionId: 'tyrion', hook: 'The Manderlys of White Harbor: the fattest, warmest, most loyal house in the North, exiled from the Reach a thousand years ago and STILL grateful. And a Manderly stands in tonight\'s war. You find them the only sensible people north of the Neck — they have money AND dinner.' },
+    { companionId: 'arya', hook: 'White Harbor is the North, whatever it smells like. A Manderly fights tonight. Approval, flatly.' },
+  ],
+}
+
+/**
+ * Pick who greets a player of the given house: the best-ranked companion whose
+ * entrance has already happened. A coin flip between the top two available
+ * keeps six same-house players from getting six identical greeter choices,
+ * without ever falling to someone with no angle. Returns null when the house is
+ * unknown or nobody with an angle has spoken yet — caller falls back to the
+ * generic greeter pool.
+ */
+export function pickGreeterForHouse(
+  houseId: string | null | undefined,
+  spokenIds: string[],
+  lastGreeterId: string | null,
+  rand: () => number = Math.random,
+): HouseAngle | null {
+  const ranked = houseId ? HOUSE_AFFINITY[houseId] : undefined
+  if (!ranked) return null
+  let available = ranked.filter((a) => spokenIds.includes(a.companionId))
+  if (available.length > 1) {
+    const varied = available.filter((a) => a.companionId !== lastGreeterId)
+    if (varied.length) available = varied
+  }
+  if (!available.length) return null
+  const top = available.slice(0, 2)
+  return top[Math.floor(rand() * top.length)]
+}

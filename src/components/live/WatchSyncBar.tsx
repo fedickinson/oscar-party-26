@@ -100,7 +100,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               onClick={() => void startMyScreen()}
               className="w-full py-3.5 rounded-xl bg-accent font-bold text-ground-deep
                          text-base flex items-center justify-center gap-2"
-              style={{ boxShadow: '0 0 22px rgba(212,175,55,0.3)' }}
+              style={{ boxShadow: '0 0 22px rgba(185,134,63,0.3)' }}
             >
               <Play className="w-5 h-5" fill="currentColor" />
               Start my screen

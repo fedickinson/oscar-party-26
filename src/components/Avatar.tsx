@@ -22,7 +22,7 @@
  *   all remain valid.
  *
  * RING:
- *   highlighted=true switches from white/20 to accent (#D4AF37).
+ *   highlighted=true switches from white/20 to accent (#B9863F).
  *   Set by the parent when this avatar is selected (e.g. AvatarPicker).
  */
 
@@ -92,7 +92,7 @@ export default function Avatar({
   // Initials font: ~33% of avatar diameter
   const fontPx = Math.round(px * 0.33)
 
-  const ringColor = highlighted ? '#D4AF37' : 'rgba(255,255,255,0.2)'
+  const ringColor = highlighted ? '#B9863F' : 'rgba(255,255,255,0.2)'
 
   return (
     <motion.div

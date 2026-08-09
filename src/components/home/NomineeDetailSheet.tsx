@@ -60,7 +60,7 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-[#0c1028] border-t border-white/10 rounded-t-3xl max-h-[88vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-[60] rounded-t-3xl border-t max-h-[88vh] flex flex-col" style={{ background: 'var(--t-ground-deep)', borderColor: 'var(--t-line-soft)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}

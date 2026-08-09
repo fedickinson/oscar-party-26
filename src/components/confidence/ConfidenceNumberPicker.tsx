@@ -69,7 +69,7 @@ export default function ConfidenceNumberPicker({
         transition={{ type: 'spring', stiffness: 360, damping: 40 }}
         className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-ground/95 border border-white/15 rounded-t-3xl p-5 pb-8">
+        <div className="relief-glass rounded-t-3xl p-5 pb-8">
           {/* Handle + header */}
           <div className="flex items-center justify-between mb-4">
             <div>

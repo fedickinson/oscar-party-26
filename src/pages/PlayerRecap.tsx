@@ -100,7 +100,7 @@ export default function PlayerRecap() {
         roomCode: snapshot.roomCode,
         recapUrl: `${recapUrlFor(snapshot.roomCode)}/${player.id}`,
         avatarColors: {
-          primary: avatar?.colorPrimary ?? '#D4AF37',
+          primary: avatar?.colorPrimary ?? '#B9863F',
           secondary: avatar?.colorSecondary ?? '#8A6D1F',
         },
       }),

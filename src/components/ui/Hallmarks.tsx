@@ -38,6 +38,7 @@ export type HallmarkId =
   | 'hallmark-comet'
   | 'hallmark-collision'
   | 'hallmark-horn'
+  | 'hallmark-dance-hero'
 
 interface HallmarkProps {
   id: HallmarkId

@@ -80,7 +80,7 @@ export default function ResultsFeed({ results }: Props) {
                   transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl origin-top"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(212,175,55,0.8) 0%, rgba(212,175,55,0.3) 100%)',
+                    background: 'linear-gradient(180deg, rgba(185,134,63,0.8) 0%, rgba(185,134,63,0.3) 100%)',
                   }}
                 />
               )}
@@ -90,7 +90,7 @@ export default function ResultsFeed({ results }: Props) {
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 15%, rgba(212,175,55,0.10) 48%, rgba(245,230,163,0.06) 52%, transparent 82%)',
+                    background: 'linear-gradient(105deg, transparent 15%, rgba(185,134,63,0.10) 48%, rgba(214,169,97,0.06) 52%, transparent 82%)',
                   }}
                   initial={{ x: '-130%' }}
                   animate={{ x: '230%' }}

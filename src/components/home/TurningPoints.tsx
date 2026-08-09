@@ -46,8 +46,8 @@ export default function TurningPoints({ turningPoints }: Props) {
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                 style={{
-                  background: 'rgba(212,175,55,0.10)',
-                  border: '1px solid rgba(212,175,55,0.22)',
+                  background: 'rgba(185,134,63,0.10)',
+                  border: '1px solid rgba(185,134,63,0.22)',
                 }}
               >
                 <Icon size={13} className="text-accent/80" />

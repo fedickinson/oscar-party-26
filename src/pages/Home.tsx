@@ -175,7 +175,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] gap-6">
-      {/* App title — always visible */}
+      {/* Keep the established masthead on the forms; the landing has its own lockup. */}
+      {screen.view !== 'landing' && (
       <motion.div
         className="text-center relative"
         initial={{ opacity: 0, y: -12 }}
@@ -219,7 +220,7 @@ export default function Home() {
           className="text-[27px] font-bold tracking-[0.04em] uppercase mt-2"
           style={{
             fontFamily: 'Cinzel, Georgia, serif',
-            background: 'linear-gradient(135deg, #EFE2C4 0%, #D6A961 45%, #B9863F 100%)',
+            background: 'linear-gradient(135deg, var(--t-vellum-light) 0%, var(--t-beacon-light) 45%, var(--t-beacon) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -263,6 +264,7 @@ export default function Home() {
           ))}
         </div>
       </motion.div>
+      )}
 
       {/* Screen switcher */}
       <div className="w-full">
@@ -270,42 +272,143 @@ export default function Home() {
 
           {/* ── LANDING ─────────────────────────────────────────────────── */}
           {screen.view === 'landing' && (
-            <motion.div key="landing" {...screenAnim} className="flex flex-col gap-3">
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={handleCreateClick}
-                className="w-full py-4 rounded-2xl font-bold text-lg relative overflow-hidden"
-                style={{
-                  background: 'var(--t-personal-field)',
-                  border: '1px solid var(--t-personal-device)',
-                  color: 'var(--t-text)',
-                  boxShadow: '0 6px 20px var(--t-shadow)',
-                }}
-              >
-                {/* Subtle shimmer stripe */}
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.22) 50%, transparent 60%)',
-                  }}
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
-                />
-                Create Room
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => { setScreen({ view: 'join-code' }); setError(null) }}
-                className="w-full py-4 rounded-2xl backdrop-blur-lg bg-white/8 border border-white/20 text-white font-bold text-lg hover:bg-white/12 transition-colors"
-              >
-                Join Room
-              </motion.button>
+            <motion.div
+              key="landing"
+              {...screenAnim}
+              className="flex w-full min-w-0 max-w-full flex-col items-center gap-5 py-4"
+            >
+              {/* A quiet processional marker replaces the Oscars film strip. */}
+              <div className="flex w-full items-center gap-3 px-2" aria-hidden>
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-line-soft)' }} />
+                <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: 'var(--t-madder)' }} />
+                <span className="h-1 w-1 rotate-45" style={{ backgroundColor: 'var(--t-beacon)' }} />
+                <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: 'var(--t-madder)' }} />
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-line-soft)' }} />
+              </div>
 
-              {/* Divider with ceremony label */}
-              <div className="flex items-center gap-3 mt-1 px-1">
-                <div className="flex-1 h-px bg-white/8" />
-                <span className="text-[10px] uppercase tracking-widest text-white/20">Party Night</span>
-                <div className="flex-1 h-px bg-white/8" />
+              <section className="w-full min-w-0 text-center" aria-labelledby="party-title">
+                <motion.div
+                  className="mb-3 flex justify-center"
+                  initial={{ opacity: 0, scale: 0.78, rotate: -4 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 190, damping: 19, delay: 0.04 }}
+                >
+                  <Hallmark id="hallmark-dance-hero" size={128} />
+                </motion.div>
+
+                <motion.p
+                  className="m-0 text-[12px] font-bold uppercase tracking-[0.24em]"
+                  style={{ color: 'var(--t-text-dim)' }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                >
+                  Party Night presents
+                </motion.p>
+                <motion.h1
+                  id="party-title"
+                  className="mt-2 max-w-full whitespace-nowrap text-[clamp(34px,10.67vw,40px)] font-extrabold uppercase leading-[0.96] tracking-[0.01em]"
+                  style={{
+                    color: 'var(--t-beacon-light)',
+                    fontFamily: 'var(--font-family-display)',
+                  }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.14 }}
+                >
+                  Fire <span style={{ color: 'var(--t-vellum-light)' }}>&amp;</span> Blood
+                </motion.h1>
+                <motion.p
+                  className="mt-2 text-[18px] font-semibold italic leading-none"
+                  style={{
+                    color: 'var(--t-text-muted)',
+                    fontFamily: 'var(--font-family-manuscript)',
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  House of the Dragon
+                </motion.p>
+              </section>
+
+              {/* The episode is treated as tonight's dated proclamation. */}
+              <motion.div
+                className="material-vellum deckled relief-raised flex min-h-11 w-full items-center justify-center gap-3 px-5 py-2"
+                style={{ color: 'var(--t-ink)' }}
+                initial={{ opacity: 0, scaleX: 0.88 }}
+                animate={{ opacity: 1, scaleX: 1 }}
+                transition={{ duration: 0.4, delay: 0.22 }}
+              >
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-ink-muted)' }} aria-hidden />
+                <span
+                  className="whitespace-nowrap text-[12px] font-extrabold uppercase tracking-[0.18em]"
+                  style={{ fontFamily: 'var(--font-family-display)' }}
+                >
+                  Season 3 Finale
+                </span>
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-ink-muted)' }} aria-hidden />
+              </motion.div>
+
+              {/* Blood-thread divider: madder line, wax knot, restrained ornament. */}
+              <div className="flex w-full items-center gap-2 px-1" aria-hidden>
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-madder)' }} />
+                <span
+                  className="relief-seal h-2.5 w-2.5 rotate-45"
+                  style={{ backgroundColor: 'var(--t-wax)' }}
+                />
+                <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-madder)' }} />
+              </div>
+
+              <div className="flex w-full flex-col gap-3" role="group" aria-label="Room actions">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCreateClick}
+                  className="material-enamel team-black relief-raised relative flex min-h-[60px] w-full items-center justify-between overflow-hidden px-5 text-left"
+                  style={{
+                    border: '1px solid var(--t-madder)',
+                    borderLeftWidth: '5px',
+                    clipPath: 'var(--t-chamfer)',
+                    color: 'var(--t-text)',
+                  }}
+                >
+                  <span className="relative flex flex-col">
+                    <span
+                      className="text-[18px] font-extrabold uppercase tracking-[0.06em]"
+                      style={{ fontFamily: 'var(--font-family-display)' }}
+                    >
+                      Create Room
+                    </span>
+                    <span className="mt-0.5 text-[12px] font-medium" style={{ color: 'var(--t-text-dim)' }}>
+                      Host tonight's gathering
+                    </span>
+                  </span>
+                  <ArrowRight size={20} style={{ color: 'var(--t-madder-light)' }} aria-hidden />
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => { setScreen({ view: 'join-code' }); setError(null) }}
+                  className="relief-glass flex min-h-[56px] w-full items-center justify-between px-5 text-left"
+                  style={{
+                    borderColor: 'var(--t-line-strong)',
+                    clipPath: 'var(--t-chamfer)',
+                    color: 'var(--t-text)',
+                  }}
+                >
+                  <span className="flex flex-col">
+                    <span
+                      className="text-[16px] font-bold uppercase tracking-[0.06em]"
+                      style={{ fontFamily: 'var(--font-family-display)' }}
+                    >
+                      Join Room
+                    </span>
+                    <span className="mt-0.5 text-[12px] font-medium" style={{ color: 'var(--t-text-dim)' }}>
+                      Enter with a four-letter code
+                    </span>
+                  </span>
+                  <ArrowRight size={18} style={{ color: 'var(--t-ornament)' }} aria-hidden />
+                </motion.button>
               </div>
             </motion.div>
           )}
