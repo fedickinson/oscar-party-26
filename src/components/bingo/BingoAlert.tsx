@@ -40,7 +40,7 @@ export default function BingoAlert({
       spread: 60,
       ticks: 80,
       zIndex: 9999,
-      colors: ['#D4AF37', '#FFD700', '#FFF8DC', '#ffffff', '#059669'],
+      colors: ['#B9863F', '#FFD700', '#FFF8DC', '#ffffff', '#059669'],
     }
 
     confetti({ ...defaults, origin: { x: 0.15, y: 1 }, angle: 60, particleCount: 60 })
@@ -96,7 +96,7 @@ export default function BingoAlert({
         >
           <p
             className="text-7xl font-black tracking-tight leading-none"
-            style={{ color: '#D4AF37', textShadow: '0 0 40px rgba(212,175,55,0.6)' }}
+            style={{ color: '#B9863F', textShadow: '0 0 40px rgba(185,134,63,0.6)' }}
           >
             {isBlackout ? 'BLACKOUT!' : 'BINGO!'}
           </p>

@@ -41,7 +41,10 @@ const CONTENT: Record<Phase, {
     title: 'Bingo',
     what: "Your card has 25 things that might happen in the episode. Tap a square when you see it. Every square you land scores on its own — the unlikely ones are worth up to five times the obvious ones — and five in a row is a bonus on top.",
     different: "This one is not about predicting anything — it is about paying attention. Every card is dealt to the same difficulty, so nobody gets the easy one. The squares with a dot are the long shots, and that is where the points are.",
-    tip: "Read a square before you claim it — each one spells out what specifically does not count. Then shout, because the host has to confirm it before it counts.",
+    // Not "spells out what does not count" — six of the 75 squares qualify the
+    // other way ("A refusal counts if it changes what happens"), and the app is
+    // careful not to claim otherwise.
+    tip: "Read a square before you claim it — each one spells out exactly what counts, and what doesn't. Then shout, because the host has to confirm it before it counts.",
   },
 }
 
@@ -74,7 +77,7 @@ export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24
         {/* Game number eyebrow label */}
         <p
           className="text-center text-xs font-semibold uppercase tracking-widest"
-          style={{ color: '#D4AF37' }}
+          style={{ color: '#B9863F' }}
         >
           {GAME_LABEL[phase]}
         </p>
