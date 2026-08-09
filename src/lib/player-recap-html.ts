@@ -57,6 +57,14 @@ function esc(value: string): string {
     .replace(/'/g, '&#39;')
 }
 
+
+const TIER_LABELS: Record<string, string> = {
+  likely: 'Likely',
+  toss_up: 'Toss-up',
+  long_shot: 'Long shot',
+  chaos: 'Chaos',
+}
+
 const ORDINALS = ['', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']
 const ordinal = (n: number) => ORDINALS[n] ?? `${n}th`
 
@@ -99,16 +107,42 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
         .join('')
     : ''
 
+  // The board reads at a glance; the detail sits behind <details>, which is
+  // native progressive disclosure and needs no script — the file has none.
   const bingoHtml = d.bingo
     ? `
   <section>
     <h2>Your bingo board</h2>
-    <p class="section-note">${d.bingo.approvedCount} squares confirmed &middot; ${d.bingo.lineCount} line${d.bingo.lineCount === 1 ? '' : 's'}</p>
+    <p class="section-note">${d.bingo.approvedCount} of 24 confirmed &middot; ${d.bingo.lineCount} line${d.bingo.lineCount === 1 ? '' : 's'} &middot; tap a square for the rule</p>
     <div class="board">
       ${d.bingo.cells
         .map(
           (c) => `<div class="cell${c.approved ? ' hit' : ''}${c.inLine ? ' inline' : ''}${c.isFree ? ' free' : ''}"><span>${esc(c.label)}</span></div>`,
         )
+        .join('')}
+    </div>
+
+    <div class="squares">
+      ${d.bingo.cells
+        .filter((c) => !c.isFree)
+        .map((c) => {
+          const tier = TIER_LABELS[c.tier] ?? ''
+          const odds = c.probabilityPct > 0 ? `${c.probabilityPct}% likely` : ''
+          const meta = [tier, odds].filter(Boolean).join(' &middot; ')
+          return `
+      <details class="square${c.approved ? ' hit' : ''}">
+        <summary>
+          <span class="dot" aria-hidden="true"></span>
+          <span class="sq-label">${esc(c.label)}</span>
+          <span class="sq-state">${c.inLine ? 'In a line' : c.approved ? 'Hit' : 'Missed'}</span>
+        </summary>
+        <div class="square-body">
+          ${c.text ? `<p class="sq-text">${esc(c.text)}</p>` : ''}
+          ${c.winCondition ? `<p class="sq-rule"><span>Counts when</span> ${esc(c.winCondition)}</p>` : ''}
+          ${meta ? `<p class="sq-meta">${meta}</p>` : ''}
+        </div>
+      </details>`
+        })
         .join('')}
     </div>
   </section>`
@@ -124,6 +158,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     <div class="card line ${l.kind}">
       <p class="line-text">${esc(l.text)}</p>
       <p class="line-author">${l.kind === 'you' ? 'You' : esc(l.author)}</p>
+      ${l.note ? `<p class="line-note">${esc(l.note)}</p>` : ''}
     </div>`,
       )
       .join('')}
@@ -240,10 +275,48 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .cell.inline { background: rgba(212,175,55,.55); border-color: ${C.accent}; color: #0A0E27; font-weight: 700; }
   .cell.free { color: ${C.accentDim}; font-weight: 700; }
 
+  /* ── Bingo detail ── */
+  .squares { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+  .square {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 11px; overflow: hidden;
+  }
+  .square.hit { background: rgba(212,175,55,.07); border-color: rgba(212,175,55,.22); }
+  .square summary {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 13px; cursor: pointer; list-style: none;
+    font-size: 13px; color: rgba(255,255,255,.55);
+  }
+  /* Safari draws its own triangle unless this is suppressed too. */
+  .square summary::-webkit-details-marker { display: none; }
+  .square summary:focus-visible { outline: 2px solid ${C.accent}; outline-offset: -2px; }
+  .square .dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,.15);
+  }
+  .square.hit .dot { background: ${C.accent}; }
+  .sq-label { flex: 1; color: rgba(255,255,255,.8); }
+  .square.hit .sq-label { color: #fff; }
+  .sq-state {
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.3); flex-shrink: 0;
+  }
+  .square.hit .sq-state { color: ${C.accentDim}; }
+  .square-body { padding: 0 13px 13px 30px; }
+  .sq-text { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.72); margin: 0; }
+  .sq-rule { font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.5); margin: 8px 0 0; }
+  .sq-rule span { color: rgba(255,255,255,.32); text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  .sq-meta { font-size: 11px; color: rgba(255,255,255,.35); margin: 8px 0 0; }
+
   /* ── Lines ── */
   .line-text { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.82); margin: 0; }
   .line.you { border-color: rgba(212,175,55,.22); }
   .line-author { font-size: 11px; color: rgba(255,255,255,.38); margin: 10px 0 0; }
+  /* The companion's reason this line was chosen. */
+  .line-note {
+    font-size: 12px; color: ${C.accentDim}; margin: 8px 0 0;
+    padding-top: 8px; border-top: 1px solid rgba(255,255,255,.07); font-style: italic;
+  }
 
   footer {
     margin-top: 48px; padding-top: 24px; text-align: center;
@@ -254,7 +327,9 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
 
   @media print {
     body { background: ${C.bgFrom}; }
-    .card { break-inside: avoid; }
+    .card, .square { break-inside: avoid; }
+    /* A printed keepsake cannot be expanded, so open everything. */
+    .square-body { display: block !important; }
   }
 </style>
 

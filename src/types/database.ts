@@ -617,9 +617,15 @@ export interface PlayerVerdictRow {
   player_id: string
   /** CompanionId of whoever wrote it. Deterministically assigned. */
   companion_id: string
-  /** Computed honorific — see lib/night-awards.ts. Denormalised for the public view. */
+  /**
+   * The honorific shown on the keepsake. Written by the companion when the
+   * generation succeeded; otherwise the computed pool title from
+   * lib/night-awards.ts. Denormalised so the public view is self-contained.
+   */
   title: string
   verdict: string
+  /** Chat lines the companion chose for this player, with its reason for each. */
+  highlights: Array<{ message_id: string; note: string }>
   created_at: string
 }
 
@@ -629,6 +635,7 @@ export interface PlayerVerdictInsert {
   companion_id: string
   title: string
   verdict: string
+  highlights?: Array<{ message_id: string; note: string }>
   created_at?: string
 }
 

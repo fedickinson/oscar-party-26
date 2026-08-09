@@ -32,15 +32,18 @@ import {
   buildVerdictsPrompt,
   parseVerdictResponse,
 } from '../lib/companion-prompts'
+import { collectLineCandidates } from '../lib/player-recap'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { PlayerAward } from '../lib/night-awards'
-import type { PlayerVerdictRow } from '../types/database'
+import type { MessageRow, PlayerRow, PlayerVerdictRow } from '../types/database'
 
 interface Args {
   roomId: string | undefined
   isHost: boolean
   playerAwards: PlayerAward[]
   leaderboard: ScoredPlayer[]
+  /** Needed to resolve message authors into names for the candidate lines. */
+  players: PlayerRow[]
   /** Hold generation until scores have settled — a verdict off a half-loaded board is wrong. */
   ready: boolean
 }
@@ -56,6 +59,7 @@ export function usePlayerVerdicts({
   isHost,
   playerAwards,
   leaderboard,
+  players,
   ready,
 }: Args): PlayerVerdictsState {
   const [verdicts, setVerdicts] = useState<Map<string, PlayerVerdictRow>>(new Map())
@@ -129,8 +133,19 @@ export function usePlayerVerdicts({
 
       setIsGenerating(true)
       try {
+        // Chat is fetched here rather than threaded down from the page: this is
+        // the only consumer, it is a one-shot read, and the Results page has no
+        // other reason to hold the transcript in state.
+        const { data: msgData } = await supabase
+          .from('messages')
+          .select()
+          .eq('room_id', roomId!)
+          .order('created_at')
+        const messages = (msgData ?? []) as MessageRow[]
+
         const authors = assignVerdictAuthors(playerAwards.map((a) => a.playerId))
-        const prompt = buildVerdictsPrompt(playerAwards, leaderboard, authors)
+        const candidates = collectLineCandidates(messages, players)
+        const prompt = buildVerdictsPrompt(playerAwards, leaderboard, authors, candidates)
 
         const response = await fetch('/api/anthropic/v1/messages', {
           method: 'POST',
@@ -142,7 +157,9 @@ export function usePlayerVerdicts({
             model: 'claude-sonnet-5',
             // ~90 tokens per verdict at 2-3 sentences, times up to 6 players,
             // with headroom for the JSON envelope.
-            max_tokens: 1200,
+            // Roughly triple the passage-only budget: each slot now also
+            // returns a title and up to four highlight ids with notes.
+            max_tokens: 3000,
             // Thinking off for the same reason as every other companion caller
             // in this app: on Sonnet 5 max_tokens caps thinking + text together,
             // so a long think silently truncates the actual verdicts.
@@ -169,12 +186,30 @@ export function usePlayerVerdicts({
         if (parsed.length === 0) return
 
         const awardByPlayer = new Map(playerAwards.map((a) => [a.playerId, a]))
+        const validMessageIds = new Set(messages.map((m) => m.id))
+
+        // Titles must be unique across the room. The prompt says so and the
+        // model is shown every player at once, but "check before you answer" is
+        // not a guarantee — so the first claimant keeps a name and anyone who
+        // collides falls back to their computed pool title, which is already
+        // distinct by construction. Case-insensitive because "The Kingmaker"
+        // and "the kingmaker" would read as the same name on two keepsakes.
+        const claimedTitles = new Set<string>()
+
         const rows = parsed
           .map((v) => {
             const playerId = prompt.slots.get(v.slot)
             if (!playerId) return null
             const award = awardByPlayer.get(playerId)
             if (!award) return null
+
+            const proposed = v.title.trim()
+            const key = proposed.toLowerCase()
+            const usable = proposed.length > 0 && proposed.length <= 40 && !claimedTitles.has(key)
+            if (usable) claimedTitles.add(key)
+            const title = usable ? proposed : award.title
+            claimedTitles.add(title.toLowerCase())
+
             return {
               room_id: roomId!,
               player_id: playerId,
@@ -182,8 +217,15 @@ export function usePlayerVerdicts({
               // the model — it was told who writes each slot, but a wrong echo
               // would attribute the passage to the wrong companion forever.
               companion_id: authors.get(playerId) ?? 'ned',
-              title: award.title,
+              title,
               verdict: v.text,
+              // Drop any id the model did not actually receive. A hallucinated
+              // id would render as a missing line rather than a wrong one, but
+              // filtering here keeps the stored row honest.
+              highlights: v.highlights
+                .filter((h) => validMessageIds.has(h.messageId))
+                .slice(0, 4)
+                .map((h) => ({ message_id: h.messageId, note: h.note })),
             }
           })
           .filter((r): r is NonNullable<typeof r> => r !== null)
@@ -213,7 +255,7 @@ export function usePlayerVerdicts({
     const timer = setTimeout(generate, 1500)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, isHost, ready, playerAwards.length])
+  }, [roomId, isHost, ready, playerAwards.length, players.length])
 
   return { verdicts, isGenerating }
 }

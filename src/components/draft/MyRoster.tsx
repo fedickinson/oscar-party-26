@@ -17,7 +17,9 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronUp } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
+import { Hallmark } from '../ui/Hallmarks'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -44,11 +46,11 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
   )
 
   return (
-    <div className="flex-shrink-0">
+    <div className="material-oak relief-carved flex-shrink-0 overflow-hidden rounded-t-2xl border border-[var(--t-line)]">
       {/* Handle / summary row — always visible, tappable to toggle */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full backdrop-blur-lg bg-ground-deep/90 border border-white/15 rounded-t-2xl px-4 py-3 flex items-center justify-between"
+        className="flex min-h-11 w-full items-center justify-between px-4 py-3"
       >
         <div className="flex items-center gap-2">
           <span
@@ -60,25 +62,25 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
 
         <div className="flex items-center gap-3">
           {roster.length === 0 ? (
-            <span className="text-xs text-white/30">No picks yet</span>
+            <span className="text-xs text-[var(--t-text-dim)]">No picks yet</span>
           ) : (
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-[var(--t-text-muted)]">
               {peoplePicks.length > 0 && `${peoplePicks.length} ${peoplePicks.length === 1 ? 'person' : 'people'}`}
               {peoplePicks.length > 0 && dragonPicks.length > 0 && ' · '}
               {dragonPicks.length > 0 && `${dragonPicks.length} ${dragonPicks.length === 1 ? 'dragon' : 'dragons'}`}
             </span>
           )}
           {totalPotentialPoints > 0 && (
-            <span className="text-xs text-accent font-bold">
+            <span className="text-xs font-bold text-[var(--t-personal-text)]">
               {totalPotentialPoints} pts potential
             </span>
           )}
           <motion.span
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="text-white/40 text-xs"
+            className="grid h-6 w-6 place-items-center text-[var(--t-text-dim)]"
           >
-            ↑
+            <ChevronUp aria-hidden="true" size={16} />
           </motion.span>
         </div>
       </button>
@@ -92,11 +94,11 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden backdrop-blur-lg bg-ground-deep/95 border-x border-white/15"
+            className="overflow-hidden border-t border-[var(--t-line)]"
           >
             <div className="px-4 pb-4 pt-2 max-h-64 overflow-y-auto">
               {roster.length === 0 ? (
-                <p className="text-white/30 text-sm text-center py-4">
+                <p className="py-4 text-center text-sm text-[var(--t-text-dim)]">
                   No picks yet — make your first selection!
                 </p>
               ) : (
@@ -130,8 +132,8 @@ function RosterSection({
 }) {
   return (
     <div className="mb-3 last:mb-0">
-      <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1.5">{label}</p>
-      <div className="space-y-0">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--t-ornament)]">{label}</p>
+      <div className="space-y-2">
         {entities.map((entity) => {
           const beats = beatsByEntityId.get(entity.id) ?? []
           const scoringBeats = entity.type === 'film' ? beats : beats.slice(0, 3)
@@ -139,25 +141,32 @@ function RosterSection({
           return (
             <div
               key={entity.id}
-              className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0"
+              className="relief-glass flex min-h-11 items-center justify-between gap-3 px-3 py-2.5"
             >
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{entity.name}</p>
-                {entity.film_name && entity.type === 'person' && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <FilmIcon filmName={entity.film_name} size={10} className="text-white/30 flex-shrink-0" />
-                    <p className="text-xs text-white/40 italic truncate">{entity.film_name}</p>
-                  </div>
+              <div className="flex min-w-0 items-start gap-2">
+                {entity.type === 'film' && (
+                  <span className="mt-0.5 flex-shrink-0 text-[var(--t-personal-text)]" aria-label="Claimed dragon">
+                    <Hallmark id="hallmark-claim" size={14} />
+                  </span>
                 )}
-                <p className="text-xs text-white/30 mt-0.5">
-                  {entity.type === 'film'
-                    ? `${beats.length} live beat${beats.length !== 1 ? 's' : ''}`
-                    : `choose 3 of ${beats.length} beats`}
-                </p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-[var(--t-text)]">{entity.name}</p>
+                  {entity.film_name && entity.type === 'person' && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <FilmIcon filmName={entity.film_name} size={10} className="flex-shrink-0 text-[var(--t-text-dim)]" />
+                      <p className="truncate text-xs italic text-[var(--t-text-muted)]">{entity.film_name}</p>
+                    </div>
+                  )}
+                  <p className="mt-0.5 text-xs text-[var(--t-text-dim)]">
+                    {entity.type === 'film'
+                      ? `${beats.length} live beat${beats.length !== 1 ? 's' : ''}`
+                      : `choose 3 of ${beats.length} beats`}
+                  </p>
+                </div>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-bold text-accent">{pts}</p>
-                <p className="text-[10px] text-white/30">max pts</p>
+                <p className="text-sm font-bold tabular-nums text-[var(--t-personal-text)]">{pts}</p>
+                <p className="text-xs text-[var(--t-text-dim)]">max pts</p>
               </div>
             </div>
           )

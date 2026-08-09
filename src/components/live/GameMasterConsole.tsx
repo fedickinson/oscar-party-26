@@ -227,18 +227,18 @@ export default function GameMasterConsole({
         disabled={used || isLogging}
         title={beat.trigger_text}
         onClick={() => void awardCollision(beat)}
-        className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
+        className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
           ${used
-            ? 'bg-white/3 border-white/5 text-white/25 line-through'
-            : 'bg-violet-500/10 border-violet-400/30 text-white/85'}`}
+            ? 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50 line-through'
+            : 'border-[color:var(--t-line)] text-[color:var(--t-text)]'}`}
       >
-        <Swords className={`w-3.5 h-3.5 flex-shrink-0 ${used ? 'text-white/20' : 'text-violet-300'}`} />
+        <Swords className={`w-3.5 h-3.5 flex-shrink-0 ${used ? 'text-[color:var(--t-text-dim)]' : 'text-[color:var(--t-personal-text)]'}`} />
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-medium truncate">{beat.name}</span>
           <span className="block text-[10px] text-white/35 truncate">{sides.leftName} + {sides.rightName}</span>
         </span>
-        <span className="text-[10px] uppercase tracking-wide text-white/35 flex-shrink-0">{beat.odds}</span>
-        <span className={`text-sm font-bold flex-shrink-0 ${used ? 'text-white/25' : 'text-accent'}`}>
+        <span className="text-[10px] uppercase tracking-wide text-[color:var(--t-text-dim)] flex-shrink-0">{beat.odds}</span>
+        <span className={`text-sm font-bold flex-shrink-0 ${used ? 'text-[color:var(--t-text-dim)]' : 'text-[color:var(--t-personal-text)]'}`}>
           {beat.points}
         </span>
       </motion.button>
@@ -257,7 +257,7 @@ export default function GameMasterConsole({
     <div className="px-4 py-6 space-y-6">
       {/* ── Composer (host only) ─────────────────────────────────────────── */}
       {isHost && (
-        <div className="relief-glass p-4 space-y-4">
+        <div className="material-oak relief-carved rounded-2xl p-4 space-y-4">
           <div className="flex items-center gap-2">
             <Swords className="w-5 h-5 text-accent" />
             <h2 className="text-base font-semibold text-white">What just happened?</h2>
@@ -274,9 +274,9 @@ export default function GameMasterConsole({
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Aemond burns Tumbleton"
             /* 16px prevents iOS zooming the viewport on focus */
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3
-                       text-[16px] text-white placeholder:text-white/30
-                       focus:outline-none focus:border-accent/50 transition-colors"
+            className="relief-inset w-full min-h-11 bg-[var(--t-input-bg)] border border-[color:var(--t-line)] rounded-xl px-4 py-3
+                       text-[16px] text-[color:var(--t-text)] placeholder:text-[color:var(--t-text-dim)]
+                       focus:outline-none focus:border-[color:var(--t-personal-text)] transition-colors"
           />
 
           {/* Quick-picks — seeded events, one tap to prefill */}
@@ -286,11 +286,11 @@ export default function GameMasterConsole({
                 <button
                   key={qp.id}
                   onClick={() => setDraft(qp.name)}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full
-                             bg-white/5 border border-white/10 text-xs text-white/70
-                             hover:border-accent/40 active:scale-97 transition-all"
+                  className="material-iron relief-raised min-h-11 flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full
+                             border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]
+                             hover:border-[color:var(--t-personal-text)] active:scale-97 transition-all"
                 >
-                  <Zap className="w-3 h-3 text-accent/70" />
+                  <Zap className="w-3 h-3 text-[color:var(--t-personal-text)]" />
                   {qp.name}
                 </button>
               ))}
@@ -308,10 +308,11 @@ export default function GameMasterConsole({
                     key={c.id}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedCharacter(active ? null : c.id)}
-                    className={`px-3 py-2 rounded-xl text-xs font-medium border transition-colors
+                    className={`material-iron relief-raised min-h-11 px-3 py-2 rounded-xl text-xs font-medium border transition-colors
                       ${active
-                        ? 'bg-accent/20 border-accent/60 text-accent'
-                        : 'bg-white/5 border-white/10 text-white/70'}`}
+                        ? 'border-[color:var(--t-personal-text)] text-[color:var(--t-personal-text)]'
+                        : 'border-[color:var(--t-line)] text-[color:var(--t-text-muted)]'}`}
+                    style={active ? { backgroundColor: 'var(--t-iron)' } : undefined}
                   >
                     {c.name}
                   </motion.button>
@@ -349,12 +350,12 @@ export default function GameMasterConsole({
                             setSelectedCharacter(null)
                           })
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
+                        className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
                           ${used
-                            ? 'bg-white/3 border-white/5 text-white/25 line-through'
+                            ? 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50 line-through'
                             : !active
-                              ? 'bg-white/3 border-white/8 text-white/25'
-                              : 'bg-accent/10 border-accent/30 text-white/85'}`}
+                              ? 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50'
+                              : 'border-[color:var(--t-line)] text-[color:var(--t-text)]'}`}
                       >
                         <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${used || !active ? 'text-white/20' : 'text-accent'}`} />
                         <span className="flex-1 min-w-0">
@@ -396,7 +397,7 @@ export default function GameMasterConsole({
           })()}
 
           {collisionBeats.length > 0 && (
-            <details className="rounded-xl bg-white/3 border border-white/8 px-3 py-2.5">
+            <details className="material-iron relief-inset rounded-xl border border-[color:var(--t-line-soft)] px-3 py-2.5">
               <summary className="min-h-11 flex items-center cursor-pointer text-xs font-medium text-white/45">
                 All collision beats
               </summary>
@@ -414,10 +415,14 @@ export default function GameMasterConsole({
                   whileTap={{ scale: 0.97 }}
                   disabled={!canCommit}
                   onClick={() => commit(tier.points)}
-                  className={`flex flex-col items-center gap-0.5 py-3 rounded-xl border transition-all
+                  className={`material-iron relief-raised min-h-11 flex flex-col items-center gap-0.5 py-3 rounded-xl border transition-all
                     ${canCommit
-                      ? 'bg-accent/15 border-accent/50 text-accent'
-                      : 'bg-white/5 border-white/10 text-white/25'}`}
+                      ? 'border-[color:var(--t-personal-text)] text-[color:var(--t-text)]'
+                      : 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50'}`}
+                  style={canCommit ? {
+                    backgroundColor: 'var(--t-personal-device)',
+                    borderColor: 'var(--t-personal-text)',
+                  } : undefined}
                 >
                   <span className="text-lg font-bold leading-none">+{tier.points}</span>
                   <span className="text-[11px] font-medium">{tier.label}</span>
@@ -453,7 +458,7 @@ export default function GameMasterConsole({
                 key={n}
                 onClick={() => void devAutoLog(n)}
                 disabled={autoRunning}
-                className={`py-2.5 rounded-xl text-xs font-semibold border flex items-center
+                className={`min-h-11 py-2.5 rounded-xl text-xs font-semibold border flex items-center
                             justify-center gap-1.5 ${
                   autoRunning
                     ? 'bg-white/5 border-white/10 text-white/30'
@@ -594,7 +599,7 @@ export default function GameMasterConsole({
               <button
                 onClick={() => setConfirmingEnd(false)}
                 disabled={isEndingCeremony}
-                className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10
+                className="min-h-11 flex-1 py-3 rounded-2xl bg-white/5 border border-white/10
                            text-sm font-medium text-white/70 hover:text-white
                            hover:border-white/25 disabled:opacity-40 transition-colors"
               >
@@ -603,7 +608,7 @@ export default function GameMasterConsole({
               <button
                 onClick={onEndCeremony}
                 disabled={isEndingCeremony}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl
+                className="min-h-11 flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl
                            bg-accent/15 border border-accent/40 text-sm font-semibold
                            text-accent hover:bg-accent/25
                            disabled:opacity-40 transition-colors"
@@ -620,7 +625,7 @@ export default function GameMasterConsole({
             <button
               onClick={() => setConfirmingEnd(true)}
               disabled={isEndingCeremony}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl
+              className="min-h-11 w-full flex items-center justify-center gap-2 py-3 rounded-2xl
                          bg-white/5 border border-white/10 text-sm font-medium
                          text-white/60 hover:text-white hover:border-white/25
                          disabled:opacity-40 transition-colors"

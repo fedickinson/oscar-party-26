@@ -39,13 +39,21 @@ export default function CompanionProfileModal({ companion, onClose }: Props) {
 
           {/* Large image with gradient fade to content */}
           <div className="relative h-52 w-full">
-            {/* No portraits for this cast — the gradient carries the identity.
-                Drop art in public/avatars/companions/ and restore an <img> here. */}
+            {/* Portrait over the brand gradient. The crop is face-centered
+                square; in this wide banner, biasing objectPosition slightly
+                above center keeps eyes in frame instead of foreheads. */}
             <div
               className="w-full h-full"
               style={{
                 background: `linear-gradient(140deg, ${companion.colorPrimary}, ${companion.colorSecondary})`,
               }}
+            />
+            <img
+              src={`/avatars/companions/${companion.id}.webp`}
+              alt={companion.name}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center 30%' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
             <div
               className="absolute inset-0"

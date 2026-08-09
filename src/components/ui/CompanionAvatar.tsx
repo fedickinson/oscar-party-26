@@ -46,13 +46,18 @@ interface CompanionBrand {
 }
 
 // Gradients are derived from the cast config so the avatar, the chat bubble and
-// the profile modal can never drift apart. No portraits: the art on disk is the
-// Oscars companions. Drop new files in public/avatars/companions/ and set
-// imageUrl here to restore photos.
+// the profile modal can never drift apart. Portraits are face-centered square
+// crops cut from the source screenshots (see .private/source-screenshots) —
+// centering is baked into the ASSET, not nudged per-consumer with CSS, so the
+// default objectPosition of 'center' is already right everywhere they render.
 const BRANDS: Record<string, CompanionBrand> = Object.fromEntries(
   AI_COMPANIONS.map((c) => [
     c.id,
-    { gradientFrom: c.colorPrimary, gradientTo: c.colorSecondary },
+    {
+      gradientFrom: c.colorPrimary,
+      gradientTo: c.colorSecondary,
+      imageUrl: `/avatars/companions/${c.id}.webp`,
+    },
   ]),
 )
 

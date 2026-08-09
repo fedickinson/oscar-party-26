@@ -1095,6 +1095,18 @@ Respond ONLY as ${responderId}. The companion_id in your JSON must be exactly "$
 export interface CompanionVerdict {
   slot: number
   text: string
+  /** Bespoke honorific for this player. Empty when the model omitted it. */
+  title: string
+  /** Message ids the model chose for this player's keepsake, with its reason. */
+  highlights: Array<{ messageId: string; note: string }>
+}
+
+/** A chat line offered to the model as a candidate highlight. */
+export interface VerdictLineCandidate {
+  messageId: string
+  /** Display name of whoever said it. */
+  author: string
+  text: string
 }
 
 /**
@@ -1124,7 +1136,13 @@ export function assignVerdictAuthors(playerIds: string[]): Map<string, string> {
   return assignment
 }
 
-/** Parses the verdict response. Returns [] on anything malformed — callers fall back. */
+/**
+ * Parses the verdict response. Returns [] on anything malformed — callers fall back.
+ *
+ * Each field degrades on its own: a verdict with no usable title still returns,
+ * and the caller substitutes the computed one. Only `text` is load-bearing,
+ * because a row with no passage is not worth storing.
+ */
 export function parseVerdictResponse(raw: string): CompanionVerdict[] {
   try {
     const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
@@ -1133,11 +1151,23 @@ export function parseVerdictResponse(raw: string): CompanionVerdict[] {
     return parsed.verdicts
       .filter(
         (v: unknown) =>
-          typeof (v as CompanionVerdict).slot === 'number' &&
-          typeof (v as CompanionVerdict).text === 'string' &&
-          (v as CompanionVerdict).text.trim().length > 0,
+          typeof (v as { slot?: unknown }).slot === 'number' &&
+          typeof (v as { text?: unknown }).text === 'string' &&
+          (v as { text: string }).text.trim().length > 0,
       )
-      .map((v: CompanionVerdict) => ({ slot: v.slot, text: v.text.trim() }))
+      .map((v: Record<string, unknown>) => ({
+        slot: v.slot as number,
+        text: (v.text as string).trim(),
+        title: typeof v.title === 'string' ? v.title.trim() : '',
+        highlights: Array.isArray(v.highlights)
+          ? (v.highlights as Array<Record<string, unknown>>)
+              .filter((h) => typeof h?.message_id === 'string')
+              .map((h) => ({
+                messageId: h.message_id as string,
+                note: typeof h.note === 'string' ? h.note.trim() : '',
+              }))
+          : [],
+      }))
   } catch {
     return []
   }
@@ -1157,16 +1187,45 @@ DAENERYS — Sincere, no irony. Takes the player's choices seriously, especially
 OLENNA — Every sentence is a closing line. Withering and delighted about it. Brief.
 ARYA — Says as little as possible. Flat, certain, lands hard.
 
-RULES:
-- 2-3 sentences. This is a passage, not a paragraph. Shorter is better.
-- Address the player in the second person ("you"), by name at most once.
-- Build it out of the DATA you are given — the title they earned, the character who carried them, the stake they lost. A verdict that could be about anyone is a failed verdict.
-- The tone matches the companion, NOT the player's rank. Olenna does not go easy on the winner and Ned does not pile on the loser.
-- Never mention points totals as raw numbers more than once. You are writing about a person's night, not reading a scoreboard.
-- No spoilers beyond what happened on screen tonight. Never predict what happens next season.
+YOU PRODUCE THREE THINGS PER PLAYER:
+
+1. TITLE — a bespoke honorific, the name this person's night gets remembered by.
+   - 2-4 words. It is a headline, not a sentence. No trailing punctuation.
+   - Earned by what ACTUALLY happened to them: the character who carried them,
+     the stake they lost, the run they went on, the dragon that did nothing.
+   - EVERY TITLE MUST BE DIFFERENT FROM EVERY OTHER TITLE IN THIS RESPONSE. You
+     can see all the players at once, which is the only reason you can guarantee
+     this. Two people cannot both be "The Kingmaker".
+   - It goes on a keepsake they keep. Wry is good, contemptuous is fine for the
+     right companion, but it should not read as a punishment for losing.
+   - In the world of the show: houses, dragons, oaths, succession, fire. Not
+     modern idiom, not sports commentary.
+
+2. TEXT — the verdict passage.
+   - 2-3 sentences. This is a passage, not a paragraph. Shorter is better.
+   - Address the player in the second person ("you"), by name at most once.
+   - Build it out of the DATA you are given — the character who carried them, the
+     stake they lost. A verdict that could be about anyone is a failed verdict.
+   - The tone matches the companion, NOT the player's rank. Olenna does not go
+     easy on the winner and Ned does not pile on the loser.
+   - Never quote raw point totals more than once. You are writing about a
+     person's night, not reading a scoreboard.
+
+3. HIGHLIGHTS — which chat lines belong in their keepsake.
+   - Choose 0-4 from the CANDIDATE LINES given for that player. Copy message_id
+     exactly. Never invent an id and never invent a line.
+   - Pick for MEMORABILITY, not length: the line that got a reaction, the call
+     someone made and was right about, the complaint that aged badly, the joke.
+   - Skip anything that is only logistics ("ok", "who's next", "brb").
+   - "note" is your one-line reason it made the cut, in your own voice, under 12
+     words. It is printed under the line. Leave it empty rather than padding.
+   - Returning fewer is correct when the chat was thin. Do not pad to four.
+
+GENERAL:
+- No spoilers beyond what happened on screen tonight. Never predict next season.
 
 FORMAT — exactly this shape, one entry per slot you are given:
-{"verdicts":[{"slot":1,"text":"..."},{"slot":2,"text":"..."}]}`
+{"verdicts":[{"slot":1,"title":"...","text":"...","highlights":[{"message_id":"...","note":"..."}]},{"slot":2,"title":"...","text":"...","highlights":[]}]}`
 
 export function buildVerdictsPrompt(
   awards: Array<{
@@ -1178,6 +1237,12 @@ export function buildVerdictsPrompt(
   }>,
   leaderboard: ScoredPlayer[],
   authors: Map<string, string>,
+  /**
+   * Chat lines the model may choose from, per player id. Already narrowed by
+   * the caller to lines that concern that player — the full transcript would be
+   * both expensive and mostly irrelevant to any single person's keepsake.
+   */
+  lineCandidates: Map<string, VerdictLineCandidate[]> = new Map(),
 ): { system: string; user: string; slots: Map<number, string> } {
   const slots = new Map<number, string>()
 
@@ -1188,21 +1253,28 @@ export function buildVerdictsPrompt(
     const authorId = authors.get(award.playerId) ?? 'ned'
     const author = AI_COMPANIONS.find((c) => c.id === authorId)
 
+    const candidates = lineCandidates.get(award.playerId) ?? []
+    const candidateBlock = candidates.length
+      ? `\nCANDIDATE LINES (choose 0-4, copy message_id exactly):\n${candidates
+          .map((c) => `  [${c.messageId}] ${c.author}: ${c.text}`)
+          .join('\n')}`
+      : '\nCANDIDATE LINES: none — the chat had nothing about this player. Return highlights: [].'
+
     return `SLOT ${slot}
 Player: ${award.playerName}
 Written by: ${author?.name ?? 'Ned'}
 Finished: #${entry?.rank ?? '?'} with ${entry?.totalScore ?? 0} pts (predictions ${entry?.confidenceScore ?? 0}, draft ${entry?.ensembleScore ?? 0}, bingo ${entry?.bingoScore ?? 0})
-Title earned: ${award.title}
-Why: ${award.blurb}
+Shape of their night: ${award.blurb}
 Key stat: ${award.stat}
-Predictions called right: ${entry?.correctPickCount ?? 0}`
+Predictions called right: ${entry?.correctPickCount ?? 0}
+A working title (yours must be DIFFERENT and better): ${award.title}${candidateBlock}`
   })
 
-  const user = `THE RECKONING. The episode is over and the standings are final. Write one verdict per slot below, each in the voice of the companion named for that slot.
+  const user = `THE RECKONING. The episode is over and the standings are final. For each slot below, in the voice of the companion named for that slot, write a bespoke title, a verdict passage, and pick that player's best chat lines.
 
 ${blocks.join('\n\n')}
 
-Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'}, one per slot, in the JSON format specified.`
+Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'}, one per slot, in the JSON format specified. Check before you answer: no two titles may be the same.`
 
   return { system: VERDICT_SYSTEM, user, slots }
 }

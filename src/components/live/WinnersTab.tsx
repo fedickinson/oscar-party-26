@@ -187,7 +187,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
             disabled={isAutoCompleting}
             whileTap={!isAutoCompleting ? { scale: 0.97 } : undefined}
             className={[
-              'w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all',
+              'min-h-11 w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all',
               !isAutoCompleting
                 ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
                 : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed',
@@ -217,15 +217,11 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
             </div>
           </div>
           {/* Progress track */}
-          <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
+          <div className="relief-inset h-1.5 bg-[var(--t-iron-dark)] rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full"
+              className="h-full rounded-full bg-[var(--t-personal-device)]"
               animate={{ width: `${totalCount > 0 ? (announcedCount / totalCount) * 100 : 0}%` }}
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-              style={{
-                background: 'linear-gradient(90deg, #B9863F, #D6A961)',
-                boxShadow: announcedCount > 0 ? '0 0 8px 1px rgba(185,134,63,0.5)' : undefined,
-              }}
             />
           </div>
         </div>
@@ -254,7 +250,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 disabled={isEndingCeremony}
                 whileTap={!isEndingCeremony ? { scale: 0.97 } : undefined}
                 className={[
-                  'w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
+                  'min-h-11 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
                   !isEndingCeremony
                     ? 'bg-accent text-ground'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
@@ -274,7 +270,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
         </AnimatePresence>
 
         {/* Category list */}
-        <div className="space-y-2">
+        <div className="material-oak relief-carved rounded-2xl space-y-2">
           {categories.map((category, i) => {
             const hasWinner = category.winner_id != null
             const isExpanded = expandedIds.has(category.id)
@@ -299,41 +295,37 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.015, 0.3), duration: 0.22 }}
                 className={[
-                  'backdrop-blur-lg border rounded-xl overflow-hidden relative',
+                  'relief-glass overflow-hidden relative',
                   hasWinner
-                    ? 'bg-accent/4 border-accent/14'
-                    : 'bg-white/6 border-white/10',
+                    ? 'text-[color:var(--t-text)]'
+                    : 'text-[color:var(--t-text-muted)]',
                 ].join(' ')}
               >
-                {/* Gold left-edge accent for announced categories */}
-                {hasWinner && (
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl"
-                    style={{
-                      background: 'linear-gradient(180deg, rgba(185,134,63,0.7) 0%, rgba(185,134,63,0.25) 100%)',
-                    }}
-                  />
-                )}
-
                 {/* Main row */}
                 <button
                   onClick={hasWinner ? () => toggleExpand(category.id) : undefined}
                   className={[
-                    'w-full px-3.5 py-3 flex items-center gap-3 text-left',
+                    'min-h-11 w-full px-3.5 py-3 flex items-center gap-3 text-left',
                     hasWinner ? 'cursor-pointer' : 'cursor-default',
                   ].join(' ')}
                 >
                   {/* Status icon */}
                   <div
                     className={[
-                      'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
+                      'relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
                       hasWinner
                         ? 'bg-accent/16 border border-accent/30'
                         : 'bg-white/6 border border-white/8',
                     ].join(' ')}
                   >
                     {hasWinner ? (
-                      <Trophy size={11} className="text-accent" />
+                      <>
+                        <Trophy size={11} className="text-accent" />
+                        <span
+                          aria-hidden="true"
+                          className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--t-wax)] relief-seal"
+                        />
+                      </>
                     ) : (
                       <Clock size={12} className="text-white/22" />
                     )}
@@ -367,9 +359,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
                     {hasWinner && winnerNominee ? (
                       <div>
-                        <p className="text-[13px] font-bold text-accent leading-tight truncate"
-                          style={{ textShadow: '0 0 16px rgba(185,134,63,0.28)' }}
-                        >
+                        <p className="text-[13px] font-bold text-accent leading-tight truncate">
                           {winnerNominee.name}
                           {hasTie && tieWinnerNominee && (
                             <>
@@ -410,7 +400,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           e.stopPropagation()
                           openSpotlight(category.id)
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
+                        className="relief-raised min-h-11 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                       >
                         Spotlight
                       </motion.button>
@@ -425,7 +415,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           e.stopPropagation()
                           handleUndo(category.id)
                         }}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white/50 text-[11px]"
+                        className="relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white/50 text-[11px]"
                       >
                         <RotateCcw size={10} />
                         {secondsLeft}s

@@ -8,8 +8,8 @@
  * Section 1: Confidence Picks
  *   All 24 picks sorted by confidence number descending. Each shows:
  *   category name, nominee chosen, confidence value, and is_correct status.
- *   Correct = green check + gold number. Wrong = red cross + strikethrough + 0.
- *   Pending = clock icon + muted number.
+ *   Correct = bone check + full points. Wrong = ash cross + strikethrough + 0.
+ *   Pending = ochre clock + muted number.
  *
  * Section 2: Roster browser
  *   Browse any player and compare their live signature beats with the ones
@@ -150,17 +150,17 @@ export default function MyPicksTab({
 
       {/* ── Score Card ───────────────────────────────────────────────────── */}
       {myScore && rank > 0 && (
-        <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-4">
+        <div className="relief-glass rounded-2xl border-l-4! border-l-[var(--t-personal-device)]! p-4">
 
           {/* Rank + total */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[10px] text-white/35 uppercase tracking-widest mb-0.5">
+              <p className="mb-0.5 text-xs uppercase tracking-widest text-[var(--t-text-dim)]">
                 Your Score
               </p>
               <p className={[
                 'text-3xl font-black tabular-nums leading-none',
-                isFirst ? 'text-accent' : 'text-white',
+                isFirst ? 'text-[var(--t-personal-text)]' : 'text-[var(--t-text)]',
               ].join(' ')}>
                 {myScore.totalScore}
                 <span className="text-base font-semibold ml-1 opacity-50">pts</span>
@@ -168,15 +168,17 @@ export default function MyPicksTab({
             </div>
 
             <div className="text-right">
-              <p className="text-[10px] text-white/35 uppercase tracking-widest mb-0.5">
+              <p className="mb-0.5 text-xs uppercase tracking-widest text-[var(--t-text-dim)]">
                 Rank
               </p>
               <div className={[
                 'text-xl font-black leading-none',
-                isFirst ? 'text-accent' : isLast ? 'text-white/35' : 'text-white',
+                isFirst
+                  ? 'text-[var(--t-personal-text)]'
+                  : isLast ? 'text-[var(--t-text-dim)]' : 'text-[var(--t-text)]',
               ].join(' ')}>
                 {ordinal(rank)}
-                <span className="text-xs font-medium text-white/25 ml-1">
+                <span className="ml-1 text-xs font-medium text-[var(--t-text-dim)]">
                   of {totalPlayers}
                 </span>
               </div>
@@ -207,24 +209,26 @@ export default function MyPicksTab({
       {/* Bingo shortcut */}
       <button
         onClick={onSwitchToBingo}
-        className="w-full flex items-center justify-between backdrop-blur-lg bg-accent/8 border border-accent/20 rounded-xl px-4 py-3"
+        className="relief-glass flex min-h-11 w-full items-center justify-between rounded-xl border-l-4! border-l-[var(--t-personal-device)]! px-4 py-3"
       >
-        <span className="text-sm font-medium text-accent">View Bingo Card</span>
-        <ChevronRight size={16} className="text-accent/60" />
+        <span className="text-sm font-medium text-[var(--t-personal-text)]">View Bingo Card</span>
+        <ChevronRight size={16} className="text-[var(--t-personal-text)]" />
       </button>
 
       {/* ── Confidence picks ──────────────────────────────────────────────── */}
       <section>
+        <div className="relief-glass mb-2 overflow-hidden rounded-xl">
+          <div className="motif-band narrow" aria-hidden="true" />
         <button
           onClick={() => setShowConfidence((v) => !v)}
-          className="w-full flex items-center justify-between py-1 mb-1"
+          className="flex min-h-11 w-full items-center justify-between px-3 py-2"
         >
           <div className="flex items-center gap-2">
-            <p className="text-xs text-white/35 uppercase tracking-widest">
+            <p className="text-xs uppercase tracking-widest text-[var(--t-text-muted)]">
               Prestige Picks
             </p>
             {myConfidencePicks.length > 0 && (
-              <span className="text-[10px] text-white/25 bg-white/5 border border-white/8 rounded-full px-1.5 py-0.5 tabular-nums">
+              <span className="rounded-full border border-[var(--t-line)] px-1.5 py-0.5 text-xs text-[var(--t-text-dim)] tabular-nums">
                 {myConfidencePicks.length}
               </span>
             )}
@@ -233,9 +237,10 @@ export default function MyPicksTab({
             animate={{ rotate: showConfidence ? 0 : -90 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown size={14} className="text-white/30" />
+            <ChevronDown size={14} className="text-[var(--t-text-dim)]" />
           </motion.div>
         </button>
+        </div>
 
         <AnimatePresence initial={false}>
           {showConfidence && (
@@ -260,13 +265,13 @@ export default function MyPicksTab({
                     key={f}
                     onClick={() => setConfidenceFilter(f)}
                     className={[
-                      'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors',
+                      'flex min-h-11 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
                       active
-                        ? f === 'won' ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                          : f === 'lost' ? 'bg-red-500/12 border-red-500/25 text-red-400/80'
-                          : f === 'waiting' ? 'bg-white/10 border-white/20 text-white/60'
-                          : 'bg-white/12 border-white/20 text-white'
-                        : 'bg-white/4 border-white/8 text-white/30',
+                        ? f === 'won' ? 'border-[var(--t-positive)] bg-[var(--t-positive-soft)] text-[var(--t-positive)]'
+                          : f === 'lost' ? 'border-[var(--t-negative)] bg-[var(--t-negative-soft)] text-[var(--t-negative)]'
+                          : f === 'waiting' ? 'border-[var(--t-pending)] bg-[var(--t-pending-soft)] text-[var(--t-pending)]'
+                          : 'border-[var(--t-personal-text)] bg-[var(--t-personal-raised)] text-[var(--t-personal-text)]'
+                        : 'border-[var(--t-line-soft)] bg-[var(--t-clear)] text-[var(--t-text-dim)]',
                     ].join(' ')}
                   >
                     {labels[f]}
@@ -279,7 +284,7 @@ export default function MyPicksTab({
             </div>
           )}
         {myConfidencePicks.length === 0 ? (
-          <p className="text-sm text-white/30 text-center py-6">No picks submitted</p>
+          <p className="py-6 text-center text-sm text-[var(--t-text-dim)]">No picks submitted</p>
         ) : (
           <div className="space-y-1.5">
             {myConfidencePicks
@@ -295,26 +300,33 @@ export default function MyPicksTab({
               return (
                 <div
                   key={pick.id}
-                  className="flex items-center gap-3 backdrop-blur-lg bg-white/5 border border-white/8 rounded-xl px-3 py-2.5"
+                  className={[
+                    'relief-glass flex min-h-11 items-center gap-3 rounded-xl border-l-4! px-3 py-2.5',
+                    pick.is_correct === true
+                      ? 'border-l-[var(--t-positive)]!'
+                      : pick.is_correct === false
+                        ? 'border-l-[var(--t-negative)]!'
+                        : 'border-l-[var(--t-pending)]!',
+                  ].join(' ')}
                 >
                   {/* Status icon */}
                   <div className="flex-shrink-0 w-4">
                     {pick.is_correct === true && (
-                      <CheckCircle size={16} className="text-emerald-400" />
+                      <CheckCircle size={16} className="text-[var(--t-positive)]" />
                     )}
                     {pick.is_correct === false && (
-                      <XCircle size={16} className="text-red-400/60" />
+                      <XCircle size={16} className="text-[var(--t-negative)]" />
                     )}
                     {pick.is_correct === null && (
-                      <Clock size={16} className="text-white/20" />
+                      <Clock size={16} className="text-[var(--t-pending)]" />
                     )}
                   </div>
 
                   {/* Category + nominee */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 mb-0.5">
-                      {cat && <CategoryIcon categoryName={cat.name} size={10} className="text-white/30 flex-shrink-0" />}
-                      <p className="text-[10px] text-white/35 uppercase tracking-wider truncate">
+                      {cat && <CategoryIcon categoryName={cat.name} size={10} className="flex-shrink-0 text-[var(--t-text-dim)]" />}
+                      <p className="truncate text-xs uppercase tracking-wider text-[var(--t-text-dim)]">
                         {cat?.name ?? `Category ${pick.category_id}`}
                       </p>
                     </div>
@@ -322,10 +334,10 @@ export default function MyPicksTab({
                       className={[
                         'text-sm truncate',
                         pick.is_correct === true
-                          ? 'text-white font-semibold'
+                          ? 'font-semibold text-[var(--t-positive)]'
                           : pick.is_correct === false
-                          ? 'text-white/35 line-through'
-                          : 'text-white/70',
+                          ? 'text-[var(--t-negative)] line-through'
+                          : 'text-[var(--t-text-muted)]',
                       ].join(' ')}
                     >
                       {nominee?.name ?? 'Unknown'}
@@ -338,15 +350,15 @@ export default function MyPicksTab({
                       className={[
                         'text-sm font-bold tabular-nums',
                         pick.is_correct === true
-                          ? 'text-accent'
+                          ? 'text-[var(--t-positive)]'
                           : pick.is_correct === false
-                          ? 'text-white/25'
-                          : 'text-white/40',
+                          ? 'text-[var(--t-negative)]'
+                          : 'text-[var(--t-pending)]',
                       ].join(' ')}
                     >
                       {pick.is_correct === false ? 0 : pick.confidence}
                     </p>
-                    <p className="text-[9px] text-white/20">pt</p>
+                    <p className="text-xs text-[var(--t-text-dim)]">pt</p>
                   </div>
                 </div>
               )
@@ -371,12 +383,14 @@ export default function MyPicksTab({
                 setDraftFilter('all')
               }}
               className={[
-                'min-h-11 flex-shrink-0 flex items-center gap-2 rounded-xl border px-2.5 transition-colors',
-                selected ? 'bg-accent/10 border-accent/60' : 'bg-white/5 border-white/10',
+                'relief-glass min-h-11 flex-shrink-0 flex items-center gap-2 rounded-xl border px-2.5 transition-colors',
+                selected
+                  ? 'border-[var(--t-personal-text)]! bg-[var(--t-personal-raised)]!'
+                  : 'border-[var(--t-line)]!',
               ].join(' ')}
             >
               <Avatar avatarId={roomPlayer.avatar_id} size="sm" highlighted={selected} />
-              <span className={selected ? 'text-sm font-semibold text-accent' : 'text-sm text-white/60'}>
+              <span className={selected ? 'text-sm font-semibold text-[var(--t-personal-text)]' : 'text-sm text-[var(--t-text-muted)]'}>
                 {roomPlayer.name.split(' ')[0]}
               </span>
             </motion.button>
@@ -386,18 +400,20 @@ export default function MyPicksTab({
 
       {/* ── Draft roster ──────────────────────────────────────────────────── */}
       <section className="pb-4">
+        <div className="relief-glass mb-2 overflow-hidden rounded-xl">
+          <div className="motif-band narrow" aria-hidden="true" />
         <button
           onClick={() => setShowDraft((v) => !v)}
-          className="w-full flex items-center justify-between py-1 mb-1"
+          className="flex min-h-11 w-full items-center justify-between px-3 py-2"
         >
           <div className="flex items-center gap-2">
-            <p className="text-xs text-white/35 uppercase tracking-widest">
+            <p className="text-xs uppercase tracking-widest text-[var(--t-text-muted)]">
               {rosterPlayerId === currentPlayerId
                 ? 'My Ensemble'
                 : `${players.find((roomPlayer) => roomPlayer.id === rosterPlayerId)?.name.split(' ')[0] ?? 'Player'}'s Ensemble`}
             </p>
             {selectedDraftEntities.length > 0 && (
-              <span className="text-[10px] text-white/25 bg-white/5 border border-white/8 rounded-full px-1.5 py-0.5 tabular-nums">
+              <span className="rounded-full border border-[var(--t-line)] px-1.5 py-0.5 text-xs text-[var(--t-text-dim)] tabular-nums">
                 {selectedDraftEntities.length}
               </span>
             )}
@@ -406,9 +422,10 @@ export default function MyPicksTab({
             animate={{ rotate: showDraft ? 0 : -90 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown size={14} className="text-white/30" />
+            <ChevronDown size={14} className="text-[var(--t-text-dim)]" />
           </motion.div>
         </button>
+        </div>
 
         <AnimatePresence initial={false}>
           {showDraft && (
@@ -438,12 +455,12 @@ export default function MyPicksTab({
                       key={f}
                       onClick={() => setDraftFilter(f)}
                       className={[
-                        'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors',
+                        'flex min-h-11 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
                         active
-                          ? f === 'won' ? 'bg-accent/15 border-accent/30 text-accent'
-                            : f === 'in_play' ? 'bg-white/10 border-white/20 text-white/60'
-                            : 'bg-white/12 border-white/20 text-white'
-                          : 'bg-white/4 border-white/8 text-white/30',
+                          ? f === 'won' ? 'border-[var(--t-positive)] bg-[var(--t-positive-soft)] text-[var(--t-positive)]'
+                            : f === 'in_play' ? 'border-[var(--t-pending)] bg-[var(--t-pending-soft)] text-[var(--t-pending)]'
+                            : 'border-[var(--t-personal-text)] bg-[var(--t-personal-raised)] text-[var(--t-personal-text)]'
+                          : 'border-[var(--t-line-soft)] bg-[var(--t-clear)] text-[var(--t-text-dim)]',
                       ].join(' ')}
                     >
                       {labels[f]}
@@ -457,7 +474,7 @@ export default function MyPicksTab({
             )
           })()}
         {selectedDraftEntities.length === 0 ? (
-          <p className="text-sm text-white/30 text-center py-6">No ensemble picks</p>
+          <p className="py-6 text-center text-sm text-[var(--t-text-dim)]">No ensemble picks</p>
         ) : (
           <div className="space-y-3">
             {selectedDraftEntities.map((entity) => {
@@ -481,27 +498,27 @@ export default function MyPicksTab({
                 <div
                   key={entity.id}
                   className={[
-                    'backdrop-blur-lg rounded-2xl p-4 border',
+                    'relief-glass rounded-2xl border-l-4! p-4',
                     status === 'won'
-                      ? 'bg-accent/8 border-accent/25'
-                      : 'bg-white/5 border-white/10',
+                      ? 'border-l-[var(--t-positive)]!'
+                      : 'border-l-[var(--t-pending)]!',
                   ].join(' ')}
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{entity.name}</p>
+                      <p className="truncate text-sm font-semibold text-[var(--t-text)]">{entity.name}</p>
                     {entity.film_name && entity.type === 'person' && (
                       <div className="flex items-center gap-1 mt-0.5">
-                        <FilmIcon filmName={entity.film_name} size={10} className="text-white/30 flex-shrink-0" />
-                        <p className="text-xs text-white/35 truncate">{entity.film_name}</p>
+                        <FilmIcon filmName={entity.film_name} size={10} className="flex-shrink-0 text-[var(--t-text-dim)]" />
+                        <p className="truncate text-xs text-[var(--t-text-dim)]">{entity.film_name}</p>
                       </div>
                     )}
                     </div>
                     <span className={[
-                      'text-[10px] uppercase tracking-wider rounded-full border px-2 py-0.5 whitespace-nowrap',
+                      'whitespace-nowrap rounded-full border px-2 py-0.5 text-xs uppercase tracking-wider',
                       status === 'won'
-                        ? 'font-bold text-accent bg-accent/15 border-accent/30'
-                        : 'font-medium text-white/40 bg-white/5 border-white/10',
+                        ? 'border-[var(--t-positive)] bg-[var(--t-positive-soft)] font-bold text-[var(--t-positive)]'
+                        : 'border-[var(--t-pending)] bg-[var(--t-pending-soft)] font-medium text-[var(--t-pending)]',
                     ].join(' ')}>
                       {status === 'won' ? 'Scored' : 'In play'}
                     </span>
@@ -511,15 +528,15 @@ export default function MyPicksTab({
                     {liveBeats.map((beat) => {
                       const hit = beatWasHit(beat, entity, categories, nominees)
                       return (
-                        <div key={beat.id} className="min-h-11 flex items-center gap-2 rounded-xl bg-white/5 border border-white/8 px-3 py-2">
+                        <div key={beat.id} className="relief-glass flex min-h-11 items-center gap-2 rounded-xl px-3 py-2">
                           {hit
-                            ? <CheckCircle size={15} className="text-emerald-400 flex-shrink-0" />
-                            : <Clock size={15} className="text-white/20 flex-shrink-0" />}
+                            ? <CheckCircle size={15} className="flex-shrink-0 text-[var(--t-positive)]" />
+                            : <Clock size={15} className="flex-shrink-0 text-[var(--t-pending)]" />}
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-white/80">{beat.name}</p>
-                            <p className="text-[10px] text-white/35">{oddsLabel(beat.odds)}{entity.type === 'film' ? ' · always live' : ''}</p>
+                            <p className="text-xs font-medium text-[var(--t-text)]">{beat.name}</p>
+                            <p className="text-xs text-[var(--t-text-dim)]">{oddsLabel(beat.odds)}{entity.type === 'film' ? ' · always live' : ''}</p>
                           </div>
-                          <span className={hit ? 'text-sm font-bold text-accent' : 'text-sm font-bold text-white/45'}>
+                          <span className={hit ? 'text-sm font-bold text-[var(--t-positive)]' : 'text-sm font-bold text-[var(--t-pending)]'}>
                             {beat.points} pts
                           </span>
                         </div>
@@ -528,14 +545,14 @@ export default function MyPicksTab({
                   </div>
 
                   {passedBeats.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/8">
-                      <p className="text-[10px] uppercase tracking-widest text-white/25 mb-1.5">Passed on</p>
+                    <div className="mt-3 border-t border-[var(--t-line-soft)] pt-3">
+                      <p className="mb-1.5 text-xs uppercase tracking-widest text-[var(--t-text-dim)]">Passed on</p>
                       <div className="space-y-1">
                         {passedBeats.map((beat) => (
-                          <div key={beat.id} className="flex items-center justify-between gap-3 px-2 py-1.5 text-white/25">
+                          <div key={beat.id} className="flex min-h-11 items-center justify-between gap-3 px-2 py-1.5 text-[var(--t-negative)]">
                             <div className="min-w-0">
                               <p className="text-xs truncate">{beat.name}</p>
-                              <p className="text-[9px]">{oddsLabel(beat.odds)}</p>
+                              <p className="text-xs">{oddsLabel(beat.odds)}</p>
                             </div>
                             <span className="text-xs font-medium whitespace-nowrap">{beat.points} pts</span>
                           </div>
@@ -569,20 +586,20 @@ function ScoreBreakdownCell({
 }) {
   return (
     <div className={[
-      'rounded-xl px-3 py-2.5 border text-center',
+      'relief-glass rounded-xl border px-3 py-2.5 text-center',
       dimmed
-        ? 'bg-white/3 border-white/6'
-        : 'bg-white/6 border-white/10',
+        ? 'border-[var(--t-line-soft)]! opacity-60'
+        : 'border-[var(--t-line)]!',
     ].join(' ')}>
       <p className={[
         'text-base font-bold tabular-nums leading-none',
-        dimmed ? 'text-white/25' : 'text-white',
+        dimmed ? 'text-[var(--t-text-dim)]' : 'text-[var(--t-text)]',
       ].join(' ')}>
         {value}
       </p>
       <p className={[
-        'text-[9px] uppercase tracking-wider mt-1',
-        dimmed ? 'text-white/20' : 'text-white/35',
+        'mt-1 text-xs uppercase tracking-wider',
+        dimmed ? 'text-[var(--t-text-dim)]' : 'text-[var(--t-text-muted)]',
       ].join(' ')}>
         {label}
       </p>

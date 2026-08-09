@@ -81,13 +81,13 @@ const TONIGHT = {
    */
   schedule: [
     {
-      time: '8:00pm ET' as string | null,
+      time: '8:15pm ET' as string | null,
       title: 'Room opens',
       detail:
-        'Join and pick an avatar. Nothing to be on time for yet — the room keeps your spot, so you can do this now and close the tab.',
+        'The link lands in the group chat around then. Join and pick an avatar — the room keeps your spot, so you can do it and close the tab.',
     },
     {
-      time: '8:20pm ET' as string | null,
+      time: '8:30pm ET' as string | null,
       title: 'The draft, then activation',
       detail:
         'Pick a dragon and four characters in turns, then choose the three moments each character scores on. The one part where everyone has to be in the app at once, and it does not wait.',
@@ -451,7 +451,7 @@ export default function HowItWorks() {
           className="text-[16px] leading-[1.5] font-semibold mt-4"
           style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
         >
-          The whole thing is built so you never have to look away from the screen to play
+          The whole thing is built so you never have to take your eyes off the TV to play
           it. Read the bold parts before you arrive; open the rest if you want the numbers.
         </p>
       </motion.div>
@@ -874,10 +874,10 @@ export default function HowItWorks() {
       {/* ── Timeline ─────────────────────────────────────────────────────── */}
       <Section eyebrow="Tonight" title="The shape of it">
         <P>
-          The episode drops at nine, and we are opening the room an hour early on purpose.
-          That hour is the whole plan: it absorbs late arrivals, it gets the draft done
-          without anybody rushing their activations, and it means nine o&rsquo;clock is a
-          starting gun rather than a scramble.
+          The episode drops at nine, and the room opens about three quarters of an hour
+          before it on purpose. That window is the whole plan: it absorbs late arrivals, it
+          gets the draft done without anybody rushing their activations, and it means nine
+          o&rsquo;clock is a starting gun rather than a scramble.
         </P>
 
         <ol className="flex flex-col">

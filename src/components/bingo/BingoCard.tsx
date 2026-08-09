@@ -111,9 +111,11 @@ export default function BingoCard({
 
   return (
     <div
-      className="backdrop-blur-lg bg-white/8 border border-white/12 rounded-2xl p-2.5"
+      className="material-oak relief-carved rounded-2xl border border-[var(--t-line)] p-2.5"
       style={{ width: '100%', maxWidth: 340 }}
     >
+      <div className="motif-band narrow mb-2" aria-hidden="true" />
+
       {/* Column header letters */}
       <div className="grid grid-cols-5 gap-1 mb-1">
         {['B', 'I', 'N', 'G', 'O'].map((letter) => (
@@ -121,7 +123,7 @@ export default function BingoCard({
             key={letter}
             className="flex items-center justify-center h-5"
           >
-            <span className="text-xs font-bold text-accent/70 tracking-widest">
+            <span className="text-xs font-bold tracking-widest text-[var(--t-personal-text)]">
               {letter}
             </span>
           </div>
@@ -131,17 +133,18 @@ export default function BingoCard({
       {/* 5×5 grid with band overlays */}
       <div className="relative grid grid-cols-5 gap-1">
         {squares.map((square, index) => (
-          <BingoSquare
-            key={index}
-            index={index}
-            shortText={square?.short_text ?? ''}
-            status={getStatus(index)}
-            isObjective={square?.is_objective ?? false}
-            tier={square?.likelihood_tier}
-            bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
-            isSelected={selectedIndex === index}
-            onTap={() => handleTap(index)}
-          />
+          <div key={index} className="relief-glass min-w-0 overflow-hidden rounded-[14px] border-0! [&>*]:w-full">
+            <BingoSquare
+              index={index}
+              shortText={square?.short_text ?? ''}
+              status={getStatus(index)}
+              isObjective={square?.is_objective ?? false}
+              tier={square?.likelihood_tier}
+              bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
+              isSelected={selectedIndex === index}
+              onTap={() => handleTap(index)}
+            />
+          </div>
         ))}
 
         {/* Bingo band overlays — SVG spanning the full grid for reliable % positioning */}
@@ -161,18 +164,7 @@ export default function BingoCard({
               preserveAspectRatio="none"
               style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
             >
-              <defs>
-                {bingoLines.map((_, bandIdx) => (
-                  <filter key={bandIdx} id={`bingo-glow-${bandIdx}`} x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
-                    <feMerge>
-                      <feMergeNode in="coloredBlur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                ))}
-              </defs>
-              {bingoLines.map((completedLine, bandIdx) => {
+              {bingoLines.map((completedLine) => {
                 const lineType = getLineType(completedLine)
                 const lineIdx = BINGO_LINES.findIndex(
                   (l) => l.length === completedLine.length && l.every((v, i) => v === completedLine[i]),
@@ -196,7 +188,6 @@ export default function BingoCard({
                       width="100"
                       height={cellPct}
                       fill={color}
-                      filter={`url(#bingo-glow-${bandIdx})`}
                       rx="1"
                     />
                   )
@@ -211,7 +202,6 @@ export default function BingoCard({
                       width={cellPct}
                       height="100"
                       fill={color}
-                      filter={`url(#bingo-glow-${bandIdx})`}
                       rx="1"
                     />
                   )
@@ -229,7 +219,6 @@ export default function BingoCard({
                       stroke={color}
                       strokeWidth="20"
                       strokeLinecap="round"
-                      filter={`url(#bingo-glow-${bandIdx})`}
                     />
                   )
                 }
@@ -251,10 +240,10 @@ export default function BingoCard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-            className="mt-2 bg-white/8 backdrop-blur border border-white/12 rounded-xl px-3 py-2.5"
+            className="relief-glass mt-2 rounded-xl px-3 py-2.5"
           >
             <div className="flex items-start justify-between gap-2 mb-1.5">
-              <p className="text-[15px] font-semibold text-white leading-snug">
+              <p className="text-base font-semibold leading-snug text-[var(--t-text)]">
                 {selectedSquare.title ?? selectedSquare.short_text}
               </p>
               {/* No points on the chip here — the confirm button below already
@@ -279,7 +268,7 @@ export default function BingoCard({
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 onClick={onDeselect}
-                className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-lg bg-white/8 border border-white/15 text-white/60 text-xs font-semibold"
+                className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--t-line)] bg-[var(--t-negative-soft)] text-xs font-semibold text-[var(--t-negative)]"
               >
                 <X size={14} />
                 Cancel
@@ -288,7 +277,7 @@ export default function BingoCard({
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 onClick={handleConfirm}
-                className="flex-[1.4] h-11 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 text-xs font-bold"
+                className="flex h-11 flex-[1.4] items-center justify-center gap-1.5 rounded-lg border border-[var(--t-positive)] bg-[var(--t-positive-soft)] text-xs font-bold text-[var(--t-positive)]"
               >
                 <Check size={14} strokeWidth={2.5} />
                 {/* What the claim is worth, at the moment you make it */}

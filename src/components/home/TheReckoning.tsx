@@ -45,10 +45,30 @@ const CHARACTER_AWARD_ICONS = {
 } as const
 
 const CHARACTER_AWARD_COLORS = {
-  character_of_the_night: 'text-accent',
-  the_bust: 'text-white/40',
-  best_value: 'text-emerald-400',
+  character_of_the_night: 'text-[var(--t-personal-text)]',
+  the_bust: 'text-[var(--t-negative)]',
+  best_value: 'text-[var(--t-positive)]',
 } as const
+
+const HOUSE_DEVICE_IDS = [
+  'targaryen',
+  'hightower',
+  'stark',
+  'lannister',
+  'velaryon',
+  'baratheon',
+  'blackwood',
+] as const
+
+function houseDeviceId(avatarId: string): string | null {
+  const normalized = avatarId.trim().toLowerCase().replace(/_/g, '-')
+  const house = HOUSE_DEVICE_IDS.find((candidate) =>
+    normalized === candidate
+    || normalized.endsWith(`-${candidate}`)
+    || normalized.includes(candidate),
+  )
+  return house ? `hallmark-device-${house}` : null
+}
 
 export default function TheReckoning({
   playerAwards,
@@ -67,7 +87,7 @@ export default function TheReckoning({
 
   return (
     <div className="mb-8">
-      <p className="text-[10px] text-white/35 uppercase tracking-[0.18em] mb-3 font-medium">
+      <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-[var(--t-text-dim)]">
         The Reckoning
       </p>
 
@@ -77,6 +97,7 @@ export default function TheReckoning({
           const verdict = verdicts.get(award.playerId)
           const companion = verdict ? getCompanionById(verdict.companion_id) : null
           const isMe = currentPlayerId === award.playerId
+          const deviceId = houseDeviceId(avatarFor(award.playerId))
 
           return (
             <motion.div
@@ -84,8 +105,8 @@ export default function TheReckoning({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.05 * i }}
-              className={`bg-white/5 backdrop-blur-lg border rounded-2xl p-4 ${
-                isMe ? 'border-accent/40' : 'border-white/10'
+              className={`material-vellum deckled relief-raised rounded-2xl border p-4 text-[var(--t-ink)] ${
+                isMe ? 'border-[var(--t-personal-device)]' : 'border-[var(--t-vellum-deep)]'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -93,28 +114,27 @@ export default function TheReckoning({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-sm font-semibold text-white truncate">
+                    <span className="truncate text-sm font-semibold text-[var(--t-ink)]">
                       {award.playerName}
                     </span>
                     {isMe && (
-                      <span className="text-[10px] text-accent/70 uppercase tracking-wider font-medium">
+                      <span className="text-xs font-medium uppercase tracking-wider text-[var(--t-personal-device)]">
                         You
                       </span>
                     )}
                   </div>
 
-                  <p className="text-base font-extrabold text-accent leading-tight mt-0.5">
+                  <p className="mt-0.5 font-display text-base font-extrabold leading-tight text-[var(--t-personal-device)]">
                     {award.title}
                   </p>
 
-                  <p className="text-[13px] text-white/55 leading-relaxed mt-1">
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--t-ink-muted)]">
                     {award.blurb}
                   </p>
 
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span
-                      className="px-2 py-1 rounded-full bg-white/5
-                                 border border-white/10 text-[11px] text-white/60 tabular-nums"
+                      className="rounded-full border border-[var(--t-ink-muted)] bg-[var(--t-vellum-deep)] px-2 py-1 text-xs text-[var(--t-ink)] tabular-nums"
                     >
                       {award.stat}
                     </span>
@@ -126,9 +146,7 @@ export default function TheReckoning({
                     {roomCode && (
                       <Link
                         to={`/recap/${roomCode}/${award.playerId}`}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full
-                                   bg-white/5 border border-white/10 text-[11px]
-                                   font-medium text-white/70 min-h-[32px]"
+                        className="flex min-h-11 items-center gap-1 rounded-full border border-[var(--t-ink-muted)] bg-[var(--t-vellum-deep)] px-3 py-1.5 text-xs font-medium text-[var(--t-ink)]"
                       >
                         {isMe ? 'My full page' : `${award.playerName}'s page`}
                         <ArrowUpRight className="w-3 h-3" />
@@ -139,9 +157,7 @@ export default function TheReckoning({
                       <motion.button
                         whileTap={{ scale: 0.97 }}
                         onClick={() => onSharePlayerCard(award.playerId)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                                   bg-accent/10 border border-accent/30 text-[11px]
-                                   font-medium text-accent min-h-[32px]"
+                        className="flex min-h-11 items-center gap-1.5 rounded-full border border-[var(--t-personal-device)] bg-[var(--t-vellum-deep)] px-3 py-1.5 text-xs font-medium text-[var(--t-personal-device)]"
                       >
                         {/* Capturing the card takes a beat and, on desktop, ends
                             in a silent file download with nothing on screen to
@@ -170,23 +186,34 @@ export default function TheReckoning({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
-                  className="mt-3 pt-3 border-t border-white/10"
+                  className="relative mt-3 border-t border-[var(--t-vellum-deep)] pt-3"
                 >
                   <div className="flex gap-2.5">
-                    <Quote className="w-3.5 h-3.5 text-white/20 flex-shrink-0 mt-0.5" />
+                    <Quote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[var(--t-ink-muted)]" />
                     <div className="min-w-0">
-                      <p className="text-[13px] text-white/75 leading-relaxed italic">
+                      <p className="font-manuscript text-base font-semibold italic leading-relaxed text-[var(--t-ink)]">
                         {verdict.verdict}
                       </p>
                       <div className="flex items-center gap-1.5 mt-2">
                         <CompanionAvatar companionId={verdict.companion_id} size="sm" />
-                        <span className="text-[11px] text-white/40">
+                        <span className="text-xs text-[var(--t-ink-muted)]">
                           {companion?.name ?? verdict.companion_id}
                         </span>
                       </div>
                     </div>
                   </div>
                 </motion.div>
+              )}
+
+              {deviceId && (
+                <span
+                  className="wax-seal relief-seal mt-4"
+                  aria-label={`${award.playerName}'s house seal`}
+                >
+                  <svg aria-hidden="true" viewBox="0 0 100 100">
+                    <use href={`#${deviceId}`} />
+                  </svg>
+                </span>
               )}
             </motion.div>
           )
@@ -196,7 +223,7 @@ export default function TheReckoning({
       {/* ── Character awards ──────────────────────────────────────────────── */}
       {characterAwards.length > 0 && (
         <div className="mt-6">
-          <p className="text-[10px] text-white/35 uppercase tracking-[0.18em] mb-3 font-medium">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-[var(--t-text-dim)]">
             The Roll of Honour
           </p>
           <div className="space-y-2">
@@ -209,21 +236,20 @@ export default function TheReckoning({
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.05 * i }}
-                  className="bg-white/5 backdrop-blur-lg border border-white/10
-                             rounded-2xl p-3 flex items-center gap-3"
+                  className="relief-glass flex items-center gap-3 rounded-2xl p-3"
                 >
                   <Icon className={`w-4 h-4 flex-shrink-0 ${color}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-white/35 uppercase tracking-wider font-medium">
+                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--t-text-dim)]">
                       {award.label}
                     </p>
-                    <p className="text-sm font-semibold text-white truncate">
+                    <p className="truncate text-sm font-semibold text-[var(--t-text)]">
                       {award.entityName}
                     </p>
-                    <p className="text-[11px] text-white/45 mt-0.5">{award.detail}</p>
+                    <p className="mt-0.5 text-xs text-[var(--t-text-muted)]">{award.detail}</p>
                   </div>
                   {award.ownerName && (
-                    <span className="flex-shrink-0 text-[11px] text-white/40 text-right">
+                    <span className="flex-shrink-0 text-right text-xs text-[var(--t-text-dim)]">
                       {award.ownerName}
                     </span>
                   )}

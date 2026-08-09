@@ -92,15 +92,14 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
 
   if (!s.screenStarted) {
     return (
-      <div className="relief-glass px-4 py-3">
+      <div className="material-iron relief-inset rounded-2xl overflow-hidden px-4 py-3">
         {isPointPerson ? (
           <>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => void startMyScreen()}
-              className="w-full py-3.5 rounded-xl bg-accent font-bold text-ground-deep
+              className="relief-raised min-h-11 w-full py-3.5 rounded-xl bg-[var(--t-personal-device)] font-bold text-[color:var(--t-text)]
                          text-base flex items-center justify-center gap-2"
-              style={{ boxShadow: '0 0 22px rgba(185,134,63,0.3)' }}
             >
               <Play className="w-5 h-5" fill="currentColor" />
               Start my screen
@@ -124,16 +123,16 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
   }
 
   return (
-    <div className="relief-glass overflow-hidden">
+    <div className="material-iron relief-inset rounded-2xl overflow-hidden border border-[color:var(--t-line)]">
       {/* ── Status row ───────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="flex-shrink-0">
           {s.isPaused ? (
-            <Pause className="w-5 h-5 text-amber-400" />
+            <Pause className="w-5 h-5 text-[color:var(--t-pending)]" />
           ) : drifted ? (
-            <TriangleAlert className="w-5 h-5 text-red-400" />
+            <TriangleAlert className="w-5 h-5 text-[color:var(--t-negative)]" />
           ) : (
-            <Radio className="w-5 h-5 text-emerald-400" />
+            <Radio className="w-5 h-5 text-[color:var(--t-positive)]" />
           )}
         </div>
 
@@ -150,9 +149,9 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
           </div>
           <p
             className={`text-xs mt-0.5 ${
-              s.isPaused ? 'text-amber-300'
-                : drifted ? 'text-red-300'
-                : s.driftMs != null ? 'text-emerald-300'
+              s.isPaused ? 'text-[color:var(--t-pending)]'
+                : drifted ? 'text-[color:var(--t-negative)]'
+                : s.driftMs != null ? 'text-[color:var(--t-positive)]'
                 : 'text-white/40'
             }`}
           >
@@ -181,18 +180,18 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
             exit={{ height: 0, opacity: 0 }}
             className="px-4 pb-3"
           >
-            <div className="bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2">
-              <p className="text-xs text-red-200 leading-relaxed">{advice}</p>
+            <div className="bg-[var(--t-negative-soft)] border border-[color:var(--t-negative)] rounded-xl px-3 py-2">
+              <p className="text-xs text-[color:var(--t-text-muted)] leading-relaxed">{advice}</p>
               <div className="flex gap-2 mt-2">
                 <button
                   onClick={() => s.nudge(s.driftMs ?? 0)}
-                  className="text-[11px] px-2.5 py-1.5 rounded-lg bg-white/10 text-white/80"
+                  className="relief-raised min-h-11 text-[11px] px-2.5 py-1.5 rounded-lg bg-[var(--t-negative-soft)] border border-[color:var(--t-negative)] text-[color:var(--t-text)]"
                 >
                   I skipped — realign
                 </button>
                 <button
                   onClick={() => void s.postBeacon()}
-                  className="text-[11px] px-2.5 py-1.5 rounded-lg bg-white/5 text-white/60"
+                  className="material-iron relief-raised min-h-11 text-[11px] px-2.5 py-1.5 rounded-lg border border-[color:var(--t-line)] text-[color:var(--t-text-muted)]"
                 >
                   Re-send mine
                 </button>
@@ -222,14 +221,14 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                 inputMode="numeric"
                 placeholder="34:12"
                 /* 16px: stops iOS zooming the viewport mid-episode */
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5
-                           text-[16px] text-white placeholder:text-white/25 tabular-nums
-                           focus:outline-none focus:border-accent/50"
+                className="relief-inset min-h-11 flex-1 bg-[var(--t-input-bg)] border border-[color:var(--t-line)] rounded-xl px-3 py-2.5
+                           text-[16px] text-[color:var(--t-text)] placeholder:text-[color:var(--t-text-dim)] tabular-nums
+                           focus:outline-none focus:border-[color:var(--t-personal-text)]"
               />
               <button
                 onClick={commitEntry}
-                className="px-4 rounded-xl bg-accent/20 border border-accent/50
-                           text-sm font-medium text-accent"
+                className="relief-raised min-h-11 px-4 rounded-xl bg-[var(--t-personal-device)] border border-[color:var(--t-personal-text)]
+                           text-sm font-medium text-[color:var(--t-text)]"
               >
                 Set
               </button>
@@ -245,30 +244,30 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-white/10 bg-amber-500/10"
+            className="border-t border-[color:var(--t-line)] bg-[var(--t-pending-soft)]"
           >
             <div className="px-4 py-3">
-              <p className="text-sm text-amber-200">
+              <p className="text-sm text-[color:var(--t-pending)]">
                 <span className="font-semibold">{nameOf(s.pauseRequestedBy)}</span>{' '}
                 asked to pause
                 {s.pauseReason ? ` — ${s.pauseReason}` : ''}
               </p>
               {isPointPerson ? (
                 <>
-                  <p className="text-[11px] text-amber-200/60 mt-1">
+                  <p className="text-[11px] text-[color:var(--t-text-muted)] mt-1">
                     Pause your TV at the next scene break, then tap below. The
                     first screen to pause sets the spot everyone parks at.
                   </p>
                   <button
                     onClick={() => void s.confirmPause(s.myPositionMs)}
-                    className="mt-2 w-full py-2.5 rounded-xl bg-amber-500/20
-                               border border-amber-400/50 text-sm font-semibold text-amber-100"
+                    className="relief-raised min-h-11 mt-2 w-full py-2.5 rounded-xl bg-[var(--t-pending-soft)]
+                               border border-[color:var(--t-pending)] text-sm font-semibold text-[color:var(--t-text)]"
                   >
                     Paused now — at {formatEpisodeTime(s.myPositionMs)}
                   </button>
                 </>
               ) : (
-                <p className="text-[11px] text-amber-200/60 mt-1">
+                <p className="text-[11px] text-[color:var(--t-text-muted)] mt-1">
                   {myHolder
                     ? `${myHolder.name} will pause your screen at a scene break.`
                     : 'Waiting for a scene break.'}
@@ -277,7 +276,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               {s.pauseRequestedBy === currentPlayerId && (
                 <button
                   onClick={() => void s.cancelPauseRequest()}
-                  className="mt-1.5 text-[11px] text-amber-200/50 underline"
+                  className="min-h-11 mt-1.5 text-[11px] text-[color:var(--t-text-muted)] underline"
                 >
                   never mind — keep playing
                 </button>
@@ -294,14 +293,14 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-white/10 bg-amber-500/5"
+            className="border-t border-[color:var(--t-line)] bg-[var(--t-pending-soft)]"
           >
             <div className="px-4 py-3">
               {/* The pause is the realignment tool: both screens park at ONE
                   position, so pressing play together erases whatever drift had
                   accumulated. Without this instruction the second screen paused
                   wherever it happened to stop and resumed still offset. */}
-              <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 mb-2.5 text-center">
+              <div className="relief-inset rounded-xl bg-[var(--t-input-bg)] border border-[color:var(--t-line)] px-3 py-2 mb-2.5 text-center">
                 <p className="text-[10px] uppercase tracking-wider text-white/35">
                   Park every screen at
                 </p>
@@ -310,7 +309,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                 </p>
                 {s.pausedAtMs != null && s.hasPosition &&
                   Math.abs(s.myPositionMs - s.pausedAtMs) >= DRIFT_TOLERANCE_MS && (
-                  <p className="text-[11px] text-amber-300/80 mt-0.5">
+                  <p className="text-[11px] text-[color:var(--t-pending)] mt-0.5">
                     your clock stopped {Math.round(Math.abs(s.myPositionMs - s.pausedAtMs) / 1000)}s{' '}
                     {s.myPositionMs > s.pausedAtMs ? 'past' : 'short of'} that — scrub to match
                   </p>
@@ -327,8 +326,8 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                       title={p.name}
                       className={`w-5 h-5 rounded-full border-2 ${
                         s.resumeReady.includes(p.id)
-                          ? 'bg-emerald-500 border-emerald-300'
-                          : 'bg-white/10 border-white/20'
+                          ? 'bg-[var(--t-positive)] border-[color:var(--t-positive)]'
+                          : 'bg-[var(--t-negative-soft)] border-[color:var(--t-line)]'
                       }`}
                     />
                   ))}
@@ -338,8 +337,8 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               {isPointPerson && !iAmReady ? (
                 <button
                   onClick={() => void s.markReady()}
-                  className="w-full py-2.5 rounded-xl bg-emerald-500/20 border
-                             border-emerald-400/50 text-sm font-semibold text-emerald-100
+                  className="relief-raised min-h-11 w-full py-2.5 rounded-xl bg-[var(--t-positive-soft)] border
+                             border-[color:var(--t-positive)] text-sm font-semibold text-[color:var(--t-positive)]
                              flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
@@ -348,11 +347,11 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               ) : isPointPerson ? (
                 <button
                   onClick={() => void s.startResumeCountdown(5)}
-                  className={`w-full py-2.5 rounded-xl text-sm font-semibold
+                  className={`relief-raised min-h-11 w-full py-2.5 rounded-xl text-sm font-semibold
                               flex items-center justify-center gap-2 ${
                     everyoneReady
-                      ? 'bg-emerald-500/25 border border-emerald-400/60 text-emerald-100'
-                      : 'bg-white/5 border border-white/15 text-white/50'
+                      ? 'bg-[var(--t-positive-soft)] border border-[color:var(--t-positive)] text-[color:var(--t-positive)]'
+                      : 'bg-[var(--t-negative-soft)] border border-[color:var(--t-line)] text-[color:var(--t-text-muted)]'
                   }`}
                 >
                   <Play className="w-4 h-4" />
@@ -379,10 +378,10 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-emerald-400/30 bg-emerald-500/15"
+            className="border-t border-[color:var(--t-positive)] bg-[var(--t-positive-soft)]"
           >
             <div className="px-4 py-4 text-center">
-              <p className="text-[11px] uppercase tracking-wide text-emerald-300/70">
+              <p className="text-[11px] uppercase tracking-wide text-[color:var(--t-positive)]">
                 Press play on
               </p>
               <motion.p
@@ -390,14 +389,14 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                 initial={{ scale: 1.35, opacity: 0.4 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                className="text-5xl font-bold text-emerald-100 tabular-nums leading-none my-1"
+                className="text-5xl font-bold text-[color:var(--t-positive)] tabular-nums leading-none my-1"
               >
                 {s.resumeCountdown === 0 ? 'GO' : s.resumeCountdown}
               </motion.p>
               {isPointPerson && s.resumeCountdown > 0 && (
                 <button
                   onClick={() => void s.cancelResume()}
-                  className="text-[11px] text-emerald-200/50 underline mt-1"
+                  className="min-h-11 text-[11px] text-[color:var(--t-text-muted)] underline mt-1"
                 >
                   cancel
                 </button>
@@ -423,8 +422,8 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                 <button
                   key={r}
                   onClick={() => { void s.requestPause(r); setAskOpen(false) }}
-                  className="flex-1 py-2 rounded-lg bg-amber-500/15 border border-amber-400/30
-                             text-xs font-medium text-amber-100"
+                  className="relief-raised min-h-11 flex-1 py-2 rounded-lg bg-[var(--t-pending-soft)] border border-[color:var(--t-pending)]
+                             text-xs font-medium text-[color:var(--t-text)]"
                 >
                   {r}
                 </button>
@@ -432,7 +431,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               <button
                 onClick={() => setAskOpen(false)}
                 aria-label="Cancel"
-                className="px-2.5 rounded-lg bg-white/5 text-white/40"
+                className="material-iron relief-raised min-h-11 min-w-11 px-2.5 rounded-lg text-[color:var(--t-text-muted)]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -441,7 +440,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
         ) : (
           <button
             onClick={() => setAskOpen(true)}
-            className="w-full py-2.5 border-t border-white/10 text-xs font-medium
+            className="min-h-11 w-full py-2.5 border-t border-white/10 text-xs font-medium
                        text-white/45 hover:text-white/80 hover:bg-white/5
                        transition-colors flex items-center justify-center gap-1.5"
           >

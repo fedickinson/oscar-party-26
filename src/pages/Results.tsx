@@ -229,6 +229,7 @@ export default function Results() {
     isHost,
     playerAwards: awards.playerAwards,
     leaderboard: scores.leaderboard,
+    players,
     ready: !scores.isLoading && scores.leaderboard.length > 0,
   })
 
