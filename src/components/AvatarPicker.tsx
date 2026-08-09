@@ -3,7 +3,7 @@
  *
  * Each card shows the square character image with rounded corners, the character
  * name (e.g. "The Director"), and the object name smaller (e.g. "Clapperboard").
- * Selected avatar gets a 2px oscar-gold border. Character accent color appears as a small dot next to the name.
+ * Selected avatar gets a 2px accent border. Character accent color appears as a small dot next to the name.
  * Taken avatars are greyed out (opacity-50) and non-interactive.
  */
 

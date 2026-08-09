@@ -7,7 +7,7 @@
  *   - Progress bar: "12 / 24 Announced"
  *   - End Ceremony card (host only, when all categories have winners)
  *   - Category list sorted by display_order:
- *       ANNOUNCED: name + tier badge + winner name (oscar-gold) + film + check
+ *       ANNOUNCED: name + tier badge + winner name (accent) + film + check
  *                  Tap to expand → all nominees, winner highlighted
  *                  Undo button (host only, within 30s window)
  *       UNANNOUNCED (host): "Open Category" button → spotlight via openSpotlight()
@@ -38,7 +38,7 @@ const FREE_CENTER_INDEX = 12
 const UNDO_WINDOW_MS = 30_000
 
 const TIER_BADGE_COLORS: Record<number, string> = {
-  1: 'bg-oscar-gold/20 text-oscar-gold',
+  1: 'bg-accent/20 text-accent',
   2: 'bg-purple-500/20 text-purple-300',
   3: 'bg-blue-500/20 text-blue-300',
   4: 'bg-emerald-500/20 text-emerald-300',
@@ -167,7 +167,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-7 h-7 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -207,8 +207,8 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] text-white/35 uppercase tracking-widest font-semibold">Winners</span>
             <div className="flex items-center gap-1.5">
-              <Trophy size={11} className="text-oscar-gold" />
-              <span className="text-xs font-extrabold text-oscar-gold tabular-nums">
+              <Trophy size={11} className="text-accent" />
+              <span className="text-xs font-extrabold text-accent tabular-nums">
                 {announcedCount}
                 <span className="text-white/30 font-normal mx-0.5">/</span>
                 {totalCount}
@@ -238,10 +238,10 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="backdrop-blur-lg bg-oscar-gold/10 border border-oscar-gold/30 rounded-2xl p-4 space-y-3"
+              className="backdrop-blur-lg bg-accent/10 border border-accent/30 rounded-2xl p-4 space-y-3"
             >
               <div className="flex items-center gap-2">
-                <Trophy size={14} className="text-oscar-gold" />
+                <Trophy size={14} className="text-accent" />
                 <p className="text-sm font-semibold text-white">
                   All {totalCount} categories announced
                 </p>
@@ -256,12 +256,12 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 className={[
                   'w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
                   !isEndingCeremony
-                    ? 'bg-oscar-gold text-deep-navy'
+                    ? 'bg-accent text-ground'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
                 ].join(' ')}
               >
                 {isEndingCeremony ? (
-                  <div className="w-4 h-4 border-2 border-deep-navy/40 border-t-deep-navy rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
                 ) : (
                   <>
                     <Clapperboard size={14} />
@@ -301,7 +301,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 className={[
                   'backdrop-blur-lg border rounded-xl overflow-hidden relative',
                   hasWinner
-                    ? 'bg-oscar-gold/4 border-oscar-gold/14'
+                    ? 'bg-accent/4 border-accent/14'
                     : 'bg-white/6 border-white/10',
                 ].join(' ')}
               >
@@ -328,12 +328,12 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                     className={[
                       'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
                       hasWinner
-                        ? 'bg-oscar-gold/16 border border-oscar-gold/30'
+                        ? 'bg-accent/16 border border-accent/30'
                         : 'bg-white/6 border border-white/8',
                     ].join(' ')}
                   >
                     {hasWinner ? (
-                      <Trophy size={11} className="text-oscar-gold" />
+                      <Trophy size={11} className="text-accent" />
                     ) : (
                       <Clock size={12} className="text-white/22" />
                     )}
@@ -367,7 +367,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
                     {hasWinner && winnerNominee ? (
                       <div>
-                        <p className="text-[13px] font-bold text-oscar-gold leading-tight truncate"
+                        <p className="text-[13px] font-bold text-accent leading-tight truncate"
                           style={{ textShadow: '0 0 16px rgba(212,175,55,0.28)' }}
                         >
                           {winnerNominee.name}
@@ -410,7 +410,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           e.stopPropagation()
                           openSpotlight(category.id)
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-oscar-gold/15 border border-oscar-gold/30 text-oscar-gold text-xs font-semibold"
+                        className="px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                       >
                         Spotlight
                       </motion.button>
@@ -459,27 +459,27 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                               className={[
                                 'flex items-center gap-2.5 px-2.5 py-2 rounded-lg',
                                 isWinner
-                                  ? 'bg-oscar-gold/10 border border-oscar-gold/20'
+                                  ? 'bg-accent/10 border border-accent/20'
                                   : 'bg-white/5',
                               ].join(' ')}
                             >
                               <div
                                 className={[
                                   'w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0',
-                                  isWinner ? 'bg-oscar-gold/20' : 'bg-white/8',
+                                  isWinner ? 'bg-accent/20' : 'bg-white/8',
                                 ].join(' ')}
                               >
                                 {nominee.type === 'person' ? (
-                                  <User size={12} className={isWinner ? 'text-oscar-gold' : 'text-white/30'} />
+                                  <User size={12} className={isWinner ? 'text-accent' : 'text-white/30'} />
                                 ) : (
-                                  <FilmIcon filmName={nominee.film_name || nominee.name} size={12} className={isWinner ? 'text-oscar-gold' : 'text-white/30'} />
+                                  <FilmIcon filmName={nominee.film_name || nominee.name} size={12} className={isWinner ? 'text-accent' : 'text-white/30'} />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p
                                   className={[
                                     'text-xs font-medium leading-tight',
-                                    isWinner ? 'text-oscar-gold' : 'text-white/50',
+                                    isWinner ? 'text-accent' : 'text-white/50',
                                   ].join(' ')}
                                 >
                                   {nominee.name}
@@ -492,7 +492,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                                 )}
                               </div>
                               {isWinner && (
-                                <Check size={12} className="text-oscar-gold flex-shrink-0" strokeWidth={3} />
+                                <Check size={12} className="text-accent flex-shrink-0" strokeWidth={3} />
                               )}
                             </div>
                           )

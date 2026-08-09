@@ -35,7 +35,7 @@ function StatCard({ children, className = '' }: { children: React.ReactNode; cla
 function SectionLabel({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
     <div className="flex items-center gap-2 mb-2">
-      <Icon size={14} className="text-oscar-gold" />
+      <Icon size={14} className="text-accent" />
       <span className="text-[11px] uppercase tracking-wider text-white/50 font-medium">{label}</span>
     </div>
   )
@@ -126,9 +126,9 @@ function PreCeremonyStats({
 
   return (
     <div className="space-y-3">
-      {/* Ensemble breakdown */}
+      {/* Roster breakdown */}
       <StatCard>
-        <SectionLabel icon={BarChart2} label="Ensemble breakdown" />
+        <SectionLabel icon={BarChart2} label="Roster breakdown" />
         <div className="space-y-2">
           {draftBreakdown.map(({ player, filmCount, personCount, topEntity, total }) => (
             <div key={player.id} className="flex items-start justify-between gap-2">
@@ -136,16 +136,16 @@ function PreCeremonyStats({
                 <p className="text-sm font-medium text-white/90">{player.name}</p>
                 {topEntity && (
                   <p className="text-xs text-white/45 truncate">
-                    Led by {topEntity.type === 'film' ? topEntity.film_name : topEntity.name}
+                    Led by {topEntity.name}
                   </p>
                 )}
               </div>
               <div className="flex gap-2 flex-shrink-0 text-xs text-right">
                 <div className="text-white/50">
-                  <span className="text-oscar-gold font-medium">{filmCount}</span> films
+                  <span className="text-accent font-medium">{filmCount}</span> dragons
                 </div>
                 <div className="text-white/50">
-                  <span className="text-white/80 font-medium">{personCount}</span> people
+                  <span className="text-white/80 font-medium">{personCount}</span> characters
                 </div>
               </div>
             </div>
@@ -197,9 +197,9 @@ function PreCeremonyStats({
                   <span className="text-xs font-medium text-white/80">{bp.playerName}</span>
                   <span className="text-xs text-white/40 mx-1">on</span>
                   <span className="text-xs text-white/60">{bp.category}</span>
-                  <p className="text-xs text-oscar-gold/80 truncate">{bp.pickName}</p>
+                  <p className="text-xs text-accent/80 truncate">{bp.pickName}</p>
                 </div>
-                <span className="text-sm font-bold text-oscar-gold flex-shrink-0">{bp.confidence}</span>
+                <span className="text-sm font-bold text-accent flex-shrink-0">{bp.confidence}</span>
               </div>
             ))}
           </div>
@@ -228,7 +228,7 @@ function InfoStatCard({
     <StatCard>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Icon size={14} className="text-oscar-gold" />
+          <Icon size={14} className="text-accent" />
           <span className="text-[11px] uppercase tracking-wider text-white/50 font-medium">{label}</span>
         </div>
         <motion.button
@@ -275,8 +275,8 @@ function DraftHitRateCard({ draftEfficiency }: { draftEfficiency: DraftHitEntry[
   return (
     <InfoStatCard
       icon={TrendingUp}
-      label="Ensemble hit rate"
-      info="Of all the films and people you claimed, how many have won at least one category so far. Higher means your ensemble is producing winners. It doesn't count points — just whether your claims are hitting."
+      label="Roster hit rate"
+      info="Of all the characters and dragons you drafted, how many have scored at least once. Higher means your roster is doing things. It doesn't count points — just whether your picks are showing up."
     >
       <div className="space-y-2">
         {draftEfficiency.map(({ player, pct, won, total }) => (
@@ -401,7 +401,7 @@ function LiveStats({
           <div className="flex-1">
             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-oscar-gold rounded-full"
+                className="h-full bg-accent rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPct}%` }}
                 transition={{ type: 'spring', stiffness: 80, damping: 20 }}
@@ -427,7 +427,7 @@ function LiveStats({
         >
           <p className="text-sm font-semibold text-white/90">{biggestSwing.winnerName}</p>
           <p className="text-xs text-white/50">{biggestSwing.category.name}</p>
-          <p className="text-xs text-oscar-gold font-medium mt-1">
+          <p className="text-xs text-accent font-medium mt-1">
             {biggestSwing.totalPoints} total points moved
           </p>
         </InfoStatCard>

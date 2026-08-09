@@ -217,7 +217,7 @@ export default function WinnerSelector({
         transition={{ type: 'spring', stiffness: 380, damping: 42 }}
         className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-deep-navy/96 border border-white/15 rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto">
+        <div className="backdrop-blur-xl bg-ground/96 border border-white/15 rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto">
 
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
@@ -229,7 +229,7 @@ export default function WinnerSelector({
                 <CategoryIcon categoryName={category.name} size={18} className="text-white/50 flex-shrink-0" />
                 {category.name}
               </h2>
-              <p className="text-sm text-oscar-gold mt-0.5">
+              <p className="text-sm text-accent mt-0.5">
                 {category.points} pts
               </p>
             </div>
@@ -265,7 +265,7 @@ export default function WinnerSelector({
                   className={[
                     'w-full backdrop-blur-lg border rounded-2xl p-4 flex items-center gap-3 text-left transition-colors',
                     isSelected
-                      ? 'bg-oscar-gold/10 border-2 border-oscar-gold/50'
+                      ? 'bg-accent/10 border-2 border-accent/50'
                       : 'bg-white/8 border-white/12 hover:bg-white/12',
                     isSubmitting || (selectedIds.length >= 2 && !isSelected)
                       ? 'opacity-40'
@@ -274,10 +274,10 @@ export default function WinnerSelector({
                 >
                   <div className={[
                     'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
-                    isSelected ? 'bg-oscar-gold/20' : 'bg-white/10',
+                    isSelected ? 'bg-accent/20' : 'bg-white/10',
                   ].join(' ')}>
                     {isSelected ? (
-                      <Check size={18} className="text-oscar-gold" strokeWidth={3} />
+                      <Check size={18} className="text-accent" strokeWidth={3} />
                     ) : nominee.type === 'person' ? (
                       <User size={18} className="text-white/50" />
                     ) : (
@@ -287,7 +287,7 @@ export default function WinnerSelector({
                   <div className="flex-1 min-w-0">
                     <p className={[
                       'font-semibold leading-tight',
-                      isSelected ? 'text-oscar-gold' : 'text-white',
+                      isSelected ? 'text-accent' : 'text-white',
                     ].join(' ')}>
                       {nominee.name}
                     </p>
@@ -301,7 +301,7 @@ export default function WinnerSelector({
                     )}
                   </div>
                   {isSelected && (
-                    <span className="text-[10px] text-oscar-gold/60 flex-shrink-0 uppercase tracking-wide font-semibold">
+                    <span className="text-[10px] text-accent/60 flex-shrink-0 uppercase tracking-wide font-semibold">
                       {isTie ? 'Tied' : 'Winner'}
                     </span>
                   )}
@@ -351,7 +351,7 @@ export default function WinnerSelector({
                       Ensemble · {category.points} pts
                     </p>
                     {pickContext.draftPlayer ? (
-                      <div className="flex items-center gap-2.5 px-3 py-2.5 bg-oscar-gold/8 border border-oscar-gold/20 rounded-xl mb-1.5">
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 bg-accent/8 border border-accent/20 rounded-xl mb-1.5">
                         <Avatar avatarId={pickContext.draftPlayer.avatar_id} size="sm" />
                         <span className="text-sm text-white flex-1 truncate">
                           {pickContext.draftPlayer.name}
@@ -361,7 +361,7 @@ export default function WinnerSelector({
                             </span>
                           )}
                         </span>
-                        <span className="text-xs font-bold text-oscar-gold flex-shrink-0">
+                        <span className="text-xs font-bold text-accent flex-shrink-0">
                           +{category.points} pts
                         </span>
                       </div>
@@ -372,7 +372,7 @@ export default function WinnerSelector({
                     )}
                     {isTie && (
                       pickContext.draftPlayer2 ? (
-                        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-oscar-gold/8 border border-oscar-gold/20 rounded-xl">
+                        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-accent/8 border border-accent/20 rounded-xl">
                           <Avatar avatarId={pickContext.draftPlayer2.avatar_id} size="sm" />
                           <span className="text-sm text-white flex-1 truncate">
                             {pickContext.draftPlayer2.name}
@@ -382,7 +382,7 @@ export default function WinnerSelector({
                               </span>
                             )}
                           </span>
-                          <span className="text-xs font-bold text-oscar-gold flex-shrink-0">
+                          <span className="text-xs font-bold text-accent flex-shrink-0">
                             +{category.points} pts
                           </span>
                         </div>
@@ -462,8 +462,8 @@ export default function WinnerSelector({
                     'flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
                     !isSubmitting
                       ? isTie
-                        ? 'bg-amber-500 text-deep-navy'
-                        : 'bg-oscar-gold text-deep-navy'
+                        ? 'bg-amber-500 text-ground'
+                        : 'bg-accent text-ground'
                       : 'bg-white/10 text-white/30 cursor-not-allowed',
                   ].join(' ')}
                 >

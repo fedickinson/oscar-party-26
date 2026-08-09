@@ -1,0 +1,218 @@
+[
+ {
+  "id": 4,
+  "name": "Best Actress",
+  "tier": 1,
+  "points": 8,
+  "display_order": 21,
+  "winner_id": "d0000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 3,
+  "name": "Best Actor",
+  "tier": 1,
+  "points": 8,
+  "display_order": 22,
+  "winner_id": "c0000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 6,
+  "name": "Best Supporting Actress",
+  "tier": 1,
+  "points": 8,
+  "display_order": 1,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 19,
+  "name": "Best Animated Feature",
+  "tier": 4,
+  "points": 2,
+  "display_order": 2,
+  "winner_id": "1c000001-0000-0000-0000-000000000002",
+  "announced_at": null
+ },
+ {
+  "id": 23,
+  "name": "Best Animated Short",
+  "tier": 5,
+  "points": 1,
+  "display_order": 3,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 13,
+  "name": "Best Costume Design",
+  "tier": 2,
+  "points": 4,
+  "display_order": 4,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 16,
+  "name": "Best Makeup and Hairstyling",
+  "tier": 3,
+  "points": 3,
+  "display_order": 5,
+  "winner_id": "19000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 18,
+  "name": "Best Casting",
+  "tier": 3,
+  "points": 3,
+  "display_order": 6,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 22,
+  "name": "Best Live Action Short",
+  "tier": 5,
+  "points": 1,
+  "display_order": 7,
+  "winner_id": "1f000001-0000-0000-0000-000000000001",
+  "announced_at": null
+ },
+ {
+  "id": 5,
+  "name": "Best Supporting Actor",
+  "tier": 1,
+  "points": 8,
+  "display_order": 8,
+  "winner_id": "e0000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 8,
+  "name": "Best Adapted Screenplay",
+  "tier": 1,
+  "points": 6,
+  "display_order": 9,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 7,
+  "name": "Best Original Screenplay",
+  "tier": 1,
+  "points": 6,
+  "display_order": 10,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 12,
+  "name": "Best Production Design",
+  "tier": 2,
+  "points": 4,
+  "display_order": 11,
+  "winner_id": "15000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 15,
+  "name": "Best Visual Effects",
+  "tier": 3,
+  "points": 3,
+  "display_order": 12,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 24,
+  "name": "Best Documentary Short",
+  "tier": 5,
+  "points": 1,
+  "display_order": 13,
+  "winner_id": "21000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 21,
+  "name": "Best Documentary Feature",
+  "tier": 4,
+  "points": 2,
+  "display_order": 14,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 11,
+  "name": "Best Original Score",
+  "tier": 2,
+  "points": 4,
+  "display_order": 15,
+  "winner_id": "14000001-0000-0000-0000-000000000004",
+  "announced_at": null
+ },
+ {
+  "id": 14,
+  "name": "Best Sound",
+  "tier": 3,
+  "points": 3,
+  "display_order": 16,
+  "winner_id": "17000001-0000-0000-0000-000000000002",
+  "announced_at": null
+ },
+ {
+  "id": 10,
+  "name": "Best Film Editing",
+  "tier": 2,
+  "points": 4,
+  "display_order": 17,
+  "winner_id": "13000001-0000-0000-0000-000000000003",
+  "announced_at": null
+ },
+ {
+  "id": 9,
+  "name": "Best Cinematography",
+  "tier": 2,
+  "points": 4,
+  "display_order": 18,
+  "winner_id": "12000001-0000-0000-0000-000000000002",
+  "announced_at": null
+ },
+ {
+  "id": 20,
+  "name": "Best International Feature",
+  "tier": 4,
+  "points": 2,
+  "display_order": 19,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 17,
+  "name": "Best Original Song",
+  "tier": 3,
+  "points": 3,
+  "display_order": 20,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 2,
+  "name": "Best Director",
+  "tier": 1,
+  "points": 8,
+  "display_order": 21,
+  "winner_id": null,
+  "announced_at": null
+ },
+ {
+  "id": 1,
+  "name": "Best Picture",
+  "tier": 1,
+  "points": 10,
+  "display_order": 24,
+  "winner_id": "a0000001-0000-0000-0000-000000000001",
+  "announced_at": null
+ }
+]

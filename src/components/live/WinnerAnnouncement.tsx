@@ -222,7 +222,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                 <CategoryIcon
                   categoryName={categoryName}
                   size={26}
-                  className={scored ? 'text-oscar-gold' : 'text-white/55'}
+                  className={scored ? 'text-accent' : 'text-white/55'}
                 />
                 {/* Star burst for scored */}
                 {scored && (
@@ -232,7 +232,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                     transition={{ duration: 0.55, delay: 0.2 }}
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                   >
-                    <Star size={48} className="text-oscar-gold" fill="rgba(212,175,55,0.15)" />
+                    <Star size={48} className="text-accent" fill="rgba(212,175,55,0.15)" />
                   </motion.div>
                 )}
               </div>
@@ -244,7 +244,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.16 }}
               className={[
-                'font-extrabold text-oscar-gold leading-tight tracking-tight',
+                'font-extrabold text-accent leading-tight tracking-tight',
                 isTie ? 'text-xl' : 'text-3xl',
               ].join(' ')}
               style={{
@@ -411,12 +411,12 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                   className={[
                     'rounded-2xl px-3.5 py-3 flex items-center gap-3 border relative overflow-hidden',
                     draftResult.isCurrentPlayer
-                      ? 'bg-oscar-gold/10 border-oscar-gold/28'
+                      ? 'bg-accent/10 border-accent/28'
                       : 'bg-white/3 border-white/7',
                   ].join(' ')}
                 >
                   {draftResult.isCurrentPlayer && (
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl bg-oscar-gold/50" />
+                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl bg-accent/50" />
                   )}
 
                   {/* Player color swatch */}
@@ -429,7 +429,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                   >
                     <User
                       size={14}
-                      className={draftResult.isCurrentPlayer ? 'text-oscar-gold' : 'text-white/30'}
+                      className={draftResult.isCurrentPlayer ? 'text-accent' : 'text-white/30'}
                     />
                   </div>
 
@@ -437,7 +437,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                     <p
                       className={[
                         'text-base font-bold leading-none truncate',
-                        draftResult.isCurrentPlayer ? 'text-oscar-gold' : 'text-white/50',
+                        draftResult.isCurrentPlayer ? 'text-accent' : 'text-white/50',
                       ].join(' ')}
                     >
                       {draftResult.isCurrentPlayer ? 'You' : draftResult.playerName}
@@ -452,7 +452,7 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 22, delay: 0.48 }}
-                      className="text-[11px] font-extrabold text-oscar-gold/80 bg-oscar-gold/10 border border-oscar-gold/22 px-2 py-1 rounded-lg flex-shrink-0"
+                      className="text-[11px] font-extrabold text-accent/80 bg-accent/10 border border-accent/22 px-2 py-1 rounded-lg flex-shrink-0"
                     >
                       +{draftResult.points}
                     </motion.span>

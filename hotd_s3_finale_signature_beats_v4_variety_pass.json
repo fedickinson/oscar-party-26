@@ -1,0 +1,4431 @@
+{
+  "schema_version": "4.0",
+  "game": {
+    "name": "House of the Dragon S3 Finale Draft — Signature Beats",
+    "character_multiplier": 1.5,
+    "dragon_multiplier": 1.0,
+    "character_card_target_range": [
+      60,
+      90
+    ],
+    "design_target_used": "Most cards intentionally land at 65–75 points so headline totals do not recreate a ranking.",
+    "odds_ladder": {
+      "Likely": {
+        "points": 20,
+        "rough_chance": ">55%"
+      },
+      "Coin flip": {
+        "points": 25,
+        "rough_chance": "30–55%"
+      },
+      "Long shot": {
+        "points": 35,
+        "rough_chance": "10–30%"
+      },
+      "Wild": {
+        "points": 45,
+        "rough_chance": "<10%"
+      }
+    },
+    "character_beat_model": "Draft character → choose exactly 3 of 5 candidate Signature Beats to activate.",
+    "character_card_value_rule": "Card value is the maximum achievable scoring path (anchor + one result from each fork), not the raw sum of all five visible beats.",
+    "why": "This preserves the 60–90 value band while showing opposing story directions and preventing five visible beats from mechanically inflating every card above 100 points.",
+    "character_card_headline_before_activation": "5 possible beats",
+    "character_card_headline_after_activation": "Show the sum of the 3 activated beats as Points at Stake.",
+    "character_card_total_rule": "Never sum all five beats on the draft card. Only the player's three activated beats define their available signature score.",
+    "selection_strategy": "Players choose both a character and a prediction portfolio for that character.",
+    "character_option_depth": {
+      "central": 7,
+      "major_support": 6,
+      "support": 5
+    },
+    "activation_rule": "Every drafted character activates exactly 3 beats before the episode.",
+    "design_goal_v4": "Main characters receive more candidate directions and broader relationship coverage; support characters remain tighter and easier to scan."
+  },
+  "spoiler_policy": {
+    "canon_cutoff": "End of Season 3 Episode 7",
+    "excluded": [
+      "Episode 8 screeners",
+      "Episode 8 leaks",
+      "Episode 8 reviews/recaps",
+      "Outcome-revealing finale trailer analysis",
+      "Unaired Fire & Blood outcomes in trigger text"
+    ],
+    "odds_note": "Estimated probability percentages are subjective game-design reads based only on on-screen setup through E7. They are not calibrated forecasts and are not derived from leaks."
+  },
+  "grouping_sanity_check": {
+    "recommendation": "Keep draft_group separate from allegiance and house/origin. The current buckets mix faction, geography, and bloodline.",
+    "minimal_changes_if_ui_categories_must_stay": [
+      {
+        "character": "Helaena Targaryen",
+        "from": "The Blacks",
+        "to": "The Greens",
+        "reason": "She is a Green royal/noncombatant being held in Black-controlled King's Landing; captivity does not make her Black."
+      },
+      {
+        "character": "Torrhen Manderly",
+        "from": "The North and Riverlands",
+        "to": "The Blacks",
+        "reason": "He is Northern by House, but by E7 his active role is Rhaenyra's Master of Coin in the Black court."
+      },
+      {
+        "character": "Grand Maester Orwyle",
+        "from": "The Blacks",
+        "to": "King's Landing Court",
+        "reason": "His current service is at the court in Black-held King's Landing, but he is not best described as an ideological Black."
+      }
+    ],
+    "rename_recommendations": [
+      {
+        "from": "The Dragonseeds",
+        "to": "Dragonseeds & Tumbleton",
+        "reason": "Hugh and Ulf are dragonseeds; Kat is Hugh's civilian wife and is not a dragonseed."
+      },
+      {
+        "from": "House Velaryon",
+        "to": "Velaryon Camp",
+        "reason": "Corlys is House Velaryon, while Addam and Alyn are his unlegitimized sons; the grouping is narratively useful but not literally a shared House status."
+      }
+    ],
+    "acceptable_as_is": [
+      "Harrenhal",
+      "The Greens",
+      "House Hightower (as a story/army bucket; Bold Jon is an operative, not a Hightower by blood)",
+      "The North and Riverlands for Roderick Dustin, Oscar Tully, and Alysanne Blackwood"
+    ]
+  },
+  "characters": [
+    {
+      "name": "Daemon Targaryen",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black",
+      "basis_sources": [
+        "e7_recap",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Caraxes Sortie",
+          "trigger": "Daemon mounts Caraxes and deliberately enters an active combat, pursuit, or interception scene.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "The Blood Wyrm is still Daemon's most reliable argument.",
+          "relationship_axes": [
+            "Caraxes",
+            "war"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Makes Peace",
+          "trigger": "Daemon and Rhaenyra explicitly reconcile, forgive one another, or reaffirm that they are acting together.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The terrifying power couple gets functional again.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Defies the Queen",
+          "trigger": "Daemon knowingly disobeys or circumvents a direct instruction from Rhaenyra.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "Or he remembers that obedience has never been his brand.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Protects Rhaena",
+          "trigger": "Daemon takes a concrete action that shields Rhaena from punishment, capture, or immediate physical danger.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The murder prince scores through dad mode.",
+          "relationship_axes": [
+            "Rhaena"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Hands Her Over",
+          "trigger": "Daemon voluntarily surrenders Rhaena to Rhaenyra's custody or supports a punishment Rhaenyra imposes on her.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The brutal branch: crown over daughter.",
+          "relationship_axes": [
+            "Rhaena",
+            "Rhaenyra"
+          ],
+          "content_type": "family_conflict"
+        },
+        {
+          "name": "Baela Heart-to-Heart",
+          "trigger": "Daemon and Baela have a private conversation in which either one directly discusses Jace, Rhaena, or their family relationship.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "One real father-daughter scene would suddenly matter a lot.",
+          "relationship_axes": [
+            "Baela",
+            "Jace",
+            "Rhaena"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Faces Aemond",
+          "trigger": "Daemon and Aemond directly see, address, or attack one another in the present timeline.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "Two of the show's most dangerous men finally share the same problem.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "rivalry"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "You are betting on which Daemon wins: husband or rebel, father or prince."
+    },
+    {
+      "name": "Rhaenyra Targaryen",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black",
+      "basis_sources": [
+        "e7_recap",
+        "e7_forbes",
+        "e3_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Orders Dragonfire",
+          "trigger": "Rhaenyra explicitly orders a dragon or dragonrider to burn an enemy, force, fortification, or named target.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "The queen stops managing the crisis and chooses fire.",
+          "relationship_axes": [
+            "Syrax/dragonriders",
+            "war"
+          ],
+          "content_type": "power"
+        },
+        {
+          "name": "Makes Peace",
+          "trigger": "Rhaenyra and Daemon explicitly reconcile, forgive one another, or reaffirm that they are acting together.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "You are betting the royal marriage survives its latest civil war.",
+          "relationship_axes": [
+            "Daemon"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Punishes Daemon",
+          "trigger": "Rhaenyra orders Daemon confined, stripped of authority, arrested, or otherwise formally punished.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The marriage becomes a constitutional crisis.",
+          "relationship_axes": [
+            "Daemon"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Sapphic Spark",
+          "trigger": "Rhaenyra and Mysaria share an unmistakably romantic or sexual interaction in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The politics stop for one very specific kind of diplomacy.",
+          "relationship_axes": [
+            "Mysaria"
+          ],
+          "content_type": "romance"
+        },
+        {
+          "name": "Pushes Mysaria Away",
+          "trigger": "Rhaenyra explicitly rejects Mysaria's intimacy, removes her from confidence, or tells her their relationship cannot continue.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "You are betting the favorite adviser becomes the favorite scapegoat.",
+          "relationship_axes": [
+            "Mysaria"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Protects Helaena",
+          "trigger": "Rhaenyra takes a concrete action to protect Helaena or Jaehaera from another character's threat or demand.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The claimant becomes protector of the rival queen's family.",
+          "relationship_axes": [
+            "Helaena",
+            "Jaehaera"
+          ],
+          "content_type": "mercy"
+        },
+        {
+          "name": "Punishes Rhaena",
+          "trigger": "Rhaenyra imposes or orders a concrete punishment on Rhaena for Sheepstealer, Jace, or disobedience.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Family grief finally turns into royal discipline.",
+          "relationship_axes": [
+            "Rhaena",
+            "Jace"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Two clean forks: repair or rupture with Daemon; trust or crack down on the dragonseeds."
+    },
+    {
+      "name": "Helaena Targaryen",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Greens",
+      "allegiance_note": "Green family; noncombatant captive/ward in Black-held King's Landing",
+      "basis_sources": [
+        "e7_ew",
+        "e5_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Cryptic Warning",
+          "trigger": "Helaena says a clearly prophetic or ominous line about something that has not yet happened in the episode.",
+          "odds": "Likely",
+          "estimated_probability_pct": 75,
+          "points": 20,
+          "pitch": "One strange sentence can become the whole night's clue.",
+          "relationship_axes": [
+            "prophecy"
+          ],
+          "content_type": "prophecy"
+        },
+        {
+          "name": "Protects Jaehaera",
+          "trigger": "Helaena takes a concrete action to hide, move, defend, or secure Jaehaera from a perceived threat.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "Her agency pays when she chooses her daughter over everybody's plans.",
+          "relationship_axes": [
+            "Jaehaera"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Leaves With Alicent",
+          "trigger": "Helaena voluntarily leaves Black custody with Alicent or agrees on screen to escape with her.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Mother and daughter finally choose flight together.",
+          "relationship_axes": [
+            "Alicent"
+          ],
+          "content_type": "escape"
+        },
+        {
+          "name": "Refuses to Run",
+          "trigger": "Helaena directly refuses Alicent or another rescuer's request that she flee King's Landing.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Her agency can also mean staying exactly where everyone wants her gone.",
+          "relationship_axes": [
+            "Alicent",
+            "King's Landing"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Dreamfyre in Flesh",
+          "trigger": "Helaena physically approaches, touches, mounts, or otherwise interacts with the real Dreamfyre in the present timeline.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 18,
+          "points": 35,
+          "pitch": "The vision becomes real.",
+          "relationship_axes": [
+            "Dreamfyre"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Refuses Dreamfyre",
+          "trigger": "Someone urges Helaena to use or ride Dreamfyre and Helaena explicitly refuses.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "She can score by rejecting dragon power just as clearly as embracing it.",
+          "relationship_axes": [
+            "Dreamfyre"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Warns Rhaenyra",
+          "trigger": "Helaena directly gives Rhaenyra a prophetic warning, prediction, or cryptic statement about danger to come.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The rival queen becomes the audience for the realm's strangest weather report.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "relationship"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          65,
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          65,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Helaena is a genuine choose-your-own-prophecy card: flee or stay, embrace the dragon or reject it."
+    },
+    {
+      "name": "Baela Targaryen",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black",
+      "basis_sources": [
+        "e7_recap",
+        "e7_baela_addam"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Moondancer Sortie",
+          "trigger": "Baela mounts Moondancer and flies on an active mission, pursuit, reconnaissance, or battle sortie.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "The dragonrider actually gets deployed.",
+          "relationship_axes": [
+            "Moondancer"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Comforts Rhaena",
+          "trigger": "Baela explicitly comforts, defends, or reassures Rhaena over Sheepstealer or Jace.",
+          "odds": "Likely",
+          "estimated_probability_pct": 58,
+          "points": 20,
+          "pitch": "Sister solidarity pays.",
+          "relationship_axes": [
+            "Rhaena"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Calls Out Rhaena",
+          "trigger": "Baela directly criticizes Rhaena for Sheepstealer, Jace, or a dangerous choice she made.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Or sister solidarity finally reaches its limit.",
+          "relationship_axes": [
+            "Rhaena"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Kisses Alyn Again",
+          "trigger": "Baela and Alyn share another unmistakably romantic kiss.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The Velaryon romance survives the war for at least one scene.",
+          "relationship_axes": [
+            "Alyn"
+          ],
+          "content_type": "romance"
+        },
+        {
+          "name": "Ends It With Alyn",
+          "trigger": "Baela explicitly rejects, ends, or walks back her romantic relationship with Alyn.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "You are betting on war beating romance.",
+          "relationship_axes": [
+            "Alyn"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Challenges Rhaenyra",
+          "trigger": "Baela directly challenges or refuses a decision by Rhaenyra involving Rhaena, Alyn, or the Velaryons.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "She stops being only a loyal niece and pushes back.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "politics"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          65,
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          65,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Dragon action is the floor; the forks are sisterhood and romance."
+    },
+    {
+      "name": "Mysaria",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black-aligned; personally tied to Rhaenyra",
+      "basis_sources": [
+        "e7_baela_addam",
+        "e5_context",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Intel Pays Off",
+          "trigger": "Mysaria gives specific intelligence that directly causes Rhaenyra or another Black leader to change a plan or take action.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "The spy network earns its screen time.",
+          "relationship_axes": [
+            "Rhaenyra",
+            "Black court"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Sapphic Spark",
+          "trigger": "Rhaenyra and Mysaria share an unmistakably romantic or sexual interaction in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The romance keeps moving.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "romance"
+        },
+        {
+          "name": "Queen Pushes Away",
+          "trigger": "Rhaenyra explicitly rejects Mysaria's intimacy, removes her from confidence, or tells her their relationship cannot continue.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The adviser becomes the scapegoat.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Turns the Queen",
+          "trigger": "Mysaria persuades Rhaenyra to take a course of action Rhaenyra was resisting earlier in the same scene.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "Pillow talk becomes policy.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "influence"
+        },
+        {
+          "name": "Mysaria Exposed",
+          "trigger": "A named character gives Rhaenyra concrete evidence that Mysaria concealed, manipulated, or misrepresented something important.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Influence becomes evidence against her.",
+          "relationship_axes": [
+            "Rhaenyra",
+            "Black court"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Challenges Daemon",
+          "trigger": "Mysaria directly opposes, threatens, or undermines Daemon in a conversation with him or in Rhaenyra's presence.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The queen's two most dangerous confidants collide.",
+          "relationship_axes": [
+            "Daemon"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Every Mysaria appearance becomes a referendum on whether influence is intimacy, power, or liability."
+    },
+    {
+      "name": "Rhaena Targaryen",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black",
+      "basis_sources": [
+        "e7_recap",
+        "e7_forbes",
+        "sheepstealer_reaction"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Rhaena Cries",
+          "trigger": "Rhaena visibly cries or breaks down emotionally on screen.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "Petty, clear, and extremely live-watchable.",
+          "relationship_axes": [
+            "self"
+          ],
+          "content_type": "comedy"
+        },
+        {
+          "name": "Sheepstealer Returns",
+          "trigger": "Rhaena physically reunites with Sheepstealer and the dragon allows her to approach or remain near him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The feral boyfriend takes her back.",
+          "relationship_axes": [
+            "Sheepstealer"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Sheepstealer Rejects",
+          "trigger": "Rhaena tries to approach or command Sheepstealer and the dragon visibly avoids, ignores, or threatens her.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The people's dragon has boundaries.",
+          "relationship_axes": [
+            "Sheepstealer"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Rhaena Redeems",
+          "trigger": "Rhaena takes a deliberate action that directly saves a named ally from serious danger.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "One heroic choice could erase a lot of yelling at the television.",
+          "relationship_axes": [
+            "Black allies"
+          ],
+          "content_type": "redemption"
+        },
+        {
+          "name": "Bad Idea Again",
+          "trigger": "Rhaena knowingly makes a choice that immediately creates a new danger or materially worsens an existing crisis.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "One last 'RHAENA, WHY?'",
+          "relationship_axes": [
+            "self"
+          ],
+          "content_type": "chaos"
+        },
+        {
+          "name": "Confronts Rhaenyra",
+          "trigger": "Rhaena directly argues with Rhaenyra about Sheepstealer, Jace, punishment, or her right to make her own choices.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The child finally argues back at the queen.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "The cleanest hate-watch card: dragon acceptance vs rejection, redemption vs one more terrible decision."
+    },
+    {
+      "name": "Grand Maester Orwyle",
+      "current_app_group": "The Blacks",
+      "recommended_draft_group": "King's Landing Court",
+      "allegiance_note": "Court-serving / effectively neutral; not ideologically Black",
+      "basis_sources": [
+        "orwyle_context",
+        "e5_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Royal Treatment",
+          "trigger": "Orwyle personally examines, treats, or prescribes medicine for Helaena, Jaehaera, Rhaenyra, or another named royal.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "A tiny doctor scene gives the sleeper pick a real floor.",
+          "relationship_axes": [
+            "royal court"
+          ],
+          "content_type": "medicine"
+        },
+        {
+          "name": "Smuggles Helaena",
+          "trigger": "Orwyle knowingly helps Helaena or Jaehaera escape, hide from, or bypass Black custody.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "One quiet maester scene could swing the pick.",
+          "relationship_axes": [
+            "Helaena",
+            "Jaehaera"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Exposes a Poison",
+          "trigger": "Orwyle identifies or directly reveals that a named character has been poisoned or drugged.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The medical guy gets to solve the dangerous medical problem.",
+          "relationship_axes": [
+            "poison"
+          ],
+          "content_type": "medicine"
+        },
+        {
+          "name": "Helps Alicent",
+          "trigger": "Orwyle knowingly gives Alicent information, medicine, or access that helps her evade or oppose Black authority.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Old court loyalties become a scoring event.",
+          "relationship_axes": [
+            "Alicent"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Defies Mysaria",
+          "trigger": "Orwyle explicitly refuses, conceals information from, or works around an instruction from Mysaria.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The maester and the spymaster quietly disagree over who runs the castle.",
+          "relationship_axes": [
+            "Mysaria"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "A true sleeper card: doctor by default, conspirator or whistleblower if the plot turns."
+    },
+    {
+      "name": "Aemond Targaryen",
+      "current_app_group": "Harrenhal",
+      "recommended_draft_group": "Harrenhal",
+      "allegiance_note": "Green",
+      "basis_sources": [
+        "e7_recap",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Aemond Wakes",
+          "trigger": "Aemond clearly regains consciousness and becomes mentally responsive after Alicent's poisoning.",
+          "odds": "Likely",
+          "estimated_probability_pct": 75,
+          "points": 20,
+          "pitch": "The first sweat is simply whether he gets back in the game.",
+          "relationship_axes": [
+            "self"
+          ],
+          "content_type": "recovery"
+        },
+        {
+          "name": "Calls Out Alicent",
+          "trigger": "Aemond directly accuses or confronts Alicent about poisoning or betraying him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The mother-son disaster finally becomes a conversation.",
+          "relationship_axes": [
+            "Alicent"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Forgives Alicent",
+          "trigger": "After learning she poisoned him, Aemond explicitly forgives Alicent or refuses an opportunity to punish her.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "The most shocking branch is mercy.",
+          "relationship_axes": [
+            "Alicent"
+          ],
+          "content_type": "mercy"
+        },
+        {
+          "name": "Finds Vhagar",
+          "trigger": "A conscious Aemond physically reunites with Vhagar in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "One eye plus one enormous dragon means power is restored.",
+          "relationship_axes": [
+            "Vhagar"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Chooses Alys",
+          "trigger": "A conscious Aemond explicitly chooses to remain with, trust, or follow Alys instead of immediately leaving Harrenhal.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The Harrenhal relationship beats the war for one more scene.",
+          "relationship_axes": [
+            "Alys Rivers"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Rejects Alys",
+          "trigger": "A conscious Aemond explicitly rejects Alys's advice, protection, or intimacy and chooses to leave her behind.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The spell breaks.",
+          "relationship_axes": [
+            "Alys Rivers"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Targets Aegon",
+          "trigger": "Aemond explicitly makes finding, killing, capturing, or taking revenge on Aegon an immediate objective.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Sibling rivalry becomes strategic priority.",
+          "relationship_axes": [
+            "Aegon II"
+          ],
+          "content_type": "rivalry"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Recovery is the anchor; then you are betting on vengeance vs mercy and war vs Alys."
+    },
+    {
+      "name": "Alicent Hightower",
+      "current_app_group": "Harrenhal",
+      "recommended_draft_group": "Harrenhal",
+      "allegiance_note": "Green-origin; acting independently to protect Helaena",
+      "basis_sources": [
+        "e7_recap",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Protects Helaena",
+          "trigger": "Alicent takes a concrete action intended to secure Helaena or Jaehaera's safety.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "Whatever Alicent becomes, Helaena remains the motive.",
+          "relationship_axes": [
+            "Helaena",
+            "Jaehaera"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Saves Aemond",
+          "trigger": "Alicent actively seeks an antidote, healer, or other intervention intended to keep Aemond alive after poisoning him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The assassin arc turns instantly into mother panic.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Leaves Him Dying",
+          "trigger": "Alicent knowingly leaves an incapacitated Aemond without seeking help when she has a clear opportunity to do so.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "She commits to the choice all the way.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Returns to Rhaenyra",
+          "trigger": "Alicent voluntarily returns to Rhaenyra's custody or presence to report what happened with Aemond.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "She finishes the bargain she started.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "politics"
+        },
+        {
+          "name": "Runs From the Deal",
+          "trigger": "Alicent deliberately avoids returning to Rhaenyra and takes action to escape or hide from the Blacks instead.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "She decides she has honored enough bargains for one lifetime.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "escape"
+        },
+        {
+          "name": "Finds Aegon",
+          "trigger": "Alicent and Aegon physically reunite and exchange dialogue in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The son she betrayed and the mother who lost control finally share a room.",
+          "relationship_axes": [
+            "Aegon II"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Asks Helaena Forgive",
+          "trigger": "Alicent explicitly asks Helaena to forgive her for a decision involving Helaena, Aemond, Aegon, or the war.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Maternal guilt finally gets said aloud.",
+          "relationship_axes": [
+            "Helaena"
+          ],
+          "content_type": "relationship"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Alicent's card is built entirely from consequences: save or abandon Aemond, honor or flee Rhaenyra's bargain."
+    },
+    {
+      "name": "Alys Rivers",
+      "current_app_group": "Harrenhal",
+      "recommended_draft_group": "Harrenhal",
+      "allegiance_note": "Harrenhal / personally tied to Aemond; not cleanly factional",
+      "basis_sources": [
+        "e6_context",
+        "e7_ew"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Alys Witchcraft",
+          "trigger": "Alys performs or causes something the episode presents as supernatural, prophetic, impossible, or overtly magical.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "If Harrenhal gets weird, you get paid.",
+          "relationship_axes": [
+            "magic"
+          ],
+          "content_type": "supernatural"
+        },
+        {
+          "name": "Saves Aemond",
+          "trigger": "Alys actively treats, rescues, or otherwise prevents Aemond from dying from the poisoning or its immediate consequences.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "He is now her most valuable patient.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Lets Poison Work",
+          "trigger": "Alys clearly realizes Aemond is poisoned and deliberately refuses or withholds help that she could provide.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "The witch decides fate has spoken.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Uses the Eggs",
+          "trigger": "Alys physically moves, reveals, gives away, hides elsewhere, or invokes the hidden dragon eggs as part of a concrete plan.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The season's weirdest stash finally becomes actionable.",
+          "relationship_axes": [
+            "dragon eggs"
+          ],
+          "content_type": "plot"
+        },
+        {
+          "name": "Keeps Eggs Hidden",
+          "trigger": "Alys is directly asked about dragons or eggs and knowingly conceals the hidden clutch.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The secret survives the finale intact.",
+          "relationship_axes": [
+            "dragon eggs"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Faces Alicent",
+          "trigger": "Alys and Alicent directly confront one another about Aemond, the poisoning, or who controls what happens to him next.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Two very different women with claims on Aemond finally collide.",
+          "relationship_axes": [
+            "Alicent",
+            "Aemond"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Magic is guaranteed-ish; her two forks are whether she saves Aemond and whether the eggs enter the game."
+    },
+    {
+      "name": "Aegon II Targaryen",
+      "current_app_group": "The Greens",
+      "recommended_draft_group": "The Greens",
+      "allegiance_note": "Green claimant",
+      "basis_sources": [
+        "e7_ew",
+        "e7_forbes",
+        "aegon_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "central",
+      "signature_beats": [
+        {
+          "name": "Aegon Sass",
+          "trigger": "Aegon delivers an unmistakably sarcastic, cutting, morbidly funny, or self-aware line.",
+          "odds": "Likely",
+          "estimated_probability_pct": 70,
+          "points": 20,
+          "pitch": "Your safest payout is that Aegon remains Aegon.",
+          "relationship_axes": [
+            "self"
+          ],
+          "content_type": "comedy"
+        },
+        {
+          "name": "Flies Sunfyre",
+          "trigger": "Aegon mounts Sunfyre and the two become airborne together in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The comeback becomes physical.",
+          "relationship_axes": [
+            "Sunfyre"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Stays Grounded",
+          "trigger": "Aegon has a clear opportunity to flee or move with Sunfyre and explicitly chooses to remain on the ground.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The broken king chooses stubbornness over escape.",
+          "relationship_axes": [
+            "Sunfyre"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Claims the Throne",
+          "trigger": "Aegon explicitly makes retaking the Iron Throne or being recognized as king his immediate objective.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The political branch: crown first.",
+          "relationship_axes": [
+            "Rhaenyra",
+            "Iron Throne"
+          ],
+          "content_type": "politics"
+        },
+        {
+          "name": "Chooses Aemond",
+          "trigger": "Aegon explicitly makes finding, killing, or taking revenge on Aemond his immediate priority over Rhaenyra or the throne.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The personal branch: brother first.",
+          "relationship_axes": [
+            "Aemond"
+          ],
+          "content_type": "rivalry"
+        },
+        {
+          "name": "Trusts Tyland",
+          "trigger": "Aegon accepts and follows a consequential plan proposed by Tyland after Tyland explains the plan to him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The king finally takes advice from the unexpectedly competent Lannister.",
+          "relationship_axes": [
+            "Tyland"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Takes Larys Back",
+          "trigger": "After Larys's episode-7 departure, Aegon physically reunites with him and explicitly accepts his help or counsel again.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The strangest buddy relationship gets renewed.",
+          "relationship_axes": [
+            "Larys"
+          ],
+          "content_type": "relationship"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 7,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Aegon's forks are wonderfully clean: fly or stand; throne or brother."
+    },
+    {
+      "name": "Larys Strong",
+      "current_app_group": "The Greens",
+      "recommended_draft_group": "The Greens",
+      "allegiance_note": "Aegon-aligned when useful; fundamentally self-preserving",
+      "basis_sources": [
+        "e7_forbes",
+        "aegon_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "New Escape Plan",
+          "trigger": "Larys proposes or executes a specific plan to evade capture, pursuit, or political danger.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "He treats catastrophe like a logistics problem.",
+          "relationship_axes": [
+            "Aegon",
+            "self"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Rejoins Aegon",
+          "trigger": "After leaving him in episode 7, Larys physically reunites with Aegon and exchanges dialogue with him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The weirdest buddy comedy gets an encore.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Sells Out Aegon",
+          "trigger": "Larys deliberately gives an enemy information or assistance that materially harms Aegon's position.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Self-preservation beats loyalty.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Warns Aegon",
+          "trigger": "Larys gives Aegon specific intelligence about an immediate threat and Aegon acts on the warning.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Spymaster as guardian angel, somehow.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Deals With Enemy",
+          "trigger": "Larys knowingly bargains with a Black or Hightower-aligned opponent for his own safety or advancement.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The free agent starts shopping himself around.",
+          "relationship_axes": [
+            "Blacks",
+            "Hightowers"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Pressures Tyland",
+          "trigger": "Larys directly pressures, threatens, or manipulates Tyland over Aegon's plans or the missing treasury.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The two surviving schemers start negotiating with each other.",
+          "relationship_axes": [
+            "Tyland"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Every fork asks the same question in a different way: is Larys still Aegon's man?"
+    },
+    {
+      "name": "Tyland Lannister",
+      "current_app_group": "The Greens",
+      "recommended_draft_group": "The Greens",
+      "allegiance_note": "Green / currently with Aegon",
+      "basis_sources": [
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Lannister Plan",
+          "trigger": "A plan proposed by Tyland directly gets him and/or Aegon out of an immediate danger.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "The supporting character gets to be the competent one.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "strategy"
+        },
+        {
+          "name": "Risks It for Aegon",
+          "trigger": "Tyland knowingly puts himself in immediate physical danger to protect Aegon or buy him time.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The surprisingly loyal branch.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Leaves Aegon",
+          "trigger": "Tyland deliberately abandons Aegon during an immediate danger when he has a clear opportunity to stay.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "The survival branch: very Lannister, just not very heroic.",
+          "relationship_axes": [
+            "Aegon"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Gold Secret Spills",
+          "trigger": "Tyland reveals, uses, bargains with, or gives a concrete clue to the location of the missing royal treasury.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The money mystery finally becomes leverage.",
+          "relationship_axes": [
+            "treasury"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Confronts Larys",
+          "trigger": "Tyland directly challenges, refuses, or accuses Larys over Aegon's safety, a plan, or hidden information.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The two surviving schemers finally stop politely sharing a wagon.",
+          "relationship_axes": [
+            "Larys"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "A loyalty fork and a money fork make Tyland much more than Aegon's sidekick."
+    },
+    {
+      "name": "Daeron Targaryen",
+      "current_app_group": "House Hightower",
+      "recommended_draft_group": "House Hightower",
+      "allegiance_note": "Green; increasingly resistant to Ormund",
+      "basis_sources": [
+        "daeron_context",
+        "e6_hightower"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Tessarion Sortie",
+          "trigger": "Daeron mounts Tessarion and flies into an active mission, interception, or battle.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "The prince gets to actually be a dragon prince.",
+          "relationship_axes": [
+            "Tessarion"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Defies Ormund",
+          "trigger": "Daeron directly refuses, reverses, or undermines an instruction or political demand from Ormund.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The puppet cuts a string.",
+          "relationship_axes": [
+            "Ormund"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Obeys Ormund",
+          "trigger": "Daeron reluctantly carries out a clearly stated order from Ormund that he initially resists or dislikes.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Or the grooming works one more time.",
+          "relationship_axes": [
+            "Ormund"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Rejects a Crown",
+          "trigger": "Daeron is hailed, proposed, or treated as king and explicitly rejects the claim.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "He refuses the most dangerous promotion imaginable.",
+          "relationship_axes": [
+            "Ormund",
+            "royal claim"
+          ],
+          "content_type": "politics"
+        },
+        {
+          "name": "Accepts Royal Claim",
+          "trigger": "Daeron explicitly accepts being proclaimed, styled, or advanced as a king or replacement claimant.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "The nice prince takes the poisoned crown.",
+          "relationship_axes": [
+            "Ormund",
+            "royal claim"
+          ],
+          "content_type": "politics"
+        },
+        {
+          "name": "Protects Gwayne",
+          "trigger": "Daeron takes a concrete action that directly protects or rescues Gwayne from immediate danger.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The nephew returns the loyalty.",
+          "relationship_axes": [
+            "Gwayne"
+          ],
+          "content_type": "family"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Daeron's entire card is agency: obey or defy, reject power or take it."
+    },
+    {
+      "name": "Ormund Hightower",
+      "current_app_group": "House Hightower",
+      "recommended_draft_group": "House Hightower",
+      "allegiance_note": "Green / Hightower power center",
+      "basis_sources": [
+        "e7_ew",
+        "e7_forbes",
+        "ormund_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Springs a Trap",
+          "trigger": "Ormund reveals or executes a deception, ambush, planted agent, or prearranged scheme against an opposing force or named character.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "He has spent the season looking annoyingly prepared.",
+          "relationship_axes": [
+            "enemies"
+          ],
+          "content_type": "intrigue"
+        },
+        {
+          "name": "Keeps Ulf",
+          "trigger": "Ulf follows a consequential order from Ormund that directly harms or obstructs the Blacks.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The recruitment pays off.",
+          "relationship_axes": [
+            "Ulf"
+          ],
+          "content_type": "influence"
+        },
+        {
+          "name": "Ulf Turns on Him",
+          "trigger": "Ulf directly betrays, attacks, refuses, or exposes Ormund after previously agreeing to work with him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Or Ormund discovers the downside of trusting Ulf.",
+          "relationship_axes": [
+            "Ulf"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Controls Daeron",
+          "trigger": "Daeron carries out a consequential political or military action after Ormund explicitly pressures or orders him to do it.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The puppet-master gets another win.",
+          "relationship_axes": [
+            "Daeron"
+          ],
+          "content_type": "influence"
+        },
+        {
+          "name": "Daeron Humbles Him",
+          "trigger": "Daeron directly rejects Ormund in a way that costs Ormund authority, face, or control in front of others.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The boy finally embarrasses his handler.",
+          "relationship_axes": [
+            "Daeron"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Threatens Corlys",
+          "trigger": "Ormund explicitly threatens Corlys's life or body to force a Velaryon or Black character to act.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "His hostage becomes a political weapon.",
+          "relationship_axes": [
+            "Corlys",
+            "Velaryons"
+          ],
+          "content_type": "hostage"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "The villain card hedges itself: every scheme can either work beautifully or explode in his face."
+    },
+    {
+      "name": "Gwayne Hightower",
+      "current_app_group": "House Hightower",
+      "recommended_draft_group": "House Hightower",
+      "allegiance_note": "Green / protective of Daeron; increasingly skeptical of Ormund",
+      "basis_sources": [
+        "e6_hightower",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Protects Daeron",
+          "trigger": "Gwayne physically intervenes, gives up an advantage, or defies another person to protect Daeron from immediate danger.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "Uncle mode is his clearest finale identity.",
+          "relationship_axes": [
+            "Daeron"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Defies Ormund",
+          "trigger": "Gwayne directly refuses or undermines an order or scheme from Ormund.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The Hightower family argument becomes policy.",
+          "relationship_axes": [
+            "Ormund"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Backs Ormund",
+          "trigger": "Gwayne explicitly sides with Ormund against Daeron in a disputed decision.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Family hierarchy wins over affection.",
+          "relationship_axes": [
+            "Ormund",
+            "Daeron"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Joins the Attack",
+          "trigger": "Gwayne leaves a defensive position to personally join an organized attack or sortie.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The knight chooses the field.",
+          "relationship_axes": [
+            "battle"
+          ],
+          "content_type": "combat"
+        },
+        {
+          "name": "Stays With Daeron",
+          "trigger": "Gwayne deliberately remains with Daeron instead of joining an available battle or pursuit.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The guardian chooses the boy over glory.",
+          "relationship_axes": [
+            "Daeron"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Criston Tribute",
+          "trigger": "Gwayne explicitly honors, mourns, defends, or invokes Criston Cole's memory in a present-tense decision.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "A dead commander still has a hold on him.",
+          "relationship_axes": [
+            "Criston Cole"
+          ],
+          "content_type": "callback"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Gwayne's whole draft case is divided loyalty: brother, nephew, battlefield."
+    },
+    {
+      "name": "Bold Jon Roxton",
+      "current_app_group": "House Hightower",
+      "recommended_draft_group": "House Hightower",
+      "allegiance_note": "Ormund-aligned operative; not Hightower by blood",
+      "basis_sources": [
+        "roxton_context",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Guards Corlys",
+          "trigger": "Jon is visibly assigned to, escorting, or personally guarding Corlys as a captive.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "Even a minor villain needs a floor, and Corlys is his ticket.",
+          "relationship_axes": [
+            "Bold Jon Roxton"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Hurts Corlys",
+          "trigger": "Jon personally wounds, mutilates, or tortures Corlys on screen.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The nasty branch: the hostage situation gets worse.",
+          "relationship_axes": [
+            "Bold Jon Roxton"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Frees Corlys",
+          "trigger": "Jon deliberately releases or helps Corlys escape against Ormund's interests.",
+          "odds": "Wild",
+          "estimated_probability_pct": 6,
+          "points": 45,
+          "pitch": "The wildest redemption swing on the character board.",
+          "relationship_axes": [
+            "Bold Jon Roxton"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Obeys Ormund",
+          "trigger": "Jon carries out a consequential direct order from Ormund in the finale.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "The loyal henchman stays useful.",
+          "relationship_axes": [
+            "Bold Jon Roxton"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Refuses Ormund",
+          "trigger": "Jon openly refuses a direct order from Ormund or abandons an assigned Hightower task.",
+          "odds": "Likely",
+          "estimated_probability_pct": 58,
+          "points": 20,
+          "pitch": "Or the hired sword remembers he is not actually a Hightower.",
+          "relationship_axes": [
+            "Bold Jon Roxton"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          60,
+          65,
+          85,
+          90
+        ],
+        "legal_active_total_range": [
+          60,
+          90
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "A late-round lottery: loyal enforcer or sudden rogue, with Corlys at the center."
+    },
+    {
+      "name": "Corlys Velaryon",
+      "current_app_group": "House Velaryon",
+      "recommended_draft_group": "House Velaryon",
+      "allegiance_note": "Black / Velaryon; currently Ormund's captive",
+      "basis_sources": [
+        "e6_corlys",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Rejects His Captor",
+          "trigger": "Corlys directly refuses a demand, bargain, oath, or threat made by Ormund or Jon Roxton.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "Missing finger, intact spine.",
+          "relationship_axes": [
+            "Ormund",
+            "Jon Roxton"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Escape Attempt",
+          "trigger": "Corlys personally attempts to escape his captivity, whether or not the attempt succeeds.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The Sea Snake tries to solve his own problem.",
+          "relationship_axes": [
+            "captivity"
+          ],
+          "content_type": "action"
+        },
+        {
+          "name": "Takes a Deal",
+          "trigger": "Corlys knowingly accepts a bargain or concession demanded by his captors in exchange for safety or another person's protection.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Survival requires swallowing his pride.",
+          "relationship_axes": [
+            "Ormund",
+            "Jon Roxton"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Reconciles With Alyn",
+          "trigger": "Corlys explicitly apologizes to Alyn or the two reach a clear father-son reconciliation.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The emotional rescue payoff.",
+          "relationship_axes": [
+            "Alyn"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Clashes With Alyn",
+          "trigger": "After reuniting or communicating, Corlys and Alyn directly argue about fatherhood, legitimacy, or Corlys's past treatment of his sons.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "Rescue immediately becomes family therapy.",
+          "relationship_axes": [
+            "Alyn"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Names His Sons",
+          "trigger": "Corlys publicly or directly acknowledges both Alyn and Addam as his sons in front of another named character.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The family secret finally becomes a family statement.",
+          "relationship_axes": [
+            "Alyn",
+            "Addam"
+          ],
+          "content_type": "family"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Defiance is the floor; the forks are escape vs bargain and reconciliation vs resentment."
+    },
+    {
+      "name": "Addam of Hull",
+      "current_app_group": "House Velaryon",
+      "recommended_draft_group": "House Velaryon",
+      "allegiance_note": "Black / Corlys's unlegitimized son; Seasmoke rider",
+      "basis_sources": [
+        "e7_recap",
+        "e7_baela_addam",
+        "e6_corlys"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Seasmoke Sortie",
+          "trigger": "Addam mounts Seasmoke and flies into an active mission, pursuit, or battle.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "The reliable rider gets deployed.",
+          "relationship_axes": [
+            "Seasmoke"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Obeys Rhaenyra",
+          "trigger": "Addam follows a consequential direct order from Rhaenyra even though it conflicts with Alyn, Corlys, or Baela's wishes.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "Crown over family.",
+          "relationship_axes": [
+            "Rhaenyra"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Chooses Family",
+          "trigger": "Addam knowingly refuses or alters a direct Black order because it would endanger Alyn, Corlys, or Baela.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Family over crown.",
+          "relationship_axes": [
+            "Alyn",
+            "Corlys",
+            "Baela"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Backs Alyn",
+          "trigger": "Addam takes a concrete action supporting Alyn's plan concerning Corlys's captivity or Velaryon command.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Brotherhood wins the triangle.",
+          "relationship_axes": [
+            "Alyn"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Confesses to Baela",
+          "trigger": "Addam explicitly tells Baela he has romantic feelings for her or directly asks her to choose him romantically.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The awkward romantic tension finally says the quiet part aloud.",
+          "relationship_axes": [
+            "Baela"
+          ],
+          "content_type": "romance"
+        },
+        {
+          "name": "Confronts Ulf",
+          "trigger": "Addam directly confronts, threatens, or attacks Ulf after learning of Ulf's cooperation with Ormund.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The loyal dragonseed gets a traitor to judge.",
+          "relationship_axes": [
+            "Ulf"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "A loyalty card with two real forks: queen vs family, brother vs romantic feelings."
+    },
+    {
+      "name": "Alyn of Hull",
+      "current_app_group": "House Velaryon",
+      "recommended_draft_group": "House Velaryon",
+      "allegiance_note": "Black / Velaryon military orbit",
+      "basis_sources": [
+        "e6_corlys",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Takes Command",
+          "trigger": "Alyn gives a military or naval order that is visibly obeyed by Velaryon soldiers, sailors, or ships.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "He has become the working heir whether anyone says it or not.",
+          "relationship_axes": [
+            "Velaryons"
+          ],
+          "content_type": "leadership"
+        },
+        {
+          "name": "Rescue Attempt",
+          "trigger": "Alyn personally launches or joins an operation whose explicit purpose is rescuing Corlys.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The severed-finger message gets answered with action.",
+          "relationship_axes": [
+            "Corlys"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Stands Down",
+          "trigger": "Alyn abandons or delays a military action because Corlys's captors threaten Corlys's life.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The hostage actually works.",
+          "relationship_axes": [
+            "Corlys"
+          ],
+          "content_type": "choice"
+        },
+        {
+          "name": "Forgives Corlys",
+          "trigger": "Alyn explicitly accepts an apology from Corlys or tells Corlys he forgives him.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "The family-healing branch.",
+          "relationship_axes": [
+            "Corlys"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Calls Out Corlys",
+          "trigger": "Alyn directly confronts Corlys about fatherhood, legitimacy, or neglect after they communicate or reunite.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The far more combustible branch.",
+          "relationship_axes": [
+            "Corlys"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Kisses Baela",
+          "trigger": "Alyn and Baela share an unmistakably romantic kiss in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The rescue plot is not the only thing he has going on.",
+          "relationship_axes": [
+            "Baela"
+          ],
+          "content_type": "romance"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Command is the anchor; Corlys creates both a tactical fork and an emotional fork."
+    },
+    {
+      "name": "Hugh Hammer",
+      "current_app_group": "The Dragonseeds",
+      "recommended_draft_group": "Dragonseeds & Tumbleton",
+      "allegiance_note": "Black through E7; loyalty under strain",
+      "basis_sources": [
+        "e6_hugh_kat",
+        "e7_ew"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Vermithor Sortie",
+          "trigger": "Hugh mounts Vermithor and enters an active mission or battle.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "You drafted the Bronze Fury; use the Bronze Fury.",
+          "relationship_axes": [
+            "Vermithor"
+          ],
+          "content_type": "dragon"
+        },
+        {
+          "name": "Kat Over Crown",
+          "trigger": "Hugh knowingly rejects or abandons a military instruction because Kat's immediate safety takes priority.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "Marriage beats war.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "family"
+        },
+        {
+          "name": "Obeys the Blacks",
+          "trigger": "Hugh follows a consequential Black military order despite Kat objecting or being endangered by the choice.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "War beats marriage.",
+          "relationship_axes": [
+            "Rhaenyra",
+            "Kat"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Rejects Ulf",
+          "trigger": "Hugh directly refuses to join, endorse, or conceal Ulf's cooperation with Ormund after learning of it.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The dragonseeds stop being a package deal.",
+          "relationship_axes": [
+            "Ulf"
+          ],
+          "content_type": "conflict"
+        },
+        {
+          "name": "Backs Ulf",
+          "trigger": "Hugh knowingly protects Ulf from Black retaliation or supports Ulf's stated complaint against Rhaenyra's treatment of the dragonseeds.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Resentment becomes solidarity.",
+          "relationship_axes": [
+            "Ulf",
+            "Rhaenyra"
+          ],
+          "content_type": "loyalty"
+        },
+        {
+          "name": "Rescues Kat",
+          "trigger": "Hugh takes a concrete action that directly removes Kat from an immediate threat or dangerous location.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The dragon-war storyline turns into one man's rescue mission.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "family"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Hugh is all divided loyalty: Kat vs duty and Ulf vs Rhaenyra."
+    },
+    {
+      "name": "Ulf the White",
+      "current_app_group": "The Dragonseeds",
+      "recommended_draft_group": "Dragonseeds & Tumbleton",
+      "allegiance_note": "Turned toward Ormund/Green by E7",
+      "basis_sources": [
+        "e7_ew",
+        "e7_forbes"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "major_support",
+      "signature_beats": [
+        {
+          "name": "Betrayal Exposed",
+          "trigger": "A named Black-aligned character directly discovers that Ulf has agreed to work with Ormund.",
+          "odds": "Likely",
+          "estimated_probability_pct": 60,
+          "points": 20,
+          "pitch": "His secret is a loaded crossbow.",
+          "relationship_axes": [
+            "Blacks"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Fights for Ormund",
+          "trigger": "Ulf follows Ormund's direction and uses Silverwing to harm or obstruct the Blacks.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The turn becomes real.",
+          "relationship_axes": [
+            "Ormund",
+            "Silverwing"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Double-Crosses Ormund",
+          "trigger": "Ulf knowingly betrays, refuses, exposes, or attacks Ormund after accepting his offer.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The unreliable idiot proves unreliable to the man who recruited him.",
+          "relationship_axes": [
+            "Ormund"
+          ],
+          "content_type": "betrayal"
+        },
+        {
+          "name": "Burns a Black",
+          "trigger": "Ulf deliberately commands Silverwing to attack a Black-aligned person, force, dragon, or position.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "Maximum traitor payoff.",
+          "relationship_axes": [
+            "Blacks",
+            "Silverwing"
+          ],
+          "content_type": "combat"
+        },
+        {
+          "name": "Begs Forgiveness",
+          "trigger": "Ulf explicitly asks Rhaenyra, Daemon, or another Black leader to forgive or take him back after his cooperation with Ormund becomes known.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Maximum coward payoff.",
+          "relationship_axes": [
+            "Rhaenyra",
+            "Daemon"
+          ],
+          "content_type": "relationship"
+        },
+        {
+          "name": "Clashes With Hugh",
+          "trigger": "Ulf and Hugh directly argue, threaten, or fight over Ulf's deal with Ormund or their loyalty to Rhaenyra.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The dragonseed friendship becomes the argument everyone wanted.",
+          "relationship_axes": [
+            "Hugh"
+          ],
+          "content_type": "conflict"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 6,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Ulf is chaos with two separate off-ramps: commit, double-cross, attack, or crawl back."
+    },
+    {
+      "name": "Kat",
+      "current_app_group": "The Dragonseeds",
+      "recommended_draft_group": "Dragonseeds & Tumbleton",
+      "allegiance_note": "Civilian / Hugh's wife; not a dragonseed",
+      "basis_sources": [
+        "e6_hugh_kat"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Refuses Hugh Again",
+          "trigger": "Kat directly refuses another request from Hugh to leave Tumbleton, reconcile, or follow his plan.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "40",
+          "points": 25,
+          "pitch": "The stubborn civilian has become one of the war's immovable objects.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Leaves With Hugh",
+          "trigger": "Kat voluntarily agrees to leave immediate danger with Hugh and begins escaping or relocating with him.",
+          "odds": "Long shot",
+          "estimated_probability_pct": "20",
+          "points": 35,
+          "pitch": "The marriage finally moves in the same direction.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Stays in Tumbleton",
+          "trigger": "Kat has a clear opportunity to leave Tumbleton and explicitly chooses to remain.",
+          "odds": "Likely",
+          "estimated_probability_pct": "60",
+          "points": 20,
+          "pitch": "Or she doubles down on the choice that has driven Hugh insane.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Reconciles With Hugh",
+          "trigger": "Kat explicitly forgives Hugh or tells him she wants to remain married/with him.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "A tiny emotional win amid total catastrophe.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Ends It With Hugh",
+          "trigger": "Kat explicitly ends or rejects the marriage/relationship with Hugh.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "Or the war finally breaks the marriage instead of the city.",
+          "relationship_axes": [
+            "Kat"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Kat becomes draftable when every appearance asks two questions: does she leave, and does the marriage survive?"
+    },
+    {
+      "name": "Roderick Dustin",
+      "current_app_group": "The North and Riverlands",
+      "recommended_draft_group": "The North and Riverlands",
+      "allegiance_note": "Black / northern field commander",
+      "basis_sources": [
+        "north_context",
+        "e6_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Leads the Charge",
+          "trigger": "Roddy personally leads or gives the order for a visible charge or major attack by his northern troops.",
+          "odds": "Likely",
+          "estimated_probability_pct": "65",
+          "points": 20,
+          "pitch": "Roddy the Ruin does what it says on the tin.",
+          "relationship_axes": [
+            "Roderick Dustin"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Obeys Oscar",
+          "trigger": "Oscar gives Roddy a direct battlefield instruction and Roddy visibly follows it.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "The old wolf accepts the teenage lord's leash.",
+          "relationship_axes": [
+            "Roderick Dustin"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Ignores Oscar",
+          "trigger": "Roddy knowingly disregards or counters a direct battlefield instruction from Oscar.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "Or the old wolf decides he knows better.",
+          "relationship_axes": [
+            "Roderick Dustin"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Survives the Clash",
+          "trigger": "Roddy is visibly alive and on screen after the major battle or attack he participates in has ended.",
+          "odds": "Likely",
+          "estimated_probability_pct": "60",
+          "points": 20,
+          "pitch": "For this man, survival is almost the contrarian bet.",
+          "relationship_axes": [
+            "Roderick Dustin"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Dies Charging",
+          "trigger": "Roddy is definitively killed while personally advancing, charging, or fighting in the front line.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The most Roddy possible exit.",
+          "relationship_axes": [
+            "Roderick Dustin"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          65,
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          65,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Battlefield authority and mortality make his forks intuitive: obey or freelance, survive or go out gloriously."
+    },
+    {
+      "name": "Oscar Tully",
+      "current_app_group": "The North and Riverlands",
+      "recommended_draft_group": "The North and Riverlands",
+      "allegiance_note": "Black / Riverlands commander",
+      "basis_sources": [
+        "north_context",
+        "e6_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Riverlord Command",
+          "trigger": "Oscar gives a battlefield order that is visibly obeyed by a substantial group of Riverland or allied soldiers.",
+          "odds": "Likely",
+          "estimated_probability_pct": "60",
+          "points": 20,
+          "pitch": "The kid keeps commanding adults who could eat him for breakfast.",
+          "relationship_axes": [
+            "Oscar Tully"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Reins In Roddy",
+          "trigger": "Oscar explicitly stops, redirects, or overrules a reckless plan proposed or attempted by Roddy.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "40",
+          "points": 25,
+          "pitch": "The teenager plays adult supervision.",
+          "relationship_axes": [
+            "Oscar Tully"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Follows Roddy",
+          "trigger": "Oscar knowingly endorses Roddy's aggressive plan despite having a safer alternative discussed on screen.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "Or the teenager decides chaos has merit.",
+          "relationship_axes": [
+            "Oscar Tully"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Orders Retreat",
+          "trigger": "Oscar orders allied troops to withdraw, fall back, or disengage in order to preserve them.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "Leadership as restraint.",
+          "relationship_axes": [
+            "Oscar Tully"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Commits the Army",
+          "trigger": "Oscar explicitly orders his forces into a major attack despite being warned of serious danger.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "40",
+          "points": 25,
+          "pitch": "Leadership as gamble.",
+          "relationship_axes": [
+            "Oscar Tully"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75
+        ],
+        "legal_active_total_range": [
+          70,
+          75
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Oscar's card is pure command philosophy: control Roddy or follow him; preserve the army or spend it."
+    },
+    {
+      "name": "Alysanne Blackwood",
+      "current_app_group": "The North and Riverlands",
+      "recommended_draft_group": "The North and Riverlands",
+      "allegiance_note": "Black / Riverlands fighter",
+      "basis_sources": [
+        "black_aly_context",
+        "e6_context"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Arrow Hits Named",
+          "trigger": "Black Aly fires an arrow that visibly hits a named character.",
+          "odds": "Likely",
+          "estimated_probability_pct": "60",
+          "points": 20,
+          "pitch": "After Criston, every arrow feels live.",
+          "relationship_axes": [
+            "Alysanne Blackwood"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Saves Roddy",
+          "trigger": "Black Aly uses her bow or another weapon to stop an immediate threat to Roddy.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "40",
+          "points": 25,
+          "pitch": "The battlefield partnership branch.",
+          "relationship_axes": [
+            "Alysanne Blackwood"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Leaves Roddy",
+          "trigger": "Black Aly knowingly abandons or refuses to aid Roddy during an immediate danger because of a larger military objective.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 30,
+          "points": 25,
+          "pitch": "The cold-warrior branch.",
+          "relationship_axes": [
+            "Alysanne Blackwood"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Takes the Kill",
+          "trigger": "Black Aly personally delivers a fatal blow to a named enemy who could otherwise be captured or spared.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "40",
+          "points": 25,
+          "pitch": "The Criston follow-up: she finishes the job.",
+          "relationship_axes": [
+            "Alysanne Blackwood"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Spare the Enemy",
+          "trigger": "Black Aly has a clear chance to kill a named enemy and deliberately chooses not to.",
+          "odds": "Long shot",
+          "estimated_probability_pct": "15",
+          "points": 35,
+          "pitch": "The surprising mercy branch.",
+          "relationship_axes": [
+            "Alysanne Blackwood"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Her bow is the floor; the forks turn her into either loyal protector or ruthless battlefield pragmatist."
+    },
+    {
+      "name": "Torrhen Manderly",
+      "current_app_group": "The North and Riverlands",
+      "recommended_draft_group": "The Blacks",
+      "allegiance_note": "Black; Northern by House, but serving as Rhaenyra's Master of Coin",
+      "basis_sources": [
+        "torrhen_e7",
+        "torrhen_e6"
+      ],
+      "risk_shape": "player-defined: choose 3 of 5",
+      "option_depth_tier": "support",
+      "signature_beats": [
+        {
+          "name": "Money Says No",
+          "trigger": "Torrhen explicitly tells Rhaenyra, Daemon, or the council that the crown cannot afford a proposed action or expenditure.",
+          "odds": "Likely",
+          "estimated_probability_pct": "65",
+          "points": 20,
+          "pitch": "The Master of Coin remains the only person fighting arithmetic.",
+          "relationship_axes": [
+            "Torrhen Manderly"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Queen Listens",
+          "trigger": "Rhaenyra changes or abandons a plan after Torrhen raises a financial objection.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "The impossible dream: someone listens to the accountant.",
+          "relationship_axes": [
+            "Torrhen Manderly"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Queen Ignores Him",
+          "trigger": "Rhaenyra explicitly dismisses Torrhen's financial objection and proceeds with the plan anyway.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "45",
+          "points": 25,
+          "pitch": "The much more Westerosi branch.",
+          "relationship_axes": [
+            "Torrhen Manderly"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Stays Loyal",
+          "trigger": "Torrhen is offered or presented with a plausible reason to abandon Rhaenyra and explicitly recommits to serving her.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": "35",
+          "points": 25,
+          "pitch": "The accountant buys the stock anyway.",
+          "relationship_axes": [
+            "Torrhen Manderly"
+          ],
+          "content_type": "support"
+        },
+        {
+          "name": "Quits the Queen",
+          "trigger": "Torrhen resigns, flees, defects, or explicitly refuses to continue serving Rhaenyra.",
+          "odds": "Long shot",
+          "estimated_probability_pct": "15",
+          "points": 35,
+          "pitch": "The finance guy finally closes the spreadsheet and walks out.",
+          "relationship_axes": [
+            "Torrhen Manderly"
+          ],
+          "content_type": "support"
+        }
+      ],
+      "activation_model": {
+        "choose_exactly": 3,
+        "from_candidates": 5,
+        "all_three_beat_combinations_are_legal": true,
+        "possible_active_totals": [
+          70,
+          75,
+          80,
+          85
+        ],
+        "legal_active_total_range": [
+          70,
+          85
+        ],
+        "hedging_allowed": true,
+        "selection_timing": "Activate three beats after drafting the character and before the episode begins."
+      },
+      "draft_pitch": "Finance becomes drama: is he heard or ignored, and does he stay or finally quit?"
+    }
+  ],
+  "collision_beats": [
+    {
+      "name": "Marriage on Fire",
+      "characters": [
+        "Rhaenyra Targaryen",
+        "Daemon Targaryen"
+      ],
+      "trigger": "Rhaenyra and Daemon have a direct hostile confrontation about Rhaena, Sheepstealer, Mysaria, or the conduct of the war.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Rhaenyra Targaryen": 25,
+        "Daemon Targaryen": 25
+      },
+      "pitch": "Two drafters get paid for the royal marriage becoming everybody's problem.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "Sapphic Payoff",
+      "characters": [
+        "Rhaenyra Targaryen",
+        "Mysaria"
+      ],
+      "trigger": "Rhaenyra and Mysaria kiss or engage in unmistakably romantic or sexual contact in the present timeline.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Rhaenyra Targaryen": 25,
+        "Mysaria": 25
+      },
+      "pitch": "The romance square where two rosters cheer at once.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "You Poisoned Me",
+      "characters": [
+        "Alicent Hightower",
+        "Aemond Targaryen"
+      ],
+      "trigger": "A conscious Aemond directly confronts or accuses Alicent about poisoning him, with Alicent present in the scene.",
+      "odds": "Long shot",
+      "points_split": {
+        "Alicent Hightower": 35,
+        "Aemond Targaryen": 35
+      },
+      "pitch": "A 70-point family therapy session with swords nearby.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "No, My Lord",
+      "characters": [
+        "Daeron Targaryen",
+        "Ormund Hightower"
+      ],
+      "trigger": "Daeron directly refuses a command or political demand from Ormund while Ormund is present to hear the refusal.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Daeron Targaryen": 25,
+        "Ormund Hightower": 25
+      },
+      "pitch": "The puppet cuts one string and two players score.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "Road Trip Reunion",
+      "characters": [
+        "Aegon II Targaryen",
+        "Larys Strong"
+      ],
+      "trigger": "After Larys's episode-7 departure, Larys and Aegon physically reunite and exchange dialogue.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Aegon II Targaryen": 25,
+        "Larys Strong": 25
+      },
+      "pitch": "The season's strangest buddy comedy gets an encore.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "Father and Son",
+      "characters": [
+        "Corlys Velaryon",
+        "Alyn of Hull"
+      ],
+      "trigger": "Corlys and Alyn physically reunite after Corlys's kidnapping and exchange dialogue.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Corlys Velaryon": 25,
+        "Alyn of Hull": 25
+      },
+      "pitch": "Rescue scene plus decades of unresolved parenting in one shot.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "Choose Us",
+      "characters": [
+        "Hugh Hammer",
+        "Kat"
+      ],
+      "trigger": "Kat agrees to leave immediate danger with Hugh and the two begin escaping or relocating together.",
+      "odds": "Long shot",
+      "points_split": {
+        "Hugh Hammer": 35,
+        "Kat": 35
+      },
+      "pitch": "The most human relationship in Tumbleton becomes a huge double payout.",
+      "can_stack_with_signature_beats": true
+    },
+    {
+      "name": "Make It Official",
+      "characters": [
+        "Baela Targaryen",
+        "Alyn of Hull"
+      ],
+      "trigger": "Baela and Alyn kiss again or make an explicit mutual romantic declaration to one another.",
+      "odds": "Coin flip",
+      "points_split": {
+        "Baela Targaryen": 25,
+        "Alyn of Hull": 25
+      },
+      "pitch": "Two medium picks become a power couple for one scene.",
+      "can_stack_with_signature_beats": true
+    }
+  ],
+  "dragons": [
+    {
+      "name": "Caraxes",
+      "current_rider": "Daemon Targaryen",
+      "identity": "battle-tested, aggressive, strongly bonded to Daemon",
+      "signature_beats": [
+        {
+          "name": "Blood Wyrm Bites",
+          "trigger": "Caraxes deliberately bites or grapples another dragon during an active fight.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Draft the dragon most likely to make aerial combat feel personal."
+        },
+        {
+          "name": "Saves Daemon",
+          "trigger": "Caraxes physically intervenes to prevent an immediate threat from killing or capturing Daemon.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The nastiest-looking rescue animal in Westeros."
+        }
+      ],
+      "card_total_points": 50,
+      "multiplier": 1.0,
+      "draft_pitch": "A two-way combat bond card: hurt dragons or save Daemon.",
+      "basis_sources": [
+        "e7_forbes"
+      ]
+    },
+    {
+      "name": "Vermithor",
+      "current_rider": "Hugh Hammer",
+      "identity": "very large, powerful war dragon; the Bronze Fury",
+      "signature_beats": [
+        {
+          "name": "Bronze Fury Burns",
+          "trigger": "Vermithor burns an organized troop formation, fortification, or major battlefield target.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 50,
+          "points": 25,
+          "pitch": "Raw area damage: exactly why people fear this dragon."
+        },
+        {
+          "name": "Ignores Hugh",
+          "trigger": "Hugh gives Vermithor a clear command and Vermithor materially disobeys, resists, or does something else.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The giant weapon deciding it has opinions is the 35-point nightmare."
+        }
+      ],
+      "card_total_points": 60,
+      "multiplier": 1.0,
+      "draft_pitch": "Huge firepower with a volatile-control upside.",
+      "basis_sources": [
+        "e6_hugh_kat"
+      ]
+    },
+    {
+      "name": "Vhagar",
+      "current_rider": "Aemond Targaryen",
+      "identity": "largest and oldest active war dragon; currently separated from Aemond",
+      "signature_beats": [
+        {
+          "name": "Finds Aemond",
+          "trigger": "Vhagar physically reunites with a conscious Aemond in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The moment Aemond gets his nuclear deterrent back, your card wakes up too."
+        },
+        {
+          "name": "Kills a Dragon",
+          "trigger": "Vhagar personally causes another dragon's unmistakable on-screen death.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The scariest 35-pointer in the dragon draft."
+        }
+      ],
+      "card_total_points": 60,
+      "multiplier": 1.0,
+      "draft_pitch": "A terrifying upside card built around reunion and lethality.",
+      "basis_sources": [
+        "e7_recap"
+      ]
+    },
+    {
+      "name": "Tessarion",
+      "current_rider": "Daeron Targaryen",
+      "identity": "young bonded dragon tied closely to Daeron; active at Tumbleton",
+      "signature_beats": [
+        {
+          "name": "Daeron Mounts Up",
+          "trigger": "Daeron mounts Tessarion and the two become airborne on an active mission or in battle.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 50,
+          "points": 25,
+          "pitch": "You are drafting the prince-and-dragon package actually getting deployed."
+        },
+        {
+          "name": "Saves Daeron",
+          "trigger": "Tessarion directly prevents an immediate threat from killing or capturing Daeron.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 35,
+          "points": 25,
+          "pitch": "The Blue Queen gets to play guardian angel."
+        }
+      ],
+      "card_total_points": 50,
+      "multiplier": 1.0,
+      "draft_pitch": "A clean bond card: flight or rescue.",
+      "basis_sources": [
+        "daeron_context"
+      ]
+    },
+    {
+      "name": "Sunfyre",
+      "current_rider": "Aegon II Targaryen",
+      "identity": "scarred golden dragon; emotional bond with the equally scarred Aegon",
+      "signature_beats": [
+        {
+          "name": "Aegon Flies Again",
+          "trigger": "Aegon mounts Sunfyre and they become airborne together in the present timeline.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The comeback image everybody wants to see."
+        },
+        {
+          "name": "Saves Aegon Again",
+          "trigger": "Sunfyre directly stops an immediate threat from killing or capturing Aegon.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "Episode 7 proved this dragon has impeccable dramatic timing."
+        }
+      ],
+      "card_total_points": 50,
+      "multiplier": 1.0,
+      "draft_pitch": "The audience-love pick: broken king, broken dragon, enormous chemistry.",
+      "basis_sources": [
+        "e7_ew",
+        "e7_forbes"
+      ]
+    },
+    {
+      "name": "Seasmoke",
+      "current_rider": "Addam of Hull",
+      "identity": "agile, experienced dragon; reliable bond with Addam",
+      "signature_beats": [
+        {
+          "name": "Answers Addam",
+          "trigger": "Addam summons or mounts Seasmoke for an active mission and Seasmoke visibly responds to his command.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "The dependable dragon gets dependable points."
+        },
+        {
+          "name": "Dragon Fight",
+          "trigger": "Seasmoke deliberately attacks another dragon.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "Your steady floor comes with a 35-point aerial brawl ceiling."
+        }
+      ],
+      "card_total_points": 55,
+      "multiplier": 1.0,
+      "draft_pitch": "One of the safest dragon cards with real combat upside.",
+      "basis_sources": [
+        "e7_recap"
+      ]
+    },
+    {
+      "name": "Silverwing",
+      "current_rider": "Ulf the White",
+      "identity": "powerful adult dragon now attached to a newly compromised rider",
+      "signature_beats": [
+        {
+          "name": "Burns a Black",
+          "trigger": "Ulf directs Silverwing to attack a Black-aligned person, force, dragon, or position.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 45,
+          "points": 25,
+          "pitch": "The betrayal becomes real the instant the dragon participates."
+        },
+        {
+          "name": "Rejects Ulf",
+          "trigger": "Silverwing visibly refuses, abandons, or materially disobeys Ulf during a consequential moment.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "Maybe the dragon has better politics than the rider."
+        }
+      ],
+      "card_total_points": 60,
+      "multiplier": 1.0,
+      "draft_pitch": "The betrayal card with a built-in rebellion-against-the-betrayer hedge.",
+      "basis_sources": [
+        "e7_ew"
+      ]
+    },
+    {
+      "name": "Dreamfyre",
+      "current_rider": "Helaena Targaryen",
+      "identity": "bonded to Helaena, but the show has presented Helaena as rejecting active dragonriding",
+      "signature_beats": [
+        {
+          "name": "Real Flight",
+          "trigger": "Helaena physically rides Dreamfyre and both become airborne in the present timeline; visions do not count.",
+          "odds": "Wild",
+          "estimated_probability_pct": 7,
+          "points": 45,
+          "pitch": "One beat, 45 points, zero subtlety: the purest lottery ticket in the dragon draft."
+        }
+      ],
+      "card_total_points": 45,
+      "multiplier": 1.0,
+      "draft_pitch": "The ultimate lottery dragon: one enormous, very unlikely image.",
+      "basis_sources": [
+        "e7_ew"
+      ]
+    },
+    {
+      "name": "Sheepstealer",
+      "current_rider": "Rhaena Targaryen",
+      "identity": "wild, badly wounded, difficult to control, currently separated from Rhaena",
+      "signature_beats": [
+        {
+          "name": "Comes Back",
+          "trigger": "Sheepstealer physically reappears alive in the present timeline after the episode-7 separation.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 50,
+          "points": 25,
+          "pitch": "Half the room is now emotionally invested in this feral sheep thief."
+        },
+        {
+          "name": "Rejects Rhaena",
+          "trigger": "Rhaena tries to command, approach, or reconnect with Sheepstealer and the dragon visibly refuses or threatens her.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 40,
+          "points": 25,
+          "pitch": "The people's dragon gets another chance to choose chaos."
+        }
+      ],
+      "card_total_points": 50,
+      "multiplier": 1.0,
+      "draft_pitch": "The funniest dragon card: survival plus anti-Rhaena independence.",
+      "basis_sources": [
+        "e7_recap",
+        "sheepstealer_reaction"
+      ]
+    },
+    {
+      "name": "Moondancer",
+      "current_rider": "Baela Targaryen",
+      "identity": "small, agile combat dragon bonded to Baela",
+      "signature_beats": [
+        {
+          "name": "Baela Sortie",
+          "trigger": "Baela mounts Moondancer and the two become airborne on an active mission or in battle.",
+          "odds": "Coin flip",
+          "estimated_probability_pct": 50,
+          "points": 25,
+          "pitch": "A clean deployment bet on one of the Blacks' nimblest pairs."
+        },
+        {
+          "name": "Saves Rhaena",
+          "trigger": "Moondancer directly intervenes to protect Rhaena from an immediate threat.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 15,
+          "points": 35,
+          "pitch": "Sisterly rescue, but with claws and fire."
+        }
+      ],
+      "card_total_points": 60,
+      "multiplier": 1.0,
+      "draft_pitch": "Reliable sortie potential plus a very specific heroic swing.",
+      "basis_sources": [
+        "e7_recap"
+      ]
+    },
+    {
+      "name": "Syrax",
+      "current_rider": "Rhaenyra Targaryen",
+      "identity": "Rhaenyra's royal mount; active in the episode-7 Sheepstealer confrontation",
+      "signature_beats": [
+        {
+          "name": "Queen Takes Wing",
+          "trigger": "Rhaenyra mounts Syrax and flies on an active mission, pursuit, or battle movement.",
+          "odds": "Likely",
+          "estimated_probability_pct": 65,
+          "points": 20,
+          "pitch": "The queen's easiest route from brooding to action."
+        },
+        {
+          "name": "Dragon Duel",
+          "trigger": "Syrax deliberately attacks another dragon.",
+          "odds": "Long shot",
+          "estimated_probability_pct": 20,
+          "points": 35,
+          "pitch": "The 35-point upgrade from royal transport to war beast."
+        }
+      ],
+      "card_total_points": 55,
+      "multiplier": 1.0,
+      "draft_pitch": "Strong floor, dangerous ceiling.",
+      "basis_sources": [
+        "e7_recap"
+      ]
+    }
+  ],
+  "cuts_and_missing": {
+    "must_cut": [],
+    "weakest_but_still_playable": [
+      {
+        "character": "Grand Maester Orwyle",
+        "note": "Low screen-time floor; deliberately designed as a 70-point lottery card rather than pretending he has three likely beats."
+      },
+      {
+        "character": "Kat",
+        "note": "Low agency compared with the fighters; kept because Hugh's Tumbleton story gives her a uniquely high-value relationship/rescue swing."
+      }
+    ],
+    "missing_must_add": [],
+    "not_recommended_additions": [
+      {
+        "character": "Ser Luthor Largent",
+        "reason": "Dead in episode 5 at the Feast for Traitors."
+      },
+      {
+        "character": "Ser Adrian Redfort",
+        "reason": "Dead by episode 7."
+      },
+      {
+        "character": "Joffrey Velaryon",
+        "reason": "Alive/present in the broader story but not enough finale-specific agency through E7 to justify replacing one of the 27."
+      },
+      {
+        "character": "Jaehaera Targaryen",
+        "reason": "Important to Helaena's motivation but too passive for a satisfying standalone draft card."
+      }
+    ],
+    "note": "At 6 players x 4 characters, three of the 27 remain undrafted. That makes the two lottery-shaped cards acceptable; nobody is forced to take every low-floor option."
+  },
+  "sources": {
+    "e7_recap": {
+      "publisher": "Decider",
+      "title": "House of the Dragon Season 3 Episode 7 Recap",
+      "url": "https://decider.com/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/",
+      "notes": "E7 status: Rhaena/Sheepstealer, Alicent/Aemond, Ulf/Ormund, Aegon/Sunfyre, Helaena."
+    },
+    "e7_forbes": {
+      "publisher": "Forbes",
+      "title": "House of the Dragon Season 3 Episode 7 Recap and Review",
+      "url": "https://www.forbes.com/sites/erikkain/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/",
+      "notes": "E7 details on Sheepstealer fight, Aegon/Tyland/Larys, Corlys captivity, Ormund/Ulf, Aemond/Alicent/Alys."
+    },
+    "e7_ew": {
+      "publisher": "Entertainment Weekly",
+      "title": "House of the Dragon director explains Sunfyre, Dreamfyre surprises ahead of season 3 finale",
+      "url": "https://ew.com/house-of-the-dragon-sunfyre-return-dreamfyre-reveal-season-3-director-interview-12032370",
+      "notes": "Director interview on Dreamfyre, Helaena rejecting active dragonriding, Sunfyre's return/bond, Ormund courting Ulf."
+    },
+    "e7_baela_addam": {
+      "publisher": "Winter is Coming / Decider recaps",
+      "url": "https://winteriscoming.net/house-of-the-dragon-season-3-episode-7-recap-review",
+      "notes": "E7 Baela/Addam and Black-court setup."
+    },
+    "e3_context": {
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/05/house-of-the-dragon-season-3-episode-3-recap/",
+      "notes": "Rhaenyra governance/treasury context."
+    },
+    "e5_context": {
+      "publisher": "Forbes / Decider",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/20/house-of-the-dragon-season-3-episode-5-recap-review/",
+      "notes": "Helaena pregnancy, Orwyle/Mysaria/Alicent, Aegon/Larys, Tumbleton/Hugh context."
+    },
+    "orwyle_context": {
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-release-time-hbo-max/",
+      "notes": "Orwyle's court/medical role and intervention in Alicent's storyline."
+    },
+    "sheepstealer_reaction": {
+      "publisher": "CinemaBlend",
+      "url": "https://www.cinemablend.com/television/hotd-dragon-abandonment-scene-internet-mad-sheepstealer-rhaena",
+      "notes": "Audience protectiveness toward Sheepstealer."
+    },
+    "e6_context": {
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-review-the-butchers-ball/",
+      "notes": "Butcher's Ball and finale positioning of ground-war characters."
+    },
+    "e6_hightower": {
+      "publisher": "Forbes / GamesRadar+",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-review-the-butchers-ball/",
+      "notes": "Gwayne/Daeron/Ormund relationship at Tumbleton."
+    },
+    "daeron_context": {
+      "publisher": "Entertainment Weekly",
+      "url": "https://ew.com/daeron-targaryen-house-of-the-dragon-benjamin-evan-ainsworth-interview-12016609",
+      "notes": "Daeron's identity and conflict with Ormund."
+    },
+    "ormund_context": {
+      "publisher": "Entertainment Weekly",
+      "url": "https://ew.com/james-norton-house-of-the-dragon-ormund-hightower-dark-as-f-villain-hair-colorist-memes-12018965",
+      "notes": "Ormund characterization and audience meme appeal."
+    },
+    "roxton_context": {
+      "publisher": "Decider",
+      "url": "https://decider.com/2026/07/26/house-of-the-dragon-season-3-episode-6-ending-explained/",
+      "notes": "Jon Roxton's role in Corlys's capture."
+    },
+    "e6_corlys": {
+      "publisher": "Decider / Forbes",
+      "url": "https://decider.com/2026/07/26/house-of-the-dragon-season-3-episode-6-ending-explained/",
+      "notes": "Corlys captured by Ormund's side; Roxton involved."
+    },
+    "e6_hugh_kat": {
+      "publisher": "Den of Geek",
+      "url": "https://www.denofgeek.com/tv/house-of-the-dragon-season-3-episode-6-review/",
+      "notes": "Hugh/Kat relationship and Tumbleton stakes."
+    },
+    "aegon_context": {
+      "publisher": "TIME / Forbes",
+      "url": "https://time.com/article/2026/07/30/house-of-the-dragon-season-3-episode-7-aegon-dragon-sunfyre-alive/",
+      "notes": "Aegon's season-three road arc leading into Sunfyre's return."
+    },
+    "north_context": {
+      "publisher": "People",
+      "url": "https://people.com/house-of-the-dragon-season-3-new-characters-12001572",
+      "notes": "Roderick Dustin, Torrhen Manderly, Black Aly and other S3 additions."
+    },
+    "black_aly_context": {
+      "publisher": "People",
+      "url": "https://people.com/house-of-the-dragon-season-3-new-characters-12001572",
+      "notes": "Black Aly as a fierce fighter; E6 establishes her battlefield role."
+    },
+    "torrhen_e7": {
+      "publisher": "Decider",
+      "url": "https://decider.com/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/",
+      "notes": "Torrhen is Rhaenyra's Master of Coin and complains about being made the regime's financial scapegoat."
+    },
+    "torrhen_e6": {
+      "publisher": "TVLine / Comic Book Club",
+      "url": "https://www.tvline.com/2223298/house-of-the-dragon-season-3-episode-6-recap-criston-cole-dies/",
+      "notes": "Torrhen mocks Daemon's dragon plan; Daemon throws a cup at him."
+    }
+  },
+  "design_notes_v2": {
+    "fork_locking": "When one beat in a fork triggers, award it and permanently lock the other beat in that same fork. The anchor remains independent.",
+    "host_behavior": "The console should show the locked sibling as unavailable immediately after the first branch scores.",
+    "draft_behavior": "All five possibilities can be shown on the draft card. Display the maximum scoring path as the card value; do not sum all five badge values.",
+    "opposite_direction_goal": "Each character has at least one meaningful branch where the story can move in opposing directions: loyalty/betrayal, reconciliation/conflict, escape/stay, power/restraint, family/duty, etc.",
+    "stacking": "Collision beats may still stack with signature beats unless the app chooses otherwise."
+  },
+  "activation_rules": {
+    "exactly_three_active_per_character": true,
+    "activation_deadline": "Before the episode starts.",
+    "inactive_beats_can_never_score": true,
+    "opposite_beats_may_both_be_activated": true,
+    "why_allow_hedging": "Using two activation slots on opposite outcomes raises the chance of one payout but reduces breadth and maximum upside elsewhere.",
+    "all_characters_have_10_legal_three_of_five_combinations": true,
+    "active_points_must_be_between": [
+      60,
+      90
+    ],
+    "character_multiplier": 1.5,
+    "collision_beats": "Remain separate and can stack with activated signature beats.",
+    "dragon_rules": "Unchanged from v2; dragon signature beats remain automatically live because each dragon has only 1–2 bespoke beats."
+  },
+  "balance_audit": [
+    {
+      "character": "Daemon Targaryen",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Rhaenyra Targaryen",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Helaena Targaryen",
+      "beat_points": [
+        20,
+        25,
+        25,
+        35,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Baela Targaryen",
+      "beat_points": [
+        20,
+        20,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 65,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Mysaria",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Rhaena Targaryen",
+      "beat_points": [
+        20,
+        25,
+        25,
+        35,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Grand Maester Orwyle",
+      "beat_points": [
+        20,
+        45,
+        25,
+        20,
+        20
+      ],
+      "min_active_total": 60,
+      "max_active_total": 90,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Aemond Targaryen",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Alicent Hightower",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Alys Rivers",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Aegon II Targaryen",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 75,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Larys Strong",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Tyland Lannister",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Daeron Targaryen",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Ormund Hightower",
+      "beat_points": [
+        20,
+        25,
+        35,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Gwayne Hightower",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 75,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Bold Jon Roxton",
+      "beat_points": [
+        20,
+        25,
+        45,
+        20,
+        20
+      ],
+      "min_active_total": 60,
+      "max_active_total": 90,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Corlys Velaryon",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 75,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Addam of Hull",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 75,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Alyn of Hull",
+      "beat_points": [
+        20,
+        25,
+        25,
+        35,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Hugh Hammer",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Ulf the White",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Kat",
+      "beat_points": [
+        25,
+        35,
+        20,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Roderick Dustin",
+      "beat_points": [
+        20,
+        25,
+        25,
+        20,
+        35
+      ],
+      "min_active_total": 65,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Oscar Tully",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        25
+      ],
+      "min_active_total": 70,
+      "max_active_total": 75,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Alysanne Blackwood",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    },
+    {
+      "character": "Torrhen Manderly",
+      "beat_points": [
+        20,
+        25,
+        25,
+        25,
+        35
+      ],
+      "min_active_total": 70,
+      "max_active_total": 85,
+      "legal_combinations": 10,
+      "total_combinations": 10
+    }
+  ],
+  "balance_audit_v4": [
+    {
+      "character": "Rhaenyra Targaryen",
+      "candidate_count": 7,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 8,
+      "relationship_axes": [
+        "Daemon",
+        "Helaena",
+        "Jace",
+        "Jaehaera",
+        "Mysaria",
+        "Rhaena",
+        "Syrax/dragonriders",
+        "war"
+      ],
+      "content_types": [
+        "conflict",
+        "mercy",
+        "power",
+        "relationship",
+        "romance"
+      ]
+    },
+    {
+      "character": "Daemon Targaryen",
+      "candidate_count": 7,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 7,
+      "relationship_axes": [
+        "Aemond",
+        "Baela",
+        "Caraxes",
+        "Jace",
+        "Rhaena",
+        "Rhaenyra",
+        "war"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "family",
+        "family_conflict",
+        "relationship",
+        "rivalry"
+      ]
+    },
+    {
+      "character": "Helaena Targaryen",
+      "candidate_count": 7,
+      "min_active_points": 65,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 6,
+      "relationship_axes": [
+        "Alicent",
+        "Dreamfyre",
+        "Jaehaera",
+        "King's Landing",
+        "Rhaenyra",
+        "prophecy"
+      ],
+      "content_types": [
+        "choice",
+        "dragon",
+        "escape",
+        "family",
+        "prophecy",
+        "relationship"
+      ]
+    },
+    {
+      "character": "Aemond Targaryen",
+      "candidate_count": 7,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 5,
+      "relationship_axes": [
+        "Aegon II",
+        "Alicent",
+        "Alys Rivers",
+        "Vhagar",
+        "self"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "mercy",
+        "recovery",
+        "relationship",
+        "rivalry"
+      ]
+    },
+    {
+      "character": "Alicent Hightower",
+      "candidate_count": 7,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 5,
+      "relationship_axes": [
+        "Aegon II",
+        "Aemond",
+        "Helaena",
+        "Jaehaera",
+        "Rhaenyra"
+      ],
+      "content_types": [
+        "conflict",
+        "escape",
+        "family",
+        "politics",
+        "relationship"
+      ]
+    },
+    {
+      "character": "Aegon II Targaryen",
+      "candidate_count": 7,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 7,
+      "relationship_axes": [
+        "Aemond",
+        "Iron Throne",
+        "Larys",
+        "Rhaenyra",
+        "Sunfyre",
+        "Tyland",
+        "self"
+      ],
+      "content_types": [
+        "choice",
+        "comedy",
+        "dragon",
+        "politics",
+        "relationship",
+        "rivalry"
+      ]
+    },
+    {
+      "character": "Baela Targaryen",
+      "candidate_count": 6,
+      "min_active_points": 65,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Alyn",
+        "Moondancer",
+        "Rhaena",
+        "Rhaenyra"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "family",
+        "politics",
+        "romance"
+      ]
+    },
+    {
+      "character": "Mysaria",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 3,
+      "relationship_axes": [
+        "Black court",
+        "Daemon",
+        "Rhaenyra"
+      ],
+      "content_types": [
+        "conflict",
+        "influence",
+        "intrigue",
+        "romance"
+      ]
+    },
+    {
+      "character": "Rhaena Targaryen",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Black allies",
+        "Rhaenyra",
+        "Sheepstealer",
+        "self"
+      ],
+      "content_types": [
+        "chaos",
+        "comedy",
+        "conflict",
+        "dragon",
+        "redemption"
+      ]
+    },
+    {
+      "character": "Alys Rivers",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Aemond",
+        "Alicent",
+        "dragon eggs",
+        "magic"
+      ],
+      "content_types": [
+        "conflict",
+        "intrigue",
+        "plot",
+        "relationship",
+        "supernatural"
+      ]
+    },
+    {
+      "character": "Larys Strong",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 5,
+      "relationship_axes": [
+        "Aegon",
+        "Blacks",
+        "Hightowers",
+        "Tyland",
+        "self"
+      ],
+      "content_types": [
+        "betrayal",
+        "conflict",
+        "intrigue",
+        "relationship"
+      ]
+    },
+    {
+      "character": "Daeron Targaryen",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Gwayne",
+        "Ormund",
+        "Tessarion",
+        "royal claim"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "family",
+        "politics",
+        "relationship"
+      ]
+    },
+    {
+      "character": "Ormund Hightower",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 5,
+      "relationship_axes": [
+        "Corlys",
+        "Daeron",
+        "Ulf",
+        "Velaryons",
+        "enemies"
+      ],
+      "content_types": [
+        "betrayal",
+        "conflict",
+        "hostage",
+        "influence",
+        "intrigue"
+      ]
+    },
+    {
+      "character": "Gwayne Hightower",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Criston Cole",
+        "Daeron",
+        "Ormund",
+        "battle"
+      ],
+      "content_types": [
+        "callback",
+        "choice",
+        "combat",
+        "conflict",
+        "family"
+      ]
+    },
+    {
+      "character": "Corlys Velaryon",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 5,
+      "relationship_axes": [
+        "Addam",
+        "Alyn",
+        "Jon Roxton",
+        "Ormund",
+        "captivity"
+      ],
+      "content_types": [
+        "action",
+        "choice",
+        "conflict",
+        "family"
+      ]
+    },
+    {
+      "character": "Addam of Hull",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 6,
+      "relationship_axes": [
+        "Alyn",
+        "Baela",
+        "Corlys",
+        "Rhaenyra",
+        "Seasmoke",
+        "Ulf"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "family",
+        "loyalty",
+        "romance"
+      ]
+    },
+    {
+      "character": "Alyn of Hull",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 3,
+      "relationship_axes": [
+        "Baela",
+        "Corlys",
+        "Velaryons"
+      ],
+      "content_types": [
+        "choice",
+        "conflict",
+        "family",
+        "leadership",
+        "romance"
+      ]
+    },
+    {
+      "character": "Hugh Hammer",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 4,
+      "relationship_axes": [
+        "Kat",
+        "Rhaenyra",
+        "Ulf",
+        "Vermithor"
+      ],
+      "content_types": [
+        "conflict",
+        "dragon",
+        "family",
+        "loyalty"
+      ]
+    },
+    {
+      "character": "Ulf the White",
+      "candidate_count": 6,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 6,
+      "relationship_axes": [
+        "Blacks",
+        "Daemon",
+        "Hugh",
+        "Ormund",
+        "Rhaenyra",
+        "Silverwing"
+      ],
+      "content_types": [
+        "betrayal",
+        "combat",
+        "conflict",
+        "relationship"
+      ]
+    },
+    {
+      "character": "Tyland Lannister",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 3,
+      "relationship_axes": [
+        "Aegon",
+        "Larys",
+        "treasury"
+      ],
+      "content_types": [
+        "betrayal",
+        "conflict",
+        "intrigue",
+        "loyalty",
+        "strategy"
+      ]
+    },
+    {
+      "character": "Grand Maester Orwyle",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 6,
+      "relationship_axes": [
+        "Alicent",
+        "Helaena",
+        "Jaehaera",
+        "Mysaria",
+        "poison",
+        "royal court"
+      ],
+      "content_types": [
+        "conflict",
+        "intrigue",
+        "loyalty",
+        "medicine"
+      ]
+    },
+    {
+      "character": "Bold Jon Roxton",
+      "candidate_count": 5,
+      "min_active_points": 60,
+      "max_active_points": 90,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Bold Jon Roxton"
+      ],
+      "content_types": [
+        "support"
+      ]
+    },
+    {
+      "character": "Kat",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Kat"
+      ],
+      "content_types": [
+        "support"
+      ]
+    },
+    {
+      "character": "Roderick Dustin",
+      "candidate_count": 5,
+      "min_active_points": 65,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Roderick Dustin"
+      ],
+      "content_types": [
+        "support"
+      ]
+    },
+    {
+      "character": "Oscar Tully",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 75,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Oscar Tully"
+      ],
+      "content_types": [
+        "support"
+      ]
+    },
+    {
+      "character": "Alysanne Blackwood",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Alysanne Blackwood"
+      ],
+      "content_types": [
+        "support"
+      ]
+    },
+    {
+      "character": "Torrhen Manderly",
+      "candidate_count": 5,
+      "min_active_points": 70,
+      "max_active_points": 85,
+      "all_combinations_legal": true,
+      "distinct_relationship_axes": 1,
+      "relationship_axes": [
+        "Torrhen Manderly"
+      ],
+      "content_types": [
+        "support"
+      ]
+    }
+  ],
+  "v4_second_pass_notes": {
+    "main_change": "Central characters now have 7 candidates and major supporting characters 6, while support picks remain at 5.",
+    "relationship_rule": "Central characters were rewritten to touch at least four distinct relationship/story axes where plausible.",
+    "rhaenyra_specific": "Rhaenyra now has dragonfire plus separate bets involving Daemon, Mysaria, Helaena/Jaehaera, and Rhaena.",
+    "point_balance": "Every possible three-beat activation combination for every character remains between 60 and 90 base points.",
+    "dragons": "Unchanged from v3."
+  }
+}

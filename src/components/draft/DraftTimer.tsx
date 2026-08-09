@@ -92,7 +92,7 @@ export default function DraftTimer({
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Star size={14} className="text-oscar-gold fill-current" />
+            <Star size={14} className="text-accent fill-current" />
           </motion.div>
           <span
             className="text-sm font-extrabold uppercase tracking-[0.18em]"
@@ -104,7 +104,7 @@ export default function DraftTimer({
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
           >
-            <Star size={14} className="text-oscar-gold fill-current" />
+            <Star size={14} className="text-accent fill-current" />
           </motion.div>
         </motion.div>
       )}
@@ -117,12 +117,12 @@ export default function DraftTimer({
           </span>
 
           {isDraftComplete ? (
-            <span className="text-xs font-semibold text-oscar-gold">Ensemble Complete!</span>
+            <span className="text-xs font-semibold text-accent">Ensemble Complete!</span>
           ) : isMyTurn ? (
             <motion.span
               animate={{ opacity: [1, 0.55, 1] }}
               transition={{ duration: 1.2, repeat: Infinity }}
-              className="text-xs font-bold text-oscar-gold uppercase tracking-wider flex items-center gap-1"
+              className="text-xs font-bold text-accent uppercase tracking-wider flex items-center gap-1"
             >
               Pick now!
             </motion.span>

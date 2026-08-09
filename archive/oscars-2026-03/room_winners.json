@@ -1,0 +1,998 @@
+[
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 4,
+  "winner_id": "d0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "category_id": 1,
+  "winner_id": "a0000001-0000-0000-0000-000000000008",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "4707c913-4042-46d8-b559-3bf3991ec245",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 4,
+  "winner_id": "d0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "category_id": 1,
+  "winner_id": "a0000001-0000-0000-0000-000000000007",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 4,
+  "winner_id": "d0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "category_id": 1,
+  "winner_id": "a0000001-0000-0000-0000-000000000006",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "f0f134c8-3787-4c85-9f9c-36dc1bc89c3a",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000004",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 4,
+  "winner_id": "d0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "category_id": 1,
+  "winner_id": "a0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 22,
+  "winner_id": "1f000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 5,
+  "winner_id": "e0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 8,
+  "winner_id": "11000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 7,
+  "winner_id": "10000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 12,
+  "winner_id": "15000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 15,
+  "winner_id": "18000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 24,
+  "winner_id": "21000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 21,
+  "winner_id": "1e000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 11,
+  "winner_id": "14000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 14,
+  "winner_id": "17000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 10,
+  "winner_id": "13000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 9,
+  "winner_id": "12000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 20,
+  "winner_id": "1d000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 17,
+  "winner_id": "1a000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 4,
+  "winner_id": "d0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 2,
+  "winner_id": "b0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 3,
+  "winner_id": "c0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "category_id": 1,
+  "winner_id": "a0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "e67833fc-175e-4001-85e5-944ec15f418a",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 13,
+  "winner_id": "16000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 16,
+  "winner_id": "19000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "category_id": 18,
+  "winner_id": "1b000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000001",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000005",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "category_id": 6,
+  "winner_id": "f0000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "category_id": 19,
+  "winner_id": "1c000001-0000-0000-0000-000000000002",
+  "tie_winner_id": null
+ },
+ {
+  "room_id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "category_id": 23,
+  "winner_id": "20000001-0000-0000-0000-000000000003",
+  "tie_winner_id": null
+ }
+]

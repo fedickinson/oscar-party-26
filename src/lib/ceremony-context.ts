@@ -1,73 +1,120 @@
 /**
- * ceremony-context.ts -- pure helpers that format static encyclopedia data
- * for injection into AI companion prompts.
+ * ceremony-context.ts — formats researched encyclopedia data for injection into
+ * AI companion prompts.
  *
  * No React, no Supabase, no async. Unit-testable.
+ *
+ * WHY IT MATTERS
+ * Season 3 postdates the model's training cutoff, so anything not injected here
+ * is invented. These builders are the only thing standing between the companions
+ * and confidently fabricated deaths, dragons and betrayals.
+ *
+ * WHAT IT WILL NOT DO
+ * Never emits spoiler-tagged material. safeCriticism() filters it, and the
+ * dossier fields chosen below are all already-aired. See westeros-encyclopedia.ts.
  */
 
 import {
-  categoryPresenters,
-  filmEncyclopedia,
-  ceremonyStorylines,
-  biggestSnubs,
-  type PresenterEntry,
-} from '../data/film-encyclopedia'
+  getCharacter,
+  getDragon,
+  isDead,
+  safeCriticism,
+  hasEncyclopedia,
+  stateOfPlay,
+  episodeRecaps,
+} from '../data/westeros-encyclopedia'
 
-// ─── buildCategoryContext ────────────────────────────────────────────────────
-// Returns a compact text block with presenter info and relevant film context
-// for a specific category. Used in pre-category and winner-reaction prompts.
+// ─── buildEventContext ───────────────────────────────────────────────────────
+// Called when the Game Master logs an event. `characterName` is whoever the host
+// assigned it to — the single most useful thing we can ground the companions on.
 
-export function buildCategoryContext(categoryName: string): string {
+export function buildEventContext(
+  eventName: string,
+  characterName?: string,
+): string {
+  if (!hasEncyclopedia()) return ''
+
   const parts: string[] = []
 
-  // Match presenter by case-insensitive substring
-  const lowerCat = categoryName.toLowerCase()
-  const presenter: PresenterEntry | undefined = categoryPresenters.find(
-    (p) => p.category.toLowerCase() === lowerCat,
-  ) ?? categoryPresenters.find(
-    (p) => lowerCat.includes(p.category.toLowerCase()) || p.category.toLowerCase().includes(lowerCat),
-  )
+  if (characterName) {
+    const c = getCharacter(characterName)
+    if (c) {
+      const lines = [
+        `${c.name} (${c.actor}) — ${c.house}, ${c.allegiance}.`,
+        c.dragon ? `Dragon: ${c.dragon.name} — ${c.dragon.notes}` : 'No dragon.',
+        `Status entering the finale: ${c.statusEnteringFinale}`,
+        `This season: ${c.arcThisSeason}`,
+      ]
+      if (c.whatTheyveLost) lines.push(`Has lost: ${c.whatTheyveLost}`)
+      if (c.discourse) lines.push(`Critical view: ${c.discourse}`)
+      // How the room actually feels. Keeps the companions in step with the
+      // people watching rather than arguing against them.
+      if (c.audienceReaction) lines.push(`HOW VIEWERS FEEL ABOUT THEM: ${c.audienceReaction}`)
+      parts.push(lines.join('\n'))
+    } else if (getDragon(characterName)) {
+      const d = getDragon(characterName)!
+      parts.push([
+        `${d.name} — dragon, ${d.allegiance}${d.rider ? `, ridden by ${d.rider}` : ', riderless'}.`,
+        `Status: ${d.status}`,
+        `HOW VIEWERS FEEL ABOUT THEM: ${d.audienceReaction}`,
+      ].join('\n'))
+    } else if (isDead(characterName)) {
+      // The host can legitimately log an event about someone who died earlier
+      // in the season. Say so rather than letting the model treat them as live.
+      parts.push(
+        `NOTE: ${characterName} died earlier this season and is not alive in this episode. React accordingly.`,
+      )
+    }
+  }
 
-  if (presenter) {
+  // The event text may name a dragon even when the assigned character is human
+  // — "Aemond burns Tumbleton" vs "Vermithor falls". Pick that up too.
+  const named = getDragon(eventName)
+  if (named && !parts.some((p) => p.startsWith(named.name))) {
     parts.push(
-      `Presenter: ${presenter.presenter} -- ${presenter.about} (${presenter.oscarConnection})`,
+      `${named.name} — dragon, ${named.allegiance}. ${named.status}\nHOW VIEWERS FEEL ABOUT THEM: ${named.audienceReaction}`,
     )
   }
 
-  // Find films relevant to nominees in this category by checking if any film
-  // has a storyline or key facts that mention this category type. We pick at
-  // most one film to keep the context short.
-  const relevantFilm = filmEncyclopedia.find((f) => {
-    const storylineLower = f.oscarStoryline.toLowerCase()
-    const whyLower = f.whyNominated.toLowerCase()
-    return storylineLower.includes(lowerCat) || whyLower.includes(lowerCat)
-  })
-
-  if (relevantFilm) {
-    // Pick the most compact useful line -- oscarStoryline first sentence
-    const firstSentence = relevantFilm.oscarStoryline.split('. ')[0]
-    parts.push(
-      `Key nominee context: ${relevantFilm.title} -- ${firstSentence}.`,
-    )
-  }
-
-  return parts.join('\n')
+  return parts.join('\n\n')
 }
 
-// ─── buildCeremonyPreamble ──────────────────────────────────────────────────
-// Returns a text block with key storylines and snubs for the pre-ceremony
-// prompt. Called once at ceremony start. Kept under ~400 characters.
+// ─── buildSeasonPreamble ─────────────────────────────────────────────────────
+// Called once at the start of the night. Gives the companions the board.
+
+export function buildSeasonPreamble(): string {
+  if (!hasEncyclopedia()) return ''
+
+  const lastEp = episodeRecaps[episodeRecaps.length - 1]
+  const recent = lastEp
+    ? `\nWhat happened last episode ("${lastEp.title}"):\n${lastEp.events.map((e) => `- ${e}`).join('\n')}`
+    : ''
+
+  // A small, rotating slice of criticism — enough to give the companions real
+  // opinions to hold, not so much that it crowds out the persona instructions.
+  const takes = safeCriticism()
+    .filter((c) => c.category !== 'sexual-violence')
+    .slice(0, 6)
+    .map((c) => `- ${c.point}`)
+    .join('\n')
+
+  return [
+    `STATE OF PLAY GOING INTO TONIGHT:\n${stateOfPlay}`,
+    recent.trim(),
+    takes ? `HOW THIS SEASON HAS BEEN RECEIVED (you may hold these views, and disagree with each other about them):\n${takes}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+// ─── Back-compat shims ───────────────────────────────────────────────────────
+// The Oscars build called these; keep the names working so call sites do not
+// all have to change at once.
+
+export function buildCategoryContext(eventName: string, characterName?: string): string {
+  return buildEventContext(eventName, characterName)
+}
 
 export function buildCeremonyPreamble(): string {
-  const storylineLines = ceremonyStorylines
-    .slice(0, 5)
-    .map((s) => `- ${s.title}: ${s.description.split('. ')[0]}.`)
-    .join('\n')
-
-  const snubLines = biggestSnubs
-    .slice(0, 3)
-    .map((s) => `- ${s.name} (${s.category})`)
-    .join('\n')
-
-  return `Key storylines tonight:\n${storylineLines}\nBiggest snubs:\n${snubLines}`
+  return buildSeasonPreamble()
 }

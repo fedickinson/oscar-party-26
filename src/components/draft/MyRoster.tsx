@@ -6,7 +6,7 @@
  *
  * EXPANDED:
  *   Slides up to reveal the full list of drafted entities with name,
- *   film, and potential points (sum of all nomination point values).
+ *   house, and potential points (sum of all event point values).
  *
  * We use framer-motion's AnimatePresence + height animation to slide the
  * content in and out. The handle bar at the top is always visible.
@@ -30,7 +30,7 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
   const [expanded, setExpanded] = useState(false)
 
   const peoplePicks = roster.filter((e) => e.type === 'person')
-  const filmPicks = roster.filter((e) => e.type === 'film')
+  const dragonPicks = roster.filter((e) => e.type === 'film')
 
   const totalPotentialPoints = roster.reduce(
     (sum, e) => sum + e.nominations.reduce((s, n) => s + (n.points ?? 0), 0),
@@ -42,7 +42,7 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
       {/* Handle / summary row — always visible, tappable to toggle */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full backdrop-blur-lg bg-midnight/90 border border-white/15 rounded-t-2xl px-4 py-3 flex items-center justify-between"
+        className="w-full backdrop-blur-lg bg-ground-deep/90 border border-white/15 rounded-t-2xl px-4 py-3 flex items-center justify-between"
       >
         <div className="flex items-center gap-2">
           <span
@@ -58,12 +58,12 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
           ) : (
             <span className="text-xs text-white/50">
               {peoplePicks.length > 0 && `${peoplePicks.length} ${peoplePicks.length === 1 ? 'person' : 'people'}`}
-              {peoplePicks.length > 0 && filmPicks.length > 0 && ' · '}
-              {filmPicks.length > 0 && `${filmPicks.length} ${filmPicks.length === 1 ? 'film' : 'films'}`}
+              {peoplePicks.length > 0 && dragonPicks.length > 0 && ' · '}
+              {dragonPicks.length > 0 && `${dragonPicks.length} ${dragonPicks.length === 1 ? 'dragon' : 'dragons'}`}
             </span>
           )}
           {totalPotentialPoints > 0 && (
-            <span className="text-xs text-oscar-gold font-bold">
+            <span className="text-xs text-accent font-bold">
               {totalPotentialPoints} pts potential
             </span>
           )}
@@ -86,7 +86,7 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden backdrop-blur-lg bg-midnight/95 border-x border-white/15"
+            className="overflow-hidden backdrop-blur-lg bg-ground-deep/95 border-x border-white/15"
           >
             <div className="px-4 pb-4 pt-2 max-h-64 overflow-y-auto">
               {roster.length === 0 ? (
@@ -98,8 +98,8 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
                   {peoplePicks.length > 0 && (
                     <RosterSection label="People" entities={peoplePicks} />
                   )}
-                  {filmPicks.length > 0 && (
-                    <RosterSection label="Films" entities={filmPicks} />
+                  {dragonPicks.length > 0 && (
+                    <RosterSection label="Dragons" entities={dragonPicks} />
                   )}
                 </>
               )}
@@ -144,7 +144,7 @@ function RosterSection({
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-bold text-oscar-gold">{pts}</p>
+                <p className="text-sm font-bold text-accent">{pts}</p>
                 <p className="text-[10px] text-white/30">max pts</p>
               </div>
             </div>

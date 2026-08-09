@@ -105,7 +105,7 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
               height: 72,
             }}
           >
-            <Trophy size={32} className="text-oscar-gold" />
+            <Trophy size={32} className="text-accent" />
           </div>
         </motion.div>
 
@@ -123,7 +123,7 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.24 }}
-          className="text-3xl font-extrabold text-oscar-gold leading-tight"
+          className="text-3xl font-extrabold text-accent leading-tight"
         >
           All {totalCategories} decided
         </motion.h2>
@@ -155,9 +155,9 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
               <p className="text-xl font-extrabold text-white truncate">{leader.player.name}</p>
             </div>
 
-            <p className="text-4xl font-black text-oscar-gold tabular-nums leading-none">
+            <p className="text-4xl font-black text-accent tabular-nums leading-none">
               {leader.totalScore}
-              <span className="text-lg font-semibold text-oscar-gold/45 ml-1.5">pts</span>
+              <span className="text-lg font-semibold text-accent/45 ml-1.5">pts</span>
             </p>
 
             {leaderboard.length > 1 && (
@@ -171,7 +171,7 @@ export default function FinaleOverlay({ leaderboard, totalCategories, onDismiss 
         {/* Auto-dismiss progress bar */}
         <div className="mt-6 h-0.5 bg-white/8 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-oscar-gold/55 rounded-full"
+            className="h-full bg-accent/55 rounded-full"
             initial={{ width: '100%' }}
             animate={{ width: '0%' }}
             transition={{ duration: DISMISS_MS / 1000, ease: 'linear' }}

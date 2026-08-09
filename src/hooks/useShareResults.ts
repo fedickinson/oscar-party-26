@@ -1,36 +1,55 @@
 /**
- * useShareResults -- image-card social sharing for final standings.
+ * useShareResults -- image-card social sharing.
  *
- * Renders a ShareCard off-screen, captures it as a PNG via html-to-image,
- * then shares via Web Share API (mobile with file support) or downloads
- * the image as a fallback (desktop / no file sharing).
+ * Renders a share card off-screen, captures it as a PNG via html-to-image, then
+ * shares via the Web Share API (mobile with file support) or downloads the
+ * image as a fallback (desktop / no file sharing).
  *
- * Returns { shareResults, isCopied } for API compatibility with
- * PostCeremonyView's existing button binding.
+ * TWO CARDS, ONE PIPELINE
+ *   shareResults()    -- the standings. Same image for everyone.
+ *   sharePlayerCard() -- one player's own title and verdict.
+ * The render/capture/share plumbing is identical for both and lives in
+ * captureAndShare; only the element differs. This was one inlined function
+ * before the second card existed, and duplicating ~70 lines of blob and
+ * navigator.share handling to add it would have meant two places to fix the
+ * next time a browser disagreed about canShare.
  */
 
 import { useCallback, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { toPng } from 'html-to-image'
+import type { ReactNode } from 'react'
 import { ShareCard } from '../components/home/ShareCard'
+import { PlayerShareCard } from '../components/home/PlayerShareCard'
 import type { ScoredPlayer } from '../lib/scoring'
-import type { PlayerRow } from '../types/database'
+import type { PlayerAward } from '../lib/night-awards'
+import type { PlayerRow, PlayerVerdictRow } from '../types/database'
+
+/** Public recap URL for a room — printed on the card and used as share text. */
+export function recapUrlFor(roomCode: string): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return `${origin}/recap/${roomCode}`
+}
 
 export function useShareResults() {
   const [isCopied, setIsCopied] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const shareResults = useCallback(
-    async (leaderboard: ScoredPlayer[], players: PlayerRow[], roomCode: string) => {
-      if (leaderboard.length === 0) return
+  const flashCopied = useCallback(() => {
+    setIsCopied(true)
+    timerRef.current = setTimeout(() => {
+      setIsCopied(false)
+      timerRef.current = null
+    }, 2000)
+  }, [])
 
-      // Clean up any existing timer
+  const captureAndShare = useCallback(
+    async (element: ReactNode, fileName: string, shareTitle: string, shareUrl?: string) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current)
         timerRef.current = null
       }
 
-      // Create off-screen container
       const container = document.createElement('div')
       container.style.position = 'fixed'
       container.style.left = '-9999px'
@@ -40,78 +59,89 @@ export function useShareResults() {
       const root = createRoot(container)
 
       try {
-        // Render the ShareCard into the off-screen container
-        root.render(
-          ShareCard({ leaderboard, players, roomCode }),
-        )
+        root.render(element)
 
-        // Small delay to let React render the component
+        // Let React commit before we rasterise. Without this the capture races
+        // the first paint and comes back blank.
         await new Promise((resolve) => setTimeout(resolve, 150))
 
         const cardElement = container.firstElementChild as HTMLElement
-        if (!cardElement) {
-          throw new Error('ShareCard did not render')
-        }
+        if (!cardElement) throw new Error('Share card did not render')
 
-        // Capture as PNG
         const dataUrl = await toPng(cardElement, {
           width: 1080,
           height: 1350,
           pixelRatio: 1,
         })
 
-        // Convert data URL to Blob
         const response = await fetch(dataUrl)
         const blob = await response.blob()
-        const file = new File([blob], `oscars-results-${roomCode}.png`, {
-          type: 'image/png',
-        })
+        const file = new File([blob], fileName, { type: 'image/png' })
 
-        // Try native share with file support (mobile)
         if (
           typeof navigator.share === 'function' &&
           typeof navigator.canShare === 'function' &&
           navigator.canShare({ files: [file] })
         ) {
           try {
-            await navigator.share({
-              title: 'Oscars Night 26 Results',
-              files: [file],
-            })
-            setIsCopied(true)
-            timerRef.current = setTimeout(() => {
-              setIsCopied(false)
-              timerRef.current = null
-            }, 2000)
+            // The URL rides along with the image so a recipient can open the
+            // full recap. An image alone is a dead end.
+            await navigator.share({ title: shareTitle, text: shareUrl, files: [file] })
+            flashCopied()
             return
           } catch {
-            // User cancelled or share failed -- fall through to download
+            // Cancelled or unsupported -- fall through to download
           }
         }
 
-        // Fallback: download the image
         const link = document.createElement('a')
         link.href = dataUrl
-        link.download = `oscars-results-${roomCode}.png`
+        link.download = fileName
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
 
-        setIsCopied(true)
-        timerRef.current = setTimeout(() => {
-          setIsCopied(false)
-          timerRef.current = null
-        }, 2000)
+        flashCopied()
       } catch {
-        // Silently fail -- sharing is nice-to-have
+        // Sharing is nice-to-have -- never let it surface as an error
       } finally {
-        // Clean up off-screen container
         root.unmount()
         document.body.removeChild(container)
       }
     },
-    [],
+    [flashCopied],
   )
 
-  return { shareResults, isCopied }
+  const shareResults = useCallback(
+    async (leaderboard: ScoredPlayer[], players: PlayerRow[], roomCode: string) => {
+      if (leaderboard.length === 0) return
+      await captureAndShare(
+        ShareCard({ leaderboard, players, roomCode }),
+        `hotd-finale-standings-${roomCode}.png`,
+        'House of the Dragon Finale — Final Standings',
+        recapUrlFor(roomCode),
+      )
+    },
+    [captureAndShare],
+  )
+
+  const sharePlayerCard = useCallback(
+    async (
+      award: PlayerAward,
+      entry: ScoredPlayer | undefined,
+      verdict: PlayerVerdictRow | undefined,
+      roomCode: string,
+    ) => {
+      const recapUrl = recapUrlFor(roomCode)
+      await captureAndShare(
+        PlayerShareCard({ award, entry, verdict, roomCode, recapUrl }),
+        `hotd-finale-${award.playerName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
+        `${award.playerName} — ${award.title}`,
+        recapUrl,
+      )
+    },
+    [captureAndShare],
+  )
+
+  return { shareResults, sharePlayerCard, isCopied }
 }

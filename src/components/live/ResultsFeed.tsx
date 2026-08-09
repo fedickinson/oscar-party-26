@@ -68,7 +68,7 @@ export default function ResultsFeed({ results }: Props) {
               className={[
                 'backdrop-blur-lg border rounded-xl px-3.5 py-3 relative overflow-hidden',
                 big
-                  ? 'border-oscar-gold/28 bg-oscar-gold/8'
+                  ? 'border-accent/28 bg-accent/8'
                   : 'border-white/8 bg-white/5',
               ].join(' ')}
             >
@@ -118,12 +118,12 @@ export default function ResultsFeed({ results }: Props) {
                     className={[
                       'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
                       big
-                        ? 'bg-oscar-gold/16 border border-oscar-gold/28'
+                        ? 'bg-accent/16 border border-accent/28'
                         : 'bg-white/6 border border-white/8',
                     ].join(' ')}
                   >
                     {big ? (
-                      <Trophy size={12} className="text-oscar-gold" />
+                      <Trophy size={12} className="text-accent" />
                     ) : (
                       <Award size={12} className="text-white/35" />
                     )}
@@ -135,7 +135,7 @@ export default function ResultsFeed({ results }: Props) {
                     </p>
                     <p className={[
                       'text-sm font-bold truncate leading-tight',
-                      big ? 'text-oscar-gold' : 'text-white/90',
+                      big ? 'text-accent' : 'text-white/90',
                     ].join(' ')}>
                       {result.winnerName}
                       {result.tieWinnerName && (
@@ -160,7 +160,7 @@ export default function ResultsFeed({ results }: Props) {
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <span className={[
                     'text-xs font-extrabold tabular-nums',
-                    big ? 'text-oscar-gold' : 'text-white/55',
+                    big ? 'text-accent' : 'text-white/55',
                   ].join(' ')}>
                     +{result.categoryPoints}pt
                   </span>

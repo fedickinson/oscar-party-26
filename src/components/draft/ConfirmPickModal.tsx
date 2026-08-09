@@ -68,7 +68,7 @@ export default function ConfirmPickModal({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 32, stiffness: 400 }}
-        className="w-full max-w-md bg-midnight border border-white/15 rounded-t-3xl p-6 pb-8"
+        className="w-full max-w-md bg-ground-deep border border-white/15 rounded-t-3xl p-6 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle hint */}
@@ -81,11 +81,11 @@ export default function ConfirmPickModal({
               className={[
                 'text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded',
                 isFilm
-                  ? 'bg-oscar-gold/20 text-oscar-gold'
+                  ? 'bg-accent/20 text-accent'
                   : 'bg-violet-500/20 text-violet-300',
               ].join(' ')}
             >
-              {isFilm ? 'Film' : 'Person'}
+              {isFilm ? 'Dragon' : 'Character'}
             </span>
           </div>
 
@@ -106,14 +106,14 @@ export default function ConfirmPickModal({
             {entity.nominations.map((nom) => (
               <div key={nom.category_id} className="flex justify-between items-center">
                 <span className="text-sm text-white/80 flex-1 mr-3">{nom.category_name}</span>
-                <span className="text-sm font-bold text-oscar-gold flex-shrink-0">
+                <span className="text-sm font-bold text-accent flex-shrink-0">
                   +{nom.points} pts
                 </span>
               </div>
             ))}
             <div className="border-t border-white/10 pt-2 mt-2 flex justify-between">
               <span className="text-sm text-white/50">Max potential</span>
-              <span className="text-sm font-bold text-oscar-gold">{totalPoints} pts</span>
+              <span className="text-sm font-bold text-accent">{totalPoints} pts</span>
             </div>
           </div>
         ) : (
@@ -137,7 +137,7 @@ export default function ConfirmPickModal({
           <button
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="flex-[2] py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-60 hover:bg-oscar-gold-light transition-colors"
+            className="flex-[2] py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-60 hover:bg-accent-light transition-colors"
           >
             {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
           </button>

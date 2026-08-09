@@ -29,6 +29,25 @@ export interface RoomRow {
   // Game depth modes — added in migration add_game_modes.sql
   ensemble_mode?: EnsembleMode
   prestige_mode?: PrestigeMode
+  // ── Remote co-watch sync (migration 20260809_watch_sync.sql) ──────────────
+  // Two playbacks, not six: one screen in New York, one remote viewer. The
+  // beacon is "I was at X at wall-clock T" — readers age it by transit time.
+  sync_position_ms?: number | null
+  sync_posted_at?: string | null
+  sync_posted_by?: string | null
+  is_paused?: boolean
+  /** Set when someone asks; cleared when the point person actually pauses. */
+  pause_requested_by?: string | null
+  pause_reason?: string | null
+  paused_at_ms?: number | null
+  resume_ready?: string[]
+  /** Two playbacks, two controllers: the room's remote-holder and the remote viewer. */
+  point_person_ids?: string[]
+  /** Wall clock both playbacks press play at. Drives the synced countdown. */
+  resume_at?: string | null
+  episode_started_at?: string | null
+  /** When the pre-draft 3-2-1 began. Shared so every client derives the same count. */
+  countdown_started_at?: string | null
 }
 
 export interface RoomInsert {
@@ -44,6 +63,25 @@ export interface RoomInsert {
   created_at?: string
   ensemble_mode?: EnsembleMode
   prestige_mode?: PrestigeMode
+  // ── Remote co-watch sync (migration 20260809_watch_sync.sql) ──────────────
+  // Two playbacks, not six: one screen in New York, one remote viewer. The
+  // beacon is "I was at X at wall-clock T" — readers age it by transit time.
+  sync_position_ms?: number | null
+  sync_posted_at?: string | null
+  sync_posted_by?: string | null
+  is_paused?: boolean
+  /** Set when someone asks; cleared when the point person actually pauses. */
+  pause_requested_by?: string | null
+  pause_reason?: string | null
+  paused_at_ms?: number | null
+  resume_ready?: string[]
+  /** Two playbacks, two controllers: the room's remote-holder and the remote viewer. */
+  point_person_ids?: string[]
+  /** Wall clock both playbacks press play at. Drives the synced countdown. */
+  resume_at?: string | null
+  episode_started_at?: string | null
+  /** When the pre-draft 3-2-1 began. Shared so every client derives the same count. */
+  countdown_started_at?: string | null
 }
 
 export interface RoomUpdate {
@@ -59,6 +97,25 @@ export interface RoomUpdate {
   created_at?: string
   ensemble_mode?: EnsembleMode
   prestige_mode?: PrestigeMode
+  // ── Remote co-watch sync (migration 20260809_watch_sync.sql) ──────────────
+  // Two playbacks, not six: one screen in New York, one remote viewer. The
+  // beacon is "I was at X at wall-clock T" — readers age it by transit time.
+  sync_position_ms?: number | null
+  sync_posted_at?: string | null
+  sync_posted_by?: string | null
+  is_paused?: boolean
+  /** Set when someone asks; cleared when the point person actually pauses. */
+  pause_requested_by?: string | null
+  pause_reason?: string | null
+  paused_at_ms?: number | null
+  resume_ready?: string[]
+  /** Two playbacks, two controllers: the room's remote-holder and the remote viewer. */
+  point_person_ids?: string[]
+  /** Wall clock both playbacks press play at. Drives the synced countdown. */
+  resume_at?: string | null
+  episode_started_at?: string | null
+  /** When the pre-draft 3-2-1 began. Shared so every client derives the same count. */
+  countdown_started_at?: string | null
 }
 
 // ─── players ─────────────────────────────────────────────────────────────────
@@ -71,6 +128,11 @@ export interface PlayerRow {
   color: string
   is_host: boolean
   created_at: string
+  /** Which screen this player watches on. Players sharing a group share a playback. */
+  watch_group?: string | null
+  episode_started_at?: string | null
+  /** The one person per watch group who controls playback. */
+  is_remote_holder?: boolean
 }
 
 export interface PlayerInsert {
@@ -81,6 +143,11 @@ export interface PlayerInsert {
   color: string
   is_host?: boolean
   created_at?: string
+  /** Which screen this player watches on. Players sharing a group share a playback. */
+  watch_group?: string | null
+  episode_started_at?: string | null
+  /** The one person per watch group who controls playback. */
+  is_remote_holder?: boolean
 }
 
 export interface PlayerUpdate {
@@ -91,6 +158,11 @@ export interface PlayerUpdate {
   color?: string
   is_host?: boolean
   created_at?: string
+  /** Which screen this player watches on. Players sharing a group share a playback. */
+  watch_group?: string | null
+  episode_started_at?: string | null
+  /** The one person per watch group who controls playback. */
+  is_remote_holder?: boolean
 }
 
 // ─── categories ──────────────────────────────────────────────────────────────
@@ -276,11 +348,31 @@ export interface ConfidencePickUpdate {
 
 // ─── bingo_squares ───────────────────────────────────────────────────────────
 
+/**
+ * Estimated chance the square's win condition happens at least once in the
+ * finale. Set by the researcher who built the master pool, not measured.
+ *   likely 60-100% · toss_up 40-59% · long_shot 20-39% · chaos 0-19%
+ */
+export type LikelihoodTier = 'likely' | 'toss_up' | 'long_shot' | 'chaos'
+
 export interface BingoSquareRow {
   id: number
   text: string
   short_text: string
   is_objective: boolean
+  /** Stable content key from the master pool (e.g. 'dragon_dies') */
+  slug: string
+  /** Grid tile label — same value as short_text */
+  title: string
+  /** The strict adjudication rule, including what does NOT count */
+  win_condition: string
+  probability_pct: number
+  likelihood_tier: LikelihoodTier
+  category: string | null
+  why_it_is_fun: string | null
+  /** Storyline threads this square belongs to — used to keep boards varied */
+  storyline_tags: string[] | null
+  fun_type: string | null
 }
 
 export interface BingoSquareInsert {
@@ -288,6 +380,15 @@ export interface BingoSquareInsert {
   text: string
   short_text: string
   is_objective: boolean
+  slug: string
+  title: string
+  win_condition: string
+  probability_pct: number
+  likelihood_tier: LikelihoodTier
+  category?: string | null
+  why_it_is_fun?: string | null
+  storyline_tags?: string[] | null
+  fun_type?: string | null
 }
 
 export interface BingoSquareUpdate {
@@ -295,6 +396,15 @@ export interface BingoSquareUpdate {
   text?: string
   short_text?: string
   is_objective?: boolean
+  slug?: string
+  title?: string
+  win_condition?: string
+  probability_pct?: number
+  likelihood_tier?: LikelihoodTier
+  category?: string | null
+  why_it_is_fun?: string | null
+  storyline_tags?: string[] | null
+  fun_type?: string | null
 }
 
 // ─── bingo_cards ─────────────────────────────────────────────────────────────
@@ -389,7 +499,9 @@ export interface AvatarUpdate {
 export interface MessageRow {
   id: string
   room_id: string
-  // UUID for human players, or 'meryl' | 'nikki' | 'will' for AI companions (FK dropped in migration).
+  // UUID for human players, or a companion id from data/ai-companions.ts for AI
+  // companions, or 'system' / 'winner-divider' / 'film-link' for synthetic rows.
+  // The FK was dropped in migration precisely to allow these non-UUID authors.
   player_id: string
   text: string
   created_at: string
@@ -434,6 +546,28 @@ export interface RoomWinnerUpdate {
   tie_winner_id?: string | null
 }
 
+// ─── Player verdicts (The Reckoning) ─────────────────────────────────────────
+
+export interface PlayerVerdictRow {
+  room_id: string
+  player_id: string
+  /** CompanionId of whoever wrote it. Deterministically assigned. */
+  companion_id: string
+  /** Computed honorific — see lib/night-awards.ts. Denormalised for the public view. */
+  title: string
+  verdict: string
+  created_at: string
+}
+
+export interface PlayerVerdictInsert {
+  room_id: string
+  player_id: string
+  companion_id: string
+  title: string
+  verdict: string
+  created_at?: string
+}
+
 // ─── Database helper type ────────────────────────────────────────────────────
 
 export interface Database {
@@ -446,6 +580,7 @@ export interface Database {
       category_nominees: { Row: CategoryNomineeRow; Insert: CategoryNomineeInsert; Update: CategoryNomineeUpdate }
       draft_entities: { Row: DraftEntityRow; Insert: DraftEntityInsert; Update: DraftEntityUpdate }
       draft_picks: { Row: DraftPickRow; Insert: DraftPickInsert; Update: DraftPickUpdate }
+      player_verdicts: { Row: PlayerVerdictRow; Insert: PlayerVerdictInsert; Update: Partial<PlayerVerdictInsert> }
       confidence_picks: { Row: ConfidencePickRow; Insert: ConfidencePickInsert; Update: ConfidencePickUpdate }
       bingo_squares: { Row: BingoSquareRow; Insert: BingoSquareInsert; Update: BingoSquareUpdate }
       bingo_cards: { Row: BingoCardRow; Insert: BingoCardInsert; Update: BingoCardUpdate }

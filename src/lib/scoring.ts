@@ -52,6 +52,46 @@ export interface ScoredPlayer {
   bingoScore: number
   totalScore: number
   rank: number
+  /** Number of confidence picks that came in correct. Tiebreak input. */
+  correctPickCount: number
+  /** Highest confidence value spent on a pick that came in correct. Tiebreak input. */
+  topCorrectPick: number
+}
+
+// ─── compareForRank ───────────────────────────────────────────────────────────
+
+/**
+ * Total ordering over scored players — the rule that decides who wins.
+ *
+ * WHY A CASCADE AND NOT JUST totalScore:
+ * Every event pays 4, 6, 8 or 10, draft points are those same values (or 1.5x
+ * of them), and there are only 20 events and 3-4 players. Exact ties at the top
+ * are not an edge case here, they are a normal Tuesday. Crowning co-champions
+ * on the first collision would happen often enough to feel like the game
+ * failed to finish rather than like a genuine dead heat.
+ *
+ * The cascade breaks ties toward prediction skill, in descending order of how
+ * much deliberate judgement each step reflects:
+ *
+ *   1. totalScore       — the game as played
+ *   2. confidenceScore  — who read the episode better. Draft points depend
+ *                         partly on draft position and on who was still on the
+ *                         board; confidence is a pure, simultaneous, everyone-
+ *                         gets-the-same-budget prediction.
+ *   3. correctPickCount — breadth: called more events right, even if the
+ *                         weighting paid out less
+ *   4. topCorrectPick   — nerve: put the biggest number on the line and hit it
+ *
+ * Bingo is deliberately absent. It is dealt, not decided, so it should never be
+ * the thing that separates two players who are otherwise level.
+ *
+ * Returns 0 only on a true dead heat, which is then a real co-championship.
+ */
+export function compareForRank(a: ScoredPlayer, b: ScoredPlayer): number {
+  if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore
+  if (b.confidenceScore !== a.confidenceScore) return b.confidenceScore - a.confidenceScore
+  if (b.correctPickCount !== a.correctPickCount) return b.correctPickCount - a.correctPickCount
+  return b.topCorrectPick - a.topCorrectPick
 }
 
 // ─── scoreConfidencePick ──────────────────────────────────────────────────────
@@ -74,8 +114,13 @@ export function scoreConfidencePick(
 
 /**
  * Returns the playerId who should receive draft points for this category
- * winner, and the point value. Returns { playerId: null, points: 0 } if
- * nobody drafted the winning entity.
+ * winner, the point value, and the draft entity credited. Returns all-null/zero
+ * if nobody drafted the winning entity.
+ *
+ * `entityId` exists so callers that need to say WHICH roster slot earned the
+ * points (the end-of-night awards) reuse this matcher instead of re-deriving
+ * it. A second implementation of "which entity does this winner map to" would
+ * drift from this one the first time either changed.
  *
  * PERSON vs FILM determination:
  *   Uses the winning nominee's `type` field from the nominees table.
@@ -100,12 +145,12 @@ export function findDraftPointsForWinner(
   nominees: NomineeRow[],
   draftEntities: DraftEntityRow[],
   draftPicks: DraftPickRow[],
-): { playerId: string | null; points: number } {
+): { playerId: string | null; points: number; entityId: string | null } {
   const category = categories.find((c) => c.id === categoryId)
-  if (!category) return { playerId: null, points: 0 }
+  if (!category) return { playerId: null, points: 0, entityId: null }
 
   const winningNominee = nominees.find((n) => n.id === winnerId)
-  if (!winningNominee) return { playerId: null, points: 0 }
+  if (!winningNominee) return { playerId: null, points: 0, entityId: null }
 
   const pickForEntity = (entity: DraftEntityRow | undefined) =>
     entity ? (draftPicks.find((p) => p.entity_id === entity.id) ?? null) : null
@@ -117,11 +162,17 @@ export function findDraftPointsForWinner(
       if (entity.type !== 'person') return false
       if (entity.name !== winningNominee.name) return false
 
-      // Verify this entity is actually nominated in the winning category.
-      // Guards against false name collisions.
-      const noms = entity.nominations as Array<{ category_id?: number }>
-      if (!Array.isArray(noms) || noms.length === 0) return true // no nomination data — trust the name match
-      return noms.some((n) => n.category_id === categoryId)
+      // Name match is sufficient.
+      //
+      // The Oscars build additionally required the entity to be nominated in
+      // the winning category, to guard against a name appearing in two
+      // unrelated categories. That guard is wrong for event-based properties
+      // (e.g. the HotD finale), where `nominations` is a *suggestion* of which
+      // events a character is likely to feature in, not a restriction — the
+      // host must be free to award any event to any character live.
+      //
+      // Entity names are unique within a property, so collisions aren't a risk.
+      return true
     })
 
     const personPick = pickForEntity(personEntity)
@@ -130,13 +181,35 @@ export function findDraftPointsForWinner(
       // The multiplier rewards the more specific, risky prediction over
       // drafting a film that passively collects technical category wins.
       // The film drafter gets nothing for this category.
-      return { playerId: personPick.player_id, points: Math.round(category.points * 1.5) }
+      return {
+        playerId: personPick.player_id,
+        points: Math.round(category.points * 1.5),
+        entityId: personEntity!.id,
+      }
     }
 
     // Nobody drafted this person (or they weren't a draftable entity).
     // Fall back to awarding points to whoever drafted their film.
     // This is how technical category wins (e.g. Best Makeup & Hairstyling)
     // reward the player who drafted the winning film.
+    //
+    // INERT FOR THE HotD FINALE — deliberately kept, not overlooked:
+    //   A character's `film_name` carries their HOUSE ("The Blacks", "Harrenhal"),
+    //   while the only `film`-type draft entities are DRAGONS, whose film_name is
+    //   the dragon's own name ("Vhagar"). The two namespaces never intersect, so
+    //   this branch always falls through to { playerId: null, points: 0 } and an
+    //   undrafted character's win simply pays nobody.
+    //
+    //   That is the correct outcome here, not a gap to paper over. The draft pool
+    //   is 38 entities against 3-4 players taking ~9 each, so nearly everything is
+    //   owned and this path rarely fires at all. Routing an undrafted character's
+    //   win to their house-mates or to a dragon would hand points to a player who
+    //   never made that call.
+    //
+    //   The branch stays because it is correct for any film-shaped property (the
+    //   archived Oscars seed, or a future one) where film_name names a draftable
+    //   film. If a HotD-style seed ever wants an overflow rule, give characters a
+    //   real link to a draftable parent — don't reinterpret film_name.
     const filmTitle = winningNominee.film_name
     if (filmTitle) {
       const filmEntity = draftEntities.find(
@@ -144,11 +217,11 @@ export function findDraftPointsForWinner(
       )
       const filmPick = pickForEntity(filmEntity)
       if (filmPick) {
-        return { playerId: filmPick.player_id, points: category.points }
+        return { playerId: filmPick.player_id, points: category.points, entityId: filmEntity!.id }
       }
     }
 
-    return { playerId: null, points: 0 }
+    return { playerId: null, points: 0, entityId: null }
   } else {
     // Film entities: match by film_name, type === 'film'.
     // For Best Picture nominees, film_name may be empty (the film IS the nominee),
@@ -161,8 +234,8 @@ export function findDraftPointsForWinner(
     )
 
     const pick = pickForEntity(filmEntity)
-    if (!pick) return { playerId: null, points: 0 }
-    return { playerId: pick.player_id, points: category.points }
+    if (!pick) return { playerId: null, points: 0, entityId: null }
+    return { playerId: pick.player_id, points: category.points, entityId: filmEntity!.id }
   }
 }
 
@@ -195,9 +268,14 @@ export function computeLeaderboard(
     .map((player) => {
       // ── Confidence score ──────────────────────────────────────────────────
       // Sum of confidence values for every pick where is_correct === true.
-      const confidenceScore = confidencePicks
-        .filter((p) => p.player_id === player.id && p.is_correct === true)
-        .reduce((sum, p) => sum + p.confidence, 0)
+      const correctPicks = confidencePicks.filter(
+        (p) => p.player_id === player.id && p.is_correct === true,
+      )
+      const confidenceScore = correctPicks.reduce((sum, p) => sum + p.confidence, 0)
+
+      // Tiebreak inputs — see compareForRank.
+      const correctPickCount = correctPicks.length
+      const topCorrectPick = correctPicks.reduce((max, p) => Math.max(max, p.confidence), 0)
 
       // ── Ensemble score ────────────────────────────────────────────────────
       // For each announced category, check if this player's drafted entity won.
@@ -236,16 +314,31 @@ export function computeLeaderboard(
 
       const totalScore = confidenceScore + ensembleScore + bingoScore
 
-      return { player, ensembleScore, confidenceScore, bingoScore, totalScore, rank: 0 }
+      return {
+        player,
+        ensembleScore,
+        confidenceScore,
+        bingoScore,
+        totalScore,
+        rank: 0,
+        correctPickCount,
+        topCorrectPick,
+      }
     })
-    .sort((a, b) => b.totalScore - a.totalScore)
+    .sort(compareForRank)
 
   // Assign ranks using standard competition ranking (1224):
   // Tied players share the same rank; the next rank skips ahead.
   // e.g. two players tied at #1 both get rank 1, the next gets rank 3.
+  //
+  // Players share a rank only when compareForRank returns 0 — a true dead heat
+  // on every tiebreak, not merely on totalScore. Comparing totalScore alone
+  // here would have handed rank 1 to two players the sort had already
+  // separated, so the UI would announce co-champions while the leaderboard
+  // showed one of them above the other.
   let currentRank = 1
   for (let i = 0; i < sorted.length; i++) {
-    if (i > 0 && sorted[i].totalScore === sorted[i - 1].totalScore) {
+    if (i > 0 && compareForRank(sorted[i - 1], sorted[i]) === 0) {
       sorted[i].rank = sorted[i - 1].rank
     } else {
       sorted[i].rank = currentRank

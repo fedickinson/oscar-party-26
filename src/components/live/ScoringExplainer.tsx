@@ -20,7 +20,7 @@ interface ScoringSection {
 
 const SECTIONS: ScoringSection[] = [
   {
-    icon: <Users size={14} className="text-oscar-gold flex-shrink-0" />,
+    icon: <Users size={14} className="text-accent flex-shrink-0" />,
     label: 'Ensemble Draft',
     description: 'Drafted a person who wins? Earn 1.5× that category\'s points.',
     detail: 'Drafted a film? You earn face-value points for any technical category that film wins where no individual person was drafted (Makeup, Sound, Costume, etc.).',
@@ -34,11 +34,11 @@ const SECTIONS: ScoringSection[] = [
   {
     icon: <Grid3x3 size={14} className="text-purple-400 flex-shrink-0" />,
     label: 'Bingo',
-    description: 'Approved bingo squares earn points per completed line.',
-    detail: 'Complete a row, column, or diagonal on your 5×5 card. Each new bingo adds to your score. Squares need host approval unless they\'re objective.',
+    description: 'Every approved square scores. Rarer squares score more.',
+    detail: 'A square pays 1, 2, 3 or 5 points depending on how likely it was — a chaos square is worth five of a likely one. Complete a row, column or diagonal on top of that for 15, then 10, then 5 each. Every square needs host approval.',
   },
   {
-    icon: <Trophy size={14} className="text-oscar-gold flex-shrink-0" />,
+    icon: <Trophy size={14} className="text-accent flex-shrink-0" />,
     label: 'Total Score',
     description: 'Ensemble + Prestige + Bingo.',
     detail: 'All three games contribute to one unified leaderboard. Every category matters — even if you didn\'t draft anyone, a correct Prestige Pick still scores.',
@@ -49,7 +49,7 @@ export default function ScoringExplainer() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden">
+    <div className="relief-glass overflow-hidden">
       {/* Header / toggle button */}
       <motion.button
         onClick={() => setIsOpen((v) => !v)}
@@ -58,7 +58,7 @@ export default function ScoringExplainer() {
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5">
-          <Film size={15} className="text-oscar-gold flex-shrink-0" />
+          <Film size={15} className="text-accent flex-shrink-0" />
           <span className="text-sm font-semibold text-white/80">How scoring works</span>
         </div>
         <motion.div

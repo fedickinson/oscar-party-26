@@ -2,7 +2,7 @@
  * BingoSquare — a single cell in the bingo grid.
  *
  * Visual states:
- *   free     (index 12) — oscar-gold bg, Star icon, "FREE" text, always marked
+ *   free     (index 12) — accent bg, Star icon, "FREE" text, always marked
  *   approved            — emerald bg, Check icon, slightly faded text
  *   pending             — amber border pulse, Clock icon, dim text (not tappable)
  *   denied              — brief red flash, then visually reverts to unmarked
@@ -22,7 +22,8 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Clock, Star } from 'lucide-react'
-import { BINGO_LINE_PALETTE } from '../../lib/bingo-utils'
+import { BINGO_LINE_PALETTE, PIP_OPACITY, PIP_TIERS, TIER_STYLE } from '../../lib/bingo-utils'
+import type { LikelihoodTier } from '../../types/database'
 
 type MarkStatus = 'unmarked' | 'pending' | 'approved' | 'denied' | 'free'
 
@@ -31,6 +32,8 @@ interface Props {
   shortText: string
   status: MarkStatus
   isObjective: boolean
+  /** Likelihood tier from the master pool; absent on pre-migration squares */
+  tier?: LikelihoodTier | null
   /** Index into BINGO_LINES for the first completed line this square belongs to, or null */
   bingoLineColorIndex: number | null
   isSelected: boolean
@@ -44,6 +47,7 @@ export default function BingoSquare({
   shortText,
   status,
   isObjective,
+  tier,
   bingoLineColorIndex,
   isSelected,
   onTap,
@@ -89,9 +93,9 @@ export default function BingoSquare({
   let textClass = ''
 
   if (isFree) {
-    bgClass = 'bg-oscar-gold/20'
-    borderClass = 'border border-oscar-gold/60'
-    textClass = 'text-oscar-gold'
+    bgClass = 'bg-accent/20'
+    borderClass = 'border border-accent/60'
+    textClass = 'text-accent'
   } else if (isApproved) {
     // Always green — bingo line coloring is handled by band overlays at the card level
     bgClass = 'bg-emerald-500/20'
@@ -112,7 +116,7 @@ export default function BingoSquare({
   } else {
     bgClass = isInBingoLine ? 'bg-white/12' : 'bg-white/6'
     borderClass = isObjective
-      ? 'border border-oscar-gold/25'
+      ? 'border border-accent/25'
       : 'border border-white/10'
     textClass = 'text-white/85'
   }
@@ -157,11 +161,25 @@ export default function BingoSquare({
       {/* FREE CENTER */}
       {isFree && (
         <>
-          <Star size={14} className="text-oscar-gold fill-current mb-0.5 flex-shrink-0" />
-          <span className="text-[9px] font-bold text-oscar-gold uppercase tracking-widest leading-none">
+          <Star size={14} className="text-accent fill-current mb-0.5 flex-shrink-0" />
+          <span className="text-[9px] font-bold text-accent uppercase tracking-widest leading-none">
             Free
           </span>
         </>
+      )}
+
+      {/* Rare-tier pip — long shots and chaos squares only, and only while the
+          square is still in play. Once it is marked the odds stop mattering. */}
+      {!isFree && !isApproved && !isPending && !effectiveDenied && tier && PIP_TIERS.includes(tier) && (
+        <span
+          className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full"
+          style={{
+            backgroundColor: TIER_STYLE[tier].text,
+            // Both pips are accent; chaos burns brighter so the two 12-18%
+            // squares stand out from the six long shots.
+            opacity: PIP_OPACITY[tier as 'long_shot' | 'chaos'],
+          }}
+        />
       )}
 
       {/* Status icon overlay */}

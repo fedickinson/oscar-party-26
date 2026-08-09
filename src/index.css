@@ -1,23 +1,532 @@
 @import "tailwindcss";
 
 @theme {
-  --color-oscar-gold: #D4AF37;
-  --color-oscar-gold-light: #E8C547;
-  --color-deep-navy: #0A0E27;
-  --color-midnight: #12163A;
-  --color-glass-white: rgba(255, 255, 255, 0.1);
-  --color-glass-border: rgba(255, 255, 255, 0.15);
-  --font-family-sans: 'Inter', sans-serif;
+  --color-accent: var(--t-accent);
+  --color-accent-light: var(--t-accent-light);
+  --color-ground: var(--t-ground);
+  --color-ground-deep: var(--t-ground-deep);
+  --color-surface: var(--t-surface);
+  --color-surface-line: var(--t-surface-line);
+  --font-family-sans: "Inter", sans-serif;
+  --font-family-display: "Cinzel", Georgia, serif;
+  --font-family-manuscript: "Cormorant Garamond", Georgia, serif;
+  /* Tailwind v4 --font-* namespace → generates font-display / font-manuscript utilities */
+  --font-display: "Cinzel", Georgia, serif;
+  --font-manuscript: "Cormorant Garamond", Georgia, serif;
 }
 
-html,
-body {
+:root {
+  color-scheme: dark;
+
+  /* Six-token component contract. */
+  --t-accent: #8e3b2e;
+  --t-accent-light: #c0614c;
+  --t-ground: #1b191b;
+  --t-ground-deep: #17161a;
+  --t-surface: rgba(255, 250, 238, .075);
+  --t-surface-line: rgba(255, 255, 255, .12);
+
+  /* Castle palette. */
+  --t-ashlar: #a2988a;
+  --t-ashlar-deep: #6e665b;
+  --t-basalt: #3a3833;
+  --t-mortar: #d6cdba;
+  --t-oak: #5c4632;
+  --t-oak-deep: #3e2f21;
+  --t-iron: #4a4744;
+  --t-iron-dark: #24231f;
+  --t-vellum: #e2d5b9;
+  --t-vellum-light: #f0e5cb;
+  --t-vellum-deep: #bca982;
+  --t-ink: #292219;
+  --t-ink-muted: #665642;
+
+  /* Faction fields and devices. */
+  --t-jet: #101014;
+  --t-jet-raised: #1b1b20;
+  --t-madder: #8e3b2e;
+  --t-madder-light: #c0614c;
+  --t-bottle: #2c4034;
+  --t-bottle-raised: #3a5343;
+  --t-beacon: #b9863f;
+  --t-beacon-light: #d6a961;
+  --t-team-a-field: var(--t-jet);
+  --t-team-a-raised: var(--t-jet-raised);
+  --t-team-a-device: var(--t-madder);
+  --t-team-a-text: var(--t-madder-light);
+  --t-team-b-field: var(--t-bottle);
+  --t-team-b-raised: var(--t-bottle-raised);
+  --t-team-b-device: var(--t-beacon);
+  --t-team-b-text: var(--t-beacon-light);
+  --t-personal-field: var(--t-team-a-field);
+  --t-personal-raised: var(--t-team-a-raised);
+  --t-personal-device: var(--t-team-a-device);
+  --t-personal-text: var(--t-team-a-text);
+
+  /* Text, state, line, and environment vocabulary. */
+  --t-text: #eee7d8;
+  --t-text-muted: #c8bead;
+  --t-text-dim: #aaa08f;
+  --t-positive: #e3d8bf;
+  --t-positive-soft: rgba(227, 216, 191, .13);
+  --t-negative: #aaa294;
+  --t-negative-soft: rgba(170, 162, 148, .12);
+  --t-pending: #c69a50;
+  --t-pending-soft: rgba(198, 154, 80, .16);
+  --t-clear: rgba(0, 0, 0, 0);
+  --t-line: rgba(214, 205, 186, .24);
+  --t-line-soft: rgba(214, 205, 186, .18);
+  --t-line-strong: rgba(214, 205, 186, .48);
+  --t-highlight: rgba(248, 239, 220, .22);
+  --t-lowlight: rgba(18, 17, 15, .82);
+  --t-shadow: rgba(8, 8, 7, .60);
+  --t-overlay: rgba(21, 20, 18, .87);
+  --t-wax: #743226;
+  --t-wax-light: #a4513e;
+  --t-wax-dark: #451d18;
+  --t-rank-second: #b9b6ae;
+  --t-rank-third: #9d694a;
+  --t-input-bg: rgba(27, 26, 23, .88);
+  --t-ornament: #d6cdba;
+  --t-ornament-muted: #8e8678;
+  --t-ornament-dark: #24231f;
+  --t-environment-ground: #1b191b;
+  --t-environment-stone: #323137;
+  --t-environment-light: rgba(142, 59, 46, .105);
+  --t-environment-vignette: #17161a;
+
+  /* Alpha-only material textures copied from v7. */
+  --t-tex-stone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='360' viewBox='0 0 480 360'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.026 .043' numOctaves='4' seed='21' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .32'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cfilter id='weather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .012' numOctaves='3' seed='47' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .22'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cg%3E%3Crect width='64' height='72' fill='black' opacity='.03'/%3E%3Crect x='64' width='112' height='72' fill='black' opacity='.12'/%3E%3Crect x='176' width='141' height='72' fill='black' opacity='.02'/%3E%3Crect x='317' width='94' height='72' fill='black' opacity='.2'/%3E%3Crect x='411' width='69' height='72' fill='black' opacity='.03'/%3E%3Crect y='72' width='103' height='84' fill='black' opacity='.26'/%3E%3Crect x='103' y='72' width='76' height='84' fill='black' opacity='.06'/%3E%3Crect x='179' y='72' width='126' height='84' fill='black' opacity='.08'/%3E%3Crect x='305' y='72' width='158' height='84' fill='black' opacity='.03'/%3E%3Crect x='463' y='72' width='17' height='84' fill='black' opacity='.26'/%3E%3Crect y='156' width='37' height='91' fill='black' opacity='.07'/%3E%3Crect x='37' y='156' width='146' height='91' fill='black' opacity='.22'/%3E%3Crect x='183' y='156' width='91' height='91' fill='black' opacity='.02'/%3E%3Crect x='274' y='156' width='129' height='91' fill='black' opacity='.13'/%3E%3Crect x='403' y='156' width='77' height='91' fill='black' opacity='.07'/%3E%3Crect y='247' width='122' height='113' fill='black' opacity='.1'/%3E%3Crect x='122' y='247' width='98' height='113' fill='black' opacity='.03'/%3E%3Crect x='220' y='247' width='167' height='113' fill='black' opacity='.25'/%3E%3Crect x='387' y='247' width='78' height='113' fill='black' opacity='.06'/%3E%3Crect x='465' y='247' width='15' height='113' fill='black' opacity='.1'/%3E%3C/g%3E%3Cg fill='none'%3E%3Cpath d='M0 1H480M0 73H480M0 157H480M0 248H480' stroke='white' stroke-opacity='.54' stroke-width='2'/%3E%3Cpath d='M0 71H480M0 155H480M0 246H480M0 359H480' stroke='black' stroke-opacity='.72' stroke-width='3'/%3E%3Cpath d='M65 1V71M177 1V71M318 1V71M412 1V71M104 73V155M180 73V155M306 73V155M464 73V155M38 157V246M184 157V246M275 157V246M404 157V246M123 248V359M221 248V359M388 248V359M466 248V359' stroke='white' stroke-opacity='.54' stroke-width='2'/%3E%3Cpath d='M63 1V71M175 1V71M316 1V71M410 1V71M102 73V155M178 73V155M304 73V155M462 73V155M36 157V246M182 157V246M273 157V246M402 157V246M121 248V359M219 248V359M386 248V359M464 248V359' stroke='black' stroke-opacity='.72' stroke-width='3'/%3E%3C/g%3E%3Crect width='480' height='360' filter='url(%23grain)'/%3E%3Crect y='0' width='480' height='72' fill='black' opacity='.07' filter='url(%23weather)'/%3E%3Crect y='288' width='480' height='72' fill='black' opacity='.07' filter='url(%23weather)'/%3E%3Cellipse cx='291' cy='196' rx='104' ry='121' fill='black' opacity='.1'/%3E%3Cellipse cx='69' cy='271' rx='58' ry='76' fill='white' opacity='.07'/%3E%3Cg fill='black' opacity='.42'%3E%3Ccircle cx='174' cy='72' r='4'/%3E%3Ccircle cx='356' cy='156' r='3'/%3E%3Ccircle cx='241' cy='247' r='5'/%3E%3Ccircle cx='98' cy='303' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  --t-tex-oak: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='180' viewBox='0 0 540 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.008 .11' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .38'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='540' height='54' fill='white' opacity='.08'/%3E%3Crect y='54' width='540' height='64' fill='black' opacity='.13'/%3E%3Crect y='118' width='540' height='62' fill='white' opacity='.04'/%3E%3Crect width='540' height='180' filter='url(%23n)'/%3E%3Cg fill='none' stroke='black' stroke-linecap='round'%3E%3Cpath d='M0 5C90 2 180 8 270 5S450 8 540 5M0 11C70 15 160 7 270 11S462 7 540 11M0 19C110 13 190 24 300 19S445 15 540 19M0 35C86 42 170 28 270 35S451 39 540 35M0 46C104 41 202 51 310 46S459 42 540 46M0 51C77 55 176 47 272 51S458 55 540 51' stroke-opacity='.34'/%3E%3Cpath d='M0 61C91 57 182 66 270 61S450 66 540 61M0 68C73 72 177 64 276 68S452 64 540 68M0 78C112 72 201 84 309 78S454 74 540 78M0 96C84 102 179 90 281 96S460 100 540 96M0 108C99 103 187 113 296 108S451 104 540 108M0 114C82 118 172 110 270 114S454 118 540 114' stroke-opacity='.3'/%3E%3Cpath d='M0 124C96 120 185 129 281 124S453 129 540 124M0 131C78 135 169 127 270 131S460 127 540 131M0 143C118 137 204 149 312 143S449 139 540 143M0 158C87 164 174 152 278 158S455 162 540 158M0 170C93 165 184 175 294 170S452 166 540 170M0 176C80 179 177 172 270 176S458 179 540 176' stroke-opacity='.32'/%3E%3C/g%3E%3Cg%3E%3Cpath d='M0 0H540M0 54H540M0 118H540' stroke='black' stroke-opacity='.8' stroke-width='3'/%3E%3Cpath d='M0 2H540M0 56H540M0 120H540' stroke='white' stroke-opacity='.26'/%3E%3C/g%3E%3Cg fill='none' stroke='black'%3E%3Cellipse cx='414' cy='31' rx='16' ry='8' stroke-opacity='.55' stroke-width='2'/%3E%3Cellipse cx='414' cy='31' rx='8' ry='3' stroke-opacity='.4'/%3E%3Cpath d='M374 31C391 24 397 23 414 23M430 25C447 27 464 34 481 31' stroke-opacity='.3'/%3E%3Cellipse cx='126' cy='148' rx='12' ry='6' stroke-opacity='.5' stroke-width='2'/%3E%3Cpath d='M93 148C105 143 113 142 126 142M138 144C154 145 166 151 184 148' stroke-opacity='.28'/%3E%3C/g%3E%3C/svg%3E");
+  --t-tex-vellum: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.018 .08' numOctaves='5' seed='31' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='gamma' amplitude='.55' exponent='1.7' offset='0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --t-tex-iron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='.2' numOctaves='3' seed='13' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --t-tex-enamel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .22'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --t-tex-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .28'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --t-tex-stone-strength: .34;
+  --t-tex-oak-strength: .28;
+  --t-tex-vellum-strength: .22;
+  --t-tex-iron-strength: .25;
+  --t-tex-enamel-strength: .18;
+  --t-tex-ink-strength: .16;
+
+  /* Accepted ornament, wash, and grain primitives. */
+  --t-deckle-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='white' d='M3 2 12 4 20 1 29 3 39 1 49 4 59 1 69 3 79 1 89 4 98 2 97 13 99 23 97 34 99 46 97 57 99 69 97 80 99 90 97 98 87 96 77 99 68 97 58 99 48 96 38 99 28 97 18 99 8 96 2 98 3 86 1 75 3 64 1 53 3 42 1 31 3 20Z'/%3E%3C/svg%3E");
+  --t-scribe-ruling: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='22'%3E%3Cpath d='M0 21.5h80' fill='none' stroke='black' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
+  --t-environment-wash-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='360'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .008' numOctaves='3' seed='61' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='.12 .72'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='480' height='360' fill='white' filter='url(%23b)'/%3E%3C/svg%3E");
+  --t-tex-global-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='3' seed='83' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='96' height='96' filter='url(%23g)' opacity='.92'/%3E%3C/svg%3E");
+  --t-global-grain-strength: .04;
+
+  /* Glass, parchment, spacing, type, motion, and shape. */
+  --t-glass-tint: rgba(9, 11, 14, .72);
+  --t-glass-specular: rgba(255, 250, 238, .38);
+  --t-glass-edge-dark: rgba(3, 4, 5, .62);
+  --t-glass-shadow: rgba(4, 5, 5, .58);
+  --t-glass-fill: linear-gradient(145deg, rgba(255, 250, 238, .075) 0%, rgba(255, 255, 255, .018) 42%, rgba(0, 0, 0, .08) 100%), var(--t-glass-tint);
+  --chat-vellum: var(--t-vellum-deep);
+  --chat-vellum: color-mix(in srgb, var(--t-vellum-deep) 90%, var(--t-oak-deep));
+  --t-space-1: 4px;
+  --t-space-2: 8px;
+  --t-space-3: 12px;
+  --t-space-4: 16px;
+  --t-space-5: 24px;
+  --t-type-tab: 10px;
+  --t-type-label: 12px;
+  --t-type-body: 14px;
+  --t-type-input: 16px;
+  --t-type-metric: 18px;
+  --t-type-title: 24px;
+  --t-type-feature: 28px;
+  --t-type-display: 36px;
+  --t-motion-fast: 160ms;
+  --t-motion-base: 280ms;
+  --t-motion-slow: 560ms;
+  --t-motion-persist: 1400ms;
+  --t-motion-loop: 1200ms;
+  --t-ease-standard: cubic-bezier(.2, .8, .2, 1);
+  --t-chamfer: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+
+:root[data-theme="oscars"] {
+  /* The six original app tokens, restored exactly. */
+  --t-accent: #D4AF37;
+  --t-accent-light: #E8C547;
+  --t-ground: #0A0E27;
+  --t-ground-deep: #12163A;
+  --t-surface: rgba(255, 255, 255, .1);
+  --t-surface-line: rgba(255, 255, 255, .15);
+
+  --t-ashlar: #202650;
+  --t-ashlar-deep: #171c42;
+  --t-basalt: #0a0e27;
+  --t-mortar: #f7f4e9;
+  --t-oak: #242b5c;
+  --t-oak-deep: #12163a;
+  --t-iron: #353b68;
+  --t-iron-dark: #080b20;
+  --t-vellum: #eee9db;
+  --t-vellum-light: #fffdf7;
+  --t-vellum-deep: #cfc5a9;
+  --t-ink: #16182a;
+  --t-ink-muted: #555a76;
+  --t-jet: #12162f;
+  --t-jet-raised: #1d2348;
+  --t-madder: #d4af37;
+  --t-madder-light: #efd467;
+  --t-bottle: #202c58;
+  --t-bottle-raised: #2d3c72;
+  --t-beacon: #91a7ef;
+  --t-beacon-light: #c7d2ff;
+  --t-text: #faf9f3;
+  --t-text-muted: #d2d5e3;
+  --t-text-dim: #9fa6c8;
+  --t-positive: #e7e3d2;
+  --t-positive-soft: rgba(231, 227, 210, .13);
+  --t-negative: #adb2ca;
+  --t-negative-soft: rgba(173, 178, 202, .12);
+  --t-pending: #e4c454;
+  --t-pending-soft: rgba(228, 196, 84, .15);
+  --t-line: rgba(255, 255, 255, .14);
+  --t-line-soft: rgba(255, 255, 255, .1);
+  --t-line-strong: rgba(255, 255, 255, .28);
+  --t-highlight: rgba(255, 255, 255, .18);
+  --t-lowlight: rgba(2, 4, 16, .78);
+  --t-shadow: rgba(0, 0, 0, .56);
+  --t-overlay: rgba(4, 6, 20, .86);
+  --t-wax: #b28d22;
+  --t-wax-light: #e0c256;
+  --t-wax-dark: #6f5716;
+  --t-input-bg: rgba(5, 7, 22, .88);
+  --t-ornament: #d4af37;
+  --t-ornament-muted: #8d7939;
+  --t-ornament-dark: #080b20;
+  --t-environment-ground: #080b20;
+  --t-environment-stone: #0a0e27;
+  --t-environment-light: rgba(255, 255, 255, .035);
+  --t-environment-vignette: #050718;
+  --t-tex-stone-strength: .08;
+  --t-tex-oak-strength: .05;
+  --t-tex-vellum-strength: .08;
+  --t-tex-iron-strength: .08;
+  --t-tex-enamel-strength: .05;
+  --t-tex-ink-strength: .08;
+}
+
+:root[data-allegiance="black"] {
+  --t-personal-field: var(--t-team-a-field);
+  --t-personal-raised: var(--t-team-a-raised);
+  --t-personal-device: var(--t-team-a-device);
+  --t-personal-text: var(--t-team-a-text);
+}
+
+:root[data-allegiance="green"] {
+  --t-personal-field: var(--t-team-b-field);
+  --t-personal-raised: var(--t-team-b-raised);
+  --t-personal-device: var(--t-team-b-device);
+  --t-personal-text: var(--t-team-b-text);
+  --t-environment-ground: #1b2019;
+  --t-environment-stone: #30362d;
+  --t-environment-light: rgba(185, 134, 63, .05);
+  --t-environment-vignette: #171b16;
+}
+
+:root[data-theme="oscars"][data-allegiance] {
+  --t-environment-ground: #080b20;
+  --t-environment-stone: #0a0e27;
+  --t-environment-light: rgba(255, 255, 255, .035);
+  --t-environment-vignette: #050718;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 100%;
+  background: var(--t-environment-ground);
   overscroll-behavior: none;
 }
 
+html::before {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--t-tex-stone);
+  background-repeat: repeat;
+  background-size: 240px 180px;
+  opacity: var(--t-tex-stone-strength);
+}
+
 body {
-  background: linear-gradient(135deg, var(--color-deep-navy) 0%, var(--color-midnight) 100%);
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  min-width: 0;
   min-height: 100dvh;
-  color: white;
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--t-text);
   font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  background-color: transparent;
+  background-image:
+    linear-gradient(132deg, rgba(0, 0, 0, 0) 4%, rgba(0, 0, 0, .06) 37%, rgba(0, 0, 0, .58) 100%),
+    radial-gradient(ellipse at 42% 32%, var(--t-clear) 38%, var(--t-environment-vignette) 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
+  background-blend-mode: multiply, multiply;
+}
+
+/* Faction wash uses the accepted v7 mask, scaled for the 375px app column. */
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--t-environment-light);
+  -webkit-mask-image: var(--t-environment-wash-mask);
+  mask-image: var(--t-environment-wash-mask);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: 240px 180px;
+  mask-size: 240px 180px;
+}
+
+/* One photographed-grain pass above the app; it never intercepts taps. */
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--t-tex-global-grain);
+  background-repeat: repeat;
+  opacity: var(--t-global-grain-strength);
+  mix-blend-mode: soft-light;
+}
+
+button,
+input {
+  color: inherit;
+  font: inherit;
+  transition:
+    border-color var(--t-motion-fast) var(--t-ease-standard),
+    color var(--t-motion-fast) var(--t-ease-standard),
+    opacity var(--t-motion-fast) var(--t-ease-standard),
+    background-color var(--t-motion-base) var(--t-ease-standard);
+}
+
+button {
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--t-ornament);
+  outline-offset: -4px;
+}
+
+/* Material primitives: color and alpha texture are paired only here. */
+.material-stone,
+.material-oak,
+.material-vellum,
+.material-enamel,
+.material-iron,
+.material-ink {
+  position: relative;
+  isolation: isolate;
+}
+
+.material-stone { background-color: var(--t-basalt); }
+.material-oak { background-color: var(--t-oak-deep); }
+.material-vellum { background-color: var(--t-vellum); }
+.material-enamel { background-color: var(--t-personal-field); }
+.material-iron { background-color: var(--t-iron-dark); }
+.material-ink { background-color: var(--t-ink); }
+
+.material-stone::before,
+.material-oak::before,
+.material-vellum::before,
+.material-enamel::before,
+.material-iron::before,
+.material-ink::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+.material-stone::before { background-image: var(--t-tex-stone); opacity: var(--t-tex-stone-strength); }
+.material-oak::before { background-image: var(--t-tex-oak); opacity: var(--t-tex-oak-strength); }
+.material-vellum::before { background-image: var(--t-tex-vellum); opacity: var(--t-tex-vellum-strength); }
+.material-enamel::before { background-image: var(--t-tex-enamel); opacity: var(--t-tex-enamel-strength); }
+.material-iron::before { background-image: var(--t-tex-iron); opacity: var(--t-tex-iron-strength); }
+.material-ink::before { background-image: var(--t-tex-ink); opacity: var(--t-tex-ink-strength); }
+
+.material-enamel.team-black { background-color: var(--t-team-a-field); }
+.material-enamel.team-green { background-color: var(--t-team-b-field); }
+
+/* Relief primitives: one upper-left light source. */
+.relief-raised {
+  box-shadow: inset 2px 2px 0 var(--t-highlight), inset -2px -2px 0 var(--t-lowlight), 0 5px 8px var(--t-shadow);
+}
+
+.relief-inset {
+  box-shadow: inset 3px 3px 5px var(--t-lowlight), inset -1px -1px 0 var(--t-highlight);
+}
+
+.relief-carved {
+  box-shadow: inset 1px 1px 0 var(--t-highlight), inset 4px 4px 0 var(--t-ashlar-deep), inset 7px 7px 0 var(--t-iron), inset -1px -1px 0 var(--t-lowlight), inset -4px -4px 0 var(--t-iron-dark), 0 5px 9px var(--t-shadow);
+}
+
+.relief-seal {
+  box-shadow: inset 2px 2px 0 var(--t-wax-light), inset -3px -3px 0 var(--t-wax-dark), 0 4px 5px var(--t-shadow);
+}
+
+.relief-glass {
+  background: var(--t-glass-fill);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 14px;
+  clip-path: none;
+  -webkit-backdrop-filter: blur(14px) saturate(122%);
+  backdrop-filter: blur(14px) saturate(122%);
+  box-shadow: inset 1px 1px 0 var(--t-glass-specular), inset -1px -1px 0 var(--t-glass-edge-dark), 0 12px 24px var(--t-glass-shadow);
+}
+
+.relief-glass::before {
+  display: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .relief-glass {
+    background: var(--t-glass-tint);
+  }
+}
+
+/* Ornament and parchment primitives. */
+.motif-band {
+  display: block;
+  width: 100%;
+  height: 15px;
+  color: var(--t-ornament);
+  background: var(--t-iron-dark);
+  border-top: 1px solid var(--t-line-strong);
+  border-bottom: 1px solid var(--t-lowlight);
+}
+
+.motif-band.narrow {
+  height: 11px;
+}
+
+.deckled {
+  -webkit-mask-image: var(--t-deckle-mask);
+  mask-image: var(--t-deckle-mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.scribe-ruled::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 17px;
+  pointer-events: none;
+  background-image: var(--t-scribe-ruling);
+  background-repeat: repeat;
+  opacity: .22;
+}
+
+.ai-parchment.material-vellum {
+  position: relative;
+  padding: 9px 35px 10px 12px;
+  border: 1px solid var(--t-vellum-deep);
+  background-color: var(--chat-vellum);
+  color: var(--t-ink);
+  font-family: var(--font-family-manuscript);
+  font-size: var(--t-type-input);
+  font-weight: 700;
+  line-height: 1.24;
+  clip-path: none;
+  -webkit-mask-image: var(--t-deckle-mask);
+  mask-image: var(--t-deckle-mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  filter: drop-shadow(3px 5px 4px rgba(5, 5, 4, .38));
+}
+
+.ai-parchment .house-press {
+  position: absolute;
+  right: 9px;
+  bottom: 8px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: var(--t-ink);
+  opacity: .28;
+}
+
+.ai-parchment .house-press svg {
+  width: 14px;
+  height: 14px;
+}
+
+.versal {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 3px double var(--t-vellum-light);
+  background: var(--t-personal-device);
+  color: transparent;
+  font-family: var(--font-family-display);
+  font-size: var(--t-type-feature);
+  font-weight: 800;
+  transform: rotate(-.2deg);
+}
+
+.versal::after {
+  content: "C";
+  position: absolute;
+  color: var(--t-vellum-light);
+  transform: translate(.7px, -.55px);
+}
+
+.wax-seal {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 12px;
+  place-items: center;
+  border: 5px double var(--t-wax-light);
+  border-radius: 50%;
+  background: var(--t-wax);
+  color: var(--t-wax-dark);
+}
+
+.wax-seal svg {
+  width: 62px;
+  height: 62px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

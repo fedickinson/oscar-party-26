@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, X } from 'lucide-react'
 import Avatar from '../Avatar'
+import TierChip from './TierChip'
+import SquareRule from './SquareRule'
 import type { PendingMark } from '../../hooks/useBingoApprovals'
 
 interface Props {
@@ -91,7 +93,7 @@ export default function BingoApprovalSheet({ marks, onApprove, onDeny, onDismiss
         <div className="flex items-center justify-between px-5 mb-4 flex-shrink-0">
           <h2 className="text-base font-bold text-white">Pending Claims</h2>
           {marks.length > 0 && (
-            <span className="text-xs font-bold text-deep-navy bg-oscar-gold px-2.5 py-1 rounded-full">
+            <span className="text-xs font-bold text-ground bg-accent px-2.5 py-1 rounded-full">
               {marks.length}
             </span>
           )}
@@ -132,14 +134,30 @@ export default function BingoApprovalSheet({ marks, onApprove, onDeny, onDismiss
                         <Avatar avatarId={mark.playerAvatarId} size="sm" />
                       </div>
 
-                      {/* Info */}
+                      {/* Info — who, then what was claimed, then the fine print
+                          they rule against. With claims queued behind this one,
+                          the full rule stays one tap away rather than making the
+                          host scroll past four lines of it per card. */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white/80 mb-1">
-                          {mark.playerName}
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-xs font-semibold text-white/80 truncate">
+                            {mark.playerName}
+                          </p>
+                          {mark.squareTier && (
+                            <TierChip
+                              tier={mark.squareTier}
+                              showPoints
+                            />
+                          )}
+                        </div>
+                        <p className="text-[15px] font-semibold text-white leading-snug mb-1">
+                          {mark.squareTitle}
                         </p>
-                        <p className="text-sm text-white leading-snug">
-                          {mark.squareText}
-                        </p>
+                        <SquareRule
+                          winCondition={mark.squareText}
+                          tier={mark.squareTier}
+                          probabilityPct={mark.squareProbabilityPct}
+                        />
                       </div>
 
                       {/* Approve / Deny buttons */}

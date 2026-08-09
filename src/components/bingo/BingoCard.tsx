@@ -17,8 +17,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, X } from 'lucide-react'
 import type { BingoMarkRow, BingoSquareRow } from '../../types/database'
-import { BINGO_LINE_PALETTE, BINGO_LINES, FREE_CENTER_INDEX } from '../../lib/bingo-utils'
+import { BINGO_LINE_PALETTE, BINGO_LINES, FREE_CENTER_INDEX, TIER_POINTS } from '../../lib/bingo-utils'
 import BingoSquare from './BingoSquare'
+import TierChip from './TierChip'
+import SquareRule from './SquareRule'
 
 // Determine if a BINGO_LINES line is a row, column, or diagonal
 function getLineType(line: number[]): 'row' | 'col' | 'diag-tl' | 'diag-tr' {
@@ -119,7 +121,7 @@ export default function BingoCard({
             key={letter}
             className="flex items-center justify-center h-5"
           >
-            <span className="text-xs font-bold text-oscar-gold/70 tracking-widest">
+            <span className="text-xs font-bold text-accent/70 tracking-widest">
               {letter}
             </span>
           </div>
@@ -135,6 +137,7 @@ export default function BingoCard({
             shortText={square?.short_text ?? ''}
             status={getStatus(index)}
             isObjective={square?.is_objective ?? false}
+            tier={square?.likelihood_tier}
             bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
             isSelected={selectedIndex === index}
             onTap={() => handleTap(index)}
@@ -236,7 +239,10 @@ export default function BingoCard({
         )}
       </div>
 
-      {/* Confirmation bar — slides up from inside the card */}
+      {/* Confirmation panel — slides up from inside the card.
+          Shows the full win condition before the claim goes to the host, because
+          "does this count?" is the argument worth preventing, and every square in
+          the pool spells out what does not count. */}
       <AnimatePresence>
         {selectedIndex !== null && selectedSquare && (
           <motion.div
@@ -245,30 +251,51 @@ export default function BingoCard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-            className="mt-2 flex items-center gap-2 bg-white/8 backdrop-blur border border-white/12 rounded-xl px-3"
-            style={{ height: 48 }}
+            className="mt-2 bg-white/8 backdrop-blur border border-white/12 rounded-xl px-3 py-2.5"
           >
-            <p className="flex-1 text-[11px] font-medium text-white/80 truncate">
-              {selectedSquare.short_text}
-            </p>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              onClick={onDeselect}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/8 border border-white/15 text-white/60 flex-shrink-0"
-              aria-label="Cancel"
-            >
-              <X size={15} />
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              onClick={handleConfirm}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex-shrink-0"
-              aria-label="Confirm"
-            >
-              <Check size={15} strokeWidth={2.5} />
-            </motion.button>
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <p className="text-[15px] font-semibold text-white leading-snug">
+                {selectedSquare.title ?? selectedSquare.short_text}
+              </p>
+              {selectedSquare.likelihood_tier && (
+                <div className="flex-shrink-0 mt-0.5">
+                  <TierChip tier={selectedSquare.likelihood_tier} showPoints />
+                </div>
+              )}
+            </div>
+
+            <SquareRule
+              winCondition={selectedSquare.win_condition ?? selectedSquare.text}
+              tier={selectedSquare.likelihood_tier}
+              probabilityPct={selectedSquare.probability_pct}
+            />
+
+            <div className="flex items-center gap-2 mt-2.5">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                onClick={onDeselect}
+                className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-lg bg-white/8 border border-white/15 text-white/60 text-xs font-semibold"
+              >
+                <X size={14} />
+                Cancel
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                onClick={handleConfirm}
+                className="flex-[1.4] h-11 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 text-xs font-bold"
+              >
+                <Check size={14} strokeWidth={2.5} />
+                {/* What the claim is worth, at the moment you make it */}
+                It happened
+                {selectedSquare.likelihood_tier && (
+                  <span className="opacity-70">
+                    +{TIER_POINTS[selectedSquare.likelihood_tier]}
+                  </span>
+                )}
+              </motion.button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

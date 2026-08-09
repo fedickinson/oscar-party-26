@@ -2,27 +2,30 @@
  * PreCeremonyView — Home tab content before the first winner is announced.
  *
  * Layout (full-height, no page scroll):
- *   1. Compact hero card — start show / waiting + bingo CTA
+ *   1. Compact hero card — start episode / waiting + bingo CTA
  *   2. Collapsible pre-show stats — collapsed by default, tap to expand
  *   3. ChatSection — fills all remaining vertical space (prominent)
  *
  * Before show_started:
- *   Host sees "Start the Show" button -> writes show_started=true to DB.
- *   Non-hosts see "Waiting for show to begin..."
+ *   Anyone holding a remote (see lib/watch-groups) gets a large, full-width
+ *   "Start the episode" button -> writes show_started=true. Everyone else waits.
+ *   It is not host-only: the host may be in a different country from the screen
+ *   that actually starts playing.
  *
- * After show_started, before first winner:
- *   All players see "The show has begun! Waiting for first category..."
- *   Host can still navigate to Winners tab to begin announcing.
+ * After show_started, before the first logged event:
+ *   All players see "The episode has begun".
+ *   Host can jump to the Events tab to start logging.
  */
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Grid3X3, Trophy, Clapperboard, ChevronDown, ChevronUp, BarChart2 } from 'lucide-react'
+import { Grid3X3, Trophy, Clapperboard, ChevronDown, ChevronUp, BarChart2, Play } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import ChatSection from './ChatSection'
 import QuickStats from './QuickStats'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
+import { remoteHolderIds } from '../../lib/watch-groups'
 
 interface Props {
   categories: CategoryRow[]
@@ -64,7 +67,7 @@ function CollapsibleStats({
         className="w-full px-4 py-3 flex items-center justify-between gap-2"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <BarChart2 size={15} className="text-oscar-gold flex-shrink-0" />
+          <BarChart2 size={15} className="text-accent flex-shrink-0" />
           <span className="text-sm font-semibold text-white/80 flex-shrink-0">Pre-show Stats</span>
           {!expanded && (
             <span className="text-xs text-white/35 truncate">Tap to view breakdowns</span>
@@ -117,8 +120,15 @@ export default function PreCeremonyView({
   onNavigateToWinnersTab,
   onNavigateToBingo,
 }: Props) {
-  const { player } = useGame()
+  const { player, players } = useGame()
   const isHost = player?.is_host ?? false
+  // Anyone holding a remote can start the episode. Six people are spread across
+  // separate screens tonight, and whoever presses play on a screen is the person
+  // who knows the moment it actually starts — the host may not be in that room.
+  // The host is always included as a fallback: a location where nobody claimed
+  // the remote would otherwise have no one who can start, and discovering that
+  // at 9pm is not the moment to fix it.
+  const canStart = player ? isHost || remoteHolderIds(players).includes(player.id) : false
   const [starting, setStarting] = useState(false)
 
   async function handleStartShow() {
@@ -136,7 +146,7 @@ export default function PreCeremonyView({
       {/* Fixed top: hero card + collapsible stats */}
       <div className="px-4 pt-4 space-y-3 flex-shrink-0">
         {/* Compact hero card */}
-        <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
+        <div className="relief-glass p-4">
           <div className="flex items-center gap-3">
             {/* Icon */}
             {showStarted ? (
@@ -152,9 +162,9 @@ export default function PreCeremonyView({
               <motion.div
                 animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-10 h-10 rounded-full bg-oscar-gold/15 border border-oscar-gold/30 flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center flex-shrink-0"
               >
-                <Trophy size={18} className="text-oscar-gold" />
+                <Trophy size={18} className="text-accent" />
               </motion.div>
             )}
 
@@ -162,41 +172,59 @@ export default function PreCeremonyView({
             <div className="flex-1 min-w-0">
               {showStarted ? (
                 <>
-                  <h2 className="text-sm font-bold text-white">The show has begun</h2>
-                  <p className="text-xs text-white/45">Waiting for first category</p>
+                  <h2 className="text-sm font-bold text-white">The episode has begun</h2>
+                  <p className="text-xs text-white/45">Watching for the first scoring moment</p>
                 </>
               ) : (
                 <>
-                  <h2 className="text-sm font-bold text-white">The show starts soon</h2>
-                  <p className="text-xs text-white/45">Picks locked. Bingo cards set.</p>
+                  <h2 className="text-sm font-bold text-white">The episode starts soon</h2>
+                  <p className="text-xs text-white/45">Rosters locked. Bingo cards dealt.</p>
                 </>
               )}
             </div>
 
-            {/* Action button */}
-            {showStarted && isHost ? (
+            {/* Events shortcut once the episode is running — host only */}
+            {showStarted && isHost && (
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={onNavigateToWinnersTab}
-                className="px-3 py-2 rounded-xl bg-oscar-gold font-semibold text-midnight text-xs flex-shrink-0"
+                className="px-3 py-2 rounded-xl bg-accent font-semibold text-ground-deep text-xs flex-shrink-0"
                 style={{ boxShadow: '0 0 16px rgba(212,175,55,0.3)' }}
               >
-                Winners
+                Events
               </motion.button>
-            ) : !showStarted && isHost ? (
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                onClick={handleStartShow}
-                disabled={starting}
-                className="px-3 py-2 rounded-xl bg-oscar-gold font-semibold text-midnight text-xs flex-shrink-0 disabled:opacity-60"
-                style={{ boxShadow: '0 0 16px rgba(212,175,55,0.3)' }}
-              >
-                {starting ? 'Starting...' : 'Start Show'}
-              </motion.button>
-            ) : !showStarted ? (
-              <span className="text-[11px] text-white/35 italic flex-shrink-0">Waiting...</span>
-            ) : null}
+            )}
           </div>
+
+          {/* ── Start the episode ─────────────────────────────────────────────
+              Deliberately full-width and tall. It is pressed once, in a dark
+              room, at the exact second the episode begins — with a phone in one
+              hand. A small button in the corner of a card is the wrong shape
+              for that. */}
+          {!showStarted && canStart && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleStartShow}
+              disabled={starting}
+              className="w-full mt-3 py-4 rounded-2xl bg-accent font-extrabold text-ground-deep
+                         text-lg tracking-wide flex items-center justify-center gap-2
+                         disabled:opacity-60"
+              style={{ boxShadow: '0 0 28px rgba(212,175,55,0.35)' }}
+            >
+              <Play size={20} strokeWidth={2.5} fill="currentColor" />
+              {starting ? 'Starting…' : 'Start the episode'}
+            </motion.button>
+          )}
+          {!showStarted && canStart && (
+            <p className="text-[11px] text-white/35 text-center mt-1.5">
+              Press this the moment it starts on your screen.
+            </p>
+          )}
+          {!showStarted && !canStart && (
+            <p className="text-xs text-white/35 text-center mt-3 italic">
+              Waiting for someone to press play…
+            </p>
+          )}
 
           {/* Bingo CTA — compact inline row */}
           <motion.button

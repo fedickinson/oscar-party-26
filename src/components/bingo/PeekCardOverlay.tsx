@@ -11,6 +11,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import Avatar from '../Avatar'
 import BingoSquare from './BingoSquare'
+import TierChip from './TierChip'
+import SquareRule from './SquareRule'
 import { BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
 import type { BingoMarkRow, BingoSquareRow, PlayerRow } from '../../types/database'
 
@@ -122,7 +124,7 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
           <div className="grid grid-cols-5 gap-1 mb-1">
             {['B', 'I', 'N', 'G', 'O'].map((letter) => (
               <div key={letter} className="flex items-center justify-center h-5">
-                <span className="text-xs font-bold text-oscar-gold/70 tracking-widest">
+                <span className="text-xs font-bold text-accent/70 tracking-widest">
                   {letter}
                 </span>
               </div>
@@ -142,6 +144,7 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
                   shortText={square?.short_text ?? ''}
                   status={getStatus(index)}
                   isObjective={square?.is_objective ?? false}
+                  tier={square?.likelihood_tier}
                   bingoLineColorIndex={squareLineColorMap.get(index) ?? null}
                   isSelected={false}
                   onTap={() => {}}
@@ -161,23 +164,39 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-              className="w-full backdrop-blur-lg bg-white/8 border border-white/12 rounded-2xl px-4 py-3 flex items-start gap-3"
+              className="w-full backdrop-blur-lg bg-white/8 border border-white/12 rounded-2xl px-4 py-3"
             >
-              <p className="flex-1 text-sm text-white/90 leading-snug">
-                {squares[tappedIndex]!.text}
-              </p>
-              <button
-                onClick={() => setTappedIndex(null)}
-                className="flex-shrink-0 mt-0.5 text-white/30 hover:text-white/60 transition-colors"
-              >
-                <X size={15} />
-              </button>
+              <div className="flex items-start gap-3 mb-1.5">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-semibold text-white leading-snug mb-1">
+                    {squares[tappedIndex]!.title ?? squares[tappedIndex]!.short_text}
+                  </p>
+                  {squares[tappedIndex]!.likelihood_tier && (
+                    <TierChip tier={squares[tappedIndex]!.likelihood_tier} showPoints />
+                  )}
+                </div>
+                <button
+                  onClick={() => setTappedIndex(null)}
+                  className="flex-shrink-0 -mt-1 -mr-1 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
+                  aria-label="Close square detail"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+              {/* Expanded by default — reading someone else's card is a browse,
+                  not a decision, so there is no reason to hold anything back. */}
+              <SquareRule
+                winCondition={squares[tappedIndex]!.win_condition ?? squares[tappedIndex]!.text}
+                tier={squares[tappedIndex]!.likelihood_tier}
+                probabilityPct={squares[tappedIndex]!.probability_pct}
+                defaultExpanded
+              />
             </motion.div>
           )}
         </AnimatePresence>
 
         <p className="text-xs text-white/25 text-center">
-          Tap a square to read the full text
+          Tap a square to see what counts
         </p>
       </motion.div>
     </motion.div>

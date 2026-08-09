@@ -1,0 +1,605 @@
+[
+ {
+  "id": "9faa4ff3-cfd4-4ff0-b3bf-caab168267c6",
+  "room_id": "cef25f6d-042b-40ac-8b57-43b6f07a0683",
+  "name": "Franz",
+  "avatar_id": "taylor-obaa",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-14T23:42:21.360927+00:00"
+ },
+ {
+  "id": "9785ddf4-899e-469f-89b2-932487a980c1",
+  "room_id": "cef25f6d-042b-40ac-8b57-43b6f07a0683",
+  "name": "Estef",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-14T23:42:41.599527+00:00"
+ },
+ {
+  "id": "cdbf076e-6bdd-4462-96a8-277e783e4c6f",
+  "room_id": "71e1763a-5ce0-4c92-b0d8-fed65e734eca",
+  "name": "Franz",
+  "avatar_id": "lindo-delta",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T00:12:27.459533+00:00"
+ },
+ {
+  "id": "fe73a442-7226-405a-a9d7-dc61e098aa27",
+  "room_id": "71e1763a-5ce0-4c92-b0d8-fed65e734eca",
+  "name": "Estef",
+  "avatar_id": "taylor-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T00:12:49.377084+00:00"
+ },
+ {
+  "id": "78b90903-9730-4ce7-99b4-8d999eb4a9df",
+  "room_id": "7158dce6-85f3-4c5e-9372-d318e8bd7af3",
+  "name": "Franz",
+  "avatar_id": "stone-bugonia",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T00:23:12.886362+00:00"
+ },
+ {
+  "id": "b365219b-806d-4cae-a60b-198472e05458",
+  "room_id": "7158dce6-85f3-4c5e-9372-d318e8bd7af3",
+  "name": "ESTEF",
+  "avatar_id": "buckley-agnes",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T00:23:31.031761+00:00"
+ },
+ {
+  "id": "eec88df5-7a0e-4f8a-af22-c6fec14ce6eb",
+  "room_id": "30b87388-38a0-4e8c-adc7-fbee044ae7bb",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T01:20:28.560837+00:00"
+ },
+ {
+  "id": "b80a6ca6-bc47-4ae8-829e-9f31962ae6e9",
+  "room_id": "30b87388-38a0-4e8c-adc7-fbee044ae7bb",
+  "name": "ESTEF",
+  "avatar_id": "taylor-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T01:20:42.097472+00:00"
+ },
+ {
+  "id": "53fde51b-511b-4d19-9e1a-030dc83cbead",
+  "room_id": "80b08cb8-1d01-4364-8e2f-d837cbe261fa",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T02:24:23.960388+00:00"
+ },
+ {
+  "id": "643f1907-e86b-4128-97c5-8347c440f2de",
+  "room_id": "80b08cb8-1d01-4364-8e2f-d837cbe261fa",
+  "name": "ESTEF",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T02:24:44.38133+00:00"
+ },
+ {
+  "id": "d100790c-1db4-4d9a-ae86-b47d2153890f",
+  "room_id": "80b08cb8-1d01-4364-8e2f-d837cbe261fa",
+  "name": "arielllz",
+  "avatar_id": "penn-obaa",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T02:24:50.710174+00:00"
+ },
+ {
+  "id": "ec6a1a59-812a-4db0-a072-26bd65811a43",
+  "room_id": "5a70e0e3-2e5a-443f-848e-fcaf137f9747",
+  "name": "Franz",
+  "avatar_id": "taylor-obaa",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T02:55:51.646582+00:00"
+ },
+ {
+  "id": "87ef37f3-d4b9-4ba7-b4d7-59603de1e868",
+  "room_id": "5a70e0e3-2e5a-443f-848e-fcaf137f9747",
+  "name": "Stef",
+  "avatar_id": "chalamet-marty",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T02:56:05.101848+00:00"
+ },
+ {
+  "id": "b85dfe5f-db8a-4ba7-a023-411d8411cf01",
+  "room_id": "5a70e0e3-2e5a-443f-848e-fcaf137f9747",
+  "name": "Ariel",
+  "avatar_id": "mbj-smoke",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T02:56:08.695966+00:00"
+ },
+ {
+  "id": "ddda80bf-3407-441d-afc0-513965951cb0",
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T03:15:09.106084+00:00"
+ },
+ {
+  "id": "c99d667b-21cb-4bd1-9286-b5dbc274efe6",
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "name": "Ariel",
+  "avatar_id": "taylor-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T03:15:21.045478+00:00"
+ },
+ {
+  "id": "15deb9fd-67bb-4a28-b54c-12a88b416885",
+  "room_id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "name": "stef",
+  "avatar_id": "penn-obaa",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T03:15:44.764991+00:00"
+ },
+ {
+  "id": "fac9b152-e257-4e62-a779-e80d4864c408",
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T13:11:26.481879+00:00"
+ },
+ {
+  "id": "a04b0c27-97c1-4462-9255-30a2ba8ce2c0",
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "name": "Stef",
+  "avatar_id": "lindo-delta",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T13:11:35.998967+00:00"
+ },
+ {
+  "id": "ab264ae0-f395-4ff0-abc1-c78fd2cc655e",
+  "room_id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "name": "Ariel",
+  "avatar_id": "pitt-f1",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T13:11:46.853511+00:00"
+ },
+ {
+  "id": "b9bcf670-512a-4214-9106-2fb1432b7476",
+  "room_id": "01986673-fd94-4cbe-bb70-88bd5c0dd97c",
+  "name": "Franz",
+  "avatar_id": "stone-bugonia",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T14:56:39.54021+00:00"
+ },
+ {
+  "id": "00c221e6-1d33-46a1-ae3d-90c3adbc2969",
+  "room_id": "01986673-fd94-4cbe-bb70-88bd5c0dd97c",
+  "name": "Stef",
+  "avatar_id": "buckley-agnes",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T15:00:12.136005+00:00"
+ },
+ {
+  "id": "d21e36e9-31df-4c9d-9ab1-161c3c2a90c3",
+  "room_id": "01986673-fd94-4cbe-bb70-88bd5c0dd97c",
+  "name": "Arielle",
+  "avatar_id": "reinsve-sv",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T15:00:22.005248+00:00"
+ },
+ {
+  "id": "d2f7e280-608e-4fdc-a1ce-b95aad0feaa8",
+  "room_id": "1e7c869d-29d4-4b50-a2a4-774a948a7930",
+  "name": "Franz",
+  "avatar_id": "stone-bugonia",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T15:21:10.262696+00:00"
+ },
+ {
+  "id": "46a01c6f-afd1-429a-8ee1-2e4a840c665f",
+  "room_id": "1e7c869d-29d4-4b50-a2a4-774a948a7930",
+  "name": "Arielle",
+  "avatar_id": "penn-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T15:21:27.128692+00:00"
+ },
+ {
+  "id": "ad6ba4af-2bd2-4cfb-ae91-91204a0c9477",
+  "room_id": "1e7c869d-29d4-4b50-a2a4-774a948a7930",
+  "name": "Stef",
+  "avatar_id": "penn-obaa",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T15:21:33.888994+00:00"
+ },
+ {
+  "id": "af961703-7dbf-4352-8a05-3ac00414eb86",
+  "room_id": "551110df-8807-4224-bcd1-b2484e831402",
+  "name": "Ariel",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T21:12:28.907546+00:00"
+ },
+ {
+  "id": "d10b1f5c-0fb5-481b-802f-6a4efa961b06",
+  "room_id": "551110df-8807-4224-bcd1-b2484e831402",
+  "name": "Frank",
+  "avatar_id": "taylor-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T21:12:51.29605+00:00"
+ },
+ {
+  "id": "4f3db28a-17bc-4d55-964d-bd2f73c7d743",
+  "room_id": "551110df-8807-4224-bcd1-b2484e831402",
+  "name": "Stef",
+  "avatar_id": "lindo-delta",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T21:13:04.325823+00:00"
+ },
+ {
+  "id": "aa76992c-1f0d-4da3-8e53-91e78234bd05",
+  "room_id": "4707c913-4042-46d8-b559-3bf3991ec245",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T21:41:40.911336+00:00"
+ },
+ {
+  "id": "7cdfa0bf-7d8c-4ace-bf49-ea3695c6d0b9",
+  "room_id": "4707c913-4042-46d8-b559-3bf3991ec245",
+  "name": "Stef",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T21:41:59.532924+00:00"
+ },
+ {
+  "id": "3b2da37e-af4f-4cbd-bb8c-13427c3e45ba",
+  "room_id": "4707c913-4042-46d8-b559-3bf3991ec245",
+  "name": "Ariel",
+  "avatar_id": "lindo-delta",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T21:42:10.544672+00:00"
+ },
+ {
+  "id": "986f3bab-63a5-4c48-94c8-8b0f5351105a",
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "name": "Frank",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T22:04:41.543267+00:00"
+ },
+ {
+  "id": "12243f95-7969-4471-8dee-8e516559d8d8",
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "name": "STef",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T22:07:02.38418+00:00"
+ },
+ {
+  "id": "9a3a3852-b12b-4ab1-83bc-dc4d95bfb962",
+  "room_id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "name": "Ariel",
+  "avatar_id": "taylor-obaa",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T22:07:07.111283+00:00"
+ },
+ {
+  "id": "1ea0b9dc-beee-46c6-9180-1a8840331568",
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "name": "Franzino",
+  "avatar_id": "stone-bugonia",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-15T23:18:15.540405+00:00"
+ },
+ {
+  "id": "a7531c80-ee15-4643-8fc8-6444ee9b85ee",
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "name": "Stauphh",
+  "avatar_id": "elordi-creature",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-15T23:19:02.584589+00:00"
+ },
+ {
+  "id": "1df8aa25-d0b8-4989-9551-d88d292b26ea",
+  "room_id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "name": "Air",
+  "avatar_id": "chalamet-marty",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-15T23:19:19.432866+00:00"
+ },
+ {
+  "id": "61ee5596-7a79-47e9-a612-8f4881a68bb5",
+  "room_id": "f0f134c8-3787-4c85-9f9c-36dc1bc89c3a",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-16T12:19:00.709695+00:00"
+ },
+ {
+  "id": "a9a3a24c-0e02-4a80-acc4-bbdd9e43266c",
+  "room_id": "f0f134c8-3787-4c85-9f9c-36dc1bc89c3a",
+  "name": "Josh",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-16T12:19:12.985839+00:00"
+ },
+ {
+  "id": "788d3216-1c3c-492d-91fe-f97cc12ec8e0",
+  "room_id": "9217b214-9a2c-4b6a-8c84-65770ebba494",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-16T13:57:34.538243+00:00"
+ },
+ {
+  "id": "8527508d-b756-49ba-8aa9-e0c81ac402bf",
+  "room_id": "9217b214-9a2c-4b6a-8c84-65770ebba494",
+  "name": "Jessie",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-16T13:58:56.192664+00:00"
+ },
+ {
+  "id": "b5cc78dd-8721-4806-ac4a-84fe41ccd4cb",
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "name": "Franz",
+  "avatar_id": "buckley-agnes",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-16T14:01:24.795764+00:00"
+ },
+ {
+  "id": "fa2877a0-4019-477d-ae50-043b487523ec",
+  "room_id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "name": "Ariel",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-16T14:01:38.507357+00:00"
+ },
+ {
+  "id": "8b691f55-dca5-46f9-9005-a92c9f5115c2",
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "name": "Franz",
+  "avatar_id": "mbj-smoke",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-16T15:22:22.951686+00:00"
+ },
+ {
+  "id": "c528b386-197a-43ea-8f86-6355a4568011",
+  "room_id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "name": "Air",
+  "avatar_id": "taylor-obaa",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-16T15:22:38.227214+00:00"
+ },
+ {
+  "id": "226c82df-ea71-41b0-a708-b1fbd6755000",
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "name": "Franz",
+  "avatar_id": "taylor-obaa",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-16T15:38:40.179569+00:00"
+ },
+ {
+  "id": "420ee390-ec46-41c8-93bd-19a27029795b",
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "name": "Air",
+  "avatar_id": "buckley-agnes",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-16T15:38:49.517565+00:00"
+ },
+ {
+  "id": "8de07eae-00f8-4fbd-8619-2295bef2ae3a",
+  "room_id": "12e8438b-446e-4690-844e-593351a76d62",
+  "name": "Stef",
+  "avatar_id": "stone-bugonia",
+  "color": "#059669",
+  "is_host": false,
+  "created_at": "2026-03-16T15:39:17.220549+00:00"
+ },
+ {
+  "id": "7c6d426e-19ca-495c-895c-54dae1c5b920",
+  "room_id": "ac896fbb-0c60-43a0-b90a-147defb481a7",
+  "name": "jo",
+  "avatar_id": "lindo-delta",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-17T13:59:22.687649+00:00"
+ },
+ {
+  "id": "f4d5db11-c889-4959-974c-a2213be1a9e3",
+  "room_id": "ac896fbb-0c60-43a0-b90a-147defb481a7",
+  "name": "lolq",
+  "avatar_id": "stone-bugonia",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-17T13:59:36.05118+00:00"
+ },
+ {
+  "id": "615da489-50cb-4e46-b0e0-64bd947a52f1",
+  "room_id": "ac31b481-9d40-45d3-921b-485c1dbd7593",
+  "name": "Franklin",
+  "avatar_id": "popcorn-bucket",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T15:48:29.796358+00:00"
+ },
+ {
+  "id": "404c17e3-325c-4284-9af1-79d9b9a33eb6",
+  "room_id": "ac31b481-9d40-45d3-921b-485c1dbd7593",
+  "name": "Jess",
+  "avatar_id": "ticket-stub",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T15:48:54.936902+00:00"
+ },
+ {
+  "id": "0774f264-d0a9-4855-8d33-f494997ad9aa",
+  "room_id": "94fb39ad-8121-46f8-ba69-156576859f60",
+  "name": "Frank",
+  "avatar_id": "ticket-stub",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T16:36:24.808316+00:00"
+ },
+ {
+  "id": "d696df2f-99df-4f2e-902e-f80c9d8c540b",
+  "room_id": "94fb39ad-8121-46f8-ba69-156576859f60",
+  "name": "Hess",
+  "avatar_id": "phonograph",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T16:37:25.570954+00:00"
+ },
+ {
+  "id": "bf8e69ce-0ddc-4cd9-92f5-4a6d4488b352",
+  "room_id": "e67833fc-175e-4001-85e5-944ec15f418a",
+  "name": "Josh",
+  "avatar_id": "clapperboard",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T22:51:21.473553+00:00"
+ },
+ {
+  "id": "65223f33-c6a6-4d28-907d-894eb4293585",
+  "room_id": "e67833fc-175e-4001-85e5-944ec15f418a",
+  "name": "Jessie",
+  "avatar_id": "film-reel",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T22:51:37.334205+00:00"
+ },
+ {
+  "id": "5c4ea067-cd89-4da0-93fd-969284c8ffde",
+  "room_id": "633f5da1-aac9-4547-957d-4782bfce9d57",
+  "name": "Josh",
+  "avatar_id": "movie-camera",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T23:07:30.064033+00:00"
+ },
+ {
+  "id": "d49346a2-63ce-4826-aa10-249c599ff064",
+  "room_id": "633f5da1-aac9-4547-957d-4782bfce9d57",
+  "name": "Betz",
+  "avatar_id": "film-reel",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T23:07:43.153621+00:00"
+ },
+ {
+  "id": "3182951f-d5da-4b32-82ca-903cd5651b98",
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "name": "Frank",
+  "avatar_id": "megaphone",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T23:20:02.506431+00:00"
+ },
+ {
+  "id": "ff946907-797c-4400-a446-bec2c010380b",
+  "room_id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "name": "Hess",
+  "avatar_id": "drama-mask",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T23:20:16.179329+00:00"
+ },
+ {
+  "id": "7ddf8ae1-e2cc-4d71-8746-94eb08282b72",
+  "room_id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "name": "Josh",
+  "avatar_id": "megaphone",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-18T23:55:48.996976+00:00"
+ },
+ {
+  "id": "6ae45dc6-c1eb-4318-98bd-77109168dc87",
+  "room_id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "name": "Bish",
+  "avatar_id": "clapperboard",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-18T23:56:00.77842+00:00"
+ },
+ {
+  "id": "e5526eea-b849-4f99-83fc-cb0d15008bcf",
+  "room_id": "04dc6102-968f-45cf-8309-e7a68592c32f",
+  "name": "Franz",
+  "avatar_id": "clapperboard",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-19T01:06:38.633644+00:00"
+ },
+ {
+  "id": "64d12eab-9928-49d3-a91b-07976aabf6dc",
+  "room_id": "04dc6102-968f-45cf-8309-e7a68592c32f",
+  "name": "Jess",
+  "avatar_id": "ticket-stub",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-19T01:06:53.198711+00:00"
+ },
+ {
+  "id": "9e37592c-7614-4b2b-a044-57b1eab0e9a2",
+  "room_id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "name": "Buzz",
+  "avatar_id": "clapperboard",
+  "color": "#D4AF37",
+  "is_host": true,
+  "created_at": "2026-03-19T01:07:43.43823+00:00"
+ },
+ {
+  "id": "32e1a01b-e2b3-4753-b83e-48b66fb351bc",
+  "room_id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "name": "Bettie",
+  "avatar_id": "drama-mask",
+  "color": "#7C3AED",
+  "is_host": false,
+  "created_at": "2026-03-19T01:08:01.888655+00:00"
+ }
+]

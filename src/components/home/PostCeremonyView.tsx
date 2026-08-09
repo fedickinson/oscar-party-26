@@ -21,7 +21,9 @@ import ScoreTimeline from './ScoreTimeline'
 import TurningPoints from './TurningPoints'
 import MiniTimelines from './MiniTimelines'
 import BingoCard from '../bingo/BingoCard'
-import type { BingoMarkRow, BingoSquareRow, PlayerRow } from '../../types/database'
+import TheReckoning from './TheReckoning'
+import type { BingoMarkRow, BingoSquareRow, PlayerRow, PlayerVerdictRow } from '../../types/database'
+import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
@@ -42,6 +44,13 @@ interface Props {
   bingoSquares?: (BingoSquareRow | null)[]
   bingoMarks?: BingoMarkRow[]
   bingoLines?: number[][]
+  /** The Reckoning. Computed locally, so these always have values. */
+  playerAwards?: PlayerAward[]
+  characterAwards?: CharacterAward[]
+  /** Written passages. Legitimately empty when the Claude call failed. */
+  verdicts?: Map<string, PlayerVerdictRow>
+  currentPlayerId?: string
+  onSharePlayerCard?: (playerId: string) => void
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -65,6 +74,11 @@ export default function PostCeremonyView({
   bingoSquares,
   bingoMarks,
   bingoLines,
+  playerAwards = [],
+  characterAwards = [],
+  verdicts = new Map(),
+  currentPlayerId,
+  onSharePlayerCard,
 }: Props) {
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
@@ -196,9 +210,9 @@ export default function PostCeremonyView({
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
-          className="text-[10px] text-oscar-gold/55 uppercase tracking-[0.28em] mb-2"
+          className="text-[10px] text-accent/55 uppercase tracking-[0.28em] mb-2"
         >
-          98th Academy Awards
+          House of the Dragon · Season 3 Finale
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: -6 }}
@@ -350,11 +364,11 @@ export default function PostCeremonyView({
                     border: '1px solid rgba(212,175,55,0.55)',
                   }}
                 >
-                  <Trophy size={11} className="text-oscar-gold flex-shrink-0" />
-                  <span className="text-[11px] font-extrabold text-oscar-gold uppercase tracking-[0.24em]">
+                  <Trophy size={11} className="text-accent flex-shrink-0" />
+                  <span className="text-[11px] font-extrabold text-accent uppercase tracking-[0.24em]">
                     Co-Champions
                   </span>
-                  <Trophy size={11} className="text-oscar-gold flex-shrink-0" />
+                  <Trophy size={11} className="text-accent flex-shrink-0" />
                 </motion.div>
               ) : (
                 <div
@@ -365,8 +379,8 @@ export default function PostCeremonyView({
                     boxShadow: '0 0 16px 2px rgba(212,175,55,0.18)',
                   }}
                 >
-                  <Trophy size={10} className="text-oscar-gold" />
-                  <span className="text-[10px] font-extrabold text-oscar-gold uppercase tracking-[0.22em]">
+                  <Trophy size={10} className="text-accent" />
+                  <span className="text-[10px] font-extrabold text-accent uppercase tracking-[0.22em]">
                     Tonight's Champion
                   </span>
                 </div>
@@ -491,12 +505,12 @@ export default function PostCeremonyView({
               )}
               <div>
                 <span
-                  className="text-5xl font-black tabular-nums text-oscar-gold"
+                  className="text-5xl font-black tabular-nums text-accent"
                   style={{ textShadow: '0 0 40px rgba(212,175,55,0.5), 0 0 80px rgba(212,175,55,0.2)' }}
                 >
                   {winners[0].totalScore}
                 </span>
-                <span className="text-lg font-semibold text-oscar-gold/45 ml-2">points</span>
+                <span className="text-lg font-semibold text-accent/45 ml-2">points</span>
               </div>
             </motion.div>
 
@@ -521,8 +535,8 @@ export default function PostCeremonyView({
                     border: '1px solid rgba(212,175,55,0.20)',
                   }}
                 >
-                  <span className="text-[10px] text-oscar-gold/50 uppercase tracking-wide font-medium">{label}</span>
-                  <span className="text-sm font-extrabold text-oscar-gold/90 tabular-nums">{value}</span>
+                  <span className="text-[10px] text-accent/50 uppercase tracking-wide font-medium">{label}</span>
+                  <span className="text-sm font-extrabold text-accent/90 tabular-nums">{value}</span>
                 </div>
               ))}
             </motion.div>
@@ -558,7 +572,7 @@ export default function PostCeremonyView({
                 className={[
                   'flex items-center gap-3 px-3.5 py-3 rounded-2xl border relative overflow-hidden',
                   entry.rank === 1
-                    ? 'bg-oscar-gold/8 border-oscar-gold/25'
+                    ? 'bg-accent/8 border-accent/25'
                     : 'bg-white/4 border-white/7',
                 ].join(' ')}
                 style={
@@ -642,6 +656,21 @@ export default function PostCeremonyView({
         </div>
       </section>
 
+      {/* ── 3b. The Reckoning ──────────────────────────────────────────────── */}
+      {/* Sits directly under the standings, ahead of the charts: the standings
+          say who won, this says what each person's night was. The analytical
+          sections below are for the people who want to relitigate it. */}
+      <div className="relative z-10">
+        <TheReckoning
+          playerAwards={playerAwards}
+          characterAwards={characterAwards}
+          verdicts={verdicts}
+          players={players}
+          currentPlayerId={currentPlayerId}
+          onSharePlayerCard={onSharePlayerCard}
+        />
+      </div>
+
       {/* ── 4. Score Timeline ──────────────────────────────────────────────── */}
       <div className="relative z-10">
         <ScoreTimeline timeline={timeline} players={players} />
@@ -668,11 +697,11 @@ export default function PostCeremonyView({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28, delay: 0.5 }}
-          className="relative z-10 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4"
+          className="relative z-10 relief-glass p-4"
         >
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
-              <Swords size={13} className="text-oscar-gold/80" />
+            <div className="w-7 h-7 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+              <Swords size={13} className="text-accent/80" />
             </div>
             <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
               Closest Rivalry
@@ -739,11 +768,11 @@ export default function PostCeremonyView({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28, delay: 0.6 }}
-          className="relative z-10 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4"
+          className="relative z-10 relief-glass p-4"
         >
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
-              <TrendingUp size={13} className="text-oscar-gold/80" />
+            <div className="w-7 h-7 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={13} className="text-accent/80" />
             </div>
             <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
               The Final Stretch
@@ -759,7 +788,7 @@ export default function PostCeremonyView({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28, delay: 0.65 }}
-          className="relative z-10 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden"
+          className="relative z-10 relief-glass overflow-hidden"
         >
           {/* Header row — tappable toggle */}
           <motion.button
@@ -767,14 +796,14 @@ export default function PostCeremonyView({
             onClick={() => setBingoExpanded((v) => !v)}
             className="w-full flex items-center gap-2 px-4 py-3.5"
           >
-            <div className="w-7 h-7 rounded-lg bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
-              <Grid3X3 size={13} className="text-oscar-gold/80" />
+            <div className="w-7 h-7 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+              <Grid3X3 size={13} className="text-accent/80" />
             </div>
             <p className="text-xs font-semibold uppercase tracking-wider text-white/40 flex-1 text-left">
               My Bingo Card
             </p>
             {(bingoLines?.length ?? 0) > 0 && (
-              <span className="text-[10px] font-bold text-oscar-gold/70 tabular-nums mr-1">
+              <span className="text-[10px] font-bold text-accent/70 tabular-nums mr-1">
                 {bingoLines!.length} {bingoLines!.length === 1 ? 'Bingo' : 'Bingos'}
               </span>
             )}
@@ -831,7 +860,7 @@ export default function PostCeremonyView({
                 'w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl border font-semibold text-sm transition-all',
                 isCopied
                   ? 'bg-green-500/15 border-green-500/40 text-green-400'
-                  : 'bg-oscar-gold/15 border-oscar-gold/35 text-oscar-gold hover:bg-oscar-gold/22 active:bg-oscar-gold/28',
+                  : 'bg-accent/15 border-accent/35 text-accent hover:bg-accent/22 active:bg-accent/28',
               ].join(' ')}
               style={
                 !isCopied

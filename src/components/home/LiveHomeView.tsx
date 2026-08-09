@@ -99,9 +99,9 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
         {/* Header */}
         <div className="flex items-start justify-between px-5 pt-2 pb-4 flex-shrink-0">
           <div className="min-w-0 pr-3">
-            <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-0.5">{tierLabel} · {category.points} pts</p>
+            <p className="text-[11px] uppercase tracking-wider text-accent/70 mb-0.5">{tierLabel} · {category.points} pts</p>
             <h2 className="text-xl font-bold text-white leading-tight flex items-center gap-2">
-              <CategoryIcon categoryName={category.name} size={20} className="text-oscar-gold/70 flex-shrink-0" />
+              <CategoryIcon categoryName={category.name} size={20} className="text-accent/70 flex-shrink-0" />
               {category.name}
             </h2>
           </div>
@@ -139,7 +139,7 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
                 className={[
                   'w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-colors',
                   isMyPick
-                    ? 'bg-oscar-gold/10 border-oscar-gold/30'
+                    ? 'bg-accent/10 border-accent/30'
                     : 'bg-white/4 border-white/8',
                 ].join(' ')}
               >
@@ -177,7 +177,7 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
                   )}
 
                   {isMyPick && (
-                    <p className="text-[11px] text-oscar-gold mt-1 font-medium">Your pick</p>
+                    <p className="text-[11px] text-accent mt-1 font-medium">Your pick</p>
                   )}
                 </div>
 
@@ -243,7 +243,7 @@ function NextUpCard({
         }}
       >
         <div className="flex items-center gap-2">
-          <Trophy size={15} className="text-oscar-gold flex-shrink-0" />
+          <Trophy size={15} className="text-accent flex-shrink-0" />
           <p className="text-sm font-semibold text-white">The ceremony is complete</p>
         </div>
         <p className="text-xs text-white/45">
@@ -257,12 +257,12 @@ function NextUpCard({
             className={[
               'w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
               !isEndingCeremony
-                ? 'bg-oscar-gold text-deep-navy'
+                ? 'bg-accent text-ground'
                 : 'bg-white/10 text-white/30 cursor-not-allowed',
             ].join(' ')}
           >
             {isEndingCeremony ? (
-              <div className="w-4 h-4 border-2 border-deep-navy/40 border-t-deep-navy rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
             ) : (
               <>
                 <Clapperboard size={14} />
@@ -312,7 +312,7 @@ function NextUpCard({
       {/* Category name row */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 flex-shrink-0">Next up</p>
+          <p className="text-[11px] uppercase tracking-wider text-accent/70 flex-shrink-0">Next up</p>
           <CategoryIcon categoryName={nextCategory.name} size={14} className="text-white/60 flex-shrink-0" />
           <p className="text-sm font-bold text-white truncate">{nextCategory.name}</p>
         </div>
@@ -321,7 +321,7 @@ function NextUpCard({
             <motion.button
               whileTap={{ scale: 0.88 }}
               onClick={() => openSpotlight(nextCategory.id)}
-              className="px-2.5 py-1 rounded-lg bg-oscar-gold/15 border border-oscar-gold/30 text-oscar-gold text-[11px] font-semibold"
+              className="px-2.5 py-1 rounded-lg bg-accent/15 border border-accent/30 text-accent text-[11px] font-semibold"
               aria-label="Open category spotlight"
             >
               Spotlight
@@ -343,7 +343,7 @@ function NextUpCard({
           {myNominee && myPick && (
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider text-oscar-gold/55 mb-0.5">My prestige pick</p>
+                <p className="text-[10px] uppercase tracking-wider text-accent/55 mb-0.5">My prestige pick</p>
                 <p className="text-sm text-white/85 font-medium truncate">{myNominee.name}</p>
                 {myNominee.film_name && myNominee.type !== 'film' && (
                   <div className="flex items-center gap-1">
@@ -352,8 +352,8 @@ function NextUpCard({
                   </div>
                 )}
               </div>
-              <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center">
-                <span className="text-sm font-bold text-oscar-gold">{myPick.confidence}</span>
+              <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                <span className="text-sm font-bold text-accent">{myPick.confidence}</span>
               </div>
             </div>
           )}
@@ -424,7 +424,7 @@ function CollapsibleScores({ leaderboard }: { leaderboard: ScoredPlayer[] }) {
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-semibold text-white/80 flex-shrink-0">Scoreboard</span>
           {me && (
-            <span className="text-sm font-bold text-oscar-gold flex-shrink-0">{me.totalScore} pts</span>
+            <span className="text-sm font-bold text-accent flex-shrink-0">{me.totalScore} pts</span>
           )}
           {!expanded && summaryText && (
             <span className="text-xs text-white/35 truncate">{summaryText}</span>
@@ -454,7 +454,7 @@ function CollapsibleScores({ leaderboard }: { leaderboard: ScoredPlayer[] }) {
                     className={['flex items-center justify-between py-1', isMe ? 'text-white' : 'text-white/55'].join(' ')}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={['text-xs font-bold w-4 flex-shrink-0', i === 0 ? 'text-oscar-gold' : 'text-white/25'].join(' ')}>
+                      <span className={['text-xs font-bold w-4 flex-shrink-0', i === 0 ? 'text-accent' : 'text-white/25'].join(' ')}>
                         {i + 1}
                       </span>
                       <span className="text-sm font-medium truncate">{sp.player.name}</span>

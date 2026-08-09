@@ -1,0 +1,678 @@
+[
+ {
+  "id": "de000001-0000-0000-0000-000000000001",
+  "name": "Ryan Coogler",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "b0000001-0000-0000-0000-000000000005",
+    "category_id": 2
+   },
+   {
+    "nominee_id": "10000001-0000-0000-0000-000000000005",
+    "category_id": 7
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 2
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000002",
+  "name": "Paul Thomas Anderson",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "b0000001-0000-0000-0000-000000000003",
+    "category_id": 2
+   },
+   {
+    "nominee_id": "11000001-0000-0000-0000-000000000004",
+    "category_id": 8
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 2
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000003",
+  "name": "Josh Safdie",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "b0000001-0000-0000-0000-000000000002",
+    "category_id": 2
+   },
+   {
+    "nominee_id": "10000001-0000-0000-0000-000000000003",
+    "category_id": 7
+   },
+   {
+    "nominee_id": "13000001-0000-0000-0000-000000000002",
+    "category_id": 10
+   }
+  ],
+  "film_name": "Marty Supreme",
+  "nom_count": 3
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000004",
+  "name": "Chlo\u00e9 Zhao",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "b0000001-0000-0000-0000-000000000001",
+    "category_id": 2
+   },
+   {
+    "nominee_id": "11000001-0000-0000-0000-000000000003",
+    "category_id": 8
+   }
+  ],
+  "film_name": "Hamnet",
+  "nom_count": 2
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000005",
+  "name": "Joachim Trier",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "b0000001-0000-0000-0000-000000000004",
+    "category_id": 2
+   },
+   {
+    "nominee_id": "10000001-0000-0000-0000-000000000004",
+    "category_id": 7
+   }
+  ],
+  "film_name": "Sentimental Value",
+  "nom_count": 2
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000006",
+  "name": "Timoth\u00e9e Chalamet",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "c0000001-0000-0000-0000-000000000001",
+    "category_id": 3
+   }
+  ],
+  "film_name": "Marty Supreme",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000007",
+  "name": "Leonardo DiCaprio",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "c0000001-0000-0000-0000-000000000002",
+    "category_id": 3
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000008",
+  "name": "Michael B. Jordan",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "c0000001-0000-0000-0000-000000000004",
+    "category_id": 3
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000009",
+  "name": "Wagner Moura",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "c0000001-0000-0000-0000-000000000005",
+    "category_id": 3
+   }
+  ],
+  "film_name": "The Secret Agent",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000010",
+  "name": "Ethan Hawke",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "c0000001-0000-0000-0000-000000000003",
+    "category_id": 3
+   }
+  ],
+  "film_name": "Blue Moon",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000011",
+  "name": "Jessie Buckley",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "d0000001-0000-0000-0000-000000000001",
+    "category_id": 4
+   }
+  ],
+  "film_name": "Hamnet",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000012",
+  "name": "Rose Byrne",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "d0000001-0000-0000-0000-000000000002",
+    "category_id": 4
+   }
+  ],
+  "film_name": "If I Had Legs I'd Kick You",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000013",
+  "name": "Kate Hudson",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "d0000001-0000-0000-0000-000000000003",
+    "category_id": 4
+   }
+  ],
+  "film_name": "Song Sung Blue",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000014",
+  "name": "Renate Reinsve",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "d0000001-0000-0000-0000-000000000004",
+    "category_id": 4
+   }
+  ],
+  "film_name": "Sentimental Value",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000015",
+  "name": "Emma Stone",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "d0000001-0000-0000-0000-000000000005",
+    "category_id": 4
+   }
+  ],
+  "film_name": "Bugonia",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000016",
+  "name": "Sean Penn",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "e0000001-0000-0000-0000-000000000004",
+    "category_id": 5
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000017",
+  "name": "Jacob Elordi",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "e0000001-0000-0000-0000-000000000002",
+    "category_id": 5
+   }
+  ],
+  "film_name": "Frankenstein",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000018",
+  "name": "Delroy Lindo",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "e0000001-0000-0000-0000-000000000003",
+    "category_id": 5
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000019",
+  "name": "Benicio Del Toro",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "e0000001-0000-0000-0000-000000000001",
+    "category_id": 5
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000020",
+  "name": "Stellan Skarsg\u00e5rd",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "e0000001-0000-0000-0000-000000000005",
+    "category_id": 5
+   }
+  ],
+  "film_name": "Sentimental Value",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000021",
+  "name": "Amy Madigan",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "f0000001-0000-0000-0000-000000000003",
+    "category_id": 6
+   }
+  ],
+  "film_name": "Weapons",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000022",
+  "name": "Wunmi Mosaku",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "f0000001-0000-0000-0000-000000000004",
+    "category_id": 6
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000023",
+  "name": "Teyana Taylor",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "f0000001-0000-0000-0000-000000000005",
+    "category_id": 6
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000024",
+  "name": "Elle Fanning",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "f0000001-0000-0000-0000-000000000001",
+    "category_id": 6
+   }
+  ],
+  "film_name": "Sentimental Value",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000025",
+  "name": "Ludwig G\u00f6ransson",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "14000001-0000-0000-0000-000000000005",
+    "category_id": 11
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000026",
+  "name": "Jonny Greenwood",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "14000001-0000-0000-0000-000000000004",
+    "category_id": 11
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000027",
+  "name": "Autumn Durald Arkapaw",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "12000001-0000-0000-0000-000000000004",
+    "category_id": 9
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000028",
+  "name": "Guillermo del Toro",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "11000001-0000-0000-0000-000000000002",
+    "category_id": 8
+   }
+  ],
+  "film_name": "Frankenstein",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000029",
+  "name": "Ruth E. Carter",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "16000001-0000-0000-0000-000000000005",
+    "category_id": 13
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "de000001-0000-0000-0000-000000000030",
+  "name": "Hannah Beachler",
+  "type": "person",
+  "nominations": [
+   {
+    "nominee_id": "15000001-0000-0000-0000-000000000005",
+    "category_id": 12
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 1
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000001",
+  "name": "Sinners",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000009",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "17000001-0000-0000-0000-000000000004",
+    "category_id": 14
+   },
+   {
+    "nominee_id": "18000001-0000-0000-0000-000000000005",
+    "category_id": 15
+   },
+   {
+    "nominee_id": "19000001-0000-0000-0000-000000000003",
+    "category_id": 16
+   }
+  ],
+  "film_name": "Sinners",
+  "nom_count": 16
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000002",
+  "name": "One Battle After Another",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000006",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "17000001-0000-0000-0000-000000000003",
+    "category_id": 14
+   },
+   {
+    "nominee_id": "13000001-0000-0000-0000-000000000003",
+    "category_id": 10
+   },
+   {
+    "nominee_id": "15000001-0000-0000-0000-000000000004",
+    "category_id": 12
+   }
+  ],
+  "film_name": "One Battle After Another",
+  "nom_count": 13
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000003",
+  "name": "Frankenstein",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000003",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "17000001-0000-0000-0000-000000000002",
+    "category_id": 14
+   },
+   {
+    "nominee_id": "19000001-0000-0000-0000-000000000001",
+    "category_id": 16
+   }
+  ],
+  "film_name": "Frankenstein",
+  "nom_count": 9
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000004",
+  "name": "Hamnet",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000004",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "15000001-0000-0000-0000-000000000002",
+    "category_id": 12
+   },
+   {
+    "nominee_id": "16000001-0000-0000-0000-000000000003",
+    "category_id": 13
+   }
+  ],
+  "film_name": "Hamnet",
+  "nom_count": 7
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000005",
+  "name": "Marty Supreme",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000005",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "15000001-0000-0000-0000-000000000003",
+    "category_id": 12
+   },
+   {
+    "nominee_id": "16000001-0000-0000-0000-000000000004",
+    "category_id": 13
+   }
+  ],
+  "film_name": "Marty Supreme",
+  "nom_count": 8
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000006",
+  "name": "Sentimental Value",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000008",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "13000001-0000-0000-0000-000000000004",
+    "category_id": 10
+   },
+   {
+    "nominee_id": "1d000001-0000-0000-0000-000000000003",
+    "category_id": 20
+   }
+  ],
+  "film_name": "Sentimental Value",
+  "nom_count": 7
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000007",
+  "name": "Bugonia",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000001",
+    "category_id": 1
+   }
+  ],
+  "film_name": "Bugonia",
+  "nom_count": 3
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000008",
+  "name": "F1",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000002",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "17000001-0000-0000-0000-000000000001",
+    "category_id": 14
+   },
+   {
+    "nominee_id": "18000001-0000-0000-0000-000000000002",
+    "category_id": 15
+   }
+  ],
+  "film_name": "F1",
+  "nom_count": 4
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000009",
+  "name": "Train Dreams",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000010",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "12000001-0000-0000-0000-000000000005",
+    "category_id": 9
+   }
+  ],
+  "film_name": "Train Dreams",
+  "nom_count": 4
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000010",
+  "name": "The Secret Agent",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "a0000001-0000-0000-0000-000000000007",
+    "category_id": 1
+   },
+   {
+    "nominee_id": "1d000001-0000-0000-0000-000000000001",
+    "category_id": 20
+   }
+  ],
+  "film_name": "The Secret Agent",
+  "nom_count": 3
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000011",
+  "name": "KPop Demon Hunters",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "1c000001-0000-0000-0000-000000000003",
+    "category_id": 19
+   },
+   {
+    "nominee_id": "1a000001-0000-0000-0000-000000000002",
+    "category_id": 17
+   }
+  ],
+  "film_name": "KPop Demon Hunters",
+  "nom_count": 2
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000012",
+  "name": "Avatar: Fire and Ash",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "16000001-0000-0000-0000-000000000001",
+    "category_id": 13
+   },
+   {
+    "nominee_id": "18000001-0000-0000-0000-000000000001",
+    "category_id": 15
+   }
+  ],
+  "film_name": "Avatar: Fire and Ash",
+  "nom_count": 2
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000013",
+  "name": "Zootopia 2",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "1c000001-0000-0000-0000-000000000005",
+    "category_id": 19
+   }
+  ],
+  "film_name": "Zootopia 2",
+  "nom_count": 1
+ },
+ {
+  "id": "df000001-0000-0000-0000-000000000014",
+  "name": "Elio",
+  "type": "film",
+  "nominations": [
+   {
+    "nominee_id": "1c000001-0000-0000-0000-000000000002",
+    "category_id": 19
+   }
+  ],
+  "film_name": "Elio",
+  "nom_count": 1
+ }
+]

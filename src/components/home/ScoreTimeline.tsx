@@ -89,8 +89,8 @@ export default function ScoreTimeline({ timeline, players }: Props) {
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-6 h-6 rounded-md bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
-          <TrendingUp size={12} className="text-oscar-gold/80" />
+        <div className="w-6 h-6 rounded-md bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+          <TrendingUp size={12} className="text-accent/80" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-wider text-white/40">Score Timeline</p>
         <span className="ml-auto text-[10px] text-white/25">Tap to inspect</span>
@@ -190,7 +190,7 @@ export default function ScoreTimeline({ timeline, players }: Props) {
             >
               <div className="flex items-start justify-between mb-3.5">
                 <div className="flex-1 min-w-0 pr-3">
-                  <p className="text-[10px] text-oscar-gold/60 uppercase tracking-wider mb-0.5">
+                  <p className="text-[10px] text-accent/60 uppercase tracking-wider mb-0.5">
                     Category {detail.point.categoryIndex}
                   </p>
                   <p className="text-base font-bold text-white leading-tight">

@@ -57,6 +57,12 @@ src/
     scoring.ts     — Pure scoring functions (no React, no Supabase)
     draft-utils.ts — Snake order, turn computation (pure functions)
     bingo-utils.ts — Card generation, bingo detection (pure functions)
+                     Boards are drawn to a fixed likelihood-tier mix (7 likely /
+                     9 toss-up / 6 long shot / 2 chaos) from the 75-square master
+                     pool, then chosen from 400 candidates so every player's card
+                     has the same expected difficulty. Content source of truth is
+                     src/data/bingo-master-pool.json; regenerate the seed with
+                     `node scripts/generate-bingo-migration.mjs`.
     avatar-utils.ts — Emotion computation, avatar lookup
   pages/
     Home.tsx       — Create/join room
@@ -77,7 +83,7 @@ src/
 
 Schema defined in oscars-naughty-party-schema.sql.
 
-Key tables: rooms, players, categories (24 rows), nominees (125 rows), category_nominees, draft_entities (44 rows), draft_picks, confidence_picks, bingo_squares (50 rows), bingo_cards, bingo_marks, avatars (12 rows).
+Key tables: rooms, players, categories (24 rows), nominees (125 rows), category_nominees, draft_entities (44 rows), draft_picks, confidence_picks, bingo_squares (75 rows), bingo_cards, bingo_marks, avatars (12 rows).
 
 Realtime enabled on: rooms, players, categories, draft_picks, confidence_picks, bingo_marks.
 

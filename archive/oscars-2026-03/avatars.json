@@ -1,0 +1,122 @@
+[
+ {
+  "id": "mbj-smoke",
+  "character_name": "Smoke / Stack",
+  "actor_name": "Michael B. Jordan",
+  "film_name": "Sinners",
+  "image_happy": "/avatars/mbj-smoke/happy.png",
+  "image_sad": "/avatars/mbj-smoke/sad.png",
+  "image_shocked": "/avatars/mbj-smoke/shocked.png",
+  "image_neutral": "/avatars/mbj-smoke/neutral.png"
+ },
+ {
+  "id": "lindo-delta",
+  "character_name": "Delta",
+  "actor_name": "Delroy Lindo",
+  "film_name": "Sinners",
+  "image_happy": "/avatars/lindo-delta/happy.png",
+  "image_sad": "/avatars/lindo-delta/sad.png",
+  "image_shocked": "/avatars/lindo-delta/shocked.png",
+  "image_neutral": "/avatars/lindo-delta/neutral.png"
+ },
+ {
+  "id": "dicaprio-obaa",
+  "character_name": "Jim",
+  "actor_name": "Leonardo DiCaprio",
+  "film_name": "One Battle After Another",
+  "image_happy": "/avatars/dicaprio-obaa/happy.png",
+  "image_sad": "/avatars/dicaprio-obaa/sad.png",
+  "image_shocked": "/avatars/dicaprio-obaa/shocked.png",
+  "image_neutral": "/avatars/dicaprio-obaa/neutral.png"
+ },
+ {
+  "id": "penn-obaa",
+  "character_name": "Villain",
+  "actor_name": "Sean Penn",
+  "film_name": "One Battle After Another",
+  "image_happy": "/avatars/penn-obaa/happy.png",
+  "image_sad": "/avatars/penn-obaa/sad.png",
+  "image_shocked": "/avatars/penn-obaa/shocked.png",
+  "image_neutral": "/avatars/penn-obaa/neutral.png"
+ },
+ {
+  "id": "chalamet-marty",
+  "character_name": "Marty Supreme",
+  "actor_name": "Timoth\u00e9e Chalamet",
+  "film_name": "Marty Supreme",
+  "image_happy": "/avatars/chalamet-marty/happy.png",
+  "image_sad": "/avatars/chalamet-marty/sad.png",
+  "image_shocked": "/avatars/chalamet-marty/shocked.png",
+  "image_neutral": "/avatars/chalamet-marty/neutral.png"
+ },
+ {
+  "id": "buckley-agnes",
+  "character_name": "Agnes",
+  "actor_name": "Jessie Buckley",
+  "film_name": "Hamnet",
+  "image_happy": "/avatars/buckley-agnes/happy.png",
+  "image_sad": "/avatars/buckley-agnes/sad.png",
+  "image_shocked": "/avatars/buckley-agnes/shocked.png",
+  "image_neutral": "/avatars/buckley-agnes/neutral.png"
+ },
+ {
+  "id": "stone-bugonia",
+  "character_name": "Bugonia",
+  "actor_name": "Emma Stone",
+  "film_name": "Bugonia",
+  "image_happy": "/avatars/stone-bugonia/happy.png",
+  "image_sad": "/avatars/stone-bugonia/sad.png",
+  "image_shocked": "/avatars/stone-bugonia/shocked.png",
+  "image_neutral": "/avatars/stone-bugonia/neutral.png"
+ },
+ {
+  "id": "elordi-creature",
+  "character_name": "The Creature",
+  "actor_name": "Jacob Elordi",
+  "film_name": "Frankenstein",
+  "image_happy": "/avatars/elordi-creature/happy.png",
+  "image_sad": "/avatars/elordi-creature/sad.png",
+  "image_shocked": "/avatars/elordi-creature/shocked.png",
+  "image_neutral": "/avatars/elordi-creature/neutral.png"
+ },
+ {
+  "id": "reinsve-sv",
+  "character_name": "Nora",
+  "actor_name": "Renate Reinsve",
+  "film_name": "Sentimental Value",
+  "image_happy": "/avatars/reinsve-sv/happy.png",
+  "image_sad": "/avatars/reinsve-sv/sad.png",
+  "image_shocked": "/avatars/reinsve-sv/shocked.png",
+  "image_neutral": "/avatars/reinsve-sv/neutral.png"
+ },
+ {
+  "id": "pitt-f1",
+  "character_name": "Sonny Hayes",
+  "actor_name": "Brad Pitt",
+  "film_name": "F1",
+  "image_happy": "/avatars/pitt-f1/happy.png",
+  "image_sad": "/avatars/pitt-f1/sad.png",
+  "image_shocked": "/avatars/pitt-f1/shocked.png",
+  "image_neutral": "/avatars/pitt-f1/neutral.png"
+ },
+ {
+  "id": "mosaku-sinners",
+  "character_name": "Mary",
+  "actor_name": "Wunmi Mosaku",
+  "film_name": "Sinners",
+  "image_happy": "/avatars/mosaku-sinners/happy.png",
+  "image_sad": "/avatars/mosaku-sinners/sad.png",
+  "image_shocked": "/avatars/mosaku-sinners/shocked.png",
+  "image_neutral": "/avatars/mosaku-sinners/neutral.png"
+ },
+ {
+  "id": "taylor-obaa",
+  "character_name": "Gloria",
+  "actor_name": "Teyana Taylor",
+  "film_name": "One Battle After Another",
+  "image_happy": "/avatars/taylor-obaa/happy.png",
+  "image_sad": "/avatars/taylor-obaa/sad.png",
+  "image_shocked": "/avatars/taylor-obaa/shocked.png",
+  "image_neutral": "/avatars/taylor-obaa/neutral.png"
+ }
+]

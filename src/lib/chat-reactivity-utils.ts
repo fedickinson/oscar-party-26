@@ -6,6 +6,7 @@
  */
 
 import type { NomineeRow } from '../types/database'
+import { AI_COMPANIONS, ROTATING_COMPANIONS } from '../data/ai-companions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,47 +33,18 @@ export interface AmbientTrigger {
 
 // ─── Direct mention detection ─────────────────────────────────────────────────
 
-const MENTION_MAP: [string, string][] = [
-  ['meryl', 'meryl'],
-  ['gloria', 'meryl'],
-  ['nikki', 'nikki'],
-  ['razor', 'nikki'],
-  ['buddy', 'will'],
-  ['academy', 'the-academy'],
-]
-
-// Patterns that detect "will" as the companion name rather than the English verb.
-// Matches: "Will - ...", "Will, ...", "hey will", "will!", "@will", sentence-initial
-// "Will" followed by a question or conversational phrase, etc.
-const WILL_NAME_PATTERNS: RegExp[] = [
-  // "Will" at the start of a sentence followed by punctuation/dash/question
-  /^will[\s,\-!?.]/i,
-  // "Will" preceded by @, hey, hi, yo, ask, tell, thanks, thank you, ok, okay
-  /\b(?:@|hey|hi|yo|ask|tell|thanks|thank\s+you|ok|okay|oh|omg|lol)\s+will\b/i,
-  // "Will" followed by question words, conversational verbs, or exclamations
-  /\bwill[\s,\-]+(?:who|what|how|why|where|when|do|are|is|can|would|should|tell|help|say|think|you|i\b)/i,
-  // "Will" at end of sentence or before punctuation (e.g., "what about you Will?")
-  /\bwill[!?.]*$/i,
-  // "Will" with a dash/comma separator (e.g., "Will - who are you?")
-  /\bwill\s*[-,]\s*\w/i,
-  // Direct address patterns: "right Will", "thanks Will", "love you Will"
-  /\b(?:right|thanks|love|miss|agree|disagree|sure|ok|okay|yes|no|stop|please)\s+will\b/i,
-  // "Will" surrounded by quotes or after colon
-  /[:"']\s*will\b/i,
-  // Buddy (always a name reference)
-  /\bbuddy\b/i,
-]
+// Maps what a player might type to the companion's id. Built from each
+// companion's own alias list in data/ai-companions.ts, so adding a character
+// there is enough — nothing to maintain here.
+const MENTION_MAP: [string, string][] = AI_COMPANIONS.flatMap((c) =>
+  [c.name.toLowerCase(), ...c.aliases].map((a) => [a, c.id] as [string, string]),
+)
 
 export function detectMentions(text: string): string[] {
   const lower = text.toLowerCase()
   const found = new Set<string>()
   for (const [keyword, companionId] of MENTION_MAP) {
     if (lower.includes(keyword)) found.add(companionId)
-  }
-  // Check "will" with name-detection heuristics to avoid false positives
-  // from the common English verb
-  if (!found.has('will') && WILL_NAME_PATTERNS.some((p) => p.test(text))) {
-    found.add('will')
   }
   return Array.from(found)
 }
@@ -96,7 +68,7 @@ const TRIGGER_DEFS: TriggerDef[] = [
       /you('re|\s+are)\s+(going\s+)?down/i,
       /eat\s+it/i,
     ],
-    trigger: { type: 'trash_talk', companions: ['nikki'], probability: 0.85 },
+    trigger: { type: 'trash_talk', companions: ['cersei', 'olenna'], probability: 0.85 },
   },
   {
     patterns: [
@@ -108,7 +80,7 @@ const TRIGGER_DEFS: TriggerDef[] = [
       /kill\s+me/i,
       /this\s+is\s+hopeless/i,
     ],
-    trigger: { type: 'despair', companions: ['nikki', 'will'], probability: 0.80 },
+    trigger: { type: 'despair', companions: ['cersei', 'arya'], probability: 0.80 },
   },
   {
     patterns: [
@@ -124,7 +96,7 @@ const TRIGGER_DEFS: TriggerDef[] = [
       /underrated/i,
       /snub/i,
     ],
-    trigger: { type: 'film_opinion', companions: ['meryl'], probability: 0.80 },
+    trigger: { type: 'film_opinion', companions: ['tyrion', 'daenerys'], probability: 0.80 },
   },
   {
     patterns: [
@@ -136,7 +108,7 @@ const TRIGGER_DEFS: TriggerDef[] = [
       /what\s+(is|are)\s+(the\s+)?(rules|scoring|points)/i,
       /how\s+does\s+this\s+work/i,
     ],
-    trigger: { type: 'game_confusion', companions: ['will'], probability: 0.85 },
+    trigger: { type: 'game_confusion', companions: ['tyrion'], probability: 0.85 },
   },
   {
     patterns: [
@@ -151,7 +123,7 @@ const TRIGGER_DEFS: TriggerDef[] = [
       /did\s+(you|anyone|everybody)\s+see\s+that/i,
       /can\s+you\s+believe/i,
     ],
-    trigger: { type: 'ceremony_reaction', companions: ['meryl', 'will', 'nikki'], probability: 0.75 },
+    trigger: { type: 'ceremony_reaction', companions: ['tyrion', 'cersei', 'joffrey'], probability: 0.75 },
   },
 ]
 
@@ -188,7 +160,7 @@ export function detectAmbientTrigger(text: string): AmbientTrigger | null {
   }
   // Catch-all: if the message is conversational, pick a random companion to chime in
   if (isConversationalMessage(text)) {
-    const companions = ['meryl', 'nikki', 'will']
+    const companions = ROTATING_COMPANIONS.map((c) => c.id)
     return {
       type: 'ceremony_reaction',
       companions,

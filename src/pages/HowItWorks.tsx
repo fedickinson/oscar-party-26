@@ -1,0 +1,813 @@
+/**
+ * HowItWorks — the pregame explainer. A link you send out hours before.
+ *
+ * WHY THIS PAGE EXISTS
+ * Everything in this app is easy to use and impossible to guess. Watch groups,
+ * remote-holders, drift beacons and the resume countdown are a coherent system
+ * once someone explains the idea underneath them — one screen, one playback,
+ * one person who touches it — and a pile of confusing buttons if nobody does.
+ * Explaining that live, over the cold open, costs the first act of the episode.
+ *
+ * So it gets explained once, in advance, in a link.
+ *
+ * THE DISCLOSURE RULE
+ * Everything that changes how somebody BEHAVES tonight is visible without a
+ * tap: the pact, the remote, the pause sequence. Everything that is a number,
+ * a ladder or an edge case sits inside a <Disclosure>. A reader who taps
+ * nothing still knows how to play; a reader who taps everything knows the
+ * scoring. Hiding the behavioural half would defeat the point of sending it.
+ *
+ * That split also survives the rules moving. Tonight's games are still being
+ * tuned in parallel, and the parts that churn — tier values, line bonuses,
+ * draft scoring — are exactly the parts behind a disclosure. Rewriting a
+ * ladder is a contained edit; the visible spine does not move.
+ *
+ * THIS IS NOT A RULES REFERENCE
+ * The in-app PhaseExplainer covers each mini-game at the moment you need it.
+ * This page is what comes first: what we are agreeing to, and why the pauses
+ * work the way they do.
+ *
+ * PUBLIC, AND DELIBERATELY SO
+ * No room, no player, no Supabase read — this renders for a stranger with the
+ * link. It has to, because it is read before anyone has joined anything.
+ *
+ * EDITING TONIGHT'S DETAILS
+ * Everything that changes party to party is in TONIGHT below. Nothing else in
+ * this file needs touching to re-point it at another night.
+ */
+
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  ArrowRight,
+  ChevronDown,
+  Clock,
+  Grid3X3,
+  Hand,
+  MessageCircle,
+  Pause,
+  Play,
+  Tv,
+  Users,
+} from 'lucide-react'
+import { Hallmark } from '../components/ui/Hallmarks'
+
+// ─── Tonight ──────────────────────────────────────────────────────────────────
+// The only block that changes between parties. `null` on any time renders a
+// quiet placeholder rather than an empty row, so the page is sendable before
+// the schedule is settled.
+
+const TONIGHT = {
+  event: 'House of the Dragon',
+  episode: 'Season 3, the finale',
+  date: 'Sunday 9 August',
+  /** Shown big at the bottom. null hides the code block entirely. */
+  roomCode: null as string | null,
+  /** Who has the console and the final word on what happened. */
+  gameMaster: 'Franklin',
+  /**
+   * Flip to true once the draft scoring is locked. While false the draft's
+   * scoring disclosure carries a "still being tuned" note, so nobody memorises
+   * numbers that are about to change.
+   */
+  draftRulesFinal: false,
+  schedule: [
+    {
+      time: null as string | null,
+      title: 'Room opens',
+      detail:
+        'Join whenever you like. The room keeps your spot, so you can pick your avatar now and close the tab.',
+    },
+    {
+      time: null as string | null,
+      title: 'The draft',
+      detail:
+        'The one part where everyone has to be in the app at the same time. It goes in turns and it does not wait.',
+    },
+    {
+      time: null as string | null,
+      title: 'Say where you are',
+      detail:
+        'Two taps: the place you are watching from, and whether you are the one holding the remote there.',
+    },
+    {
+      time: null as string | null,
+      title: 'Press play together',
+      detail: 'Both screens start on the same count. After that, just watch.',
+    },
+  ],
+}
+
+// ─── The pact ─────────────────────────────────────────────────────────────────
+// Five, not ten. A list nobody finishes reading protects nothing. Deliberately
+// never collapsed — this is the payload of the whole page.
+
+const PACT = [
+  {
+    title: 'The show never waits for the game.',
+    body: 'Nothing in here needs you mid-scene. A bingo claim is two taps. Scoring happens without you. The draft is finished before the episode starts.',
+  },
+  {
+    title: 'Anyone can ask to pause. Nobody pauses mid-scene.',
+    body: 'You tap to ask, it lands on the remote-holder’s phone, and they stop at the next scene break — not in the middle of a shot, and not during dialogue.',
+  },
+  {
+    title: 'We talk at the breaks.',
+    body: 'Chat is open the whole time and you should use it. But the real conversation happens while we are stopped. That is the trade that makes both halves of tonight work.',
+  },
+  {
+    title: 'Do not react ahead.',
+    body: 'If your screen is ahead of the other one, you are a spoiler. The app tells you when it happens and which way to fix it. Fix it.',
+  },
+  {
+    title: `${TONIGHT.gameMaster} calls it, and that is the call.`,
+    body: 'Someone has to decide what counted and who it counted for. Argue at the break, in good faith, briefly — then let it go and watch the show.',
+  },
+]
+
+// ─── Bingo tiers ──────────────────────────────────────────────────────────────
+// Mirrors BOARD_TIER_MIX and TIER_POINTS in lib/bingo-utils.ts. Kept as a local
+// literal rather than an import: this page renders for someone who has not
+// joined, and pulling the game's runtime constants into a public marketing-ish
+// route couples the two for no benefit. If the ladder changes, change it here.
+
+const TIERS = [
+  { label: 'Likely', chance: '60%+', perCard: 7, points: 1 },
+  { label: 'Toss-up', chance: '40–59%', perCard: 9, points: 2 },
+  { label: 'Long shot', chance: '20–39%', perCard: 6, points: 3 },
+  { label: 'Chaos', chance: 'under 20%', perCard: 2, points: 5 },
+]
+
+// ─── Small pieces ─────────────────────────────────────────────────────────────
+
+function Section({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    // Entrance is on mount, deliberately NOT scroll-triggered. A whileInView
+    // reveal leaves every section below the fold at opacity 0 until an
+    // IntersectionObserver fires; on a page whose entire job is to be read
+    // once, on someone else's phone, that trades nothing for the chance of
+    // showing a stranger a blank page.
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, delay: 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+      className="flex flex-col gap-4"
+    >
+      <div className="flex flex-col gap-2">
+        <span
+          className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+          style={{ color: 'var(--t-ornament-muted)' }}
+        >
+          {eyebrow}
+        </span>
+        <h2
+          className="text-[24px] leading-tight"
+          style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
+        >
+          {title}
+        </h2>
+      </div>
+      {children}
+    </motion.section>
+  )
+}
+
+/** Body copy. One place, so the reading colour and measure stay consistent. */
+function P({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[14px] leading-[1.65]" style={{ color: 'var(--t-text-muted)' }}>
+      {children}
+    </p>
+  )
+}
+
+/** The one idea a section hangs on, set apart so it survives skim-reading. */
+function KeyLine({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="border-l-2 pl-4 py-1 text-[18px] leading-snug"
+      style={{
+        fontFamily: 'var(--font-family-display)',
+        color: 'var(--t-text)',
+        borderColor: 'var(--t-accent)',
+      }}
+    >
+      {children}
+    </p>
+  )
+}
+
+/**
+ * A tap-to-open detail block.
+ *
+ * The label has to say what is inside, not "more" — a row of identical
+ * "Learn more" chevrons is a page nobody opens. The whole row is the target
+ * and it clears 44px.
+ */
+function Disclosure({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-t" style={{ borderColor: 'var(--t-line-soft)' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full min-h-[44px] flex items-center justify-between gap-3 text-left"
+      >
+        <span className="text-[14px] font-semibold" style={{ color: 'var(--t-text-muted)' }}>
+          {label}
+        </span>
+        <ChevronDown
+          size={16}
+          className="flex-shrink-0 transition-transform"
+          style={{
+            color: 'var(--t-accent-light)',
+            transform: open ? 'rotate(180deg)' : 'none',
+          }}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-3 pb-4">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/** A game card: always-readable summary on top, detail behind taps below. */
+function GameCard({
+  icon,
+  title,
+  summary,
+  children,
+}: {
+  icon: React.ReactNode
+  title: string
+  summary: React.ReactNode
+  children?: React.ReactNode
+}) {
+  return (
+    <div className="relief-glass p-4 flex flex-col gap-3">
+      <div className="flex items-center gap-2.5">
+        <span style={{ color: 'var(--t-accent-light)' }}>{icon}</span>
+        <h3 className="text-[16px] font-semibold" style={{ color: 'var(--t-text)' }}>
+          {title}
+        </h3>
+      </div>
+      <div className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+        {summary}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function Rule() {
+  return <div className="motif-band narrow" aria-hidden />
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function HowItWorks() {
+  return (
+    <div
+      className="flex flex-col gap-10"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 48px)' }}
+    >
+      {/* ── Masthead ─────────────────────────────────────────────────────── */}
+      <motion.header
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+        className="flex flex-col items-center text-center gap-3 pt-4"
+      >
+        {/* Wrapped rather than styled directly: the mark resolves currentColor,
+            and Hallmark deliberately exposes only id/size/className. */}
+        <span style={{ color: 'var(--t-ornament)' }}>
+          <Hallmark id="hallmark-dance" size={72} />
+        </span>
+        <span
+          className="text-[10px] font-semibold uppercase tracking-[0.3em]"
+          style={{ color: 'var(--t-ornament-muted)' }}
+        >
+          Party Night
+        </span>
+        <h1
+          className="text-[36px] leading-none"
+          style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
+        >
+          Fire &amp; Blood
+        </h1>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[12px]" style={{ color: 'var(--t-text-muted)' }}>
+            {TONIGHT.event} &middot; {TONIGHT.episode}
+          </p>
+          <p className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
+            {TONIGHT.date}
+          </p>
+        </div>
+      </motion.header>
+
+      {/* ── The invitation, on parchment ─────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.08, ease: [0.2, 0.8, 0.2, 1] }}
+        className="material-vellum deckled px-6 py-7"
+      >
+        <p
+          className="text-[16px] leading-[1.5] font-semibold"
+          style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+        >
+          We are watching the finale together, from more than one couch. There is a game
+          running underneath it &mdash; a draft, a scoreboard, a bingo card, and a group
+          chat with some very opinionated dead nobles in it.
+        </p>
+        <p
+          className="text-[16px] leading-[1.5] font-semibold mt-4"
+          style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+        >
+          The whole thing is built so you never have to look away from the screen to play
+          it. Read the bold parts before you arrive; open the rest if you want the numbers.
+        </p>
+      </motion.div>
+
+      <Rule />
+
+      {/* ── The pact ─────────────────────────────────────────────────────── */}
+      <Section eyebrow="First, the only part that matters" title="The pact">
+        <P>
+          One thing outranks the game: we are actually here to watch the show. Everything
+          else in this app is designed around that, and it only holds if we all agree to
+          the same five things.
+        </P>
+
+        <ol className="flex flex-col gap-3">
+          {PACT.map((item, i) => (
+            <li key={item.title} className="relief-glass p-4 flex gap-3.5">
+              <span
+                className="flex-shrink-0 grid place-items-center w-7 h-7 border text-[14px]"
+                style={{
+                  fontFamily: 'var(--font-family-display)',
+                  color: 'var(--t-accent-light)',
+                  borderColor: 'var(--t-line)',
+                }}
+                aria-hidden
+              >
+                {i + 1}
+              </span>
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <h3
+                  className="text-[16px] leading-snug font-semibold"
+                  style={{ color: 'var(--t-text)' }}
+                >
+                  {item.title}
+                </h3>
+                <p
+                  className="text-[14px] leading-[1.6]"
+                  style={{ color: 'var(--t-text-muted)' }}
+                >
+                  {item.body}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Rule />
+
+      {/* ── The games ────────────────────────────────────────────────────── */}
+      <Section eyebrow="The game" title="Three things, and one of them is watching">
+        <P>
+          Each card below tells you everything you have to do. Open the rows underneath if
+          you want to know how the points actually work.
+        </P>
+
+        <div className="flex flex-col gap-3">
+          {/* Draft — rules still moving, so the detail is flagged as provisional. */}
+          <GameCard
+            icon={<Users size={18} />}
+            title="Before — you draft"
+            summary={
+              <>
+                One dragon each, then four characters each, taken in turns. When your pick
+                does something tonight &mdash; a kill, a betrayal, a death, a dragon
+                falling &mdash; you score.
+              </>
+            }
+          >
+            <Disclosure label="Why there is no obvious best pick">
+              <P>
+                Every character is priced to be worth roughly the same, so the headline
+                number on a card tells you nothing. What differs is the shape of the bet: a
+                main character might carry three moments that are each likely to happen,
+                while somebody with four lines carries one wild swing worth far more.
+              </P>
+              <P>
+                So the question is not &ldquo;who is better.&rdquo; It is whether you want
+                three coin flips or one lottery ticket. That is a different answer for
+                every person at the table, which is the entire point.
+              </P>
+            </Disclosure>
+            <Disclosure label="How the draft runs">
+              <P>
+                Dragons go first and there are only eleven of them, so somebody is not
+                getting the one they wanted. Then four rounds of characters, snake order,
+                45 seconds a pick &mdash; miss the clock and it moves on without you.
+              </P>
+              <P>
+                This is the only part of the night that needs everyone in the app at the
+                same time.
+              </P>
+              {!TONIGHT.draftRulesFinal && (
+                <p
+                  className="text-[12px] leading-relaxed border-l-2 pl-3"
+                  style={{
+                    color: 'var(--t-pending)',
+                    borderColor: 'var(--t-pending)',
+                  }}
+                >
+                  Scoring for the draft is still being tuned. The final numbers land in the
+                  app before the draft starts, and they will be on your card while you pick
+                  &mdash; nothing here is worth memorising yet.
+                </p>
+              )}
+            </Disclosure>
+          </GameCard>
+
+          {/* Bingo — current as of the rebalanced 75-square researched pool. */}
+          <GameCard
+            icon={<Grid3X3 size={18} />}
+            title="During — you watch"
+            summary={
+              <>
+                That is genuinely the instruction. Your score moves on its own as{' '}
+                {TONIGHT.gameMaster} logs what happens on screen. The only thing that wants
+                your thumb is a 5&times;5 bingo card: tap a square when you see it happen,
+                confirm, and it goes to {TONIGHT.gameMaster} to approve.
+              </>
+            }
+          >
+            <Disclosure label="Read the square before you claim it">
+              <P>
+                Every square has a strict win condition that spells out what does{' '}
+                <em>not</em> count, and tapping a square shows you that wording before you
+                commit. &ldquo;Named Dragon Snack&rdquo; needs a dragon to actually use its
+                teeth on someone with a name &mdash; burning them does not count.
+              </P>
+              <P>
+                So it is two taps, not one: select, read, confirm. Then say it out loud,
+                because a claim sits pending until {TONIGHT.gameMaster} approves it.
+              </P>
+            </Disclosure>
+            <Disclosure label="What a square is worth">
+              <P>
+                Squares are priced by how unlikely they are, and every card is dealt the
+                same mix of them. Nobody gets the easy card &mdash; two cards have the same
+                expected score before the episode starts. What differs is what actually
+                happens and who catches it.
+              </P>
+              <ul className="flex flex-col gap-1.5">
+                {TIERS.map((tier) => (
+                  <li
+                    key={tier.label}
+                    className="flex items-baseline gap-2 text-[14px]"
+                    style={{ color: 'var(--t-text-muted)' }}
+                  >
+                    <span className="font-semibold" style={{ color: 'var(--t-text)' }}>
+                      {tier.label}
+                    </span>
+                    <span className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
+                      {tier.chance} &middot; {tier.perCard} on your card
+                    </span>
+                    <span
+                      className="ml-auto tabular-nums font-semibold"
+                      style={{ color: 'var(--t-accent-light)' }}
+                    >
+                      {tier.points} pt{tier.points === 1 ? '' : 's'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <P>
+                The long shots and the chaos squares carry a small mark in the corner of the
+                grid. Those eight are the ones worth watching for.
+              </P>
+            </Disclosure>
+            <Disclosure label="Lines, and the blackout myth">
+              <P>
+                Your first line is worth 15, your second 10, and every line after that 5. A
+                blackout pays 25 &mdash; across twelve thousand simulated cards it came up
+                zero times, so treat it as folklore rather than a plan.
+              </P>
+              <P>
+                A typical night lands somewhere around 25 points, and lines are genuinely
+                rare, which is what makes one feel like a spike rather than the only way to
+                score. Bingo is not meant to decide the night. It decides between people who
+                drafted equally well.
+              </P>
+            </Disclosure>
+          </GameCard>
+
+          <GameCard
+            icon={<MessageCircle size={18} />}
+            title="Underneath — the chat"
+            summary={
+              <>
+                All of us, plus seven AI companions who are watching along and have opinions
+                about it. They react to what actually happens, live.
+              </>
+            }
+          >
+            <Disclosure label="Who is in there">
+              <P>
+                Cersei passes judgement, Tyrion drinks and knows things, Olenna is unkind
+                about everyone, Ned keeps the record, Arya keeps a list, Daenerys believes,
+                and Joffrey is exactly as bad as you remember.
+              </P>
+              <P>
+                They are reading the same scoreboard you are, so they will have something to
+                say when your pick dies.
+              </P>
+            </Disclosure>
+          </GameCard>
+        </div>
+      </Section>
+
+      <Rule />
+
+      {/* ── The remote ───────────────────────────────────────────────────── */}
+      <Section eyebrow="The one concept to get" title="The remote">
+        <P>
+          Everything about keeping us together comes down to a single idea, and if you only
+          remember one thing from this page, remember this one.
+        </P>
+
+        <KeyLine>One screen. One playback. One person who touches it.</KeyLine>
+
+        <P>
+          However many of us are sitting on a couch, that couch has one remote. So when you
+          join, you say where you are watching, and one person in that place taps{' '}
+          <em>I have the remote here</em>. That person is not in charge of the game and has
+          no extra powers. They have exactly one job: they are the only one who touches play
+          and pause, so the screens cannot drift apart by accident.
+        </P>
+
+        <div className="relief-glass p-4 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Tv size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--t-text-dim)' }} />
+            <p className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Watching on your own? You are your own remote-holder by definition. Skip the
+              place name, control your own playback, pause whenever you like.
+            </p>
+          </div>
+          <Disclosure label="Use a real place name, not “together”">
+            <P>
+              The app groups people by the place they name, and everyone in a group is
+              treated as sharing one screen. An earlier version offered
+              &ldquo;Together&rdquo; and &ldquo;Watching alone&rdquo; as the options, and two
+              people in different countries both truthfully picked &ldquo;Watching
+              alone&rdquo; and got silently merged onto one imaginary screen.
+            </P>
+            <P>
+              So name the actual place &mdash; &ldquo;Alec&rsquo;s,&rdquo; &ldquo;Tulum,&rdquo;
+              &ldquo;my sofa.&rdquo; A place name cannot be ambiguous in that way. A
+              relationship word always can.
+            </P>
+          </Disclosure>
+        </div>
+      </Section>
+
+      <Rule />
+
+      {/* ── Drift ────────────────────────────────────────────────────────── */}
+      <Section eyebrow="While the episode runs" title="How we stay together">
+        <P>
+          Two screens playing the same episode will slide apart. Someone answers the door,
+          someone&rsquo;s stream buffers, someone starts four minutes late. Twenty minutes
+          in, one room is reacting to a death the other room has not seen yet. That is the
+          thing that actually ruins a remote watch-along &mdash; not pausing.
+        </P>
+
+        <P>
+          You do not have to manage any of it. If a gap opens up, the app tells you, and it
+          tells you which direction to fix it in.
+        </P>
+
+        <div className="relief-glass p-4 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Clock
+              size={18}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--t-text-dim)' }}
+            />
+            <p className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Nobody types a timestamp. Nobody reads a clock out loud. Nobody has to ask
+              &ldquo;where are you?&rdquo; in the group chat.
+            </p>
+          </div>
+          <Disclosure label="How it knows where you are">
+            <P>
+              Your phone starts a clock the moment your screen starts, and it runs in real
+              time from there. Every 45 seconds the remote-holders quietly publish their
+              position to each other in the background.
+            </P>
+            <P>
+              A gap under a few seconds is ignored, because that is inside human reaction
+              time. Past that you get a plain instruction &mdash; <em>skip forward 20s</em>,
+              or <em>pause and let them catch up</em> &mdash; and doing it clears the
+              warning.
+            </P>
+          </Disclosure>
+        </div>
+      </Section>
+
+      <Rule />
+
+      {/* ── Scene breaks ─────────────────────────────────────────────────── */}
+      <Section eyebrow="The rhythm of the night" title="How we stop, and how we start again">
+        <P>
+          Pausing is not a failure state, it is the point. It is where the game gets to be
+          loud without talking over the episode. It just has to happen at the right moment
+          and it has to end cleanly.
+        </P>
+
+        {/* One card, four compact rows. A four-step sequence has to be readable
+            at a glance to be followed in a dark room; as four paragraph cards it
+            was taller than the section it describes. The reasoning moved down
+            into the disclosure, where it costs nothing. */}
+        <div className="relief-glass p-4 flex flex-col gap-3">
+          <ol className="flex flex-col gap-3">
+            {[
+              {
+                icon: <Hand size={16} />,
+                title: 'Anyone asks',
+                body: 'A request, not a stop button. Nothing happens to anyone’s screen yet.',
+              },
+              {
+                icon: <Pause size={16} />,
+                title: 'The remote-holder picks the moment',
+                body: 'They let the scene finish, then pause and confirm.',
+              },
+              {
+                icon: <MessageCircle size={16} />,
+                title: 'We talk',
+                body: 'The part the whole system exists to protect.',
+              },
+              {
+                icon: <Play size={16} />,
+                title: 'Everyone taps ready',
+                body: 'Both screens count down from five and press play together.',
+              },
+            ].map((step, i) => (
+              <li key={step.title} className="flex gap-3">
+                <span
+                  className="flex-shrink-0 grid place-items-center w-6 h-6 border mt-0.5"
+                  style={{ color: 'var(--t-accent-light)', borderColor: 'var(--t-line)' }}
+                  aria-hidden
+                >
+                  {step.icon}
+                </span>
+                <div className="min-w-0">
+                  <h3
+                    className="text-[14px] leading-snug font-semibold"
+                    style={{ color: 'var(--t-text)' }}
+                  >
+                    <span style={{ color: 'var(--t-text-dim)' }}>{i + 1}. </span>
+                    {step.title}
+                  </h3>
+                  <p
+                    className="text-[14px] leading-[1.55]"
+                    style={{ color: 'var(--t-text-muted)' }}
+                  >
+                    {step.body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <Disclosure label="Why we count down instead of just pressing play">
+            <P>
+              When the remote-holder confirms the pause, both clocks freeze on the same
+              second, so nothing drifts while we are stopped. Starting again is the fragile
+              part.
+            </P>
+            <P>
+              If one screen pressed play and the other followed a couple of seconds later,
+              we would manufacture fresh drift at the exact moment the pause finished fixing
+              it. So instead both screens count down to the same instant and release
+              together.
+            </P>
+          </Disclosure>
+        </div>
+      </Section>
+
+      <Rule />
+
+      {/* ── Timeline ─────────────────────────────────────────────────────── */}
+      <Section eyebrow="Tonight" title="The shape of it">
+        <ol className="flex flex-col">
+          {TONIGHT.schedule.map((slot, i) => (
+            <li key={slot.title} className="flex gap-4">
+              {/* Spine: a continuous rule with a node per step. */}
+              <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
+                <span
+                  className="w-2 h-2 rounded-full mt-1.5"
+                  style={{ background: 'var(--t-accent)' }}
+                />
+                {i < TONIGHT.schedule.length - 1 && (
+                  <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
+                )}
+              </div>
+              <div className="flex flex-col gap-1 pb-6 min-w-0">
+                <span
+                  className="text-[12px] font-semibold uppercase tracking-[0.14em] tabular-nums"
+                  style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
+                >
+                  {slot.time ?? 'time to come'}
+                </span>
+                <h3 className="text-[16px] font-semibold" style={{ color: 'var(--t-text)' }}>
+                  {slot.title}
+                </h3>
+                <p
+                  className="text-[14px] leading-[1.6]"
+                  style={{ color: 'var(--t-text-muted)' }}
+                >
+                  {slot.detail}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/* ── Join ─────────────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.32, delay: 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+        className="flex flex-col gap-4"
+      >
+        {TONIGHT.roomCode && (
+          <div className="relief-glass p-5 flex flex-col items-center gap-1.5">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+              style={{ color: 'var(--t-ornament-muted)' }}
+            >
+              Room code
+            </span>
+            <span
+              className="text-[36px] leading-none tabular-nums tracking-[0.14em]"
+              style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
+            >
+              {TONIGHT.roomCode}
+            </span>
+          </div>
+        )}
+
+        {/* Enamel texture, but on the accent field rather than the allegiance
+            field — this renders for someone who has not joined and therefore
+            has no allegiance, and the default (jet) is near-black on near-black. */}
+        <Link
+          to="/"
+          className="w-full min-h-[52px] flex items-center justify-center gap-2 px-4 text-[16px] font-semibold relief-raised material-enamel"
+          style={{ backgroundColor: 'var(--t-accent)', color: 'var(--t-vellum-light)' }}
+        >
+          Join the room
+          <ArrowRight size={18} />
+        </Link>
+
+        <p className="text-[12px] text-center leading-relaxed" style={{ color: 'var(--t-text-dim)' }}>
+          Join any time before the draft &mdash; the room holds your spot even if you close
+          the tab.
+        </p>
+      </motion.div>
+    </div>
+  )
+}

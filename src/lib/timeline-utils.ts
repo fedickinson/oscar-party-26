@@ -154,7 +154,10 @@ export function identifyTurningPoints(
       points.push({
         categoryIndex: point.categoryIndex,
         categoryName: point.categoryName,
-        description: `${nameMap.get(currentLeader) ?? 'Unknown'} took the lead after ${point.categoryName}`,
+        // "on events", not "the lead" — bingo is absent from this timeline (see
+        // describeFinalStretch), so the player leading here is not necessarily
+        // the one leading the actual leaderboard rendered directly above.
+        description: `${nameMap.get(currentLeader) ?? 'Unknown'} took the lead on events after ${point.categoryName}`,
       })
     }
     prevLeaderId = currentLeader
@@ -365,13 +368,29 @@ export function describeFinalStretch(
     )
   }
 
-  // Final gap
+  // Final gap.
+  //
+  // CAREFULLY NOT CALLED "THE VICTORY". This timeline is built from event
+  // scoring only — predictions and draft — because those are the two channels
+  // that resolve at a known moment and can be plotted against an event index.
+  // Bingo cannot: a mark is approved whenever the host gets to it, with no
+  // event to attribute it to, so there is no honest place to put it on this
+  // axis. See computeScoreTimeline.
+  //
+  // The final leaderboard DOES include bingo. So whoever leads this timeline is
+  // frequently not the champion, and calling them the winner printed
+  // "Franz sealed the victory by 20 points" directly beneath a crown reading
+  // "Mara". Say what this actually measures instead.
   if (winner && runnerUp) {
     const winnerName = nameMap.get(winner.id) ?? 'Unknown'
     if (finalGap === 0) {
-      parts.push(`${winnerName} and ${nameMap.get(runnerUp.id) ?? 'Unknown'} finished in a dead heat`)
+      parts.push(
+        `${winnerName} and ${nameMap.get(runnerUp.id) ?? 'Unknown'} finished the event scoring level`,
+      )
     } else {
-      parts.push(`${winnerName} sealed the victory by ${finalGap} point${finalGap === 1 ? '' : 's'}`)
+      parts.push(
+        `${winnerName} finished ${finalGap} point${finalGap === 1 ? '' : 's'} clear on event scoring`,
+      )
     }
   }
 

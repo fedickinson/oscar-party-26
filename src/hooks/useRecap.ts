@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase'
 import { generateRecapPDF } from '../lib/recap-pdf'
 import type { RecapData } from '../lib/recap-pdf'
 import type { ScoredPlayer } from '../lib/scoring'
+import type { PlayerAward, CharacterAward } from '../lib/night-awards'
 import type {
   CategoryRow,
   NomineeRow,
@@ -23,6 +24,7 @@ import type {
   DraftEntityRow,
   PlayerRow,
   MessageRow,
+  PlayerVerdictRow,
 } from '../types/database'
 
 interface UseRecapArgs {
@@ -36,6 +38,9 @@ interface UseRecapArgs {
   draftEntities: DraftEntityRow[]
   players: PlayerRow[]
   playerBingoCounts: Map<string, number>
+  playerAwards?: PlayerAward[]
+  characterAwards?: CharacterAward[]
+  verdicts?: Map<string, PlayerVerdictRow>
 }
 
 export function useRecap({
@@ -49,6 +54,9 @@ export function useRecap({
   draftEntities,
   players,
   playerBingoCounts,
+  playerAwards,
+  characterAwards,
+  verdicts,
 }: UseRecapArgs) {
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -76,6 +84,9 @@ export function useRecap({
         players,
         messages: (messages ?? []) as MessageRow[],
         playerBingoCounts,
+        playerAwards,
+        characterAwards,
+        verdicts,
       }
 
       generateRecapPDF(recapData)

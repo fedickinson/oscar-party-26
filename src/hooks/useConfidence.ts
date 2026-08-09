@@ -82,7 +82,26 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
             .filter(Boolean),
         }))
         const prestigeMode = room?.prestige_mode ?? 'full'
-        const filtered = filterPrestigeCategories(hydrated as any, prestigeMode) as CategoryWithNominees[]
+
+        // Only events with a real slate belong on the prediction sheet.
+        //
+        // `categories` is no longer a fixed seed — the Game Master appends a row
+        // per live event (see useGameMaster), and that table has no room_id, so
+        // events logged by ANY room in the project are visible here. A single
+        // dry run of the GM console would otherwise plant its ad-hoc events
+        // ("Aemond smirks") into the next party's prediction sheet, where they
+        // would burn confidence-budget slots on moments that already happened.
+        //
+        // A GM event carries exactly one nominee (the character it resolved to),
+        // because logEvent writes one category_nominees row. A genuine
+        // prediction event carries the field you choose between — the HotD seed
+        // ranges from 2 to 21 characters per event. So "has something to choose
+        // between" is the honest test, and it needs no seed-id allowlist to
+        // maintain.
+        const predictable = (hydrated as CategoryWithNominees[]).filter(
+          (cat) => cat.nominees.length >= 2,
+        )
+        const filtered = filterPrestigeCategories(predictable as any, prestigeMode) as CategoryWithNominees[]
         setCategories(filtered)
 
         // Pre-allocate empty local pick slots for each category
@@ -153,7 +172,9 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     .map((p) => p.confidence)
     .filter((c): c is number => c != null)
 
-  const confidenceRange = getConfidenceRange(room?.prestige_mode ?? 'full')
+  // `categories` is already filtered to the events in play, so the budget and
+  // the event count can never drift apart.
+  const confidenceRange = getConfidenceRange(categories.length)
   const availableConfidenceNumbers = Array.from({ length: confidenceRange }, (_, i) => i + 1).filter(
     (n) => !assignedNumbers.includes(n),
   )
@@ -229,7 +250,7 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
 
     const unsubmittedPlayers = players.filter((p) => !submittedPlayerIds.has(p.id))
 
-    const range = getConfidenceRange(room?.prestige_mode ?? 'full')
+    const range = getConfidenceRange(categories.length)
     for (const p of unsubmittedPlayers) {
       // Random confidence assignment for auto-fill
       const shuffled = Array.from({ length: range }, (_, i) => i + 1).sort(

@@ -42,9 +42,9 @@ const TIER_STYLES: Record<
   { border: string; label: string; labelBg: string }
 > = {
   1: {
-    border: 'border-l-oscar-gold',
-    label: 'text-oscar-gold',
-    labelBg: 'bg-oscar-gold/10 text-oscar-gold',
+    border: 'border-l-accent',
+    label: 'text-accent',
+    labelBg: 'bg-accent/10 text-accent',
   },
   2: {
     border: 'border-l-violet-400',
@@ -112,14 +112,14 @@ export default function CategoryPickCard({
               'w-9 h-9 rounded-lg flex flex-col items-center justify-center relative',
               'border-2 transition-colors',
               pick.confidence != null
-                ? 'bg-oscar-gold/15 border-oscar-gold/60'
+                ? 'bg-accent/15 border-accent/60'
                 : hasNominee
                   ? 'bg-red-500/20 border-red-400 border-dashed'
                   : 'bg-white/5 border-white/15 border-dashed',
             ].join(' ')}
           >
             {pick.confidence != null ? (
-              <span className="text-sm font-bold text-oscar-gold leading-none">
+              <span className="text-sm font-bold text-accent leading-none">
                 {pick.confidence}
               </span>
             ) : hasNominee ? (
@@ -178,12 +178,12 @@ function NomineeRow({
         'w-full text-left px-2 transition-colors',
         'min-h-[44px] flex flex-col justify-center',
         isSelected
-          ? 'border-l-2 border-oscar-gold bg-oscar-gold/10 pl-2'
+          ? 'border-l-2 border-accent bg-accent/10 pl-2'
           : 'border-l-2 border-transparent',
         !isLast ? 'border-b border-white/5' : '',
       ].join(' ')}
     >
-      <span className={['text-sm leading-snug', isSelected ? 'text-oscar-gold font-medium' : 'text-white/75 font-normal'].join(' ')}>
+      <span className={['text-sm leading-snug', isSelected ? 'text-accent font-medium' : 'text-white/75 font-normal'].join(' ')}>
         {nominee.name}
       </span>
       {showFilm && (

@@ -50,7 +50,7 @@ const TIER_LABELS: Record<number, string> = {
 }
 
 const TIER_LABEL_COLORS: Record<number, string> = {
-  1: 'text-oscar-gold',
+  1: 'text-accent',
   2: 'text-violet-400',
   3: 'text-sky-400',
   4: 'text-emerald-400',
@@ -114,7 +114,7 @@ export default function Confidence() {
   function handleRandomFill() {
     // Build the full picks map in one pass to avoid stale-closure issues with
     // sequential setLocalPicks calls that each read from the same snapshot.
-    const range = getConfidenceRange(room?.prestige_mode ?? 'full')
+    const range = getConfidenceRange(categories.length)
     const shuffledConfidence = Array.from({ length: range }, (_, i) => i + 1).sort(
       () => Math.random() - 0.5,
     )
@@ -145,14 +145,14 @@ export default function Confidence() {
   if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   if (!room || !player) return null
 
-  const confidenceRange = getConfidenceRange(room.prestige_mode ?? 'full')
+  const confidenceRange = getConfidenceRange(categories.length)
 
   // ── Derived ────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,7 @@
  *
  * NOMINATION DISPLAY:
  *  People: up to 3 category names listed as small badges
- *  Films: show "N nominations" prominently (e.g. "Sinners: 16 noms!")
+ *  Dragons: show "N ways to score" prominently
  *
  * The `index` prop drives stagger delay for entrance animation.
  * Available entities stagger in; drafted entities come last in the list
@@ -38,7 +38,8 @@ export default function EntityCard({
   onTap,
   index,
 }: Props) {
-  const isFilm = entity.type === 'film'
+  // Dragons ride the 'film' slot of the entity schema — see the seed migration.
+  const isDragon = entity.type === 'film'
   const potentialPoints = entity.nominations.reduce((sum, n) => sum + (n.points ?? 0), 0)
   const isTappable = isAvailable && isMyTurn
 
@@ -53,15 +54,15 @@ export default function EntityCard({
       className={[
         'backdrop-blur-lg border rounded-2xl p-4 transition-colors',
         isAvailable ? 'bg-white/10 border-white/15' : 'bg-white/5 border-white/8',
-        isTappable ? 'cursor-pointer hover:bg-white/15 hover:border-oscar-gold/40 active:border-oscar-gold' : '',
+        isTappable ? 'cursor-pointer hover:bg-white/15 hover:border-accent/40 active:border-accent' : '',
         !isAvailable ? 'cursor-default' : '',
       ].join(' ')}
     >
       <div className="flex items-start gap-3">
         {/* Left: type badge */}
         <div className="flex-shrink-0 mt-0.5">
-          {isFilm ? (
-            <div className={['p-1.5 rounded-lg', isAvailable ? 'bg-oscar-gold/15 text-oscar-gold' : 'bg-white/5 text-white/25'].join(' ')}>
+          {isDragon ? (
+            <div className={['p-1.5 rounded-lg', isAvailable ? 'bg-accent/15 text-accent' : 'bg-white/5 text-white/25'].join(' ')}>
               <FilmIcon filmName={entity.name} size={16} />
             </div>
           ) : (
@@ -82,7 +83,7 @@ export default function EntityCard({
             {entity.name}
           </p>
 
-          {!isFilm && entity.film_name && (
+          {!isDragon && entity.film_name && (
             <div className="flex items-center gap-1 mt-0.5">
               <FilmIcon filmName={entity.film_name} size={10} className="text-white/40 flex-shrink-0" />
               <p className="text-xs text-white/60 truncate">{entity.film_name}</p>
@@ -91,15 +92,15 @@ export default function EntityCard({
 
           {/* Nominations display */}
           <div className="mt-2">
-            {isFilm ? (
-              // Films: show total nom count prominently
+            {isDragon ? (
+              // Dragons: how many scoring events they appear in
               <span
                 className={[
                   'text-sm font-bold',
-                  isAvailable ? 'text-oscar-gold' : 'text-white/30',
+                  isAvailable ? 'text-accent' : 'text-white/30',
                 ].join(' ')}
               >
-                {entity.nom_count} nomination{entity.nom_count !== 1 ? 's' : ''}
+                {entity.nom_count} way{entity.nom_count !== 1 ? 's' : ''} to score
               </span>
             ) : (
               // People: show category badges (max 3, then "+N more")
@@ -128,7 +129,7 @@ export default function EntityCard({
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: draftedBy.color }}
               />
-              <span className="text-xs text-white/35">In {draftedBy.name}'s ensemble</span>
+              <span className="text-xs text-white/35">Drafted by {draftedBy.name}</span>
             </div>
           )}
         </div>
@@ -140,7 +141,7 @@ export default function EntityCard({
               <p
                 className={[
                   'text-lg font-bold tabular-nums leading-none',
-                  potentialPoints > 0 ? 'text-oscar-gold' : 'text-white/30',
+                  potentialPoints > 0 ? 'text-accent' : 'text-white/30',
                 ].join(' ')}
               >
                 {potentialPoints}

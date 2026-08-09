@@ -28,7 +28,7 @@ function TierBadge({ tier }: { tier: number }) {
   const label = tier === 1 ? 'Big 6' : tier === 2 ? 'Major' : tier === 3 ? 'Craft' : 'Short'
   const color =
     tier === 1
-      ? 'bg-oscar-gold/20 text-oscar-gold border-oscar-gold/30'
+      ? 'bg-accent/20 text-accent border-accent/30'
       : tier === 2
         ? 'bg-white/10 text-white/70 border-white/20'
         : 'bg-white/5 text-white/40 border-white/10'
@@ -108,7 +108,7 @@ function WinnerCard({ entry }: { entry: Extract<FeedEvent, { kind: 'winner' }> }
       className={[
         'backdrop-blur-lg border rounded-xl overflow-hidden',
         hasBothForSomeone
-          ? 'bg-oscar-gold/6 border-oscar-gold/20'
+          ? 'bg-accent/6 border-accent/20'
           : 'bg-white/6 border-white/10',
       ].join(' ')}
     >
@@ -179,13 +179,13 @@ function LeadChangeCard({ entry }: { entry: Extract<FeedEvent, { kind: 'lead-cha
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="backdrop-blur-lg bg-oscar-gold/10 border border-oscar-gold/30 rounded-xl px-3 py-3"
+      className="backdrop-blur-lg bg-accent/10 border border-accent/30 rounded-xl px-3 py-3"
     >
       <div className="flex items-center gap-2.5">
-        <Crown size={16} className="text-oscar-gold flex-shrink-0" />
+        <Crown size={16} className="text-accent flex-shrink-0" />
         <Avatar avatarId={entry.leaderAvatarId} size="sm" emotion="happy" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-oscar-gold">
+          <p className="text-sm font-semibold text-accent">
             {entry.leaderName} takes the lead
           </p>
           <p className="text-xs text-white/45">{entry.totalScore} pts</p>

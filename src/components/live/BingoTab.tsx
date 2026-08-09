@@ -28,6 +28,7 @@ import BingoCard from '../bingo/BingoCard'
 import BingoAlert from '../bingo/BingoAlert'
 import BingoApprovalSheet from '../bingo/BingoApprovalSheet'
 import PeekCardOverlay from '../bingo/PeekCardOverlay'
+import PipLegend from '../bingo/PipLegend'
 import Avatar from '../Avatar'
 import type { CategoryRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
@@ -55,6 +56,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     pendingIndices,
     bingoLines,
     bingoCount,
+    squarePoints,
     bingoScore,
     celebrationData,
     isLoading,
@@ -77,7 +79,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-7 h-7 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -108,9 +110,16 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                   <span className="text-amber-400 ml-1">· {pendingCount} pending</span>
                 )}
               </p>
-              {bingoScore > 0 && (
-                <p className="text-xs font-bold text-oscar-gold">{bingoScore} pts</p>
-              )}
+              {/* Always shown. Squares pay on their own now, so a player with
+                  no line is not on zero and should not be told they are. */}
+              <p className="text-xs font-bold text-accent">
+                {bingoScore} pts
+                {bingoCount > 0 && (
+                  <span className="font-medium text-white/35 ml-1">
+                    ({squarePoints} squares)
+                  </span>
+                )}
+              </p>
             </div>
           </div>
 
@@ -148,11 +157,14 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
           onConfirm={markSquare}
         />
 
-        {/* Hint text */}
-        <p className="text-xs text-white/25 text-center px-4">
-          Italic squares auto-mark when the condition is met.
-          Others need host approval.
-        </p>
+        {/* Legend, then instruction. The dots are decoded by showing them; the
+            sentence is left with one job instead of three. */}
+        <div className="flex flex-col items-center gap-1.5">
+          <PipLegend />
+          <p className="text-xs text-white/25 text-center px-4">
+            Tap a square to see what counts, then claim it for the host to confirm.
+          </p>
+        </div>
 
         {/* Host: pending approvals button */}
         <AnimatePresence>
@@ -174,7 +186,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                   <ClipboardList size={16} className="text-amber-400" />
                   <span className="text-sm font-semibold text-white">Pending Approvals</span>
                 </div>
-                <span className="text-xs font-bold text-deep-navy bg-amber-400 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-bold text-ground bg-amber-400 px-2.5 py-1 rounded-full">
                   {pendingMarks.length}
                 </span>
               </motion.button>
@@ -233,7 +245,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs font-bold text-oscar-gold flex-shrink-0">
+                        <span className="text-xs font-bold text-accent flex-shrink-0">
                           {entry.bingoScore}pt
                         </span>
                       )}

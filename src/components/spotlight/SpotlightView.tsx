@@ -160,7 +160,7 @@ export default function SpotlightView({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
-                className="p-3 rounded-xl bg-oscar-gold/10 border border-oscar-gold/30 space-y-2"
+                className="p-3 rounded-xl bg-accent/10 border border-accent/30 space-y-2"
               >
                 {/* Tie warning */}
                 {isTie && (
@@ -223,12 +223,12 @@ export default function SpotlightView({
                     className={[
                       'flex-1 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-60',
                       isTie
-                        ? 'bg-amber-500 text-deep-navy'
-                        : 'bg-oscar-gold text-deep-navy',
+                        ? 'bg-amber-500 text-ground'
+                        : 'bg-accent text-ground',
                     ].join(' ')}
                   >
                     {isSubmitting ? (
-                      <div className="w-4 h-4 border-2 border-deep-navy/40 border-t-deep-navy rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
                     ) : isTie ? (
                       <>
                         <AlertTriangle size={13} strokeWidth={2.5} /> Confirm Tie

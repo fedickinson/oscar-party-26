@@ -35,14 +35,17 @@ export default function CompanionProfileModal({ companion, onClose }: Props) {
         transition={{ type: 'spring', stiffness: 360, damping: 40 }}
         className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-deep-navy/97 border border-white/15 rounded-t-3xl overflow-hidden pb-10">
+        <div className="backdrop-blur-xl bg-ground/97 border border-white/15 rounded-t-3xl overflow-hidden pb-10">
 
           {/* Large image with gradient fade to content */}
           <div className="relative h-52 w-full">
-            <img
-              src={companion.imageUrl}
-              alt={companion.name}
-              className="w-full h-full object-cover object-center"
+            {/* No portraits for this cast — the gradient carries the identity.
+                Drop art in public/avatars/companions/ and restore an <img> here. */}
+            <div
+              className="w-full h-full"
+              style={{
+                background: `linear-gradient(140deg, ${companion.colorPrimary}, ${companion.colorSecondary})`,
+              }}
             />
             <div
               className="absolute inset-0"

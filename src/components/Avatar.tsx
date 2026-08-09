@@ -22,7 +22,7 @@
  *   all remain valid.
  *
  * RING:
- *   highlighted=true switches from white/20 to oscar-gold (#D4AF37).
+ *   highlighted=true switches from white/20 to accent (#D4AF37).
  *   Set by the parent when this avatar is selected (e.g. AvatarPicker).
  */
 

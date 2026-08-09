@@ -90,11 +90,27 @@ export function filterPrestigeCategories(
   return categories.filter((c) => ids.has(c.id))
 }
 
-/** Returns the maximum confidence value for the given prestige mode. */
-export function getConfidenceRange(mode: PrestigeMode): number {
-  if (mode === 'big_night') return 6
-  if (mode === 'main_stage') return 12
-  return 24
+/**
+ * Returns the maximum confidence value — always the number of events in play.
+ *
+ * WHY THIS IS DERIVED AND NOT A CONSTANT:
+ * Confidence is a fixed-budget allocation. Every player spends the same multiset
+ * of numbers (1..N, each used exactly once), so the only decision is WHERE to
+ * spend the big ones — and every player's ceiling is identical. That invariant
+ * holds only while the range and the event count agree.
+ *
+ * This used to be a per-mode constant tuned to the 24-category Oscars ceremony.
+ * The HotD finale has 20 events, so a hardcoded 24 let a player assign 5..20+
+ * (a 290-point budget) while an honest player assigned 1..20 (210). That isn't
+ * a strategy, it's a dominant move that decides the night on its own.
+ *
+ * Deriving the range from the count makes that whole class of bug
+ * unrepresentable: re-seed with any number of events and the budget follows.
+ *
+ * @param categoryCount  number of categories/events the player actually picks
+ */
+export function getConfidenceRange(categoryCount: number): number {
+  return categoryCount
 }
 
 // ─── Ensemble mode descriptors ────────────────────────────────────────────────

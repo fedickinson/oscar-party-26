@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import type { LikelihoodTier } from '../types/database'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,12 @@ export interface PendingMark {
   playerName: string
   playerAvatarId: string
   playerColor: string
+  /** Short label — what the player sees on their grid tile */
+  squareTitle: string
+  /** The strict rule the host rules against, including what does NOT count */
   squareText: string
+  squareTier: LikelihoodTier | null
+  squareProbabilityPct: number | null
   markedAt: string
 }
 
@@ -106,7 +112,10 @@ export function useBingoApprovals(roomId: string | undefined): BingoApprovalsSta
           playerName: player?.name ?? 'Unknown',
           playerAvatarId: player?.avatar_id ?? '',
           playerColor: player?.color ?? '#ffffff',
-          squareText: square?.text ?? 'Unknown square',
+          squareTitle: square?.title ?? square?.short_text ?? 'Unknown square',
+          squareText: square?.win_condition ?? square?.text ?? 'Unknown square',
+          squareTier: square?.likelihood_tier ?? null,
+          squareProbabilityPct: square?.probability_pct ?? null,
           markedAt: mark.marked_at,
         }
       })

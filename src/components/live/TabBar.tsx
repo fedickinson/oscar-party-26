@@ -2,7 +2,7 @@
  * TabBar — fixed-height bottom navigation for the live dashboard.
  *
  * Four tabs: Bingo · Scores · Winners · My Picks
- * Active tab renders in oscar-gold with a subtle scale bump.
+ * Active tab renders in accent with a subtle scale bump.
  * Inactive tabs render at white/50.
  *
  * Glassmorphism background matches the rest of the app.
@@ -10,15 +10,16 @@
  */
 
 import { motion } from 'framer-motion'
-import { BarChart3, Film, Grid3X3, House, Trophy, User } from 'lucide-react'
+import { BarChart3, Grid3X3, House, Swords, User } from 'lucide-react'
 
 export const TABS = [
   { id: 0, label: 'Home',     Icon: House      },
   { id: 1, label: 'Bingo',    Icon: Grid3X3    },
   { id: 2, label: 'Scores',   Icon: BarChart3  },
-  { id: 3, label: 'Winners',  Icon: Trophy     },
+  // Tab 3 is the GM console for episode properties — the host authors events
+  // here instead of announcing pre-known winners.
+  { id: 3, label: 'Events',   Icon: Swords     },
   { id: 4, label: 'My Picks', Icon: User       },
-  { id: 5, label: 'Films',    Icon: Film       },
 ] as const
 
 interface Props {
@@ -31,8 +32,15 @@ interface Props {
 export default function TabBar({ activeTab, onSelect, badges }: Props) {
   return (
     <div
-      className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-t border-white/10"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="flex-shrink-0 relief-glass"
+      style={{
+        // Glass chrome, but a bar: square corners, top edge only
+        borderRadius: 0,
+        borderLeft: 'none',
+        borderRight: 'none',
+        borderBottom: 'none',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
     >
       <div className="flex h-[60px]">
         {TABS.map(({ id, label, Icon }) => {
@@ -44,6 +52,9 @@ export default function TabBar({ activeTab, onSelect, badges }: Props) {
               onClick={() => onSelect(id)}
               whileTap={{ scale: 0.92 }}
               className="flex-1 flex flex-col items-center justify-center gap-0.5"
+              // Active tab takes the viewer's allegiance color (personal layer),
+              // not the shared event accent — matches v7.
+              style={{ color: isActive ? 'var(--t-personal-text)' : undefined }}
             >
               <motion.div
                 animate={{ scale: isActive ? 1.1 : 1 }}
@@ -52,11 +63,11 @@ export default function TabBar({ activeTab, onSelect, badges }: Props) {
               >
                 <Icon
                   size={20}
-                  className={isActive ? 'text-oscar-gold' : 'text-white/45'}
+                  className={isActive ? '' : 'text-white/45'}
                 />
                 {hasBadge && (
                   <span
-                    className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-oscar-gold"
+                    className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-accent"
                     aria-label="New activity"
                   />
                 )}
@@ -64,7 +75,7 @@ export default function TabBar({ activeTab, onSelect, badges }: Props) {
               <span
                 className={[
                   'text-[10px] font-medium leading-none',
-                  isActive ? 'text-oscar-gold' : 'text-white/45',
+                  isActive ? '' : 'text-white/45',
                 ].join(' ')}
               >
                 {label}
@@ -74,7 +85,8 @@ export default function TabBar({ activeTab, onSelect, badges }: Props) {
               {isActive && (
                 <motion.div
                   layoutId="tab-indicator"
-                  className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+2px)] w-5 h-0.5 bg-oscar-gold rounded-full"
+                  className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+2px)] w-5 h-0.5 rounded-full"
+                  style={{ background: 'var(--t-personal-device)' }}
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}

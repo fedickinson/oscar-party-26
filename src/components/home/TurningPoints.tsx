@@ -25,8 +25,8 @@ export default function TurningPoints({ turningPoints }: Props) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-6 h-6 rounded-md bg-oscar-gold/10 border border-oscar-gold/20 flex items-center justify-center flex-shrink-0">
-          <Zap size={11} className="text-oscar-gold/80" />
+        <div className="w-6 h-6 rounded-md bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+          <Zap size={11} className="text-accent/80" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-wider text-white/40">Key Moments</p>
       </div>
@@ -50,13 +50,13 @@ export default function TurningPoints({ turningPoints }: Props) {
                   border: '1px solid rgba(212,175,55,0.22)',
                 }}
               >
-                <Icon size={13} className="text-oscar-gold/80" />
+                <Icon size={13} className="text-accent/80" />
               </div>
 
               <div className="flex-1 min-w-0">
                 {/* Category label */}
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[9px] font-bold text-oscar-gold/50 uppercase tracking-widest">
+                  <span className="text-[9px] font-bold text-accent/50 uppercase tracking-widest">
                     #{tp.categoryIndex}
                   </span>
                   <span className="text-[9px] text-white/25 uppercase tracking-wider truncate">

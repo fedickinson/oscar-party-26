@@ -34,6 +34,8 @@ import {
   describeFinalStretch,
   computeBreakdownTimeline,
 } from '../lib/timeline-utils'
+import { computeNightAwards } from '../lib/night-awards'
+import { usePlayerVerdicts } from '../hooks/usePlayerVerdicts'
 import PostCeremonyView from '../components/home/PostCeremonyView'
 
 export default function Results() {
@@ -99,16 +101,27 @@ export default function Results() {
             'content-type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
+            model: 'claude-sonnet-5',
             max_tokens: 400,
-            system: prompt.system,
+            // Thinking off for the same reason as the other two callers: on
+            // Sonnet 5 max_tokens caps thinking + text together.
+            thinking: { type: 'disabled' },
+            output_config: { effort: 'low' },
+            system: [
+              {
+                type: 'text',
+                text: prompt.system,
+                cache_control: { type: 'ephemeral', ttl: '1h' },
+              },
+            ],
             messages: [{ role: 'user', content: prompt.user }],
           }),
         })
 
         if (!response.ok) return
         const data = await response.json()
-        const raw = (data?.content?.[0]?.text ?? '') as string
+        const blocks = (data?.content ?? []) as Array<{ type?: string; text?: string }>
+        const raw = (blocks.find((b) => b.type === 'text')?.text ?? '') as string
         if (!raw) return
 
         const messages = parseCompanionResponse(raw)
@@ -181,7 +194,45 @@ export default function Results() {
     [timeline, players, scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees],
   )
 
-  const { shareResults, isCopied } = useShareResults()
+  // ── The Reckoning ──────────────────────────────────────────────────────────
+  //
+  // Titles and character awards are pure and cheap, so they are computed here
+  // and rendered immediately. The written verdicts are fetched/generated
+  // separately and layered on when (if) they arrive.
+
+  const awards = useMemo(
+    () =>
+      computeNightAwards(
+        scores.leaderboard,
+        players,
+        scores.categories,
+        scores.nominees,
+        scores.draftEntities,
+        scores.draftPicks,
+        scores.confidencePicks,
+        timeline,
+      ),
+    [
+      scores.leaderboard,
+      players,
+      scores.categories,
+      scores.nominees,
+      scores.draftEntities,
+      scores.draftPicks,
+      scores.confidencePicks,
+      timeline,
+    ],
+  )
+
+  const { verdicts } = usePlayerVerdicts({
+    roomId: room?.id,
+    isHost,
+    playerAwards: awards.playerAwards,
+    leaderboard: scores.leaderboard,
+    ready: !scores.isLoading && scores.leaderboard.length > 0,
+  })
+
+  const { shareResults, sharePlayerCard, isCopied } = useShareResults()
 
   const { downloadRecap, isGenerating } = useRecap({
     roomId: room?.id,
@@ -194,12 +245,15 @@ export default function Results() {
     draftEntities: scores.draftEntities,
     players,
     playerBingoCounts: scores.playerBingoCounts,
+    playerAwards: awards.playerAwards,
+    characterAwards: awards.characterAwards,
+    verdicts,
   })
 
   if (loading || scores.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -223,6 +277,20 @@ export default function Results() {
       bingoSquares={bingo.squares}
       bingoMarks={bingo.marks}
       bingoLines={bingo.bingoLines}
+      playerAwards={awards.playerAwards}
+      characterAwards={awards.characterAwards}
+      verdicts={verdicts}
+      currentPlayerId={player.id}
+      onSharePlayerCard={(playerId) => {
+        const award = awards.playerAwards.find((a) => a.playerId === playerId)
+        if (!award || !room) return
+        sharePlayerCard(
+          award,
+          scores.leaderboard.find((e) => e.player.id === playerId),
+          verdicts.get(playerId),
+          room.code,
+        )
+      }}
     />
   )
 }

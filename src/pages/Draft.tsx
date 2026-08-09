@@ -1,5 +1,5 @@
 /**
- * Draft — the ensemble draft page.
+ * Draft — the character and dragon draft.
  *
  * LAYOUT (flex column, full viewport height):
  *
@@ -22,9 +22,10 @@
  * No duplicate subscriptions to the same table.
  *
  * PHASE NAVIGATION:
- * When the host auto-transitions to 'confidence' (after all picks), the
- * useRoomSubscription callback sets room.phase = 'confidence' in context.
- * The useEffect below catches that and navigates everyone simultaneously.
+ * When the host auto-transitions to 'live' (after all picks), the
+ * useRoomSubscription callback sets room.phase = 'live' in context. The
+ * useEffect below catches that and navigates everyone simultaneously.
+ * ('confidence' is still handled for the Oscars property, which kept that game.)
  */
 
 import { useEffect, useState } from 'react'
@@ -40,43 +41,28 @@ import MyRoster from '../components/draft/MyRoster'
 import ConfirmPickModal from '../components/draft/ConfirmPickModal'
 import type { DraftEntityWithDetails } from '../types/game'
 
-// ─── People grouping helpers ──────────────────────────────────────────────────
+// ─── Character grouping ───────────────────────────────────────────────────────
+//
+// Previously grouped by Oscars acting category (Lead Actors, Supporting
+// Actresses, Craft) derived from nomination names. For this property every
+// character would fall through to "Craft", putting all 27 in one bucket.
+// Faction is the grouping that actually helps you draft: it is how the board is
+// divided, and it makes the shape of your roster legible at a glance.
+//
+// film_name carries the faction — see the seed migration.
 
-const GROUP_ORDER = [
-  'Directors & Writers',
-  'Lead Actors',
-  'Lead Actresses',
-  'Supporting Actors',
-  'Supporting Actresses',
-  'Craft',
-] as const
-
-type PeopleGroupLabel = (typeof GROUP_ORDER)[number]
-
-function getPeopleGroup(entity: DraftEntityWithDetails): PeopleGroupLabel {
-  const cats = entity.nominations.map((n) => n.category_name.toLowerCase())
-  if (cats.some((c) => c.includes('director') || c.includes('screenplay') || c.includes('writing')))
-    return 'Directors & Writers'
-  if (cats.some((c) => c.includes('actress') && c.includes('support')))
-    return 'Supporting Actresses'
-  if (cats.some((c) => c.includes('actor') && c.includes('support')))
-    return 'Supporting Actors'
-  if (cats.some((c) => c.includes('actress')))
-    return 'Lead Actresses'
-  if (cats.some((c) => c.includes('actor')))
-    return 'Lead Actors'
-  return 'Craft'
-}
-
-function groupPeople(entities: DraftEntityWithDetails[]) {
-  const map = new Map<PeopleGroupLabel, DraftEntityWithDetails[]>(
-    GROUP_ORDER.map((g) => [g, []]),
-  )
-  for (const e of entities) map.get(getPeopleGroup(e))!.push(e)
+function groupByFaction(entities: DraftEntityWithDetails[]) {
+  const map = new Map<string, DraftEntityWithDetails[]>()
+  for (const e of entities) {
+    const faction = e.film_name || 'Unaligned'
+    if (!map.has(faction)) map.set(faction, [])
+    map.get(faction)!.push(e)
+  }
   for (const list of map.values()) list.sort((a, b) => b.nom_count - a.nom_count)
-  return GROUP_ORDER.map((label) => ({ label, entities: map.get(label)! })).filter(
-    (g) => g.entities.length > 0,
-  )
+  // Biggest factions first — that is roughly where the valuable picks are.
+  return Array.from(map.entries())
+    .map(([label, list]) => ({ label, entities: list }))
+    .sort((a, b) => b.entities.length - a.entities.length)
 }
 
 export default function Draft() {
@@ -113,6 +99,7 @@ export default function Draft() {
   useEffect(() => {
     if (!room || !code) return
     if (room.phase === 'confidence') navigate(`/room/${code}/confidence`)
+    if (room.phase === 'live') navigate(`/room/${code}/live`)
   }, [room?.phase, code, navigate])
 
   // Guard: no session
@@ -141,7 +128,7 @@ export default function Draft() {
   if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -151,13 +138,13 @@ export default function Draft() {
   const draftedEntities = entities.filter((e) => picksMap.has(e.id))
 
   const availablePeople = availableEntities.filter((e) => e.type === 'person')
-  const availableFilms = availableEntities.filter((e) => e.type === 'film')
+  const availableDragons = availableEntities.filter((e) => e.type === 'film')
   const draftedPeople = draftedEntities.filter((e) => e.type === 'person')
-  const draftedFilms = draftedEntities.filter((e) => e.type === 'film')
+  const draftedDragons = draftedEntities.filter((e) => e.type === 'film')
 
-  const isFilmsPhase = draftSubPhase === 'films'
-  const activeAvailable = isFilmsPhase ? availableFilms : availablePeople
-  const activeDrafted = isFilmsPhase ? draftedFilms : draftedPeople
+  const isDragonPhase = draftSubPhase === 'films'
+  const activeAvailable = isDragonPhase ? availableDragons : availablePeople
+  const activeDrafted = isDragonPhase ? draftedDragons : draftedPeople
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -218,12 +205,12 @@ export default function Draft() {
             className="flex items-center justify-between flex-shrink-0 px-1 mb-2"
           >
             <div className="flex items-center gap-2">
-              {isFilmsPhase
-                ? <Film size={14} className="text-oscar-gold" />
-                : <Users size={14} className="text-oscar-gold" />
+              {isDragonPhase
+                ? <Film size={14} className="text-accent" />
+                : <Users size={14} className="text-accent" />
               }
-              <span className="text-xs font-semibold text-oscar-gold uppercase tracking-widest">
-                {isFilmsPhase ? 'Film Ensemble' : 'People Ensemble'}
+              <span className="text-xs font-semibold text-accent uppercase tracking-widest">
+                {isDragonPhase ? 'Claim a dragon' : 'Draft your characters'}
               </span>
             </div>
             {devAutoPickAll && (
@@ -253,18 +240,18 @@ export default function Draft() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-10"
               >
-                <Trophy size={48} className="text-oscar-gold mx-auto mb-3" />
-                <p className="text-xl font-bold text-oscar-gold mb-1">Ensemble Complete!</p>
-                <p className="text-white/50 text-sm">Moving to Confidence Picks…</p>
+                <Trophy size={48} className="text-accent mx-auto mb-3" />
+                <p className="text-xl font-bold text-accent mb-1">Roster complete</p>
+                <p className="text-white/50 text-sm">Taking you to the episode…</p>
               </motion.div>
-            ) : isFilmsPhase ? (
-              /* ── Films sub-draft ── */
+            ) : isDragonPhase ? (
+              /* ── Dragons sub-draft ── */
               <>
                 {isMyTurn && (
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-xs text-oscar-gold/70 uppercase tracking-widest px-1 mb-2"
+                    className="text-xs text-accent/70 uppercase tracking-widest px-1 mb-2"
                   >
                     Tap to claim
                   </motion.p>
@@ -290,12 +277,12 @@ export default function Draft() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-xs text-oscar-gold/70 uppercase tracking-widest px-1 mb-2"
+                    className="text-xs text-accent/70 uppercase tracking-widest px-1 mb-2"
                   >
                     Tap to claim
                   </motion.p>
                 )}
-                {groupPeople(activeAvailable).map((group) => (
+                {groupByFaction(activeAvailable).map((group) => (
                   <div key={group.label} className="mb-3">
                     <p className="text-xs text-white/30 uppercase tracking-widest px-1 mb-1.5">
                       {group.label}

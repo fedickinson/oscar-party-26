@@ -27,8 +27,9 @@ import { useGame } from '../context/GameContext'
 import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
 import Avatar from '../components/Avatar'
 import PhaseExplainer from '../components/PhaseExplainer'
+import WatchGroupPanel from '../components/WatchGroupPanel'
+import { namedLocationsWithoutRemote } from '../lib/watch-groups'
 import ReadyUpScreen from '../components/ReadyUpScreen'
-import ModeSelectPanel from '../components/ModeSelectPanel'
 import type { PlayerRow } from '../types/database'
 
 export default function Room() {
@@ -81,7 +82,7 @@ export default function Room() {
 
     const { error } = await supabase
       .from('rooms')
-      .update({ phase: 'pre_draft', draft_order: shuffled, ready_players: [] })
+      .update({ phase: 'pre_draft', draft_order: shuffled, ready_players: [], countdown_started_at: null })
       .eq('id', room.id)
 
     if (error) {
@@ -117,25 +118,49 @@ export default function Room() {
 
   const readyPlayerIds = (room?.ready_players as string[] | null) ?? []
   const playerIsReady = player ? readyPlayerIds.includes(player.id) : false
+  // ── Watch-group readiness ──────────────────────────────────────────────────
+  //
+  // Nobody is ever blocked for not stating a location: no location means "on my
+  // own screen", which is a complete answer and makes that player their own
+  // remote-holder by definition (see lib/watch-groups). Grouping someone with
+  // strangers by accident is far worse than leaving them solo.
+  //
+  // The only thing worth warning about is a NAMED location where several people
+  // share a screen and none of them has claimed the remote — there, nobody can
+  // pause and it is not self-evident.
+  const locationsWithoutRemote = namedLocationsWithoutRemote(players)
+  const watchSetupIncomplete = locationsWithoutRemote.length > 0
+  const [overrodeWatchSetup, setOverrodeWatchSetup] = useState(false)
+
   const isPreDraft = room?.phase === 'pre_draft'
 
   // Record the moment all players became ready so every client can compute
   // elapsed time and derive the correct countdown position locally.
-  const countdownStartedAtRef = useRef<number | null>(null)
   const allReady = players.length > 0 && readyPlayerIds.length >= players.length
-  if (isPreDraft && allReady && countdownStartedAtRef.current === null) {
-    countdownStartedAtRef.current = Date.now()
-  }
-  if (!isPreDraft) {
-    countdownStartedAtRef.current = null
-  }
+
+  // The host stamps the countdown start on the ROOM, so every client derives
+  // the same 3-2-1 from one wall-clock instant. Previously each client kept its
+  // own local ref and ran its own timer chain, which meant they could disagree
+  // — and a client whose chain broke simply froze.
+  useEffect(() => {
+    if (!isPreDraft || !allReady || !player?.is_host) return
+    if (room?.countdown_started_at) return
+    void supabase
+      .from('rooms')
+      .update({ countdown_started_at: new Date().toISOString() })
+      .eq('id', room!.id)
+  }, [isPreDraft, allReady, player?.is_host, room?.countdown_started_at, room?.id])
+
+  const countdownStartedAt = room?.countdown_started_at
+    ? new Date(room.countdown_started_at).getTime()
+    : Date.now()
 
   // ─── Loading & null guards ───────────────────────────────────────────────────
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -157,7 +182,7 @@ export default function Room() {
       >
         {/* Header */}
         <div className="text-center pt-2">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Awards Party</p>
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Party Night</p>
           <h1 className="text-2xl font-bold text-white">Lobby</h1>
         </div>
 
@@ -170,7 +195,7 @@ export default function Room() {
           <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Room Code</p>
           <div className="flex gap-3 justify-center mb-3">
             {(code ?? '').split('').map((letter, i) => (
-              <span key={i} className="text-5xl font-bold text-oscar-gold leading-none">
+              <span key={i} className="text-5xl font-bold text-accent leading-none">
                 {letter}
               </span>
             ))}
@@ -208,17 +233,34 @@ export default function Room() {
           {players.length === 0 && (
             <p className="text-white/30 text-sm text-center py-4">No players yet…</p>
           )}
+
+          {/* People assume a lobby means "everyone has to be here right now" and
+              try to coordinate a simultaneous join. They do not: the room and the
+              code persist, and identity is kept in localStorage, so anyone can
+              join hours early, close the tab and come back. Only the draft needs
+              everybody present, because it is turn-based with a 45s auto-skip. */}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <p className="text-xs text-white/40 leading-relaxed">
+              Send the code whenever — people can join now and come back later, and the
+              room keeps their spot. Everyone only needs to be here at the same time for
+              the <span className="text-white/60">draft</span>, since it goes in turns.
+            </p>
+          </div>
         </div>
 
         {/* Game Settings — mode selection (host interactive, guests read-only) */}
-        <ModeSelectPanel room={room} isHost={isHost} />
+        {/* ModeSelectPanel removed. Its two controls were Oscars-only: prestige_mode
+            scoped the confidence-picks game (cut entirely for an episode) and
+            ensemble_mode filtered the draft to films-only (meaningless now the pool
+            is characters and dragons). Both columns still exist on rooms and default
+            to 'full', which is the behaviour we want. */}
 
         {/* Host action / waiting state */}
         <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5">
           {isHost ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-white/60 text-sm">
-                <Crown size={14} className="text-oscar-gold flex-shrink-0" />
+                <Crown size={14} className="text-accent flex-shrink-0" />
                 <span>You're the host</span>
               </div>
 
@@ -232,19 +274,40 @@ export default function Room() {
                 <p className="text-red-400 text-sm">{startError}</p>
               )}
 
+              {canStart && watchSetupIncomplete && !overrodeWatchSetup && (
+                <div className="rounded-xl bg-amber-500/10 border border-amber-500/25 px-3 py-2.5">
+                  {locationsWithoutRemote.length > 0 && (
+                    <p className="text-xs text-amber-200 leading-relaxed mt-1">
+                      Nobody in {locationsWithoutRemote.join(' or ')} can pause the episode.
+                    </p>
+                  )}
+                  <p className="text-[11px] text-amber-200/60 mt-1.5">
+                    You can still start — but pausing and staying in sync will not work for them.
+                  </p>
+                  <button
+                    onClick={() => setOverrodeWatchSetup(true)}
+                    className="text-[11px] text-amber-200/80 underline mt-1.5"
+                  >
+                    Start anyway
+                  </button>
+                </div>
+              )}
+
               <motion.button
                 onClick={startDraft}
-                disabled={!canStart || isStarting}
+                disabled={!canStart || isStarting || (watchSetupIncomplete && !overrodeWatchSetup)}
                 whileTap={canStart ? { scale: 0.97 } : undefined}
                 className={[
                   'w-full py-4 rounded-2xl font-bold text-lg transition-all',
-                  canStart && !isStarting
-                    ? 'bg-oscar-gold text-deep-navy hover:bg-oscar-gold-light'
+                  canStart && !isStarting && (!watchSetupIncomplete || overrodeWatchSetup)
+                    ? 'bg-accent text-ground hover:bg-accent-light'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
                 ].join(' ')}
               >
                 {isStarting ? (
                   'Starting…'
+                ) : canStart && watchSetupIncomplete && !overrodeWatchSetup ? (
+                  'Waiting on screens and remotes'
                 ) : canStart ? (
                   <span className="flex items-center justify-center gap-2">
                     <Clapperboard size={18} /> Start the Party
@@ -257,13 +320,21 @@ export default function Room() {
           ) : (
             <div className="text-center py-2 space-y-2">
               <div className="flex justify-center">
-                <div className="w-6 h-6 border-2 border-oscar-gold/50 border-t-oscar-gold rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
               </div>
               <p className="text-white/60 text-sm">Waiting for the host to start…</p>
             </div>
           )}
         </div>
       </motion.div>
+
+      {/* Playback controllers — assigned in the lobby, used all night by the
+          sync bar. Two playbacks, so two people who actually touch pause. */}
+      {room && room.phase === 'lobby' && players.length > 0 && (
+        <div className="px-4 pb-4">
+          <WatchGroupPanel room={room} players={players} isHost={isHost} currentPlayerId={player.id} />
+        </div>
+      )}
 
       {/* ── pre_draft overlays ──────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -281,7 +352,7 @@ export default function Room() {
             readyPlayerIds={readyPlayerIds}
             isHost={isHost}
             onCountdownComplete={finalizeDraft}
-            countdownStartedAt={countdownStartedAtRef.current ?? Date.now()}
+            countdownStartedAt={countdownStartedAt}
           />
         )}
       </AnimatePresence>
@@ -319,12 +390,12 @@ function PlayerCard({
           <div className="flex items-center gap-1.5">
             <span className="font-semibold truncate">{player.name}</span>
             {player.is_host && (
-              <Crown size={13} className="text-oscar-gold flex-shrink-0" />
+              <Crown size={13} className="text-accent flex-shrink-0" />
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             {player.is_host && (
-              <span className="text-[10px] text-oscar-gold/80 bg-oscar-gold/10 px-2 py-0.5 rounded-full uppercase tracking-wider font-medium">
+              <span className="text-[10px] text-accent/80 bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wider font-medium">
                 Host
               </span>
             )}

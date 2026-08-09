@@ -1,0 +1,571 @@
+[
+ {
+  "id": "e6add224-ce07-467e-b9d7-6f48473ed4ce",
+  "code": "WTBS",
+  "host_id": "b5cc78dd-8721-4806-ac4a-84fe41ccd4cb",
+  "phase": "live",
+  "draft_order": [
+   "fa2877a0-4019-477d-ae50-043b487523ec",
+   "b5cc78dd-8721-4806-ac4a-84fe41ccd4cb"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-16T14:01:24.716881+00:00",
+  "ready_players": [
+   "b5cc78dd-8721-4806-ac4a-84fe41ccd4cb",
+   "fa2877a0-4019-477d-ae50-043b487523ec"
+  ],
+  "active_spotlight_category_id": 7,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "d27a9343-a16f-4299-8e5b-8a97f3835ef8",
+  "code": "MZHT",
+  "host_id": "1ea0b9dc-beee-46c6-9180-1a8840331568",
+  "phase": "finished",
+  "draft_order": [
+   "1df8aa25-d0b8-4989-9551-d88d292b26ea",
+   "a7531c80-ee15-4643-8fc8-6444ee9b85ee",
+   "1ea0b9dc-beee-46c6-9180-1a8840331568"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T23:18:15.429169+00:00",
+  "ready_players": [
+   "a7531c80-ee15-4643-8fc8-6444ee9b85ee",
+   "1df8aa25-d0b8-4989-9551-d88d292b26ea",
+   "1ea0b9dc-beee-46c6-9180-1a8840331568"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "cef25f6d-042b-40ac-8b57-43b6f07a0683",
+  "code": "DMMF",
+  "host_id": "9faa4ff3-cfd4-4ff0-b3bf-caab168267c6",
+  "phase": "confidence",
+  "draft_order": [
+   "9faa4ff3-cfd4-4ff0-b3bf-caab168267c6",
+   "9785ddf4-899e-469f-89b2-932487a980c1"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-14T23:42:21.275572+00:00",
+  "ready_players": [],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "f0f134c8-3787-4c85-9f9c-36dc1bc89c3a",
+  "code": "TGVD",
+  "host_id": "61ee5596-7a79-47e9-a612-8f4881a68bb5",
+  "phase": "live",
+  "draft_order": [
+   "61ee5596-7a79-47e9-a612-8f4881a68bb5",
+   "a9a3a24c-0e02-4a80-acc4-bbdd9e43266c"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-16T12:19:00.598008+00:00",
+  "ready_players": [
+   "61ee5596-7a79-47e9-a612-8f4881a68bb5",
+   "a9a3a24c-0e02-4a80-acc4-bbdd9e43266c"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "34112089-85e1-4dc4-b765-bcbf666ce0fb",
+  "code": "GBQZ",
+  "host_id": "fac9b152-e257-4e62-a779-e80d4864c408",
+  "phase": "hot_takes",
+  "draft_order": [
+   "fac9b152-e257-4e62-a779-e80d4864c408",
+   "a04b0c27-97c1-4462-9255-30a2ba8ce2c0",
+   "ab264ae0-f395-4ff0-abc1-c78fd2cc655e"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T13:11:26.389491+00:00",
+  "ready_players": [
+   "fac9b152-e257-4e62-a779-e80d4864c408",
+   "a04b0c27-97c1-4462-9255-30a2ba8ce2c0",
+   "ab264ae0-f395-4ff0-abc1-c78fd2cc655e"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "5a70e0e3-2e5a-443f-848e-fcaf137f9747",
+  "code": "PLMZ",
+  "host_id": "ec6a1a59-812a-4db0-a072-26bd65811a43",
+  "phase": "live",
+  "draft_order": [
+   "87ef37f3-d4b9-4ba7-b4d7-59603de1e868",
+   "ec6a1a59-812a-4db0-a072-26bd65811a43",
+   "b85dfe5f-db8a-4ba7-a023-411d8411cf01"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T02:55:51.574478+00:00",
+  "ready_players": [
+   "ec6a1a59-812a-4db0-a072-26bd65811a43",
+   "87ef37f3-d4b9-4ba7-b4d7-59603de1e868",
+   "b85dfe5f-db8a-4ba7-a023-411d8411cf01"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "80b08cb8-1d01-4364-8e2f-d837cbe261fa",
+  "code": "JJSC",
+  "host_id": "53fde51b-511b-4d19-9e1a-030dc83cbead",
+  "phase": "live",
+  "draft_order": [
+   "643f1907-e86b-4128-97c5-8347c440f2de",
+   "53fde51b-511b-4d19-9e1a-030dc83cbead",
+   "d100790c-1db4-4d9a-ae86-b47d2153890f"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T02:24:23.805697+00:00",
+  "ready_players": [
+   "643f1907-e86b-4128-97c5-8347c440f2de",
+   "d100790c-1db4-4d9a-ae86-b47d2153890f",
+   "53fde51b-511b-4d19-9e1a-030dc83cbead"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "71e1763a-5ce0-4c92-b0d8-fed65e734eca",
+  "code": "NZQD",
+  "host_id": "cdbf076e-6bdd-4462-96a8-277e783e4c6f",
+  "phase": "confidence",
+  "draft_order": [
+   "fe73a442-7226-405a-a9d7-dc61e098aa27",
+   "cdbf076e-6bdd-4462-96a8-277e783e4c6f"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T00:12:27.382013+00:00",
+  "ready_players": [],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "6c61a6f5-decc-414a-aa31-181ae266f6d8",
+  "code": "QHBP",
+  "host_id": "ddda80bf-3407-441d-afc0-513965951cb0",
+  "phase": "live",
+  "draft_order": [
+   "ddda80bf-3407-441d-afc0-513965951cb0",
+   "15deb9fd-67bb-4a28-b54c-12a88b416885",
+   "c99d667b-21cb-4bd1-9286-b5dbc274efe6"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T03:15:09.029959+00:00",
+  "ready_players": [
+   "ddda80bf-3407-441d-afc0-513965951cb0",
+   "15deb9fd-67bb-4a28-b54c-12a88b416885",
+   "c99d667b-21cb-4bd1-9286-b5dbc274efe6"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "4707c913-4042-46d8-b559-3bf3991ec245",
+  "code": "NPPQ",
+  "host_id": "aa76992c-1f0d-4da3-8e53-91e78234bd05",
+  "phase": "live",
+  "draft_order": [
+   "7cdfa0bf-7d8c-4ace-bf49-ea3695c6d0b9",
+   "aa76992c-1f0d-4da3-8e53-91e78234bd05",
+   "3b2da37e-af4f-4cbd-bb8c-13427c3e45ba"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T21:41:40.841548+00:00",
+  "ready_players": [
+   "aa76992c-1f0d-4da3-8e53-91e78234bd05",
+   "7cdfa0bf-7d8c-4ace-bf49-ea3695c6d0b9",
+   "3b2da37e-af4f-4cbd-bb8c-13427c3e45ba"
+  ],
+  "active_spotlight_category_id": 22,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "1e7c869d-29d4-4b50-a2a4-774a948a7930",
+  "code": "KTDG",
+  "host_id": "d2f7e280-608e-4fdc-a1ce-b95aad0feaa8",
+  "phase": "live",
+  "draft_order": [
+   "d2f7e280-608e-4fdc-a1ce-b95aad0feaa8",
+   "46a01c6f-afd1-429a-8ee1-2e4a840c665f",
+   "ad6ba4af-2bd2-4cfb-ae91-91204a0c9477"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T15:21:10.179427+00:00",
+  "ready_players": [
+   "d2f7e280-608e-4fdc-a1ce-b95aad0feaa8",
+   "ad6ba4af-2bd2-4cfb-ae91-91204a0c9477",
+   "46a01c6f-afd1-429a-8ee1-2e4a840c665f"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "7158dce6-85f3-4c5e-9372-d318e8bd7af3",
+  "code": "KHRL",
+  "host_id": "78b90903-9730-4ce7-99b4-8d999eb4a9df",
+  "phase": "live",
+  "draft_order": [
+   "b365219b-806d-4cae-a60b-198472e05458",
+   "78b90903-9730-4ce7-99b4-8d999eb4a9df"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T00:23:12.796864+00:00",
+  "ready_players": [],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "551110df-8807-4224-bcd1-b2484e831402",
+  "code": "FYBZ",
+  "host_id": "af961703-7dbf-4352-8a05-3ac00414eb86",
+  "phase": "live",
+  "draft_order": [
+   "4f3db28a-17bc-4d55-964d-bd2f73c7d743",
+   "d10b1f5c-0fb5-481b-802f-6a4efa961b06",
+   "af961703-7dbf-4352-8a05-3ac00414eb86"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T21:12:28.823511+00:00",
+  "ready_players": [
+   "af961703-7dbf-4352-8a05-3ac00414eb86",
+   "d10b1f5c-0fb5-481b-802f-6a4efa961b06",
+   "4f3db28a-17bc-4d55-964d-bd2f73c7d743"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "01986673-fd94-4cbe-bb70-88bd5c0dd97c",
+  "code": "JQGN",
+  "host_id": "b9bcf670-512a-4214-9106-2fb1432b7476",
+  "phase": "live",
+  "draft_order": [
+   "00c221e6-1d33-46a1-ae3d-90c3adbc2969",
+   "b9bcf670-512a-4214-9106-2fb1432b7476",
+   "d21e36e9-31df-4c9d-9ab1-161c3c2a90c3"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T14:56:39.436532+00:00",
+  "ready_players": [
+   "b9bcf670-512a-4214-9106-2fb1432b7476",
+   "00c221e6-1d33-46a1-ae3d-90c3adbc2969",
+   "d21e36e9-31df-4c9d-9ab1-161c3c2a90c3"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "ac31b481-9d40-45d3-921b-485c1dbd7593",
+  "code": "PKJG",
+  "host_id": "615da489-50cb-4e46-b0e0-64bd947a52f1",
+  "phase": "confidence",
+  "draft_order": [
+   "404c17e3-325c-4284-9af1-79d9b9a33eb6",
+   "615da489-50cb-4e46-b0e0-64bd947a52f1"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-18T15:48:29.660963+00:00",
+  "ready_players": [
+   "615da489-50cb-4e46-b0e0-64bd947a52f1",
+   "404c17e3-325c-4284-9af1-79d9b9a33eb6"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "main_stage"
+ },
+ {
+  "id": "30b87388-38a0-4e8c-adc7-fbee044ae7bb",
+  "code": "JLJH",
+  "host_id": "eec88df5-7a0e-4f8a-af22-c6fec14ce6eb",
+  "phase": "live",
+  "draft_order": [
+   "eec88df5-7a0e-4f8a-af22-c6fec14ce6eb",
+   "b80a6ca6-bc47-4ae8-829e-9f31962ae6e9"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T01:20:28.434033+00:00",
+  "ready_players": [],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "96d20cad-2548-4889-b474-66455c9c8981",
+  "code": "ZJTG",
+  "host_id": "986f3bab-63a5-4c48-94c8-8b0f5351105a",
+  "phase": "finished",
+  "draft_order": [
+   "9a3a3852-b12b-4ab1-83bc-dc4d95bfb962",
+   "12243f95-7969-4471-8dee-8e516559d8d8",
+   "986f3bab-63a5-4c48-94c8-8b0f5351105a"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-15T22:04:41.468147+00:00",
+  "ready_players": [
+   "986f3bab-63a5-4c48-94c8-8b0f5351105a",
+   "12243f95-7969-4471-8dee-8e516559d8d8",
+   "9a3a3852-b12b-4ab1-83bc-dc4d95bfb962"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "9217b214-9a2c-4b6a-8c84-65770ebba494",
+  "code": "MVVB",
+  "host_id": "788d3216-1c3c-492d-91fe-f97cc12ec8e0",
+  "phase": "pre_draft",
+  "draft_order": [
+   "788d3216-1c3c-492d-91fe-f97cc12ec8e0",
+   "8527508d-b756-49ba-8aa9-e0c81ac402bf"
+  ],
+  "current_pick": 0,
+  "created_at": "2026-03-16T13:57:34.430686+00:00",
+  "ready_players": [
+   "8527508d-b756-49ba-8aa9-e0c81ac402bf",
+   "788d3216-1c3c-492d-91fe-f97cc12ec8e0"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "cb6452e6-4c89-4874-a565-928affccc5eb",
+  "code": "LNHG",
+  "host_id": "8b691f55-dca5-46f9-9005-a92c9f5115c2",
+  "phase": "finished",
+  "draft_order": [
+   "8b691f55-dca5-46f9-9005-a92c9f5115c2",
+   "c528b386-197a-43ea-8f86-6355a4568011"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-16T15:22:22.832257+00:00",
+  "ready_players": [
+   "8b691f55-dca5-46f9-9005-a92c9f5115c2",
+   "c528b386-197a-43ea-8f86-6355a4568011"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "12e8438b-446e-4690-844e-593351a76d62",
+  "code": "LDRT",
+  "host_id": "226c82df-ea71-41b0-a708-b1fbd6755000",
+  "phase": "finished",
+  "draft_order": [
+   "420ee390-ec46-41c8-93bd-19a27029795b",
+   "226c82df-ea71-41b0-a708-b1fbd6755000",
+   "8de07eae-00f8-4fbd-8619-2295bef2ae3a"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-16T15:38:40.11465+00:00",
+  "ready_players": [
+   "226c82df-ea71-41b0-a708-b1fbd6755000",
+   "8de07eae-00f8-4fbd-8619-2295bef2ae3a",
+   "420ee390-ec46-41c8-93bd-19a27029795b"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "ac896fbb-0c60-43a0-b90a-147defb481a7",
+  "code": "YQKH",
+  "host_id": "7c6d426e-19ca-495c-895c-54dae1c5b920",
+  "phase": "draft",
+  "draft_order": [
+   "f4d5db11-c889-4959-974c-a2213be1a9e3",
+   "7c6d426e-19ca-495c-895c-54dae1c5b920"
+  ],
+  "current_pick": 1,
+  "created_at": "2026-03-17T13:59:22.571003+00:00",
+  "ready_players": [
+   "7c6d426e-19ca-495c-895c-54dae1c5b920",
+   "f4d5db11-c889-4959-974c-a2213be1a9e3"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "e67833fc-175e-4001-85e5-944ec15f418a",
+  "code": "XRMT",
+  "host_id": "bf8e69ce-0ddc-4cd9-92f5-4a6d4488b352",
+  "phase": "live",
+  "draft_order": [
+   "bf8e69ce-0ddc-4cd9-92f5-4a6d4488b352",
+   "65223f33-c6a6-4d28-907d-894eb4293585"
+  ],
+  "current_pick": 14,
+  "created_at": "2026-03-18T22:51:21.345873+00:00",
+  "ready_players": [
+   "bf8e69ce-0ddc-4cd9-92f5-4a6d4488b352",
+   "65223f33-c6a6-4d28-907d-894eb4293585"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "big_night"
+ },
+ {
+  "id": "94fb39ad-8121-46f8-ba69-156576859f60",
+  "code": "ZYXF",
+  "host_id": "0774f264-d0a9-4855-8d33-f494997ad9aa",
+  "phase": "live",
+  "draft_order": [
+   "0774f264-d0a9-4855-8d33-f494997ad9aa",
+   "d696df2f-99df-4f2e-902e-f80c9d8c540b"
+  ],
+  "current_pick": 14,
+  "created_at": "2026-03-18T16:36:24.736361+00:00",
+  "ready_players": [
+   "0774f264-d0a9-4855-8d33-f494997ad9aa",
+   "d696df2f-99df-4f2e-902e-f80c9d8c540b"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "big_night"
+ },
+ {
+  "id": "633f5da1-aac9-4547-957d-4782bfce9d57",
+  "code": "ZSPC",
+  "host_id": "5c4ea067-cd89-4da0-93fd-969284c8ffde",
+  "phase": "confidence",
+  "draft_order": [
+   "5c4ea067-cd89-4da0-93fd-969284c8ffde",
+   "d49346a2-63ce-4826-aa10-249c599ff064"
+  ],
+  "current_pick": 44,
+  "created_at": "2026-03-18T23:07:29.974399+00:00",
+  "ready_players": [
+   "d49346a2-63ce-4826-aa10-249c599ff064",
+   "5c4ea067-cd89-4da0-93fd-969284c8ffde"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "1173a00f-9b86-45c1-8472-c14725aeea3e",
+  "code": "ZRFN",
+  "host_id": "3182951f-d5da-4b32-82ca-903cd5651b98",
+  "phase": "live",
+  "draft_order": [
+   "3182951f-d5da-4b32-82ca-903cd5651b98",
+   "ff946907-797c-4400-a446-bec2c010380b"
+  ],
+  "current_pick": 14,
+  "created_at": "2026-03-18T23:20:02.391633+00:00",
+  "ready_players": [
+   "3182951f-d5da-4b32-82ca-903cd5651b98",
+   "ff946907-797c-4400-a446-bec2c010380b"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "big_night"
+ },
+ {
+  "id": "05b57725-45aa-4c5d-9945-0e472d8ad2a1",
+  "code": "DKLV",
+  "host_id": "7ddf8ae1-e2cc-4d71-8746-94eb08282b72",
+  "phase": "live",
+  "draft_order": [
+   "6ae45dc6-c1eb-4318-98bd-77109168dc87",
+   "7ddf8ae1-e2cc-4d71-8746-94eb08282b72"
+  ],
+  "current_pick": 14,
+  "created_at": "2026-03-18T23:55:48.876993+00:00",
+  "ready_players": [
+   "7ddf8ae1-e2cc-4d71-8746-94eb08282b72",
+   "6ae45dc6-c1eb-4318-98bd-77109168dc87"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": true,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "big_night"
+ },
+ {
+  "id": "04dc6102-968f-45cf-8309-e7a68592c32f",
+  "code": "XFXG",
+  "host_id": "e5526eea-b849-4f99-83fc-cb0d15008bcf",
+  "phase": "pre_draft",
+  "draft_order": [
+   "e5526eea-b849-4f99-83fc-cb0d15008bcf",
+   "64d12eab-9928-49d3-a91b-07976aabf6dc"
+  ],
+  "current_pick": 0,
+  "created_at": "2026-03-19T01:06:38.533878+00:00",
+  "ready_players": [
+   "e5526eea-b849-4f99-83fc-cb0d15008bcf"
+  ],
+  "active_spotlight_category_id": null,
+  "show_started": false,
+  "ensemble_mode": "full",
+  "prestige_mode": "full"
+ },
+ {
+  "id": "c174aa08-7ec7-48cd-9749-d2ecfd5f2c03",
+  "code": "FLJS",
+  "host_id": "9e37592c-7614-4b2b-a044-57b1eab0e9a2",
+  "phase": "live",
+  "draft_order": [
+   "32e1a01b-e2b3-4753-b83e-48b66fb351bc",
+   "9e37592c-7614-4b2b-a044-57b1eab0e9a2"
+  ],
+  "current_pick": 14,
+  "created_at": "2026-03-19T01:07:43.362167+00:00",
+  "ready_players": [
+   "9e37592c-7614-4b2b-a044-57b1eab0e9a2",
+   "32e1a01b-e2b3-4753-b83e-48b66fb351bc"
+  ],
+  "active_spotlight_category_id": 23,
+  "show_started": true,
+  "ensemble_mode": "films_only",
+  "prestige_mode": "big_night"
+ }
+]

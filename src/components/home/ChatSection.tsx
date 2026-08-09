@@ -15,7 +15,8 @@ import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
 import CompanionAvatar from './CompanionAvatar'
 import CompanionProfileModal from './CompanionProfileModal'
-import { COMPANION_IDS, getCompanionById } from '../../data/ai-companions'
+import PlayerProfileModal from './PlayerProfileModal'
+import { AI_COMPANIONS, COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, getCompanionById } from '../../data/ai-companions'
 import { getAvatarById } from '../../lib/avatar-utils'
 import { usePendingCompanions, addPendingCompanion, removePendingCompanion } from '../../hooks/companionTypingStore'
 import { supabase } from '../../lib/supabase'
@@ -61,24 +62,24 @@ function renderFormattedText(text: string): React.ReactNode[] {
 
 // ─── Companions typing indicator ─────────────────────────────────────────────
 // Shows the next companion in intro sequence who hasn't spoken yet.
-// Starts with just The Academy, then advances as each message arrives.
+// Starts with the narrator, then advances as each message arrives.
 
-const INTRO_COMPANIONS: { id: string; name: string; color: string }[] = [
-  { id: 'the-academy', name: 'The Academy', color: '#D4AF37' },
-  { id: 'meryl',       name: 'Gloria',      color: '#C9A84C' },
-  { id: 'nikki',       name: 'Razor',       color: '#EC4899' },
-  { id: 'will',        name: 'Buddy',       color: '#EAB308' },
-]
+// Derived from the cast so adding a companion needs no change here.
+// Narrator first — that is the order they introduce themselves in.
+// LATE_ARRIVAL is excluded on purpose: he is the surprise who turns up after
+// the episode starts, and a "Joffrey is typing…" indicator sitting there for
+// the whole pre-show would announce him half an hour early.
+const INTRO_COMPANIONS: { id: string; name: string; color: string }[] =
+  PRE_SHOW_COMPANIONS.map((c) => ({ id: c.id, name: c.name, color: c.colorPrimary }))
 
 const INTRO_COMPANION_IDS = INTRO_COMPANIONS.map((c) => c.id)
 
 function TypingDots({ color }: { color: string }) {
   return (
     <div
-      className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm flex items-center gap-1.5"
+      className="ai-parchment material-vellum flex items-center gap-1.5"
       style={{
-        background: `color-mix(in srgb, ${color} 8%, rgba(255,255,255,0.04))`,
-        border: `1px solid color-mix(in srgb, ${color} 18%, rgba(255,255,255,0.08))`,
+        // A companion thinking is still a companion — same parchment as speech
         borderLeft: `3px solid ${color}`,
       }}
     >
@@ -131,28 +132,16 @@ const COMPANION_BUBBLE_STYLES: Record<string, {
   background: string
   border: string
   borderLeft: string
-}> = {
-  'the-academy': {
-    background: 'rgba(212, 175, 55, 0.07)',
-    border: '1px solid rgba(212, 175, 55, 0.18)',
-    borderLeft: '3px solid #D4AF37',
-  },
-  meryl: {
-    background: 'rgba(201,168,76,0.09)',
-    border: '1px solid rgba(201,168,76,0.18)',
-    borderLeft: '3px solid #CC9966',
-  },
-  nikki: {
-    background: 'rgba(236,72,153,0.08)',
-    border: '1px solid rgba(236,72,153,0.18)',
-    borderLeft: '3px solid #EC4899',
-  },
-  will: {
-    background: 'rgba(234,179,8,0.08)',
-    border: '1px solid rgba(234,179,8,0.18)',
-    borderLeft: '3px solid #EAB308',
-  },
-}
+}> = Object.fromEntries(
+  AI_COMPANIONS.map((c) => [
+    c.id,
+    {
+      background: `color-mix(in srgb, ${c.colorPrimary} 8%, transparent)`,
+      border: `1px solid color-mix(in srgb, ${c.colorPrimary} 18%, transparent)`,
+      borderLeft: `3px solid ${c.colorPrimary}`,
+    },
+  ]),
+)
 
 interface Props {
   /** When true, the message list fills all available vertical space instead of capping at 40vh. */
@@ -166,6 +155,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const { messages, sendMessage, isLoading } = useChat(room?.id)
   const [input, setInput] = useState('')
   const [profileCompanionId, setProfileCompanionId] = useState<string | null>(null)
+  const [profilePlayerId, setProfilePlayerId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const prevMessageCountRef = useRef(0)
@@ -246,7 +236,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   }
 
   return (
-    <div className={['bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden flex flex-col', fill ? 'flex-1 min-h-0' : ''].join(' ')}>
+    <div className={['relief-glass overflow-hidden flex flex-col', fill ? 'flex-1 min-h-0' : ''].join(' ')}>
       {/* Message list */}
       <div
         className={['overflow-y-auto px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
@@ -283,11 +273,11 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   transition={{ duration: 0.25 }}
                   className="flex items-center gap-2 py-1"
                 >
-                  <div className="flex-1 h-px bg-oscar-gold/15" />
-                  <span className="text-[10px] uppercase tracking-widest text-oscar-gold/55 font-semibold whitespace-nowrap">
+                  <div className="flex-1 h-px bg-accent/15" />
+                  <span className="text-[10px] uppercase tracking-widest text-accent/55 font-semibold whitespace-nowrap">
                     {msg.text}
                   </span>
-                  <div className="flex-1 h-px bg-oscar-gold/15" />
+                  <div className="flex-1 h-px bg-accent/15" />
                 </motion.div>
               )
             }
@@ -305,11 +295,11 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => onFilmLinkTap?.(msg.text)}
-                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-oscar-gold/8 border border-oscar-gold/25 min-h-[44px]"
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-accent/8 border border-accent/25 min-h-[44px]"
                   >
-                    <BookOpen size={15} className="text-oscar-gold flex-shrink-0" />
-                    <span className="text-sm text-oscar-gold/90 font-medium">
-                      See <span className="font-semibold text-oscar-gold">{msg.text}</span> in Film Encyclopedia
+                    <BookOpen size={15} className="text-accent flex-shrink-0" />
+                    <span className="text-sm text-accent/90 font-medium">
+                      See <span className="font-semibold text-accent">{msg.text}</span> in Film Encyclopedia
                     </span>
                   </motion.button>
                 </motion.div>
@@ -349,7 +339,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                         <CompanionAvatar companionId={msg.player_id} size="xl" />
                       </motion.button>
                     ) : (
-                      <Avatar avatarId={avatarId} size="sm" />
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => setProfilePlayerId(msg.player_id)}
+                      >
+                        <Avatar avatarId={avatarId} size="md" />
+                      </motion.button>
                     )}
                   </div>
                 )}
@@ -372,19 +367,18 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                     </span>
                   )}
 
-                  {/* Bubble */}
+                  {/* Bubble — three materials, three kinds of speaker (v7):
+                      companions on parchment (history), self on faction-edged
+                      glass, other players on glass with their avatar color. */}
                   {isCompanion && companion ? (
                     (() => {
-                      const bubbleStyle = COMPANION_BUBBLE_STYLES[companion.id] ?? COMPANION_BUBBLE_STYLES['the-academy']
-                      const isAcademy = companion.id === 'the-academy'
+                      const bubbleStyle = COMPANION_BUBBLE_STYLES[companion.id] ?? COMPANION_BUBBLE_STYLES[NARRATOR.id]
                       return (
                         <div
-                          className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed rounded-bl-sm"
+                          className="ai-parchment material-vellum text-sm leading-relaxed"
                           style={{
-                            background: bubbleStyle.background,
-                            border: bubbleStyle.border,
+                            // Companion identity survives as the scrap's inked edge
                             borderLeft: bubbleStyle.borderLeft,
-                            color: isAcademy ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
                           }}
                         >
                           {renderFormattedText(msg.text)}
@@ -394,24 +388,15 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   ) : (
                     <div
                       className={[
-                        'px-3 py-2 rounded-2xl text-sm leading-snug',
-                        isMine
-                          ? 'bg-oscar-gold/20 border border-oscar-gold/30 text-white rounded-br-sm'
-                          : 'text-white/90 rounded-bl-sm',
+                        'px-3 py-2 relief-glass text-sm leading-snug',
+                        isMine ? 'text-white' : 'text-white/90',
                       ].join(' ')}
                       style={
                         isMine
-                          ? undefined
+                          ? { borderLeft: '2px solid var(--t-personal-device)' }
                           : avatarColor
-                            ? {
-                                background: `color-mix(in srgb, ${avatarColor} 10%, rgba(255,255,255,0.05))`,
-                                border: `1px solid color-mix(in srgb, ${avatarColor} 28%, rgba(255,255,255,0.08))`,
-                                borderLeft: `3px solid ${avatarColor}`,
-                              }
-                            : {
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                              }
+                            ? { borderLeft: `3px solid ${avatarColor}` }
+                            : undefined
                       }
                     >
                       {msg.text}
@@ -447,15 +432,15 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
           placeholder="Say something..."
           maxLength={280}
           style={{ fontSize: 16 }}
-          className="flex-1 bg-white/8 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/35 outline-none focus:border-oscar-gold/50 transition-colors"
+          className="flex-1 bg-white/8 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/35 outline-none focus:border-accent/50 transition-colors"
         />
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={handleSend}
           disabled={!input.trim()}
-          className="w-10 h-10 rounded-xl bg-oscar-gold/20 border border-oscar-gold/40 flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-opacity"
+          className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-opacity"
         >
-          <Send size={16} className="text-oscar-gold" />
+          <Send size={16} className="text-accent" />
         </motion.button>
       </div>
 
@@ -468,6 +453,23 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
             onClose={() => setProfileCompanionId(null)}
           />
         )}
+      </AnimatePresence>
+
+      {/* Player profile modal */}
+      <AnimatePresence>
+        {profilePlayerId && (() => {
+          const profilePlayer = players.find((p) => p.id === profilePlayerId)
+          if (!profilePlayer) return null
+          return (
+            <PlayerProfileModal
+              key={profilePlayerId}
+              playerName={profilePlayer.name}
+              avatarId={profilePlayer.avatar_id ?? ''}
+              isSelf={profilePlayer.id === player?.id}
+              onClose={() => setProfilePlayerId(null)}
+            />
+          )
+        })()}
       </AnimatePresence>
     </div>
   )

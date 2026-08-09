@@ -221,6 +221,20 @@ export function useDraft(roomId: string | undefined): DraftState {
 
   const N = Math.max(1, playerOrder.length)
 
+  // Round caps, one per pool. Without them the snake order is sized to exhaust
+  // the pool, so the last picks are forced choices between entities nobody
+  // wants — the "lost in the sauce" problem from the Oscars build, where
+  // someone burned a pick on a hair designer and watched it do nothing all
+  // night. Capping below the pool size means the weakest entities go undrafted
+  // instead, and every pick made is one somebody actually wanted.
+  //
+  // The split is deliberate: exactly ONE dragon each, then four characters.
+  // Eleven dragons against six players makes the good ones genuinely contested
+  // — somebody is not getting Vhagar — and it opens the draft with the most
+  // enjoyable decision rather than burying dragons in the late rounds.
+  const MAX_ROUNDS_DRAGONS = 1
+  const MAX_ROUNDS_CHARACTERS = 4
+
   // Split entities into two typed pools
   const filmEntities = entities.filter((e) => e.type === 'film')
   const personEntities = entities.filter((e) => e.type === 'person')
@@ -230,11 +244,11 @@ export function useDraft(roomId: string | undefined): DraftState {
   // currentPick totalFilmPicks…end  → people sub-draft
   const filmsSnakeOrder =
     playerOrder.length > 0
-      ? generateSnakeOrder(playerOrder, Math.ceil(Math.max(filmEntities.length, 1) / N))
+      ? generateSnakeOrder(playerOrder, Math.min(MAX_ROUNDS_DRAGONS, Math.ceil(Math.max(filmEntities.length, 1) / N)))
       : []
   const peopleSnakeOrder =
     playerOrder.length > 0
-      ? generateSnakeOrder(playerOrder, Math.ceil(Math.max(personEntities.length, 1) / N))
+      ? generateSnakeOrder(playerOrder, Math.min(MAX_ROUNDS_CHARACTERS, Math.ceil(Math.max(personEntities.length, 1) / N)))
       : []
 
   const totalFilmPicks = Math.min(filmEntities.length, filmsSnakeOrder.length)
@@ -333,12 +347,18 @@ export function useDraft(roomId: string | undefined): DraftState {
     return () => clearInterval(interval)
   }, [isDraftComplete, player?.is_host])
 
-  // ─── Draft complete → trigger confidence phase ───────────────────────────────
+  // ─── Draft complete → trigger live phase ────────────────────────────────────
   //
   // Only the host writes the phase change. This fires as a side effect, not
   // from a button press. The Realtime subscription (in useRoomSubscription,
   // called from Draft.tsx) broadcasts the phase change to all clients, and
   // Draft.tsx's useEffect on room.phase navigates everyone.
+  //
+  // Goes straight to 'live', skipping 'confidence'. The confidence game is
+  // structurally Oscars-only — it requires N categories each with a fixed
+  // nominee slate and confidence values 1..N used exactly once, which a single
+  // episode has no equivalent of. The phase remains in the state machine for
+  // the Oscars property.
 
   useEffect(() => {
     if (!isDraftComplete) return
@@ -347,7 +367,7 @@ export function useDraft(roomId: string | undefined): DraftState {
 
     supabase
       .from('rooms')
-      .update({ phase: 'confidence' })
+      .update({ phase: 'live' })
       .eq('id', room.id)
       .then(({ error }) => {
         if (error) console.error('Draft phase transition failed:', error)

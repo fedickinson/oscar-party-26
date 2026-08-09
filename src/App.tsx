@@ -28,15 +28,18 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { HallmarkDefs } from './components/ui/Hallmarks'
 import { WifiOff } from 'lucide-react'
 import { GameProvider } from './context/GameContext'
 import Home from './pages/Home'
+import HowItWorks from './pages/HowItWorks'
 import Room from './pages/Room'
 import Draft from './pages/Draft'
 import Confidence from './pages/Confidence'
 import Live from './pages/Live'
 import Admin from './pages/Admin'
 import Results from './pages/Results'
+import PublicResults from './pages/PublicResults'
 
 // ─── Page wrapper ─────────────────────────────────────────────────────────────
 
@@ -77,7 +80,7 @@ function ReconnectBanner() {
           animate={{ y: 0 }}
           exit={{ y: -48 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 bg-amber-500/95 text-deep-navy text-sm font-semibold py-3 px-4"
+          className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 bg-amber-500/95 text-ground text-sm font-semibold py-3 px-4"
           style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
         >
           <WifiOff size={14} />
@@ -103,12 +106,19 @@ function AppInner() {
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrap><Home /></PageWrap>} />
+            {/* Public pregame explainer — sent as a link before anyone has joined,
+                so it must render with no room and no player. */}
+            <Route path="/how-it-works" element={<PageWrap><HowItWorks /></PageWrap>} />
             <Route path="/room/:code" element={<PageWrap><Room /></PageWrap>} />
             <Route path="/room/:code/draft" element={<PageWrap><Draft /></PageWrap>} />
             <Route path="/room/:code/confidence" element={<PageWrap><Confidence /></PageWrap>} />
             <Route path="/room/:code/live" element={<PageWrap><Live /></PageWrap>} />
             <Route path="/room/:code/admin" element={<PageWrap><Admin /></PageWrap>} />
             <Route path="/room/:code/results" element={<PageWrap><Results /></PageWrap>} />
+            {/* Public, session-free results. Deliberately NOT under /room/:code —
+                those routes all assume a player session and redirect without one,
+                which is exactly what made shared links dead on arrival. */}
+            <Route path="/recap/:code" element={<PageWrap><PublicResults /></PageWrap>} />
           </Routes>
         </AnimatePresence>
       </div>
@@ -122,6 +132,8 @@ function App() {
   return (
     <BrowserRouter>
       <GameProvider>
+        {/* Hallmark <symbol> defs — mounted once so <use> refs resolve anywhere */}
+        <HallmarkDefs />
         <AppInner />
       </GameProvider>
     </BrowserRouter>

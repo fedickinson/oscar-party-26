@@ -11,11 +11,11 @@ import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 
 const TIER_LABEL: Record<number, string> = {
-  1: 'Major Award',
-  2: 'Prestige Craft',
-  3: 'Technical',
-  4: 'Specialty',
-  5: 'Short Film',
+  1: 'Huge Moment',
+  2: 'Solid Moment',
+  3: 'Flavour',
+  4: 'Flavour',
+  5: 'Flavour',
 }
 
 interface Props {
@@ -38,15 +38,15 @@ export default function SpotlightNotification({ categoryName, tier, onComplete }
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className="fixed top-0 left-0 right-0 z-40 px-4 pt-2"
     >
-      <div className="max-w-md mx-auto bg-deep-navy/95 backdrop-blur-xl border border-oscar-gold/30 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg shadow-oscar-gold/10">
-        <div className="w-8 h-8 rounded-full bg-oscar-gold/15 flex items-center justify-center flex-shrink-0">
-          <Sparkles size={15} className="text-oscar-gold" />
+      <div className="max-w-md mx-auto bg-ground/95 backdrop-blur-xl border border-accent/30 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg shadow-accent/10">
+        <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0">
+          <Sparkles size={15} className="text-accent" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] uppercase tracking-wider text-white/50 mb-0.5">Now Presenting</p>
-          <p className="text-sm font-bold text-oscar-gold truncate">{categoryName}</p>
+          <p className="text-sm font-bold text-accent truncate">{categoryName}</p>
         </div>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-oscar-gold/15 text-oscar-gold/80 flex-shrink-0">
+        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent/80 flex-shrink-0">
           {TIER_LABEL[tier] ?? `Tier ${tier}`}
         </span>
       </div>

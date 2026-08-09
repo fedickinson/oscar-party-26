@@ -148,7 +148,7 @@ export default function MyPicksTab({
               </p>
               <p className={[
                 'text-3xl font-black tabular-nums leading-none',
-                isFirst ? 'text-oscar-gold' : 'text-white',
+                isFirst ? 'text-accent' : 'text-white',
               ].join(' ')}>
                 {myScore.totalScore}
                 <span className="text-base font-semibold ml-1 opacity-50">pts</span>
@@ -161,7 +161,7 @@ export default function MyPicksTab({
               </p>
               <div className={[
                 'text-xl font-black leading-none',
-                isFirst ? 'text-oscar-gold' : isLast ? 'text-white/35' : 'text-white',
+                isFirst ? 'text-accent' : isLast ? 'text-white/35' : 'text-white',
               ].join(' ')}>
                 {ordinal(rank)}
                 <span className="text-xs font-medium text-white/25 ml-1">
@@ -195,10 +195,10 @@ export default function MyPicksTab({
       {/* Bingo shortcut */}
       <button
         onClick={onSwitchToBingo}
-        className="w-full flex items-center justify-between backdrop-blur-lg bg-oscar-gold/8 border border-oscar-gold/20 rounded-xl px-4 py-3"
+        className="w-full flex items-center justify-between backdrop-blur-lg bg-accent/8 border border-accent/20 rounded-xl px-4 py-3"
       >
-        <span className="text-sm font-medium text-oscar-gold">View Bingo Card</span>
-        <ChevronRight size={16} className="text-oscar-gold/60" />
+        <span className="text-sm font-medium text-accent">View Bingo Card</span>
+        <ChevronRight size={16} className="text-accent/60" />
       </button>
 
       {/* ── Confidence picks ──────────────────────────────────────────────── */}
@@ -326,7 +326,7 @@ export default function MyPicksTab({
                       className={[
                         'text-sm font-bold tabular-nums',
                         pick.is_correct === true
-                          ? 'text-oscar-gold'
+                          ? 'text-accent'
                           : pick.is_correct === false
                           ? 'text-white/25'
                           : 'text-white/40',
@@ -392,7 +392,10 @@ export default function MyPicksTab({
             return (
               <div className="flex gap-1.5 mb-3 mt-1">
                 {(['all', 'won', 'in_play', 'eliminated'] as const).map((f) => {
-                  const labels = { all: 'All', won: 'Won', in_play: 'In Play', eliminated: 'Out' }
+                  // 'Scored' / 'Yet to score': a character cannot be eliminated in an episode
+                  // the way a nominee loses a category — they simply have not done
+                  // anything scoreable yet.
+                  const labels = { all: 'All', won: 'Scored', in_play: 'Yet to score', eliminated: 'Out' }
                   const active = draftFilter === f
                   return (
                     <button
@@ -401,7 +404,7 @@ export default function MyPicksTab({
                       className={[
                         'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors',
                         active
-                          ? f === 'won' ? 'bg-oscar-gold/15 border-oscar-gold/30 text-oscar-gold'
+                          ? f === 'won' ? 'bg-accent/15 border-accent/30 text-accent'
                             : f === 'in_play' ? 'bg-white/10 border-white/20 text-white/60'
                             : f === 'eliminated' ? 'bg-red-500/10 border-red-500/20 text-red-400/70'
                             : 'bg-white/12 border-white/20 text-white'
@@ -438,7 +441,7 @@ export default function MyPicksTab({
                   className={[
                     'flex items-center gap-3 backdrop-blur-lg rounded-xl px-3 py-2.5 border',
                     status === 'won'
-                      ? 'bg-oscar-gold/8 border-oscar-gold/25'
+                      ? 'bg-accent/8 border-accent/25'
                       : status === 'eliminated'
                       ? 'bg-white/3 border-white/6'
                       : 'bg-white/5 border-white/10',
@@ -473,7 +476,7 @@ export default function MyPicksTab({
 
                   <div className="flex-shrink-0">
                     {status === 'won' && (
-                      <span className="text-[10px] font-bold text-oscar-gold bg-oscar-gold/15 border border-oscar-gold/30 rounded-full px-2 py-0.5 uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-accent bg-accent/15 border border-accent/30 rounded-full px-2 py-0.5 uppercase tracking-wider">
                         Won
                       </span>
                     )}

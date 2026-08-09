@@ -24,7 +24,7 @@ export default function WelcomeCard({ onDismiss }: WelcomeCardProps) {
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="w-full max-w-md bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 flex flex-col gap-5"
+        className="w-full max-w-md relief-glass p-6 flex flex-col gap-5"
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
@@ -32,11 +32,11 @@ export default function WelcomeCard({ onDismiss }: WelcomeCardProps) {
       >
         {/* Icon */}
         <div className="flex justify-center pt-1">
-          <Home size={40} className="text-oscar-gold" />
+          <Home size={40} className="text-accent" />
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-white text-center">
+        <h1 className="text-2xl font-bold text-white text-center font-display tracking-wide">
           You're all set for tonight!
         </h1>
 
@@ -67,7 +67,7 @@ export default function WelcomeCard({ onDismiss }: WelcomeCardProps) {
         <motion.button
           onClick={onDismiss}
           whileTap={{ scale: 0.97 }}
-          className="w-full py-4 rounded-2xl font-bold text-lg bg-oscar-gold text-deep-navy mt-1"
+          className="w-full py-4 rounded-2xl font-bold text-lg bg-accent text-ground mt-1"
         >
           Let's go
         </motion.button>

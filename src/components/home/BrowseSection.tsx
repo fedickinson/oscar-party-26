@@ -42,8 +42,8 @@ function categoryBadgeLabel(cat: FilmCategory): string {
 
 // Nomination-count → border accent: more noms = stronger gold
 function nomAccentClass(nominations: number): string {
-  if (nominations >= 12) return 'border-oscar-gold/70'
-  if (nominations >= 8) return 'border-oscar-gold/40'
+  if (nominations >= 12) return 'border-accent/70'
+  if (nominations >= 8) return 'border-accent/40'
   if (nominations >= 5) return 'border-white/20'
   return 'border-white/10'
 }
@@ -69,7 +69,7 @@ function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }:
       layout
       className={[
         'bg-white/5 backdrop-blur-lg border rounded-2xl overflow-hidden transition-shadow duration-700',
-        highlighted ? 'border-oscar-gold/60 shadow-[0_0_20px_3px_rgba(212,175,55,0.3)]' : nomAccentClass(film.nominations),
+        highlighted ? 'border-accent/60 shadow-[0_0_20px_3px_rgba(212,175,55,0.3)]' : nomAccentClass(film.nominations),
       ].join(' ')}
     >
       {/* Collapsed header — always visible */}
@@ -82,10 +82,10 @@ function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }:
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <FilmIcon filmName={film.title} size={16} className="text-oscar-gold flex-shrink-0" />
+              <FilmIcon filmName={film.title} size={16} className="text-accent flex-shrink-0" />
               <span className="font-semibold text-white leading-tight">{film.title}</span>
               {film.nominations >= 10 && (
-                <span className="text-[10px] font-bold text-oscar-gold bg-oscar-gold/15 border border-oscar-gold/30 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-accent bg-accent/15 border border-accent/30 px-1.5 py-0.5 rounded-full">
                   {film.nominations} noms
                 </span>
               )}
@@ -157,8 +157,8 @@ function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }:
               </div>
 
               {/* Oscar storyline */}
-              <div className="bg-oscar-gold/8 border border-oscar-gold/20 rounded-xl px-3 py-2.5">
-                <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-1">Oscar Storyline</p>
+              <div className="bg-accent/8 border border-accent/20 rounded-xl px-3 py-2.5">
+                <p className="text-[11px] uppercase tracking-wider text-accent/70 mb-1">Oscar Storyline</p>
                 <p className="text-sm text-white/85 leading-relaxed">{film.oscarStoryline}</p>
               </div>
 
@@ -182,7 +182,7 @@ function FilmCard({ film, highlighted = false, forceExpanded = false, cardRef }:
                 <ul className="space-y-1.5">
                   {film.keyFacts.map((fact, i) => (
                     <li key={i} className="flex gap-2 text-sm text-white/70 leading-snug">
-                      <span className="text-oscar-gold/60 flex-shrink-0 mt-0.5">•</span>
+                      <span className="text-accent/60 flex-shrink-0 mt-0.5">•</span>
                       <span>{fact}</span>
                     </li>
                   ))}
@@ -285,14 +285,14 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
       </div>
 
       {/* Shorts & Specialty */}
-      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden">
+      <div className="relief-glass overflow-hidden">
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowSpecialty((v) => !v)}
           className="w-full flex items-center justify-between px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <Clapperboard size={16} className="text-oscar-gold" />
+            <Clapperboard size={16} className="text-accent" />
             <span className="text-sm font-semibold text-white/80">Shorts &amp; Specialty</span>
             <span className="text-xs text-white/40">{specialtyFilms.length}</span>
           </div>
@@ -317,7 +317,7 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
                   if (films.length === 0) return null
                   return (
                     <div key={category}>
-                      <p className="text-[11px] uppercase tracking-wider text-oscar-gold/60 mb-2 mt-2">{label}</p>
+                      <p className="text-[11px] uppercase tracking-wider text-accent/60 mb-2 mt-2">{label}</p>
                       <div className="space-y-1.5">
                         {films.map((film) => (
                           <FilmCard
@@ -342,14 +342,14 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
       </div>
 
       {/* Storylines */}
-      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden">
+      <div className="relief-glass overflow-hidden">
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowStorylines((v) => !v)}
           className="w-full flex items-center justify-between px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-oscar-gold" />
+            <BookOpen size={16} className="text-accent" />
             <span className="text-sm font-semibold text-white/80">Storylines</span>
             <span className="text-xs text-white/40">{ceremonyStorylines.length}</span>
           </div>
@@ -371,7 +371,7 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
               <div className="px-4 pb-3 pt-1 space-y-2 border-t border-white/8">
                 {ceremonyStorylines.map((s, i) => (
                   <div key={i} className="bg-white/5 rounded-xl px-3 py-2.5">
-                    <p className="text-sm font-medium text-oscar-gold/90 mb-1">{s.title}</p>
+                    <p className="text-sm font-medium text-accent/90 mb-1">{s.title}</p>
                     <p className="text-xs text-white/65 leading-relaxed">{s.description}</p>
                   </div>
                 ))}
@@ -382,7 +382,7 @@ export default function BrowseSection({ highlightFilmTitle, onHighlightComplete 
       </div>
 
       {/* Snubs */}
-      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden">
+      <div className="relief-glass overflow-hidden">
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowSnubs((v) => !v)}

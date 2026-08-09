@@ -30,19 +30,20 @@ import { useAICompanions } from '../hooks/useAICompanions'
 import { useChatReactivity } from '../hooks/useChatReactivity'
 import { useSpotlight } from '../hooks/useSpotlight'
 import { useChat } from '../hooks/useChat'
-import { useRoomSubscription } from '../hooks/useRoom'
+import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
 import { findDraftPointsForWinner } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import TabBar from '../components/live/TabBar'
+import WatchSyncBar from '../components/live/WatchSyncBar'
+import SyncDevPanel from '../components/live/SyncDevPanel'
 import HomeTab from '../components/live/HomeTab'
 import BingoTab from '../components/live/BingoTab'
 import ScoresTab from '../components/live/ScoresTab'
-import WinnersTab from '../components/live/WinnersTab'
+import GameMasterConsole from '../components/live/GameMasterConsole'
 import MyPicksTab from '../components/live/MyPicksTab'
 import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
 import FinaleOverlay from '../components/live/FinaleOverlay'
 import SpotlightNotification from '../components/spotlight/SpotlightNotification'
-import BrowseSection from '../components/home/BrowseSection'
 import PhaseExplainer from '../components/PhaseExplainer'
 import WelcomeCard from '../components/live/WelcomeCard'
 import Toast, { useToast } from '../components/ui/Toast'
@@ -62,7 +63,6 @@ export default function Live() {
   const { room, player, players } = useGame()
   const [{ tab, direction }, setTabState] = useState({ tab: 0, direction: 1 })
   const [showBingoExplainer, setShowBingoExplainer] = useState(false)
-  const [highlightFilmTitle, setHighlightFilmTitle] = useState<string | null>(null)
 
   const roomId = room?.id
   const isHost = player?.is_host ?? false
@@ -70,6 +70,13 @@ export default function Live() {
   const showStarted = room?.show_started ?? false
 
   useRoomSubscription(roomId)
+  // Players must stay live here, not just in the lobby. The watch-sync layer
+  // reads per-player rows — episode_started_at, watch_group, is_remote_holder —
+  // and "Alec started the New York screen" reaches the other five phones as a
+  // players UPDATE. Without this subscription the roster froze at mount: the
+  // start button never cleared (even for the person who pressed it), holder
+  // handoffs were invisible, and a late joiner never appeared.
+  usePlayersSubscription(roomId)
   const scores = useScores(roomId)
   // Use a distinct channelKey so this subscription gets its own Supabase channel
   // instance — prevents ChatSection's removeChannel call from killing this one.
@@ -266,10 +273,10 @@ export default function Live() {
     selectTab(1)
   }
 
-  function handleFilmLinkTap(filmTitle: string) {
-    setHighlightFilmTitle(filmTitle)
-    selectTab(5)
-  }
+  // The Films tab is gone (it rendered the Oscars film encyclopedia), so a
+  // film-link tap in chat has nowhere to go. Kept as a no-op rather than
+  // removing the prop chain, which threads through ChatSection.
+  function handleFilmLinkTap(_filmTitle: string) {}
 
   // ── Pending bingo count + toast (host only) ───────────────────────────────
 
@@ -472,13 +479,18 @@ export default function Live() {
 
   // ── Start Show ───────────────────────────────────────────────────────────────
 
+  // Starting the episode is TWO facts: the game goes live for everyone, and this
+  // screen's clock gets an origin. The RPC does both atomically — see
+  // 20260809160000_episode_clock.sql. Note the missing `showStarted` guard: the
+  // second screen still needs to start ITS clock after the first screen has
+  // already flipped the room live, so this stays callable.
   async function handleStartShow() {
-    if (!room || showStarted) return
-    await supabase
-      .from('rooms')
-      .update({ show_started: true })
-      .eq('id', room.id)
-    // Realtime subscription propagates the update to all clients
+    if (!room || !currentPlayerId) return
+    await supabase.rpc('start_episode_for_screen', {
+      p_room_id: room.id,
+      p_player_id: currentPlayerId,
+    })
+    // Realtime subscription propagates both updates to all clients
   }
 
   // ── End Ceremony ─────────────────────────────────────────────────────────
@@ -531,9 +543,21 @@ export default function Live() {
         <PhaseExplainer phase="bingo" onContinue={handleBingoExplainerContinue} />
       )}
       <div
-        className="flex flex-col bg-deep-navy"
+        className="flex flex-col bg-ground"
         style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}
       >
+        {/* Sync bar — always visible above the tabs. Two playbacks (one screen
+            in New York, one remote) drift apart over 75 minutes, and the room
+            reacting to something the remote viewer has not seen is the failure
+            mode this whole thing exists to prevent. */}
+        {room && currentPlayerId && (
+          <div className="flex-shrink-0 px-4 pt-3 pb-1 space-y-2">
+            <WatchSyncBar room={room} players={players} currentPlayerId={currentPlayerId} />
+            {/* Dev-only; renders nothing in a production build. */}
+            <SyncDevPanel room={room} players={players} currentPlayerId={currentPlayerId} />
+          </div>
+        )}
+
         {/* Scrollable tab content */}
         <div className="flex-1 overflow-hidden relative">
           <AnimatePresence initial={false} custom={direction}>
@@ -635,14 +659,15 @@ export default function Live() {
                 transition={tabTransition}
                 className="absolute inset-0 overflow-y-auto"
               >
-                <div className="px-4 pb-6">
-                  <WinnersTab
+                <div className="pb-6">
+                  {/* Episode properties use the GM console: there is no external
+                      event stream, so the host authors events live. WinnersTab
+                      remains for slate-based properties like the Oscars. */}
+                  <GameMasterConsole
                     roomId={roomId}
                     isHost={isHost}
                     onEndCeremony={handleEndCeremony}
                     isEndingCeremony={isEndingCeremony}
-                    openSpotlight={openSpotlight}
-                    onDevAutoCompleteRunning={(running) => { suppressAnnouncementsRef.current = running }}
                   />
                 </div>
               </motion.div>
@@ -674,25 +699,7 @@ export default function Live() {
               </motion.div>
             )}
 
-            {tab === 5 && (
-              <motion.div
-                key="films"
-                custom={direction}
-                variants={tabVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={tabTransition}
-                className="absolute inset-0 overflow-y-auto"
-              >
-                <div className="px-4 py-6 pb-24 max-w-md mx-auto">
-                  <BrowseSection
-                    highlightFilmTitle={highlightFilmTitle}
-                    onHighlightComplete={() => setHighlightFilmTitle(null)}
-                  />
-                </div>
-              </motion.div>
-            )}
+
           </AnimatePresence>
         </div>
 

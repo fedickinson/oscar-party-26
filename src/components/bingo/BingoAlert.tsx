@@ -112,10 +112,10 @@ export default function BingoAlert({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 bg-oscar-gold/15 border border-oscar-gold/40 rounded-full px-4 py-2"
+          className="flex items-center gap-2 bg-accent/15 border border-accent/40 rounded-full px-4 py-2"
         >
-          <Trophy size={14} className="text-oscar-gold" />
-          <span className="text-oscar-gold font-bold text-sm">
+          <Trophy size={14} className="text-accent" />
+          <span className="text-accent font-bold text-sm">
             +{data.pointsEarned} points
           </span>
         </motion.div>

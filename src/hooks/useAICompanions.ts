@@ -1,14 +1,15 @@
 /**
  * useAICompanions — fires AI chat companion messages in response to game events.
  *
- * Characters: Gloria (industry context), Razor (hot takes), Buddy (enthusiastic cheerleader).
+ * Cast: Ned narrates every event; Cersei, Tyrion, Joffrey, Daenerys, Olenna and
+ * Arya rotate 2-3 per event. See data/ai-companions.ts.
  * Messages are inserted into the messages table as non-UUID player_ids
- * ('meryl', 'nikki', 'will') and flow through the existing useChat subscription.
+ * (see data/ai-companions.ts) and flow through the existing useChat subscription.
  *
  * Four triggers:
  *   1. Pre-ceremony: intro messages when no winners exist yet (mount once)
- *   2. Winner reactions: Razor immediately, Gloria at 12s, Buddy at 25s (tier 1 only)
- *   3. Milestones: halfway (12 winners), final stretch (18 winners)
+ *   2. Event reactions: Ned at 0s, then the rotating cast staggered behind him
+ *   3. Milestones: 6 events logged, 12 events logged
  *   4. Lead change: when the leaderboard #1 changes
  *
  * Rate limiter: isGeneratingRef prevents overlapping API calls.
@@ -36,6 +37,7 @@ import type {
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
+import { COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS } from '../data/ai-companions'
 import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -111,16 +113,40 @@ export function useAICompanions(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: maxTokens,
-        system: prompt.system,
+        // Thinking is OFF deliberately. On Sonnet 5 an omitted `thinking` field
+        // runs adaptive thinking, and max_tokens caps thinking + response text
+        // together — at maxTokens=600 that truncates companion banter or
+        // returns nothing at all. These are one-liner reactions during a live
+        // episode: latency matters, deliberation does not.
+        thinking: { type: 'disabled' },
+        output_config: { effort: 'low' },
+        // SHARED_SYSTEM is ~8.9k tokens and byte-identical on every call — the
+        // cast, the five behavioural axes, the spoiler rules. Caching it turns
+        // the dominant cost of the evening into a rounding error and, more
+        // importantly, cuts time-to-first-token: these fire while people are
+        // watching, so latency is the thing that actually shows.
+        // 1h TTL, not the 5m default: events are 3-4 minutes apart on average
+        // but cluster, and a quiet stretch would otherwise expire the cache.
+        system: [
+          {
+            type: 'text',
+            text: prompt.system,
+            cache_control: { type: 'ephemeral', ttl: '1h' },
+          },
+        ],
         messages: [{ role: 'user', content: prompt.user }],
       }),
     })
 
     if (!response.ok) return ''
     const data = await response.json()
-    return (data?.content?.[0]?.text ?? '') as string
+    // Find the first text block rather than indexing content[0] — the response
+    // can lead with a non-text block, and a wrong assumption here surfaces as
+    // silent empty companion messages.
+    const blocks = (data?.content ?? []) as Array<{ type?: string; text?: string }>
+    return (blocks.find((b) => b.type === 'text')?.text ?? '') as string
   }
 
   async function insertCompanionMessage(companionId: string, text: string) {
@@ -173,13 +199,23 @@ export function useAICompanions(
         if (msg.delay_seconds === 0) {
           await insertCompanionMessage(msg.companion_id, msg.text)
         } else {
-          // Show typing indicator immediately, remove it when the message actually posts
-          addPendingCompanion(msg.companion_id)
-          broadcastChannelRef.current?.send({
-            type: 'broadcast',
-            event: 'companion_typing',
-            payload: { id: msg.companion_id, typing: true },
-          })
+          // Typing indicator appears shortly BEFORE the message, not the instant
+          // the batch is scheduled. Intros are now minutes apart, and lighting up
+          // every indicator at once would show six people typing simultaneously
+          // for eight minutes — which both spoils each arrival and looks broken.
+          const typingLeadMs = Math.min(4000, msg.delay_seconds * 1000)
+          const startTypingIn = msg.delay_seconds * 1000 - typingLeadMs
+          const startTyping = () => {
+            addPendingCompanion(msg.companion_id)
+            broadcastChannelRef.current?.send({
+              type: 'broadcast',
+              event: 'companion_typing',
+              payload: { id: msg.companion_id, typing: true },
+            })
+          }
+          if (startTypingIn <= 0) startTyping()
+          else pendingTimeoutsRef.current.push(setTimeout(startTyping, startTypingIn))
+
           const tid = setTimeout(() => {
             removePendingCompanion(msg.companion_id)
             broadcastChannelRef.current?.send({
@@ -226,13 +262,24 @@ export function useAICompanions(
       const hasWinners = categoriesRef.current.some((c) => c.winner_id != null)
       if (hasWinners) return
 
-      // Skip if companion messages already exist for this room (page reload case)
-      const { count } = await supabase
+      // The introductions are spread over ~8 minutes, and the schedule lives
+      // in setTimeouts in THIS browser. A host reload at minute two used to
+      // lose the four who had not arrived yet, permanently: the old guard saw
+      // Ned's message, concluded the intros had run, and skipped.
+      //
+      // So instead of "have any companions spoken", ask WHICH have spoken and
+      // top up the rest. On a clean first run that is all six; after a reload
+      // it is whoever is missing; once everyone has arrived it is nobody and
+      // we return.
+      const { data: existing } = await supabase
         .from('messages')
-        .select('*', { count: 'exact', head: true })
+        .select('player_id')
         .eq('room_id', roomRef.current?.id ?? '')
-        .in('player_id', ['the-academy', 'meryl', 'nikki', 'will'])
-      if (count && count > 0) return
+        .in('player_id', [...COMPANION_IDS])
+
+      const spoken = new Set((existing ?? []).map((m) => m.player_id))
+      const missing = PRE_SHOW_COMPANIONS.map((c) => c.id).filter((id) => !spoken.has(id))
+      if (missing.length === 0) return
 
       fireCompanionMessages(
         buildPreCeremonyPrompt(
@@ -243,8 +290,11 @@ export function useAICompanions(
           categoriesRef.current,
           nomineesRef.current,
           buildCeremonyPreamble(),
+          spoken.size > 0 ? missing : undefined,
         ),
-        1400,
+        // Six full-length entrances need real room. At 1400 the last two
+        // arrivals came back truncated mid-sentence.
+        2200,
       )
     }, 300)
 
@@ -274,7 +324,7 @@ export function useAICompanions(
       .then(({ count }) => {
         if (count != null && count > 0) return
         insertSystemDivider('Show Started')
-        fireCompanionMessages(buildShowStartedPrompt(playersRef.current))
+        fireCompanionMessages(buildShowStartedPrompt(playersRef.current), 1000)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showStarted])
@@ -373,10 +423,19 @@ export function useAICompanions(
           leaderboardRef.current,
           playerPredictions,
           tieWinner,
-          buildCategoryContext(cat.name),
+          // Ground the reaction in the researched dossier for whoever the GM
+          // named — without this the model invents this season wholesale.
+          buildCategoryContext(cat.name, winner?.name),
+          // How far into the night we are. Drives Daenerys' drift from warm to
+          // cold across the episode — she has no memory between calls, so this
+          // count is the only thing that tells the prompt where she's got to.
+          categoriesRef.current.filter((c) => c.winner_id != null).length,
         ),
       )
-      if (filmName) await insertFilmLink(filmName)
+      // Film-link cards used to open the film encyclopedia on the Films tab.
+      // That tab is gone, so inserting one now puts a gold, tappable, dead card
+      // in the chat after every single logged event. Stopped at the source; the
+      // render branch in ChatSection stays for any rows already in the table.
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories])
@@ -410,7 +469,7 @@ export function useAICompanions(
         80,
       ).then((text) => {
         const cleaned = text.trim().replace(/^["']|["']$/g, '')
-        insertCompanionMessage('the-academy', cleaned || `Okay, next up — ${cat.name}.`)
+        insertCompanionMessage(NARRATOR.id, cleaned || `Okay, next up — ${cat.name}.`)
       })
     }
 
@@ -434,53 +493,29 @@ export function useAICompanions(
   useEffect(() => {
     const count = categories.filter((c) => c.winner_id != null).length
 
-    if (count === 12 && !milestoneFiredRef.current.has('halfway')) {
+    // Milestones fire on absolute event counts, NOT on progress toward a total.
+    //
+    // The Oscars had a fixed 24-category slate, so "12 of 24" was a real
+    // halfway point and "all 24 announced" was a real ending. An episode has
+    // neither: categories is an append-only GM event log (see useGameMaster),
+    // so the total grows as the host writes and `announced === total` is not a
+    // meaningful state. The old `count === total` trigger fired a full
+    // "the record is closed, crown the champion" wrap-up mid-episode.
+    //
+    // The end of the night is now an explicit host action — "End episode" sets
+    // room.phase = 'finished', which drives the post-show reactions.
+
+    if (count === 6 && !milestoneFiredRef.current.has('halfway')) {
       milestoneFiredRef.current.add('halfway')
       fireCompanionMessages(
         buildMilestonePrompt('halfway', leaderboardRef.current, playersRef.current),
       )
     }
 
-    if (count === 18 && !milestoneFiredRef.current.has('final_stretch')) {
+    if (count === 12 && !milestoneFiredRef.current.has('final_stretch')) {
       milestoneFiredRef.current.add('final_stretch')
       fireCompanionMessages(
         buildMilestonePrompt('final_stretch', leaderboardRef.current, playersRef.current),
-      )
-    }
-
-    const totalCategories = categoriesRef.current.length
-    if (count === totalCategories - 1 && !milestoneFiredRef.current.has('final_category')) {
-      milestoneFiredRef.current.add('final_category')
-      const remaining = categoriesRef.current.find((c) => c.winner_id == null)
-      fireCompanionMessages(
-        buildMilestonePrompt(
-          'final_category',
-          leaderboardRef.current,
-          playersRef.current,
-          undefined,
-          undefined,
-          remaining?.name,
-          count,
-          categoriesRef.current,
-          confidencePicksRef.current,
-        ),
-      )
-    }
-
-    if (count === totalCategories && totalCategories > 0 && !milestoneFiredRef.current.has('ceremony_end')) {
-      milestoneFiredRef.current.add('ceremony_end')
-      fireCompanionMessages(
-        buildMilestonePrompt(
-          'ceremony_end',
-          leaderboardRef.current,
-          playersRef.current,
-          undefined,
-          undefined,
-          undefined,
-          count,
-          categoriesRef.current,
-          confidencePicksRef.current,
-        ),
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

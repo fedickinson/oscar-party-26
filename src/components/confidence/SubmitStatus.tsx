@@ -152,13 +152,13 @@ export default function SubmitStatus({
                   className={[
                     'w-full py-3.5 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2',
                     !isLocking
-                      ? 'bg-oscar-gold text-deep-navy hover:bg-oscar-gold-light'
+                      ? 'bg-accent text-ground hover:bg-accent-light'
                       : 'bg-white/10 text-white/30 cursor-not-allowed',
                   ].join(' ')}
                 >
                   {isLocking ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-deep-navy/50 border-t-deep-navy rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-ground/50 border-t-ground rounded-full animate-spin" />
                       Locking…
                     </>
                   ) : (
@@ -190,7 +190,7 @@ export default function SubmitStatus({
             <div className="flex items-center gap-3">
               <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-oscar-gold rounded-full"
+                  className="h-full bg-accent rounded-full"
                   animate={{ width: `${(completedPickCount / Math.max(totalCategories, 1)) * 100}%` }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                 />
@@ -215,7 +215,7 @@ export default function SubmitStatus({
               className={[
                 'w-full py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2',
                 isComplete && !isSubmitting
-                  ? 'bg-oscar-gold text-deep-navy hover:bg-oscar-gold-light'
+                  ? 'bg-accent text-ground hover:bg-accent-light'
                   : 'bg-white/10 text-white/30 cursor-not-allowed',
               ].join(' ')}
             >

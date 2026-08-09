@@ -69,7 +69,7 @@ export default function ConfidenceNumberPicker({
         transition={{ type: 'spring', stiffness: 360, damping: 40 }}
         className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto"
       >
-        <div className="backdrop-blur-xl bg-deep-navy/95 border border-white/15 rounded-t-3xl p-5 pb-8">
+        <div className="backdrop-blur-xl bg-ground/95 border border-white/15 rounded-t-3xl p-5 pb-8">
           {/* Handle + header */}
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -111,7 +111,7 @@ export default function ConfidenceNumberPicker({
                   className={[
                     'h-10 rounded-lg text-sm font-bold transition-colors flex flex-col items-center justify-center',
                     isSelected
-                      ? 'bg-oscar-gold text-deep-navy'
+                      ? 'bg-accent text-ground'
                       : isTaken
                         ? 'bg-white/8 text-white/30 border border-white/10'
                         : 'bg-white/10 text-white/80 hover:bg-white/15',

@@ -20,15 +20,16 @@
  *   Capped at 10 entries.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { computeLeaderboard, findDraftPointsForWinner } from '../lib/scoring'
-import { checkBingo, computeBingoScore, countBingos, isBlackout } from '../lib/bingo-utils'
+import { computePlayerBingoScores } from '../lib/bingo-utils'
 import type { ScoredPlayer } from '../lib/scoring'
 import type {
   BingoCardRow,
   BingoMarkRow,
+  BingoSquareRow,
   CategoryRow,
   NomineeRow,
   ConfidencePickRow,
@@ -116,6 +117,8 @@ export function useScores(roomId: string | undefined): ScoresState {
   const [draftEntities, setDraftEntities] = useState<DraftEntityRow[]>([])
   const [bingoCards, setBingoCards] = useState<BingoCardRow[]>([])
   const [bingoMarks, setBingoMarks] = useState<BingoMarkRow[]>([])
+  /** The static 75-square pool. Only its tier data is used, for square points. */
+  const [bingoSquares, setBingoSquares] = useState<BingoSquareRow[]>([])
   const [recentResults, setRecentResults] = useState<RecentResult[]>([])
   const [winnerEntries, setWinnerEntries] = useState<WinnerFeedEntry[]>([])
   const [leadChanges, setLeadChanges] = useState<LeadChangeFeedEntry[]>([])
@@ -153,7 +156,9 @@ export function useScores(roomId: string | undefined): ScoresState {
       supabase.from('draft_entities').select(),
       supabase.from('bingo_cards').select().eq('room_id', roomId),
       supabase.from('room_winners').select().eq('room_id', roomId),
-    ]).then(async ([catRes, nomRes, cpRes, dpRes, deRes, bcRes, rwRes]) => {
+      // Needed for tier points — a marked chaos square is worth 5x a likely one
+      supabase.from('bingo_squares').select(),
+    ]).then(async ([catRes, nomRes, cpRes, dpRes, deRes, bcRes, rwRes, bsRes]) => {
       if (catRes.data) {
         const winnerMap = new Map<number, { winner_id: string; tie_winner_id: string | null }>(
           (rwRes.data ?? []).map((rw: RoomWinnerRow) => [
@@ -179,6 +184,7 @@ export function useScores(roomId: string | undefined): ScoresState {
       if (cpRes.data) setConfidencePicks(cpRes.data)
       if (dpRes.data) setDraftPicks(dpRes.data)
       if (deRes.data) setDraftEntities(deRes.data)
+      if (bsRes.data) setBingoSquares(bsRes.data)
 
       // Fetch all bingo marks for this room's cards
       if (bcRes.data && bcRes.data.length > 0) {
@@ -463,28 +469,17 @@ export function useScores(roomId: string | undefined): ScoresState {
 
   // ── Compute bingo scores per player ────────────────────────────────────────
 
-  const bingoScores = new Map<string, number>()
-  const playerBingoCounts = new Map<string, number>()
-  players.forEach((player) => {
-    const card = bingoCards.find((c) => c.player_id === player.id)
-    if (!card) return
+  const bingoSquaresById = useMemo(
+    () => new Map(bingoSquares.map((s) => [s.id, s])),
+    [bingoSquares],
+  )
 
-    const playerMarks = bingoMarks.filter((m) => m.card_id === card.id)
-    const approvedIndices = new Set<number>()
-    playerMarks
-      .filter((m) => m.status === 'approved')
-      .forEach((m) => approvedIndices.add(m.square_index))
-
-    const { lines } = checkBingo(approvedIndices)
-    const bCount = countBingos(lines)
-    const score = computeBingoScore(
-      bCount,
-      isBlackout(approvedIndices),
-      approvedIndices.size, // each approved square = 1pt
-    )
-    bingoScores.set(player.id, score)
-    playerBingoCounts.set(player.id, bCount)
-  })
+  const { scores: bingoScores, counts: playerBingoCounts } = computePlayerBingoScores(
+    players,
+    bingoCards,
+    bingoMarks,
+    bingoSquaresById,
+  )
 
   const leaderboard = computeLeaderboard(
     players,

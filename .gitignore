@@ -33,3 +33,4 @@ docs/
 *.sw?
 .vercel
 .env*.local
+.gstack/

@@ -31,7 +31,7 @@ function ScorePill({ label, value, color }: { label: string; value: number; colo
 
 function SectionHeading({ label }: { label: string }) {
   return (
-    <p className="text-[11px] uppercase tracking-wider text-oscar-gold/60 mb-2">{label}</p>
+    <p className="text-[11px] uppercase tracking-wider text-accent/60 mb-2">{label}</p>
   )
 }
 
@@ -73,15 +73,15 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
           <div className="min-w-0 pr-3">
             {isFilm ? (
               <>
-                <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-0.5">{categoryName}</p>
+                <p className="text-[11px] uppercase tracking-wider text-accent/70 mb-0.5">{categoryName}</p>
                 <div className="flex items-center gap-2">
-                  <FilmIcon filmName={nominee.film_name} size={20} className="text-oscar-gold flex-shrink-0" />
+                  <FilmIcon filmName={nominee.film_name} size={20} className="text-accent flex-shrink-0" />
                   <h2 className="text-xl font-bold text-white leading-tight">{nominee.film_name}</h2>
                 </div>
               </>
             ) : (
               <>
-                <p className="text-[11px] uppercase tracking-wider text-oscar-gold/70 mb-0.5">{categoryName}</p>
+                <p className="text-[11px] uppercase tracking-wider text-accent/70 mb-0.5">{categoryName}</p>
                 <h2 className="text-xl font-bold text-white leading-tight">{nominee.name}</h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <FilmIcon filmName={nominee.film_name} size={12} className="text-white/40 flex-shrink-0" />
@@ -144,7 +144,7 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
                     <ScorePill label="Metacritic" value={film.metacritic} color="text-yellow-400" />
                   )}
                   <div className="flex flex-col items-center px-3 py-2 bg-white/5 border border-white/8 rounded-xl">
-                    <span className="text-base font-bold text-oscar-gold">{film.nominations}</span>
+                    <span className="text-base font-bold text-accent">{film.nominations}</span>
                     <span className="text-[10px] text-white/40 mt-0.5">Nominations</span>
                   </div>
                 </div>
@@ -170,9 +170,9 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
 
               {/* Predicted wins */}
               {film.predictedWins && (
-                <div className="bg-oscar-gold/8 border border-oscar-gold/20 rounded-2xl p-4">
+                <div className="bg-accent/8 border border-accent/20 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Star size={13} className="text-oscar-gold" />
+                    <Star size={13} className="text-accent" />
                     <SectionHeading label="Predicted wins" />
                   </div>
                   <p className="text-sm text-white/80 leading-relaxed">{film.predictedWins}</p>
@@ -186,7 +186,7 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
                   <div className="space-y-2">
                     {film.keyFacts.map((fact, i) => (
                       <div key={i} className="flex items-start gap-2.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-oscar-gold/50 flex-shrink-0 mt-1.5" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent/50 flex-shrink-0 mt-1.5" />
                         <p className="text-sm text-white/70 leading-relaxed">{fact}</p>
                       </div>
                     ))}
@@ -213,7 +213,7 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
                         className={[
                           'text-xs px-2.5 py-1 rounded-full border',
                           star === nominee.name
-                            ? 'bg-oscar-gold/15 border-oscar-gold/30 text-oscar-gold'
+                            ? 'bg-accent/15 border-accent/30 text-accent'
                             : 'bg-white/5 border-white/10 text-white/60',
                         ].join(' ')}
                       >

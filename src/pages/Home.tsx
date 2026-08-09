@@ -29,6 +29,7 @@ import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoom } from '../hooks/useRoom'
 import AvatarPicker from '../components/AvatarPicker'
+import { Hallmark } from '../components/ui/Hallmarks'
 
 // ─── Screen state ─────────────────────────────────────────────────────────────
 
@@ -93,12 +94,16 @@ export default function Home() {
     try {
       const code = joinCode.toUpperCase()
 
-      const { data: roomData } = await supabase
+      // maybeSingle, not single: a missing room is an expected outcome here, not
+      // an exception. single() throws on zero rows, and the old code only worked
+      // because it discarded the error and fell through to the null check.
+      const { data: roomData, error: lookupError } = await supabase
         .from('rooms')
         .select('id, phase')
         .eq('code', code)
-        .single()
+        .maybeSingle()
 
+      if (lookupError) throw new Error(`Could not look up that room: ${lookupError.message}`)
       if (!roomData) throw new Error('Room not found. Check the code.')
       if (roomData.phase !== 'lobby') throw new Error('This game has already started.')
 
@@ -161,7 +166,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-oscar-gold border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -183,7 +188,7 @@ export default function Home() {
             <div
               key={i}
               className="w-4 h-2 rounded-sm"
-              style={{ backgroundColor: i % 2 === 0 ? '#D4AF37' : 'rgba(255,255,255,0.15)' }}
+              style={{ backgroundColor: i % 2 === 0 ? 'var(--t-accent)' : 'rgba(255,255,255,0.12)' }}
             />
           ))}
         </div>
@@ -195,26 +200,26 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
           >
-            <svg width="44" height="64" viewBox="0 0 44 64" fill="none" aria-hidden>
-              {/* Oscar statuette silhouette */}
-              <ellipse cx="22" cy="58" rx="12" ry="4" fill="#D4AF37" opacity="0.4" />
-              <rect x="16" y="50" width="12" height="10" rx="2" fill="#D4AF37" opacity="0.7" />
-              <rect x="18" y="34" width="8" height="18" rx="1" fill="#D4AF37" opacity="0.85" />
-              {/* arms */}
-              <path d="M18 40 Q10 36 12 28 Q14 22 18 26" fill="#D4AF37" opacity="0.85" />
-              <path d="M26 40 Q34 36 32 28 Q30 22 26 26" fill="#D4AF37" opacity="0.85" />
-              {/* head */}
-              <ellipse cx="22" cy="22" rx="8" ry="10" fill="#D4AF37" opacity="0.9" />
-              {/* shimmer highlight */}
-              <ellipse cx="19" cy="18" rx="2.5" ry="4" fill="white" opacity="0.2" />
-            </svg>
+            {/* The Dance — two dragons, Black and Green, circling. The master mark. */}
+            <Hallmark id="hallmark-dance" size={72} />
           </motion.div>
         </div>
 
+        {/* Lockup: platform kicker over event name (v7 hierarchy) */}
+        <motion.p
+          className="text-[11px] font-bold uppercase tracking-[0.28em]"
+          style={{ color: 'var(--t-text-dim)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          Party Night presents
+        </motion.p>
         <motion.h1
-          className="text-5xl font-extrabold tracking-tight"
+          className="text-[27px] font-bold tracking-[0.04em] uppercase mt-2"
           style={{
-            background: 'linear-gradient(135deg, #F5E6A3 0%, #D4AF37 40%, #B8960C 70%, #D4AF37 100%)',
+            fontFamily: 'Cinzel, Georgia, serif',
+            background: 'linear-gradient(135deg, #EFE2C4 0%, #D6A961 45%, #B9863F 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -223,15 +228,16 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          Awards Party
+          Fire &amp; Blood
         </motion.h1>
         <motion.p
-          className="text-white/45 text-sm mt-2 tracking-wide"
+          className="text-sm mt-2"
+          style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: 'var(--t-text-muted)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
         >
-          Oscars 2026
+          House of the Dragon — Season 3 Finale
         </motion.p>
 
         {/* Star field — static decorative dots */}
@@ -245,7 +251,7 @@ export default function Home() {
           ] as Array<{ top: string; left: string; size: number; opacity: number }>).map((s, i) => (
             <div
               key={i}
-              className="absolute rounded-full bg-oscar-gold"
+              className="absolute rounded-full bg-accent"
               style={{
                 width: s.size,
                 height: s.size,
@@ -268,10 +274,12 @@ export default function Home() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleCreateClick}
-                className="w-full py-4 rounded-2xl font-bold text-lg text-deep-navy relative overflow-hidden"
+                className="w-full py-4 rounded-2xl font-bold text-lg relative overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, #F5E6A3 0%, #D4AF37 50%, #B8960C 100%)',
-                  boxShadow: '0 4px 24px rgba(212,175,55,0.35)',
+                  background: 'var(--t-personal-field)',
+                  border: '1px solid var(--t-personal-device)',
+                  color: 'var(--t-text)',
+                  boxShadow: '0 6px 20px var(--t-shadow)',
                 }}
               >
                 {/* Subtle shimmer stripe */}
@@ -296,7 +304,7 @@ export default function Home() {
               {/* Divider with ceremony label */}
               <div className="flex items-center gap-3 mt-1 px-1">
                 <div className="flex-1 h-px bg-white/8" />
-                <span className="text-[10px] uppercase tracking-widest text-white/20">March 15, 2026</span>
+                <span className="text-[10px] uppercase tracking-widest text-white/20">Party Night</span>
                 <div className="flex-1 h-px bg-white/8" />
               </div>
             </motion.div>
@@ -307,20 +315,22 @@ export default function Home() {
             <motion.div key="create-form" {...screenAnim}>
               <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5 space-y-5">
 
-                {/* Code display — shown immediately before DB insert */}
+                {/* The room code is deliberately NOT shown here.
+                    It is generated client-side at this point, but the room row is
+                    not written until handleCreateSubmit below. Showing it caused
+                    exactly the failure you would predict: people read the code off
+                    this screen, sent it to friends, and those friends got "room
+                    not found" because the room did not exist yet. Dimming it was
+                    not enough — a code on screen gets shared.
+                    It appears in the lobby, with tap-to-copy, the moment it is
+                    real. See Room.tsx. */}
                 <div className="text-center">
-                  <p className="text-xs text-white/50 uppercase tracking-widest mb-3">Your Room Code</p>
-                  <div className="flex gap-2 justify-center">
-                    {screen.code.split('').map((letter, i) => (
-                      <div
-                        key={i}
-                        className="w-14 h-14 flex items-center justify-center text-3xl font-bold text-oscar-gold bg-oscar-gold/10 border border-oscar-gold/30 rounded-xl"
-                      >
-                        {letter}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-white/35 mt-2">Share with friends after you set up</p>
+                  <p className="text-sm text-white/60">
+                    Set yourself up first
+                  </p>
+                  <p className="text-xs text-white/35 mt-1">
+                    You will get a room code to share once the room exists.
+                  </p>
                 </div>
 
                 <hr className="border-white/10" />
@@ -336,7 +346,7 @@ export default function Home() {
                     placeholder="Enter your name"
                     maxLength={24}
                     style={{ fontSize: '16px' }}
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-oscar-gold transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
@@ -359,7 +369,7 @@ export default function Home() {
                 <button
                   onClick={handleCreateSubmit}
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-50 hover:bg-oscar-gold-light active:scale-95 transition-all"
+                  className="w-full py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-50 hover:bg-accent-light active:scale-95 transition-all"
                 >
                   {isSubmitting ? 'Creating…' : 'Create Room'}
                 </button>
@@ -399,7 +409,7 @@ export default function Home() {
                     placeholder="ABCD"
                     maxLength={4}
                     style={{ fontSize: '16px' }}
-                    className="w-full px-4 py-4 rounded-xl bg-white/10 border border-white/15 text-white text-center text-3xl font-bold tracking-widest placeholder:text-white/20 focus:outline-none focus:border-oscar-gold transition-colors uppercase"
+                    className="w-full px-4 py-4 rounded-xl bg-white/10 border border-white/15 text-white text-center text-3xl font-bold tracking-widest placeholder:text-white/20 focus:outline-none focus:border-accent transition-colors uppercase"
                   />
                 </div>
 
@@ -410,7 +420,7 @@ export default function Home() {
                 <button
                   onClick={handleJoinCodeSubmit}
                   disabled={isSubmitting || joinCode.length !== 4}
-                  className="w-full py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-50 hover:bg-oscar-gold-light active:scale-95 transition-all"
+                  className="w-full py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-50 hover:bg-accent-light active:scale-95 transition-all"
                 >
                   {isSubmitting ? (
                     'Checking…'
@@ -444,7 +454,7 @@ export default function Home() {
                     {screen.code.split('').map((letter, i) => (
                       <span
                         key={i}
-                        className="w-9 h-9 flex items-center justify-center text-lg font-bold text-oscar-gold bg-oscar-gold/10 border border-oscar-gold/30 rounded-lg"
+                        className="w-9 h-9 flex items-center justify-center text-lg font-bold text-accent bg-accent/10 border border-accent/30 rounded-lg"
                       >
                         {letter}
                       </span>
@@ -468,7 +478,7 @@ export default function Home() {
                     placeholder="Enter your name"
                     maxLength={24}
                     style={{ fontSize: '16px' }}
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-oscar-gold transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
@@ -492,7 +502,7 @@ export default function Home() {
                 <button
                   onClick={handleJoinSubmit}
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-2xl bg-oscar-gold text-deep-navy font-bold text-lg disabled:opacity-50 hover:bg-oscar-gold-light active:scale-95 transition-all"
+                  className="w-full py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-50 hover:bg-accent-light active:scale-95 transition-all"
                 >
                   {isSubmitting ? 'Joining…' : 'Join Room'}
                 </button>

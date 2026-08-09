@@ -92,7 +92,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             marginBottom: 14,
           }}
         >
-          98th Academy Awards
+          House of the Dragon
         </div>
         <div
           style={{
@@ -103,7 +103,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             lineHeight: 1.0,
           }}
         >
-          OSCARS NIGHT 26
+          THE DANCE OF THE DRAGONS
         </div>
         {/* Gold rule under title */}
         <div
@@ -123,7 +123,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             letterSpacing: '0.14em',
           }}
         >
-          March 15, 2026
+          SEASON 3 FINALE
         </div>
       </div>
 
@@ -366,7 +366,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
                     letterSpacing: '0.01em',
                   }}
                 >
-                  Draft {entry.ensembleScore} &nbsp;&middot;&nbsp; Picks {entry.confidenceScore} &nbsp;&middot;&nbsp; Bingo {entry.bingoScore}
+                  Draft {entry.ensembleScore} &nbsp;&middot;&nbsp; Bingo {entry.bingoScore}
                 </span>
               </div>
 
@@ -433,7 +433,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             textTransform: 'uppercase',
           }}
         >
-          Awards Party — Oscars 2026
+          Party Night — Fire & Blood
         </div>
         <div
           style={{

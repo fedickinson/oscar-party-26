@@ -46,9 +46,9 @@ import { supabase } from '../lib/supabase'
 import { PLAYER_ID_KEY, useGame } from '../context/GameContext'
 import type { PlayerRow, RoomRow } from '../types/database'
 
-// One color per player slot. First player (host) gets oscar-gold.
+// One color per player slot. First player (host) gets accent.
 const PLAYER_COLORS = [
-  '#D4AF37', // oscar-gold
+  '#D4AF37', // accent
   '#7C3AED', // violet
   '#059669', // emerald
   '#DC2626', // red

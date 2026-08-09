@@ -20,7 +20,7 @@ export default function LoadingScreen({ message = 'Loading…' }: Props) {
         animate={{ opacity: [0.35, 1, 0.35] }}
         transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <Trophy size={36} className="text-oscar-gold" />
+        <Trophy size={36} className="text-accent" />
       </motion.div>
       <p className="text-sm text-white/40">{message}</p>
     </div>

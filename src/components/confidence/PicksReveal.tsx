@@ -34,7 +34,7 @@ const TIER_LABELS: Record<number, string> = {
 }
 
 const TIER_LABEL_COLORS: Record<number, string> = {
-  1: 'text-oscar-gold',
+  1: 'text-accent',
   2: 'text-violet-400',
   3: 'text-sky-400',
   4: 'text-emerald-400',
@@ -131,7 +131,7 @@ export default function PicksReveal({
                       )}
                       {/* My confidence badge — prominent */}
                       {myPick && (
-                        <span className="text-xs font-bold text-oscar-gold bg-oscar-gold/15 px-2 py-0.5 rounded-full font-mono">
+                        <span className="text-xs font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full font-mono">
                           {myPick.confidence}
                         </span>
                       )}

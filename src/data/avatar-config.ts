@@ -1,76 +1,54 @@
+// Player avatars are the dragons of the Dance. You are not playing AS a
+// character — you draft those — so the dragon is pure identity, and it sidesteps
+// the confusion of someone's avatar being an entity another player owns.
+//
+// No artwork: Avatar falls back to a gradient built from `color` plus the
+// initial, which is legible at every size we render. Drop files into
+// public/avatars/player/ and set `image` if art turns up.
+// Player avatars are house sigils. Dragons were the obvious choice until they
+// became draftable — having Betty's icon be a dragon Tom owns is confusing, and
+// dragons are far more fun as contested picks than as decoration. Houses were
+// cut from the draft for being unbalanced, which leaves their sigils free.
+//
+// No artwork: Avatar falls back to a gradient built from `color` plus the
+// initial. Drop files into public/avatars/player/ and set `image` if art turns up.
 export const PLAYER_AVATARS = [
-  {
-    id: 'clapperboard',
-    name: 'The Director',
-    object: 'Clapperboard',
-    description: 'Bossy, opinionated, calls the shots, thinks they are running the show',
-    color: '#00B4A6',
-    image: '/avatars/player/clapperboard.png',
-    animated: '/avatars/animated/clapperboard.mp4',
-  },
-  {
-    id: 'film-reel',
-    name: 'The Classic',
-    object: 'Film Reel',
-    description: 'Old-school taste, loves the greats, nostalgic, a little dramatic',
-    color: '#9B1B30',
-    image: '/avatars/player/film-reel.png',
-    animated: '/avatars/animated/film-reel.mp4',
-  },
-  {
-    id: 'movie-camera',
-    name: 'The Critic',
-    object: 'Movie Camera',
-    description: 'Observant, analytical, sees everything, one-lens monocle energy',
-    color: '#3B2D6B',
-    image: '/avatars/player/movie-camera.png',
-    animated: '/avatars/animated/movie-camera.mp4',
-  },
-  {
-    id: 'popcorn-bucket',
-    name: 'The Fan',
-    object: 'Popcorn Bucket',
-    description: 'Here for fun, loud, enthusiastic, does not take it seriously',
-    color: '#D4872C',
-    image: '/avatars/player/popcorn-bucket.png',
-    animated: '/avatars/animated/popcorn-bucket.mp4',
-  },
-  {
-    id: 'drama-mask',
-    name: 'The Drama Queen',
-    object: 'Drama Mask',
-    description: 'Over-the-top reactions, gasps at every upset, lives for the spectacle',
-    color: '#6B1D4D',
-    image: '/avatars/player/drama-mask.png',
-    animated: '/avatars/animated/drama-mask.mp4',
-  },
-  {
-    id: 'megaphone',
-    name: 'The Insider',
-    object: 'Megaphone',
-    description: 'Knows the industry gossip, always talking, has a take on everything',
-    color: '#4A4A5A',
-    image: '/avatars/player/megaphone.png',
-    animated: '/avatars/animated/megaphone.mp4',
-  },
-  {
-    id: 'phonograph',
-    name: 'The Composer',
-    object: 'Phonograph',
-    description: 'Dreamy, musical, only cares about Best Score, vibes over plot',
-    color: '#1E3A6E',
-    image: '/avatars/player/phonograph.png',
-    animated: '/avatars/animated/phonograph.mp4',
-  },
-  {
-    id: 'ticket-stub',
-    name: 'The Wildcard',
-    object: 'Ticket Stub',
-    description: 'Showed up randomly, does not know the nominees, will somehow win everything',
-    color: '#C7256F',
-    image: '/avatars/player/ticket-stub.png',
-    animated: '/avatars/animated/ticket-stub.mp4',
-  },
+  { id: 'targaryen', name: 'Targaryen', object: 'Three-Headed Dragon',
+    description: 'Fire and blood. Currently busy destroying itself from the inside.',
+    color: '#B91C1C', image: '', animated: '' },
+  { id: 'hightower', name: 'Hightower', object: 'The Beacon',
+    description: 'We light the way. Mostly toward whatever suits Oldtown.',
+    color: '#059669', image: '', animated: '' },
+  { id: 'velaryon', name: 'Velaryon', object: 'The Seahorse',
+    description: 'Older than the Targaryens and quietly never lets anyone forget it.',
+    color: '#0EA5E9', image: '', animated: '' },
+  { id: 'stark', name: 'Stark', object: 'The Direwolf',
+    description: 'Winter is coming, and the North has opinions about southron nonsense.',
+    color: '#64748B', image: '', animated: '' },
+  { id: 'tully', name: 'Tully', object: 'The Leaping Trout',
+    description: 'Family, duty, honour. In whichever order is least inconvenient.',
+    color: '#2563EB', image: '', animated: '' },
+  { id: 'lannister', name: 'Lannister', object: 'The Lion',
+    description: 'Hear me roar. Also, hear about the debt.',
+    color: '#CA8A04', image: '', animated: '' },
+  { id: 'baratheon', name: 'Baratheon', object: 'The Crowned Stag',
+    description: 'Ours is the fury, and very little of the planning.',
+    color: '#F59E0B', image: '', animated: '' },
+  { id: 'blackwood', name: 'Blackwood', object: 'The Weirwood',
+    description: 'Old gods, long memories, and the best archer in the Riverlands.',
+    color: '#7C3AED', image: '', animated: '' },
+  { id: 'dustin', name: 'Dustin', object: 'The Winter Crown',
+    description: 'Barrowton. The Winter Wolves came south to die well.',
+    color: '#475569', image: '', animated: '' },
+  { id: 'strong', name: 'Strong', object: 'The Cleft Chevron',
+    description: 'Harrenhal. Nothing that happens there ends well for anyone.',
+    color: '#78350F', image: '', animated: '' },
+  { id: 'arryn', name: 'Arryn', object: 'The Falcon and Moon',
+    description: 'As high as honour, and about as involved as the Vale ever is.',
+    color: '#94A3B8', image: '', animated: '' },
+  { id: 'manderly', name: 'Manderly', object: 'The Merman',
+    description: 'White Harbour. Well fed, well armed, and further north than you think.',
+    color: '#14B8A6', image: '', animated: '' },
 ] as const;
 
 export const COMPANION_AVATARS = [

@@ -10,7 +10,8 @@
  *     callback that directly writes to the span's textContent. This avoids
  *     React state updates during the animation (60fps, no re-renders).
  *   - Expand/collapse per row: AnimatePresence with height animation reveals
- *     Ensemble | Confidence | Bingo score breakdown.
+ *     Draft | Bingo score breakdown. (Confidence picks are cut for episode
+ *     properties, so that column is omitted rather than showing a constant 0.)
  *
  * Current player's row gets a left gold border and "You" badge.
  * Rank badges: 1 → Crown(gold), 2 → silver dot, 3 → bronze dot, 4+ → number.
@@ -146,7 +147,7 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
-    return <Crown size={16} className="text-oscar-gold flex-shrink-0" />
+    return <Crown size={16} className="text-accent flex-shrink-0" />
   }
   if (rank === 2) {
     return (
@@ -192,12 +193,13 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
             layoutId={`lb-row-${entry.player.id}`}
             layout="position"
             transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-            className={[
-              'backdrop-blur-lg rounded-xl overflow-hidden',
+            className="relief-glass overflow-hidden"
+            style={
+              // Own row: allegiance-edged glass (v7). Others: plain glass.
               isMe
-                ? 'bg-oscar-gold/8 border border-oscar-gold/25 border-l-2 border-l-oscar-gold'
-                : 'bg-white/6 border border-white/10',
-            ].join(' ')}
+                ? { borderLeft: '2px solid var(--t-personal-device)', background: 'var(--t-personal-raised)' }
+                : undefined
+            }
           >
             {/* Main row */}
             <button
@@ -233,7 +235,7 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
                   value={entry.totalScore}
                   className={[
                     'text-base font-bold tabular-nums',
-                    rank === 1 ? 'text-oscar-gold' : 'text-white',
+                    rank === 1 ? 'text-accent' : 'text-white',
                   ].join(' ')}
                 />
                 <span className="text-xs text-white/30">pt</span>
@@ -258,8 +260,7 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
                 >
                   <div className="px-3 pb-3 grid grid-cols-3 gap-2">
                     {[
-                      { label: 'Ensemble', value: entry.ensembleScore },
-                      { label: 'Confidence', value: entry.confidenceScore },
+                      { label: 'Draft', value: entry.ensembleScore },
                       { label: 'Bingo', value: entry.bingoScore },
                     ].map(({ label, value }) => (
                       <div

@@ -17,7 +17,9 @@
  */
 
 import { jsPDF } from 'jspdf'
+import { COMPANION_IDS, getCompanionById } from '../data/ai-companions'
 import type { ScoredPlayer } from './scoring'
+import type { PlayerAward, CharacterAward } from './night-awards'
 import type {
   CategoryRow,
   NomineeRow,
@@ -26,6 +28,7 @@ import type {
   DraftEntityRow,
   PlayerRow,
   MessageRow,
+  PlayerVerdictRow,
 } from '../types/database'
 
 // ---- Color constants (Oscar theme) ------------------------------------------
@@ -60,6 +63,14 @@ export interface RecapData {
   players: PlayerRow[]
   messages: MessageRow[]
   playerBingoCounts: Map<string, number>
+  /**
+   * The Reckoning. Optional because the PDF predates it and must still render
+   * for any caller that has not been updated — the section is skipped entirely
+   * rather than printing an empty heading.
+   */
+  playerAwards?: PlayerAward[]
+  characterAwards?: CharacterAward[]
+  verdicts?: Map<string, PlayerVerdictRow>
 }
 
 export interface RecapHighlights {
@@ -329,7 +340,12 @@ export function generateRecapPDF(data: RecapData): void {
   doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
   setTextColor(WHITE_60)
-  doc.text('Oscar Night  \u00B7  March 15, 2026', pageWidth / 2, y, { align: 'center' })
+  doc.text(
+    'House of the Dragon  \u00B7  Season 3 Finale',
+    pageWidth / 2,
+    y,
+    { align: 'center' },
+  )
   y += 12
 
   const sepWidth = 90
@@ -436,7 +452,10 @@ export function generateRecapPDF(data: RecapData): void {
 
   data.leaderboard.forEach((entry, i) => {
     checkPageBreak(16)
-    const rank = i + 1
+    // Use the computed rank, not the row index — on a true dead heat two
+    // players share rank 1 and the next is rank 3. Numbering by index would
+    // print 1/2/3 and contradict the co-champion crown the app just showed.
+    const rank = entry.rank
     const rowBg = i === 0 ? '#1A1E40' : i % 2 === 0 ? DARK_CARD : DARK_ROW_ALT
 
     fillRect(margin, y - 4, contentWidth, 14, rowBg)
@@ -529,6 +548,102 @@ export function generateRecapPDF(data: RecapData): void {
       doc.text(truncVal, margin + contentWidth - 2, rowY + 3.5, { align: 'right' })
       y += 12
     })
+  }
+
+  // ── The Reckoning ─────────────────────────────────────────────────────────
+  // Placed on page 1 under the standings, mirroring the on-screen order. This
+  // is the part of the recap each player will actually look for.
+  const awards = data.playerAwards ?? []
+  if (awards.length > 0) {
+    checkPageBreak(24)
+    y += 4
+    drawLine(margin, y, margin + contentWidth, y, WHITE_20, 0.3)
+    y += 7
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    setTextColor(GOLD)
+    doc.text('THE RECKONING', margin, y)
+    y += 7
+
+    awards.forEach((award) => {
+      const verdict = data.verdicts?.get(award.playerId)
+      // Wrap first so the height is known before deciding whether the block
+      // fits — splitting a verdict across a page break reads as a bug.
+      const verdictLines: string[] = verdict
+        ? doc.splitTextToSize(`"${verdict.verdict}"`, contentWidth - 8)
+        : []
+      const blockH = 16 + verdictLines.length * 4.4 + (verdict ? 5 : 0)
+
+      checkPageBreak(blockH + 4)
+      fillRect(margin, y - 3, contentWidth, blockH, DARK_CARD)
+      fillRect(margin, y - 3, 2.5, blockH, GOLD)
+
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      setTextColor(WHITE_40)
+      doc.text(award.playerName.toUpperCase(), margin + 6, y + 2)
+
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      setTextColor(GOLD)
+      doc.text(truncate(award.title, contentWidth - 60, 11), margin + 6, y + 8)
+
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      setTextColor(WHITE_60)
+      doc.text(award.stat, margin + contentWidth - 4, y + 8, { align: 'right' })
+
+      let lineY = y + 14
+      if (verdictLines.length > 0) {
+        doc.setFontSize(8.5)
+        doc.setFont('helvetica', 'italic')
+        setTextColor(WHITE_80)
+        verdictLines.forEach((line: string) => {
+          doc.text(line, margin + 6, lineY)
+          lineY += 4.4
+        })
+        const companion = verdict ? getCompanionById(verdict.companion_id) : null
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'normal')
+        setTextColor(WHITE_40)
+        doc.text(`- ${companion?.name ?? ''}`, margin + 6, lineY + 1)
+      }
+
+      y += blockH + 4
+    })
+
+    // Character awards — compact, one line each.
+    const charAwards = data.characterAwards ?? []
+    if (charAwards.length > 0) {
+      checkPageBreak(10 + charAwards.length * 10)
+      y += 2
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      setTextColor(GOLD)
+      doc.text('THE ROLL OF HONOUR', margin, y)
+      y += 6
+
+      charAwards.forEach((ca) => {
+        checkPageBreak(10)
+        fillRect(margin, y - 3, contentWidth, 9, DARK_CARD)
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'bold')
+        setTextColor(WHITE_40)
+        doc.text(ca.label.toUpperCase(), margin + 4, y + 2.5)
+
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'normal')
+        setTextColor(WHITE_80)
+        const label = ca.ownerName ? `${ca.entityName} (${ca.ownerName})` : ca.entityName
+        doc.text(
+          truncate(label, contentWidth - 62, 9),
+          margin + contentWidth - 2,
+          y + 2.5,
+          { align: 'right' },
+        )
+        y += 10
+      })
+    }
   }
 
   pageFooter()
@@ -1120,7 +1235,12 @@ export function generateRecapPDF(data: RecapData): void {
 
   sectionHeader('Chat Highlights', 'Human messages only — reactions and moments from the night')
 
-  const AI_IDS = new Set(['system', 'meryl', 'nikki', 'will'])
+  // Non-human message authors: the companions plus the synthetic divider rows
+  // the host inserts. Derived from the cast so a recast can't silently leak
+  // companion chatter into the "human messages only" section.
+  const AI_IDS = new Set<string>([
+    'system', 'winner-divider', 'film-link', ...COMPANION_IDS,
+  ])
   const humanMessages = data.messages.filter((m) => !AI_IDS.has(m.player_id))
 
   if (humanMessages.length === 0) {

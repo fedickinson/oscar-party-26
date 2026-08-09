@@ -32,6 +32,7 @@ import {
   checkBingo,
   checkObjectiveCondition,
   computeBingoScore,
+  computeSquarePoints,
   countBingos,
   generateBingoCard,
   isBlackout,
@@ -58,6 +59,8 @@ export interface BingoState {
   bingoLines: number[][]
   bingoCount: number
   hasBlackout: boolean
+  /** Tier points from approved squares — the component of bingoScore you earn without a line */
+  squarePoints: number
   bingoScore: number
   /** Non-null when a new bingo line was just detected — drives BingoAlert */
   celebrationData: CelebrationData | null
@@ -312,8 +315,10 @@ export function useBingo(
   const bingoResult = checkBingo(markedIndices, prevBingoLinesRef.current)
   const bingoCount = countBingos(bingoResult.lines)
   const hasBlackout = isBlackout(markedIndices)
-  const approvedSquareCount = marks.filter((m) => m.status === 'approved').length
-  const bingoScore = computeBingoScore(bingoCount, hasBlackout, approvedSquareCount)
+  // Tier points for every approved square, plus the line bonuses. Must match
+  // computePlayerBingoScores or the card would disagree with the leaderboard.
+  const squarePoints = computeSquarePoints(squares, markedIndices)
+  const bingoScore = computeBingoScore(bingoCount, hasBlackout, squarePoints)
 
   // ── New bingo detection → celebration trigger ────────────────────────────────
 
@@ -322,11 +327,11 @@ export function useBingo(
     if (result.newLines.length > 0) {
       const totalNow = result.lines.length
       const totalBefore = prevBingoLinesRef.current.length
-      // Points earned this announcement
-      let pointsEarned = 0
-      for (let i = totalBefore + 1; i <= totalNow; i++) {
-        pointsEarned += i === 1 ? 25 : i === 2 ? 15 : 10
-      }
+      // Points earned this announcement. Derived from computeBingoScore rather
+      // than restated here — the celebration used to hardcode the old 25/15/10
+      // scale and kept promising points the leaderboard never paid out.
+      const pointsEarned =
+        computeBingoScore(totalNow, false) - computeBingoScore(totalBefore, false)
       setCelebrationData({ lines: result.newLines, pointsEarned, totalBingos: totalNow })
     }
     prevBingoLinesRef.current = result.lines
@@ -387,6 +392,7 @@ export function useBingo(
     bingoLines: bingoResult.lines,
     bingoCount,
     hasBlackout,
+    squarePoints,
     bingoScore,
     celebrationData,
     isLoading,

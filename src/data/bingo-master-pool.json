@@ -1,0 +1,1574 @@
+{
+  "schema_version": "1.0",
+  "game": {
+    "name": "House of the Dragon S3 Finale Bingo",
+    "season": 3,
+    "episode": 8,
+    "players": 6,
+    "board_dimensions": "5x5",
+    "squares_per_board": 25,
+    "total_board_slots": 150,
+    "master_pool_size": 75,
+    "average_square_uses_if_evenly_distributed": 2.0
+  },
+  "spoiler_policy": {
+    "canon_cutoff": "End of Season 3 Episode 7 only",
+    "excluded": [
+      "Episode 8 screeners",
+      "Episode 8 reviews or recaps",
+      "Finale leaks",
+      "Outcome-revealing trailer/frame analysis",
+      "Unaired Fire & Blood outcomes"
+    ],
+    "note": "All probability estimates are subjective pre-finale estimates based on on-screen setup through Episode 7 plus audience-interest considerations. They are not sourced predictions or leaks."
+  },
+  "probability_model": {
+    "meaning": "Estimated probability that the square's strict win condition occurs at least once during the finale.",
+    "tiers": {
+      "likely": {
+        "min_pct": 60,
+        "max_pct": 100
+      },
+      "toss_up": {
+        "min_pct": 40,
+        "max_pct": 59
+      },
+      "long_shot": {
+        "min_pct": 20,
+        "max_pct": 39
+      },
+      "chaos": {
+        "min_pct": 0,
+        "max_pct": 19
+      }
+    },
+    "pool_tier_counts": {
+      "likely": 15,
+      "toss_up": 38,
+      "long_shot": 16,
+      "chaos": 6
+    },
+    "pool_average_probability_pct": 45.9,
+    "important": "These probabilities are game-balancing estimates, not calibrated forecasts."
+  },
+  "board_generation_idea": {
+    "goal": "Six different boards with approximately equal expected difficulty, not six copies of the same board.",
+    "recommended_tier_mix_per_board": {
+      "likely": 7,
+      "toss_up": 10,
+      "long_shot": 6,
+      "chaos": 2
+    },
+    "balancing_method": [
+      "Compute each candidate board's expected hits as the sum of probability_decimal across its 25 squares.",
+      "Keep all six boards' expected-hit totals within 0.30 of one another.",
+      "Limit any single storyline_tag to at most 4 squares on one board; prefer 3 or fewer when possible.",
+      "No square needs to appear on all six boards. Aim for an average of about two board appearances per square across the 75-square master pool.",
+      "Cap pairwise overlap between any two boards at about 8 to 10 squares.",
+      "Use fun_type to avoid boards that are mechanically balanced but tonally boring: mix spectacle, audience-love/hate, callbacks, weirdness, character payoffs and chaos.",
+      "When two squares are strongly nested (for example Named Death and Aemond Dies), avoid placing too many nested pairs on the same board unless the harder square is intentionally used as a jackpot."
+    ],
+    "suggested_selection_priority": "Prefer vivid, judgeable, emotionally fun squares over generic political events when two options have similar probability."
+  },
+  "sources": {
+    "e7_recap": {
+      "title": "House of the Dragon Season 3 Episode 7 Recap",
+      "publisher": "Decider",
+      "url": "https://decider.com/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/",
+      "supports": "Rhaena/Sheepstealer, Alicent poisoning Aemond, Ulf/Ormund, Sunfyre return, Rhaenyra/Mysaria, Helaena visions."
+    },
+    "e7_dragons": {
+      "title": "House of the Dragon director explains the big dragon surprises ahead of season 3 finale",
+      "publisher": "Entertainment Weekly",
+      "url": "https://ew.com/house-of-the-dragon-sunfyre-return-dreamfyre-reveal-season-3-director-interview-12032370",
+      "supports": "Sunfyre return and bond with Aegon, Dreamfyre vision, Ormund courting Ulf."
+    },
+    "e7_stalling": {
+      "title": "House of the Dragon Episode 7 Feels Like Major Stalling",
+      "publisher": "Esquire",
+      "url": "https://www.esquire.com/entertainment/tv/a73297586/house-of-the-dragon-season-3-episode-7-recap/",
+      "supports": "Brooding/vision-heavy structure and audience/critic frustration with repeated loops."
+    },
+    "sheepstealer_reaction": {
+      "title": "I Didn't Expect To Be So Emotionally Overwhelmed By HOTD's Dragon Abandonment Scene",
+      "publisher": "CinemaBlend",
+      "url": "https://www.cinemablend.com/television/hotd-dragon-abandonment-scene-internet-mad-sheepstealer-rhaena",
+      "supports": "Audience protectiveness toward Sheepstealer after episode 7."
+    },
+    "e6_recap": {
+      "title": "House of the Dragon Season 3 Episode 6 Review: The Butcher's Ball",
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-review-the-butchers-ball/",
+      "supports": "Criston Cole's death, northern/river forces, late-season ground-war setup and Corlys-related developments."
+    },
+    "e5_recap": {
+      "title": "House of the Dragon Season 3 Episode 5 Review",
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/20/house-of-the-dragon-season-3-episode-5-recap-review/",
+      "supports": "Aegon/Larys road story, Helaena pregnancy, Alicent/Helaena dynamics and late-season character threads."
+    },
+    "e3_recap": {
+      "title": "House of the Dragon Season 3 Episode 3 Recap",
+      "publisher": "Forbes",
+      "url": "https://www.forbes.com/sites/erikkain/2026/07/05/house-of-the-dragon-season-3-episode-3-recap/",
+      "supports": "Rhaenyra's governance problems, resource pressure and rat motif."
+    }
+  },
+  "squares": [
+    {
+      "id": "dragon_dies",
+      "title": "Dragon Dies",
+      "category": "dragons",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "A dragon must unmistakably die during the episode or be definitively confirmed dead. A crash, disappearance, or catastrophic-looking injury does not count unless the episode establishes the death.",
+      "why_it_is_fun": "A huge, visually obvious payoff with real stakes; strong enough to anchor a board without being guaranteed.",
+      "storyline_tags": [
+        "dragons",
+        "combat",
+        "death"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "dragon_vs_dragon",
+      "title": "Dragon vs Dragon",
+      "category": "dragons",
+      "estimated_probability_pct": 70,
+      "probability_decimal": 0.7,
+      "probability_ratio": "7/10",
+      "likelihood_tier": "likely",
+      "win_condition": "Two dragons must deliberately attack one another. Roaring, posturing, chasing without contact, or simply sharing a battlefield does not count.",
+      "why_it_is_fun": "Easy to judge in real time and exactly the kind of finale spectacle people want.",
+      "storyline_tags": [
+        "dragons",
+        "combat"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "rider_falls",
+      "title": "Rider Falls",
+      "category": "dragons",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A dragonrider must involuntarily fall, be thrown, or be knocked from their dragon. A planned jump, ordinary dismount, or climbing off after landing does not count.",
+      "why_it_is_fun": "A classic bingo shock square: specific, visual, and immediately yell-worthy.",
+      "storyline_tags": [
+        "dragons",
+        "riders",
+        "combat"
+      ],
+      "source_basis": [],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "friendly_fire",
+      "title": "Friendly Fire",
+      "category": "dragons",
+      "estimated_probability_pct": 35,
+      "probability_decimal": 0.35,
+      "probability_ratio": "7/20",
+      "likelihood_tier": "long_shot",
+      "win_condition": "A dragon must attack, burn, injure, or kill someone fighting on its rider's own side. An accidental near-miss does not count unless someone or something allied is actually hit.",
+      "why_it_is_fun": "Calls back to the season's repeated theme that dragons are not perfectly controllable weapons.",
+      "storyline_tags": [
+        "dragons",
+        "control",
+        "callback"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "dragon_says_nope",
+      "title": "Dragon Says Nope",
+      "category": "dragons",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A dragon must visibly resist, ignore, or refuse what its rider is trying to make it do. General difficulty riding or mounting does not count unless the dragon clearly asserts its own will.",
+      "why_it_is_fun": "Funny because the dragons increasingly seem to have better judgment than their riders.",
+      "storyline_tags": [
+        "dragons",
+        "control"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "character-comedy"
+    },
+    {
+      "id": "dragon_snack",
+      "title": "Dragon Snack",
+      "category": "dragons",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "A dragon must visibly bite, eat, or swallow a human, animal, or substantial piece of flesh. Burning someone does not count unless the dragon actually takes a bite.",
+      "why_it_is_fun": "Gross, unmistakable, and much more fun than a generic battle square.",
+      "storyline_tags": [
+        "dragons",
+        "gore"
+      ],
+      "source_basis": [],
+      "fun_type": "chaotic"
+    },
+    {
+      "id": "dragon_crash",
+      "title": "Dragon Crash",
+      "category": "dragons",
+      "estimated_probability_pct": 40,
+      "probability_decimal": 0.4,
+      "probability_ratio": "2/5",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A dragon must collide hard with the ground, a building, ship, another dragon, or another major object. A rough but intentional landing does not count.",
+      "why_it_is_fun": "A visual stunt square that can hit during almost any dragon sequence.",
+      "storyline_tags": [
+        "dragons",
+        "combat"
+      ],
+      "source_basis": [],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "dracarys_spoken",
+      "title": "Dracarys Spoken",
+      "category": "dragons",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A character must audibly say “Dracarys” as a command. Dragonfire without the spoken command does not satisfy the square.",
+      "why_it_is_fun": "Simple, iconic, and satisfying to mark the instant it happens.",
+      "storyline_tags": [
+        "dragons",
+        "targaryen",
+        "dialogue"
+      ],
+      "source_basis": [],
+      "fun_type": "catchphrase"
+    },
+    {
+      "id": "sunfyre_love",
+      "title": "Sunfyre Love",
+      "category": "dragons",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Aegon and Sunfyre must share a clearly affectionate or emotionally meaningful interaction. Merely appearing together, mounting, or fighting side by side does not count without an obvious emotional beat.",
+      "why_it_is_fun": "The Aegon–Sunfyre reunion was one of the most audience-loved late-season moments, so this gives viewers something to actively root for.",
+      "storyline_tags": [
+        "aegon",
+        "sunfyre",
+        "greens"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "vhagar_entrance",
+      "title": "Vhagar Entrance",
+      "category": "dragons",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Vhagar must make a substantial present-day appearance that materially changes the mood or action of a scene. A distant glimpse, memory, or prophetic vision does not count.",
+      "why_it_is_fun": "Vhagar entering any scene instantly changes the threat level.",
+      "storyline_tags": [
+        "aemond",
+        "vhagar",
+        "greens"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "sheepstealer_justice",
+      "title": "Sheepstealer Justice",
+      "category": "dragons",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Something genuinely positive must happen for Sheepstealer: escape, recovery, protection, reunion, food, or survival from a fresh threat. More suffering does not count; the point is that the poor dragon gets a win.",
+      "why_it_is_fun": "Directly taps the audience's unexpectedly protective reaction to Sheepstealer after episode 7.",
+      "storyline_tags": [
+        "rhaena",
+        "sheepstealer",
+        "blacks"
+      ],
+      "source_basis": [
+        "sheepstealer_reaction"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "dreamfyre_appears",
+      "title": "Dreamfyre Appears",
+      "category": "dragons",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Dreamfyre must visibly appear again, either physically or unmistakably within Helaena's prophetic experience. A spoken reference to Dreamfyre alone does not count.",
+      "why_it_is_fun": "Fans finally got a meaningful Dreamfyre reveal in episode 7, making any follow-up instantly notable.",
+      "storyline_tags": [
+        "helaena",
+        "dreamfyre",
+        "visions"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "dragon_wounded",
+      "title": "Dragon Wounded",
+      "category": "dragons",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A dragon must receive a clearly visible new injury during the finale. Existing scars or wounds carried into the episode do not count.",
+      "why_it_is_fun": "Broad enough to be viable but still gives the board a concrete visual event.",
+      "storyline_tags": [
+        "dragons",
+        "combat",
+        "injury"
+      ],
+      "source_basis": [],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "dragon_hug",
+      "title": "Dragon Hug",
+      "category": "dragons",
+      "estimated_probability_pct": 25,
+      "probability_decimal": 0.25,
+      "probability_ratio": "1/4",
+      "likelihood_tier": "long_shot",
+      "win_condition": "A rider must have an unmistakably affectionate physical interaction with their dragon, such as embracing, nuzzling, stroking, or comforting it. Mounting or handling tack does not count.",
+      "why_it_is_fun": "A rare wholesome square in a show where almost everything else is on fire.",
+      "storyline_tags": [
+        "dragons",
+        "riders",
+        "bond"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "dragon_eats_name",
+      "title": "Named Dragon Snack",
+      "category": "dragons",
+      "estimated_probability_pct": 12,
+      "probability_decimal": 0.12,
+      "probability_ratio": "2/17",
+      "likelihood_tier": "chaos",
+      "win_condition": "A dragon must visibly kill and eat, bite apart, or swallow a named character. Burning a named character without actually using its teeth does not count.",
+      "why_it_is_fun": "A true chaos square: low probability, incredibly memorable, and worth screaming about.",
+      "storyline_tags": [
+        "dragons",
+        "death",
+        "named-character"
+      ],
+      "source_basis": [],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "rhaena_screws_up",
+      "title": "Rhaena Screws Up",
+      "category": "black_court",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Rhaena must make an identifiable decision that clearly worsens the situation. Bad luck by itself does not count; viewers should reasonably be able to say, “Rhaena, why did you do that?”",
+      "why_it_is_fun": "Turns the group's frustration with her into a recurring comedy bet instead of just complaining about the character.",
+      "storyline_tags": [
+        "rhaena",
+        "sheepstealer",
+        "blacks"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "sheepstealer_rejects",
+      "title": "Sheepstealer Rejects",
+      "category": "black_court",
+      "estimated_probability_pct": 35,
+      "probability_decimal": 0.35,
+      "probability_ratio": "7/20",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Rhaena must try to reconnect with or control Sheepstealer, and Sheepstealer must actively avoid, threaten, ignore, or reject her. Remaining separated without an attempted interaction does not count.",
+      "why_it_is_fun": "Specific payoff to the season-long question of whether Rhaena can actually control the dragon she claimed.",
+      "storyline_tags": [
+        "rhaena",
+        "sheepstealer"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "character-comedy"
+    },
+    {
+      "id": "rhaena_gets_blamed",
+      "title": "Rhaena Gets Blamed",
+      "category": "black_court",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Another named character must directly blame or seriously criticize Rhaena for Sheepstealer, Jace, the Gullet, or her choices this season. Rhaena blaming herself does not satisfy this square.",
+      "why_it_is_fun": "A satisfying callback square that requires the season's consequences to be spoken aloud.",
+      "storyline_tags": [
+        "rhaena",
+        "jace",
+        "gullet",
+        "callback"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "baela_side_eye",
+      "title": "Baela Side-Eye",
+      "category": "black_court",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Baela must visibly or verbally react to Rhaena with clear annoyance, disbelief, frustration, or judgment. The reaction should be obvious enough that it does not require frame-by-frame interpretation.",
+      "why_it_is_fun": "Small, funny, character-specific, and easy to catch during a live watch.",
+      "storyline_tags": [
+        "baela",
+        "rhaena",
+        "blacks"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "character-comedy"
+    },
+    {
+      "id": "jace_guilt",
+      "title": "Jace Guilt",
+      "category": "black_court",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A current decision or confrontation involving Rhaena, Rhaenyra, Baela, or Daemon must be explicitly tied to Jace's death. A casual mention of Jace without present-tense consequence does not count.",
+      "why_it_is_fun": "Rewards the finale for paying off one of the season's biggest emotional losses instead of simply name-checking it.",
+      "storyline_tags": [
+        "jace",
+        "rhaena",
+        "rhaenyra",
+        "callback"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "daemon_daddy",
+      "title": "Daemon Daddy",
+      "category": "black_court",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Daemon must do something clearly motivated by protecting, comforting, or loving Baela or Rhaena as their father. Tactical cooperation does not count unless the parental motivation is explicit or unmistakable.",
+      "why_it_is_fun": "A rare warm Daemon square and a continuation of the season's more paternal turn with Rhaena.",
+      "storyline_tags": [
+        "daemon",
+        "rhaena",
+        "baela"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "daemon_defies",
+      "title": "Daemon Defies",
+      "category": "black_court",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Daemon must deliberately disobey, circumvent, or materially contradict Rhaenyra. An argument does not count if he ultimately does exactly what she orders.",
+      "why_it_is_fun": "Their fractured trust has been one of the season's persistent Black-side tensions.",
+      "storyline_tags": [
+        "daemon",
+        "rhaenyra",
+        "blacks"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "conflict"
+    },
+    {
+      "id": "rhaenyra_dragged",
+      "title": "Rhaenyra Dragged",
+      "category": "black_court",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "A named character must directly tell Rhaenyra that one of her choices has been foolish, damaging, cruel, or politically disastrous. Polite advice or mild disagreement does not count; it has to sting.",
+      "why_it_is_fun": "Turns a major audience frustration with her rule into a cheerable square.",
+      "storyline_tags": [
+        "rhaenyra",
+        "kings_landing",
+        "blacks"
+      ],
+      "source_basis": [
+        "e7_stalling",
+        "e3_recap"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "sapphic_spark",
+      "title": "Sapphic Spark",
+      "category": "black_court",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Rhaenyra and Mysaria must share an unmistakably romantic or sexual continuation of their relationship, such as a kiss, sexual contact, a clear proposition, or waking together with explicit implication. Ordinary confidante intimacy does not count.",
+      "why_it_is_fun": "A fun, fandom-aware square that gives viewers something to root for beyond military outcomes.",
+      "storyline_tags": [
+        "rhaenyra",
+        "mysaria",
+        "romance"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "mysaria_roasted",
+      "title": "Mysaria Roasted",
+      "category": "black_court",
+      "estimated_probability_pct": 35,
+      "probability_decimal": 0.35,
+      "probability_ratio": "7/20",
+      "likelihood_tier": "long_shot",
+      "win_condition": "A named character must directly challenge, expose, insult, or criticize Mysaria or her influence over Rhaenyra. Generic complaints about Rhaenyra's government do not count.",
+      "why_it_is_fun": "A payoff square for viewers frustrated by Mysaria's influence and screen time.",
+      "storyline_tags": [
+        "mysaria",
+        "rhaenyra",
+        "blacks"
+      ],
+      "source_basis": [
+        "e7_stalling"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "bastard_problem",
+      "title": "Bastard Problem",
+      "category": "black_court",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Questions about bastardy, dragonseeds, legitimacy, or resentment of Rhaenyra's elevation of lowborn riders must materially affect a conversation or decision. A random use of the word “bastard” as an insult does not count.",
+      "why_it_is_fun": "Keeps one of the season's class-and-legitimacy tensions alive without requiring a specific book outcome.",
+      "storyline_tags": [
+        "dragonseeds",
+        "rhaenyra",
+        "legitimacy"
+      ],
+      "source_basis": [],
+      "fun_type": "callback"
+    },
+    {
+      "id": "broke_queen",
+      "title": "Broke Queen",
+      "category": "black_court",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "The crown's missing money or lack of funds must create a concrete problem or constrain a decision. A generic statement that war is expensive does not count.",
+      "why_it_is_fun": "A season-wide callback to the less glamorous problem Rhaenyra inherited after taking King's Landing: ruling costs money.",
+      "storyline_tags": [
+        "rhaenyra",
+        "treasury",
+        "kings_landing"
+      ],
+      "source_basis": [
+        "e3_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "rhaena_cries",
+      "title": "Rhaena Cries",
+      "category": "black_court",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Rhaena must visibly cry or emotionally break down on screen. Looking sad, wet-eyed, or miserable without an actual breakdown does not count.",
+      "why_it_is_fun": "Simple, petty, highly judgeable, and exactly the kind of square that makes a watch party laugh.",
+      "storyline_tags": [
+        "rhaena"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "rhaena_says_sorry",
+      "title": "Rhaena Says Sorry",
+      "category": "black_court",
+      "estimated_probability_pct": 25,
+      "probability_decimal": 0.25,
+      "probability_ratio": "1/4",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Rhaena must explicitly apologize to another character for Sheepstealer, Jace, the Gullet, or her actions this season. Regretful expressions or self-blame without an actual apology do not count.",
+      "why_it_is_fun": "A long-shot accountability square for viewers waiting for her choices to be addressed.",
+      "storyline_tags": [
+        "rhaena",
+        "jace",
+        "sheepstealer"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "iron_throne_bites",
+      "title": "Throne Bites Back",
+      "category": "black_court",
+      "estimated_probability_pct": 15,
+      "probability_decimal": 0.15,
+      "probability_ratio": "3/20",
+      "likelihood_tier": "chaos",
+      "win_condition": "The Iron Throne must visibly cut, wound, or draw blood from someone during the finale. A character merely touching, sitting on, or talking about the throne does not count.",
+      "why_it_is_fun": "A pure lore-flavored chaos square with a wonderfully objective visual trigger.",
+      "storyline_tags": [
+        "iron_throne",
+        "rhaenyra",
+        "kings_landing"
+      ],
+      "source_basis": [],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "aegon_sass",
+      "title": "Aegon Sass",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 70,
+      "probability_decimal": 0.7,
+      "probability_ratio": "7/10",
+      "likelihood_tier": "likely",
+      "win_condition": "Aegon must deliver an unmistakably sarcastic, cutting, morbidly funny, or self-aware line. Someone else joking about Aegon does not count.",
+      "why_it_is_fun": "His dark humor has become one of the most entertaining parts of his wounded road-story persona.",
+      "storyline_tags": [
+        "aegon",
+        "greens"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "aegon_goes_king",
+      "title": "Aegon Goes King",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Aegon must actively behave like a claimant again by issuing an order, demanding allegiance, rallying support, or publicly asserting royal authority. Simply surviving with Sunfyre does not count.",
+      "why_it_is_fun": "Tests whether the late-season Sunfyre reunion translates into actual political swagger.",
+      "storyline_tags": [
+        "aegon",
+        "sunfyre",
+        "greens"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "character-payoff"
+    },
+    {
+      "id": "larys_being_larys",
+      "title": "Larys Being Larys",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "Larys must manipulate, betray, blackmail, strategically lie to, or quietly use somebody. His full scheme does not have to be revealed; unmistakable Larys behavior is enough.",
+      "why_it_is_fun": "A broad but character-specific square that feels like betting on gravity.",
+      "storyline_tags": [
+        "larys",
+        "aegon",
+        "greens"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "character-comedy"
+    },
+    {
+      "id": "tyland_surprise",
+      "title": "Tyland Surprise",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Tyland must do something unexpectedly brave, competent, loyal, funny, or consequential. Routine participation beside Aegon does not count.",
+      "why_it_is_fun": "Gives a supporting character a chance to become the night's random MVP.",
+      "storyline_tags": [
+        "tyland",
+        "aegon",
+        "greens"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "wildcard"
+    },
+    {
+      "id": "aemond_wakes",
+      "title": "Aemond Wakes",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 70,
+      "probability_decimal": 0.7,
+      "probability_ratio": "7/10",
+      "likelihood_tier": "likely",
+      "win_condition": "Aemond must clearly regain consciousness and become mentally responsive after Alicent's poisoning. A dream or vision featuring Aemond does not count if the real Aemond remains unconscious.",
+      "why_it_is_fun": "Directly resolves the episode-7 cliffhanger without predicting what he does afterward.",
+      "storyline_tags": [
+        "aemond",
+        "alicent",
+        "harrenhal"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "mommy_issues",
+      "title": "Mommy Issues",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Aemond must again emotionally, sexually, hallucinatorily, or psychologically fixate on Alicent. A purely strategic reference to his mother does not count unless the scene clearly carries the season's loaded maternal obsession.",
+      "why_it_is_fun": "The most meme-ready distillation of Aemond's increasingly bizarre season arc.",
+      "storyline_tags": [
+        "aemond",
+        "alicent",
+        "alys"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "character-comedy"
+    },
+    {
+      "id": "alys_witchcraft",
+      "title": "Alys Witchcraft",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Alys must do something presented as supernatural, prophetic, impossible, or deliberately witch-like. Ordinary medicine, herb lore, or vague creepiness does not count on its own.",
+      "why_it_is_fun": "Lets the Harrenhal story earn its weirdness instead of just talking mysteriously.",
+      "storyline_tags": [
+        "alys",
+        "aemond",
+        "harrenhal"
+      ],
+      "source_basis": [
+        "e7_stalling"
+      ],
+      "fun_type": "weird"
+    },
+    {
+      "id": "harrenhal_gets_weird",
+      "title": "Harrenhal Gets Weird",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "A present-day Harrenhal scene must contain a vision, hallucination, supernatural event, eerie omen, or similarly inexplicable occurrence. Ordinary dialogue inside Harrenhal does not count.",
+      "why_it_is_fun": "An easy-to-understand running gag after two seasons of Harrenhal refusing to behave like normal real estate.",
+      "storyline_tags": [
+        "harrenhal",
+        "visions",
+        "alys",
+        "aemond"
+      ],
+      "source_basis": [
+        "e7_stalling"
+      ],
+      "fun_type": "weird"
+    },
+    {
+      "id": "alicent_regrets_it",
+      "title": "Alicent Regrets It",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 35,
+      "probability_decimal": 0.35,
+      "probability_ratio": "7/20",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Alicent must explicitly regret poisoning Aemond or actively attempt to reverse or mitigate what she did. Merely looking distressed or conflicted does not count.",
+      "why_it_is_fun": "A character-payoff square built around one of the penultimate episode's biggest moral choices.",
+      "storyline_tags": [
+        "alicent",
+        "aemond"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "character-payoff"
+    },
+    {
+      "id": "helaena_says_what",
+      "title": "Helaena Says What",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 75,
+      "probability_decimal": 0.75,
+      "probability_ratio": "3/4",
+      "likelihood_tier": "likely",
+      "win_condition": "Helaena must say something clearly prophetic, ominous, bizarre, or difficult for the other characters to understand. Ordinary dialogue about her family, captivity, or pregnancy does not count.",
+      "why_it_is_fun": "One of the best recurring bingo beats because her visions are both plot-relevant and inherently weird.",
+      "storyline_tags": [
+        "helaena",
+        "visions",
+        "dreamfyre"
+      ],
+      "source_basis": [
+        "e7_dragons",
+        "e5_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "helaena_chooses",
+      "title": "Helaena Chooses",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Helaena must make a consequential decision for herself rather than simply comply with someone else's plan. A refusal counts if it changes what happens.",
+      "why_it_is_fun": "Her season arc has increasingly been about asserting agency while other people try to use her.",
+      "storyline_tags": [
+        "helaena",
+        "alicent",
+        "greens"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "character-payoff"
+    },
+    {
+      "id": "protect_helaena",
+      "title": "Protect Helaena",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A named character must actively defend, rescue, hide, advocate for, or otherwise protect Helaena. Feeling sorry for her or offering comfort without action does not count.",
+      "why_it_is_fun": "A fandom-friendly rooting square for one of the season's most protected-by-the-audience characters.",
+      "storyline_tags": [
+        "helaena",
+        "greens"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "poison_works",
+      "title": "Poison Works",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 25,
+      "probability_decimal": 0.25,
+      "probability_ratio": "1/4",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Aemond must die from Alicent's poisoning, or another character must definitively state that the poison killed him. Remaining unconscious, sick, or in danger does not count.",
+      "why_it_is_fun": "A high-stakes long shot tied directly to episode 7's cliffhanger.",
+      "storyline_tags": [
+        "aemond",
+        "alicent",
+        "poison"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "dreamfyre_real_ride",
+      "title": "Dreamfyre Takes Flight",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 18,
+      "probability_decimal": 0.18,
+      "probability_ratio": "2/11",
+      "likelihood_tier": "chaos",
+      "win_condition": "Helaena must physically ride Dreamfyre in the present timeline, not merely in a dream, prophecy, memory, or vision. Dreamfyre appearing without Helaena mounted does not count.",
+      "why_it_is_fun": "A deliberately hard chaos square after episode 7 teased the image in a vision.",
+      "storyline_tags": [
+        "helaena",
+        "dreamfyre",
+        "dragonrider"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "aemond_dies",
+      "title": "Aemond Dies",
+      "category": "greens_harrenhal",
+      "estimated_probability_pct": 15,
+      "probability_decimal": 0.15,
+      "probability_ratio": "3/20",
+      "likelihood_tier": "chaos",
+      "win_condition": "Aemond must definitively die during the finale from any cause. Severe injury, collapse, disappearance, or an ambiguous apparent death does not count.",
+      "why_it_is_fun": "A true jackpot square that makes the poison cliffhanger matter without assuming its outcome.",
+      "storyline_tags": [
+        "aemond",
+        "death"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "ormund_humbled",
+      "title": "Ormund Humbled",
+      "category": "tumbleton",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Ormund must suffer a real humiliation, defeat, injury, rejection, or meaningful loss of control. Someone merely disagreeing with him is not enough.",
+      "why_it_is_fun": "A pure audience-payoff square for a character people enjoy hating.",
+      "storyline_tags": [
+        "ormund",
+        "hightower",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "daeron_defies",
+      "title": "Daeron Defies",
+      "category": "tumbleton",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "Daeron must openly refuse, undermine, or counter something Ormund wants him to do. Quiet discomfort or private disagreement does not count unless Daeron acts on it.",
+      "why_it_is_fun": "The Daeron–Ormund power struggle has become one of the season's clearest internal Green conflicts.",
+      "storyline_tags": [
+        "daeron",
+        "ormund",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "ulf_gets_smacked",
+      "title": "Ulf Gets Smacked",
+      "category": "tumbleton",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Ulf must be punched, shoved, thrown down, burned, struck, or otherwise physically punished. Verbal abuse alone does not count.",
+      "why_it_is_fun": "Simple, mean, and extremely easy to adjudicate.",
+      "storyline_tags": [
+        "ulf",
+        "dragonseeds"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "audience-hate"
+    },
+    {
+      "id": "ulf_exposed",
+      "title": "Ulf Exposed",
+      "category": "tumbleton",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Someone aligned with Rhaenyra must discover or directly witness Ulf's secret cooperation with Ormund. Private Green-side scheming does not count until the betrayed side knows.",
+      "why_it_is_fun": "A payoff to one of episode 7's most explicit unresolved betrayal setups.",
+      "storyline_tags": [
+        "ulf",
+        "ormund",
+        "rhaenyra"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "hugh_chooses",
+      "title": "Hugh Chooses",
+      "category": "tumbleton",
+      "estimated_probability_pct": 50,
+      "probability_decimal": 0.5,
+      "probability_ratio": "1/2",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Hugh must make a clear, consequential decision about his loyalties, Kat, or his role as a dragonrider and then act on it. Hesitation, complaining, or merely receiving an offer does not count.",
+      "why_it_is_fun": "Keeps Hugh suspenseful without importing any unaired book outcome.",
+      "storyline_tags": [
+        "hugh",
+        "kat",
+        "dragonseeds"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "kat_gets_out",
+      "title": "Kat Gets Out",
+      "category": "tumbleton",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Kat must escape, be rescued, or otherwise be removed from immediate danger in Tumbleton. Someone offering to help her without successfully doing so does not count.",
+      "why_it_is_fun": "A smaller human-scale rooting interest amid all the dragons and armies.",
+      "storyline_tags": [
+        "kat",
+        "hugh",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e5_recap"
+      ],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "corlys_freed",
+      "title": "Corlys Freed",
+      "category": "tumbleton",
+      "estimated_probability_pct": 35,
+      "probability_decimal": 0.35,
+      "probability_ratio": "7/20",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Corlys must escape, be rescued, or be intentionally released from captivity. An attempted rescue does not count unless the Sea Snake actually becomes free.",
+      "why_it_is_fun": "A clean payoff to his late-season capture and a good medium-hard square.",
+      "storyline_tags": [
+        "corlys",
+        "velaryon",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "alyn_goes_rogue",
+      "title": "Alyn Goes Rogue",
+      "category": "tumbleton",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Alyn must disobey orders or take an unauthorized serious risk involving Corlys, Baela, the Velaryons, or the war. Normal participation in battle does not count.",
+      "why_it_is_fun": "Makes Corlys's capture personal and gives Alyn a chance to drive plot instead of just react.",
+      "storyline_tags": [
+        "alyn",
+        "corlys",
+        "velaryon"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "character-payoff"
+    },
+    {
+      "id": "northmen_charge",
+      "title": "Northmen Charge",
+      "category": "tumbleton",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Roddy Dustin, Oscar Tully, Black Aly, or their allied northern/river forces must launch or join a meaningful attack. Merely showing the army marching, camping, or discussing battle plans does not count.",
+      "why_it_is_fun": "Extends the Butcher's Ball ground-war momentum into a concrete, cheerable event.",
+      "storyline_tags": [
+        "northmen",
+        "riverlands",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "criston_callback",
+      "title": "Criston Callback",
+      "category": "tumbleton",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Criston's death or the consequences of his failed campaign must meaningfully affect current dialogue or a decision. Merely listing him among casualties does not count.",
+      "why_it_is_fun": "A callback that asks the finale to acknowledge a major season-long character rather than repeat an old scene.",
+      "storyline_tags": [
+        "criston",
+        "greens",
+        "callback"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "tumbleton_battle",
+      "title": "Tumbleton Battle",
+      "category": "tumbleton",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "A substantial organized battle must begin at or immediately around Tumbleton. A tiny skirmish does not count; armies, dragons, or clearly organized military forces must genuinely engage.",
+      "why_it_is_fun": "One of the season's most visibly converging military threads and a natural finale anchor.",
+      "storyline_tags": [
+        "tumbleton",
+        "battle",
+        "hightower"
+      ],
+      "source_basis": [
+        "e7_dragons",
+        "e6_recap"
+      ],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "hostage_threat",
+      "title": "Hostage Threat",
+      "category": "tumbleton",
+      "estimated_probability_pct": 40,
+      "probability_decimal": 0.4,
+      "probability_ratio": "2/5",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Someone must explicitly threaten to harm, kill, mutilate, or otherwise use a captive to force another character's behavior. Simply mentioning that a person is imprisoned does not count.",
+      "why_it_is_fun": "Corlys's captivity creates a clean setup for this without making it inevitable.",
+      "storyline_tags": [
+        "corlys",
+        "hostage",
+        "tumbleton"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "conflict"
+    },
+    {
+      "id": "corlys_loses_more",
+      "title": "More Corlys Parts",
+      "category": "tumbleton",
+      "estimated_probability_pct": 18,
+      "probability_decimal": 0.18,
+      "probability_ratio": "2/11",
+      "likelihood_tier": "chaos",
+      "win_condition": "Corlys must lose another finger, limb, eye, or other body part during the finale. Threats, off-screen torture without visible loss, or injuries that leave everything attached do not count.",
+      "why_it_is_fun": "A nasty little chaos square based on how badly his captivity has already gone.",
+      "storyline_tags": [
+        "corlys",
+        "gore",
+        "captivity"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "ulf_changes_title",
+      "title": "Ulf Gets a Title",
+      "category": "tumbleton",
+      "estimated_probability_pct": 40,
+      "probability_decimal": 0.4,
+      "probability_ratio": "2/5",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Ulf must be formally granted, publicly promised, or seriously claim a new noble title, lordship, castle, or landholding. Empty flattery or joking titles do not count.",
+      "why_it_is_fun": "Direct payoff to Ormund using status and social recognition to tempt him.",
+      "storyline_tags": [
+        "ulf",
+        "ormund",
+        "status"
+      ],
+      "source_basis": [
+        "e7_dragons"
+      ],
+      "fun_type": "plot-payoff"
+    },
+    {
+      "id": "daeron_tessarion_love",
+      "title": "Tessarion Love",
+      "category": "tumbleton",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Daeron and Tessarion must share a clearly affectionate, protective, or emotionally meaningful interaction. Routine mounting or battle commands do not count without a visible bond.",
+      "why_it_is_fun": "Mirrors the audience affection for Aegon/Sunfyre and lets Daeron's dragon relationship get its own rooting square.",
+      "storyline_tags": [
+        "daeron",
+        "tessarion",
+        "dragon-bond"
+      ],
+      "source_basis": [],
+      "fun_type": "audience-love"
+    },
+    {
+      "id": "dead_son_callback",
+      "title": "Dead Son Callback",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 55,
+      "probability_decimal": 0.55,
+      "probability_ratio": "11/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Jace's death must directly motivate a present-tense decision, confrontation, threat, or emotional break. A casual mention of his name or memorial image does not count.",
+      "why_it_is_fun": "A season-wide callback that only hits if the loss still matters to what people do now.",
+      "storyline_tags": [
+        "jace",
+        "callback",
+        "grief"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "otto_shadow",
+      "title": "Otto's Shadow",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 25,
+      "probability_decimal": 0.25,
+      "probability_ratio": "1/4",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Otto's execution, advice, political legacy, or absence must materially influence a current decision or confrontation. A casual historical mention does not count.",
+      "why_it_is_fun": "A long-shot callback to one of the season's early turning points.",
+      "storyline_tags": [
+        "otto",
+        "alicent",
+        "rhaenyra",
+        "callback"
+      ],
+      "source_basis": [],
+      "fun_type": "callback"
+    },
+    {
+      "id": "decoy_trick",
+      "title": "Decoy Trick",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Someone must use a fake person, false body, staged evidence, false identity, or deliberate decoy as part of an active plan. A lie told in conversation without a physical or identity-based deception does not count.",
+      "why_it_is_fun": "Echoes the season's repeated use of deception and fake-outs without requiring any one past scene to be repeated.",
+      "storyline_tags": [
+        "deception",
+        "callback"
+      ],
+      "source_basis": [],
+      "fun_type": "callback"
+    },
+    {
+      "id": "vision_fakeout",
+      "title": "Vision Fakeout",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A scene must initially appear to be happening for real and then be revealed as a dream, hallucination, prophecy, or vision. A sequence that is obviously surreal from the first shot does not count.",
+      "why_it_is_fun": "A perfect bingo mechanic for a season that keeps weaponizing subjective reality.",
+      "storyline_tags": [
+        "visions",
+        "harrenhal",
+        "helaena"
+      ],
+      "source_basis": [
+        "e7_stalling"
+      ],
+      "fun_type": "weird"
+    },
+    {
+      "id": "rat_cameo",
+      "title": "Rat Cameo",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 10,
+      "probability_decimal": 0.1,
+      "probability_ratio": "1/10",
+      "likelihood_tier": "chaos",
+      "win_condition": "A living rat must be clearly visible on screen. Dead rats, rat-shaped decorations, or dialogue about rats do not count.",
+      "why_it_is_fun": "Tiny, objective, ridiculous, and therefore elite bingo material.",
+      "storyline_tags": [
+        "rat",
+        "kings_landing"
+      ],
+      "source_basis": [
+        "e3_recap"
+      ],
+      "fun_type": "chaos"
+    },
+    {
+      "id": "wine_suspicious",
+      "title": "Wine Suspicious",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 40,
+      "probability_decimal": 0.4,
+      "probability_ratio": "2/5",
+      "likelihood_tier": "toss_up",
+      "win_condition": "Wine or another drink must become relevant to poisoning, deception, danger, or a consequential decision. Someone simply drinking while brooding does not count.",
+      "why_it_is_fun": "A classic Westerosi danger signal and a playful echo of this season's poisoning thread.",
+      "storyline_tags": [
+        "wine",
+        "poison",
+        "deception"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "callback"
+    },
+    {
+      "id": "brooding_window",
+      "title": "Brooding Window",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 75,
+      "probability_decimal": 0.75,
+      "probability_ratio": "3/4",
+      "likelihood_tier": "likely",
+      "win_condition": "A major character must spend several silent seconds staring dramatically through a window, over a balcony, or into the distance. Walking past a window during dialogue does not count.",
+      "why_it_is_fun": "The premium-HBO free-space-that-isn't-a-free-space.",
+      "storyline_tags": [
+        "visual-trope",
+        "brooding"
+      ],
+      "source_basis": [
+        "e7_stalling"
+      ],
+      "fun_type": "trope"
+    },
+    {
+      "id": "head_comes_off",
+      "title": "Head Comes Off",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 40,
+      "probability_decimal": 0.4,
+      "probability_ratio": "2/5",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A human head must become fully detached from its body during the episode. Sword, axe, dragon, accident, or another gruesome method all count.",
+      "why_it_is_fun": "Specific gore is more fun than generic 'battle happens' predictions.",
+      "storyline_tags": [
+        "gore",
+        "death"
+      ],
+      "source_basis": [],
+      "fun_type": "chaotic"
+    },
+    {
+      "id": "someone_burns",
+      "title": "Someone Burns",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 70,
+      "probability_decimal": 0.7,
+      "probability_ratio": "7/10",
+      "likelihood_tier": "likely",
+      "win_condition": "A clearly visible person must actually catch fire. Being near dragonfire, smoke, or an explosion without visibly burning does not count.",
+      "why_it_is_fun": "Very plausible in a dragon-war finale and instantly judgeable.",
+      "storyline_tags": [
+        "dragonfire",
+        "gore",
+        "combat"
+      ],
+      "source_basis": [],
+      "fun_type": "spectacle"
+    },
+    {
+      "id": "gratuitous_gore",
+      "title": "Gratuitous Gore",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 70,
+      "probability_decimal": 0.7,
+      "probability_ratio": "7/10",
+      "likelihood_tier": "likely",
+      "win_condition": "The camera must linger on an unusually gruesome wound, corpse, exposed anatomy, mutilation, or dismemberment. Ordinary battle blood is not enough.",
+      "why_it_is_fun": "A classic House of the Dragon reaction square that does not depend on any one storyline.",
+      "storyline_tags": [
+        "gore",
+        "visual-trope"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "trope"
+    },
+    {
+      "id": "sex_scene",
+      "title": "Sex Scene",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 30,
+      "probability_decimal": 0.3,
+      "probability_ratio": "3/10",
+      "likelihood_tier": "long_shot",
+      "win_condition": "The episode must depict unmistakable sexual activity between characters. Kissing, flirtation, post-sex conversation, or sex that happens entirely off-screen does not count.",
+      "why_it_is_fun": "Adds a very different kind of suspense to a board otherwise full of murder and dragons.",
+      "storyline_tags": [
+        "sex",
+        "romance"
+      ],
+      "source_basis": [
+        "e7_recap"
+      ],
+      "fun_type": "chaotic"
+    },
+    {
+      "id": "secret_passage",
+      "title": "Secret Passage",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 25,
+      "probability_decimal": 0.25,
+      "probability_ratio": "1/4",
+      "likelihood_tier": "long_shot",
+      "win_condition": "Someone must discover or use a concealed door, hidden corridor, tunnel, or escape route. An ordinary dungeon corridor or back staircase does not count.",
+      "why_it_is_fun": "Classic King's Landing nonsense and a useful low-probability board differentiator.",
+      "storyline_tags": [
+        "escape",
+        "kings_landing",
+        "deception"
+      ],
+      "source_basis": [],
+      "fun_type": "trope"
+    },
+    {
+      "id": "raven_ruins_everything",
+      "title": "Raven Ruins Everything",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 45,
+      "probability_decimal": 0.45,
+      "probability_ratio": "9/20",
+      "likelihood_tier": "toss_up",
+      "win_condition": "A raven-delivered message must arrive with information that significantly worsens someone's situation or forces a change of plan. Routine correspondence or a harmless update does not count.",
+      "why_it_is_fun": "Turns exposition into a fun event: bad news by bird.",
+      "storyline_tags": [
+        "raven",
+        "message",
+        "politics"
+      ],
+      "source_basis": [],
+      "fun_type": "trope"
+    },
+    {
+      "id": "someone_kneels",
+      "title": "Someone Kneels",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 65,
+      "probability_decimal": 0.65,
+      "probability_ratio": "13/20",
+      "likelihood_tier": "likely",
+      "win_condition": "Someone must deliberately kneel as an act of allegiance, surrender, petition, forgiveness, or submission. Falling because of injury, exhaustion, or poisoning does not count.",
+      "why_it_is_fun": "Very Westerosi, extremely visible, and usable across almost every storyline.",
+      "storyline_tags": [
+        "allegiance",
+        "politics"
+      ],
+      "source_basis": [],
+      "fun_type": "trope"
+    },
+    {
+      "id": "named_death",
+      "title": "Named Death",
+      "category": "callbacks_chaos",
+      "estimated_probability_pct": 80,
+      "probability_decimal": 0.8,
+      "probability_ratio": "4/5",
+      "likelihood_tier": "likely",
+      "win_condition": "Any named character must definitively die during the episode. Background soldiers, civilians, horses, nameless guards, and ambiguous apparent deaths do not count.",
+      "why_it_is_fun": "The broadest high-probability anchor, useful for balancing difficult boards.",
+      "storyline_tags": [
+        "death",
+        "named-character"
+      ],
+      "source_basis": [
+        "e6_recap"
+      ],
+      "fun_type": "anchor"
+    }
+  ]
+}

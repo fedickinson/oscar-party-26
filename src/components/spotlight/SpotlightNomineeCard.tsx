@@ -70,7 +70,7 @@ export default function SpotlightNomineeCard({
         disabled={!isTappable}
         className={[
           'w-full text-left px-3 py-1.5 rounded-lg border flex items-center gap-2 relative overflow-hidden',
-          isWinner ? 'border-oscar-gold/60' : isSelected ? 'border-oscar-gold/50 bg-oscar-gold/8' : 'bg-white/5 border-white/10',
+          isWinner ? 'border-accent/60' : isSelected ? 'border-accent/50 bg-accent/8' : 'bg-white/5 border-white/10',
           isTappable ? 'cursor-pointer' : 'cursor-default',
         ].join(' ')}
         style={isWinner ? {
@@ -94,7 +94,7 @@ export default function SpotlightNomineeCard({
         <div className="flex-1 min-w-0">
           <p className={[
             'text-sm font-semibold leading-tight truncate',
-            isWinner || isSelected ? 'text-oscar-gold' : 'text-white',
+            isWinner || isSelected ? 'text-accent' : 'text-white',
           ].join(' ')}>
             {displayName}
           </p>
@@ -109,7 +109,7 @@ export default function SpotlightNomineeCard({
         {/* Current player's stake badges */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {myConfidence != null && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-oscar-gold/15 border border-oscar-gold/30 text-oscar-gold whitespace-nowrap">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 border border-accent/30 text-accent whitespace-nowrap">
               Prestige · {myConfidence}
             </span>
           )}
@@ -126,7 +126,7 @@ export default function SpotlightNomineeCard({
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-oscar-gold text-deep-navy flex-shrink-0"
+            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-accent text-ground flex-shrink-0"
           >
             <Check size={9} strokeWidth={3} />
             <span className="text-[9px] font-bold">WIN</span>
@@ -139,9 +139,9 @@ export default function SpotlightNomineeCard({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-            className="w-5 h-5 rounded-full bg-oscar-gold/20 border border-oscar-gold/40 flex items-center justify-center flex-shrink-0"
+            className="w-5 h-5 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center flex-shrink-0"
           >
-            <Check size={10} className="text-oscar-gold" strokeWidth={3} />
+            <Check size={10} className="text-accent" strokeWidth={3} />
           </motion.div>
         )}
       </motion.button>

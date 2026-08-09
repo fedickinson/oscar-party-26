@@ -2,9 +2,9 @@
  * film-icons.tsx — maps nominated film titles to thematic SVG icons.
  *
  * Usage:
- *   <FilmIcon filmName="Sinners" size={16} className="text-oscar-gold" />
+ *   <FilmIcon filmName="Sinners" size={16} className="text-accent" />
  *
- * Pattern-matched on lowercased title. Falls back to a generic Clapperboard
+ * Pattern-matched on lowercased title. Falls back to a neutral heraldic shield
  * for unknown titles.
  *
  * Films covered (98th Academy Awards nominees):
@@ -15,7 +15,7 @@
 
 import React from 'react'
 import type { ReactNode } from 'react'
-import { Clapperboard } from 'lucide-react'
+
 
 interface FilmIconProps {
   filmName: string
@@ -260,7 +260,20 @@ function resolveFilmIcon(name: string): FilmIconComponent {
   if (n.includes('secret agent')) return SpyGlass
   if (n.includes('kpop') || n.includes('k-pop') || n.includes('demon hunter')) return DemonMic
 
-  return ({ size, className }) => <Clapperboard size={size} className={className} />
+  // Neutral heraldic shield — event-agnostic fallback for unknown entities.
+  // (A clapperboard next to a dragon was the loudest leftover of the Oscars skin.)
+  return ({ size, className }) => (
+    <Svg size={size} className={className}>
+      <path
+        d="M12 3l7 2.5V11c0 4.4-2.9 7.7-7 9.5-4.1-1.8-7-5.1-7-9.5V5.5L12 3z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M12 3v17.5" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+    </Svg>
+  )
 }
 
 export function FilmIcon({ filmName, size = 16, className = '' }: FilmIconProps) {

@@ -1,13 +1,13 @@
 const TIER_LABEL: Record<number, string> = {
-  1: 'Major Award',
-  2: 'Prestige Craft',
-  3: 'Technical',
-  4: 'Specialty',
-  5: 'Short Film',
+  1: 'Huge Moment',
+  2: 'Solid Moment',
+  3: 'Flavour',
+  4: 'Flavour',
+  5: 'Flavour',
 }
 
 const TIER_COLOR: Record<number, string> = {
-  1: 'bg-oscar-gold/20 text-oscar-gold',
+  1: 'bg-accent/20 text-accent',
   2: 'bg-purple-500/20 text-purple-300',
   3: 'bg-blue-500/20 text-blue-300',
   4: 'bg-emerald-500/20 text-emerald-300',
@@ -33,11 +33,11 @@ export default function SpotlightHeader({ categoryName, tier, points, state }: P
         >
           {TIER_LABEL[tier] ?? `Tier ${tier}`}
         </span>
-        <span className="text-[10px] text-oscar-gold/60">{points} pts</span>
+        <span className="text-[10px] text-accent/60">{points} pts</span>
       </div>
       <h1 className="text-xl font-bold text-white leading-tight truncate">{categoryName}</h1>
       {state === 'reveal' && (
-        <p className="text-xs text-emerald-400 mt-0.5 font-medium">Winner Announced</p>
+        <p className="text-xs text-emerald-400 mt-0.5 font-medium">Scored</p>
       )}
     </div>
   )
