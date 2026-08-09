@@ -21,7 +21,7 @@ export const PLAYER_AVATARS = [
     color: '#059669', image: '/avatars/player/hightower.webp', animated: '' },
   { id: 'velaryon', name: 'Velaryon', object: 'The Seahorse',
     description: 'Older than the Targaryens and quietly never lets anyone forget it.',
-    color: '#0EA5E9', image: '', animated: '' },
+    color: '#0EA5E9', image: '/avatars/player/velaryon.webp', animated: '' },
   { id: 'stark', name: 'Stark', object: 'The Direwolf',
     description: 'Winter is coming, and the North has opinions about southron nonsense.',
     color: '#64748B', image: '/avatars/player/stark.webp', animated: '' },

@@ -84,7 +84,7 @@ const TONIGHT = {
       time: '8:15pm ET' as string | null,
       title: 'Room opens',
       detail:
-        'The link lands in the group chat around then. Join and pick an avatar — the room keeps your spot, so you can do it and close the tab.',
+        'The link lands in the group chat around then. Join and claim a house — that sigil is you all night. The room keeps your spot, so you can do it and close the tab.',
     },
     {
       time: '8:30pm ET' as string | null,
