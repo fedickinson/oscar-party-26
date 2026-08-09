@@ -117,12 +117,12 @@ const PACT = [
     body: 'Nothing in here needs you mid-scene. A bingo claim is two taps. Scoring happens without you. The draft is finished before the episode starts.',
   },
   {
-    title: 'Anyone can ask to pause. Nobody pauses mid-scene.',
-    body: 'You tap to ask, it lands on the remote-holder’s phone, and they stop at the next scene break — not in the middle of a shot, and not during dialogue.',
+    title: 'We stop between scenes, together.',
+    body: 'Every scene plays all the way through — nothing stops mid-shot or over dialogue. At the break we stop as a group, and every screen freezes on the same second.',
   },
   {
-    title: 'We talk at the breaks.',
-    body: 'Chat is open the whole time and you should use it. But the real conversation happens while we are stopped. That is the trade that makes both halves of tonight work.',
+    title: 'The stops are the night, not an interruption of it.',
+    body: 'That is when the game catches up and when we get to react to what just happened. Chat is open all evening, but the real conversation happens while we are stopped — and there is no timer on it. We go again when we are ready.',
   },
   {
     title: 'Do not react ahead.',
@@ -793,9 +793,10 @@ export default function HowItWorks() {
       {/* ── Scene breaks ─────────────────────────────────────────────────── */}
       <Section eyebrow="The rhythm of the night" title="How we stop, and how we start again">
         <P>
-          Pausing is not a failure state, it is the point. It is where the game gets to be
-          loud without talking over the episode. It just has to happen at the right moment
-          and it has to end cleanly.
+          Stopping is not a failure state, it is the rhythm of the night. It is where the
+          game gets to be loud without talking over the episode. Two rules make it work:
+          it happens at a scene break rather than in the middle of one, and everybody stops
+          and starts at the same moment.
         </P>
 
         {/* One card, four compact rows. A four-step sequence has to be readable
@@ -807,18 +808,18 @@ export default function HowItWorks() {
             {[
               {
                 icon: <Hand size={16} />,
-                title: 'Anyone asks',
-                body: 'A request, not a stop button. Nothing happens to anyone’s screen yet.',
+                title: 'The scene plays out',
+                body: 'Nothing stops mid-scene. If you want a break, it happens at the end of the one we are in.',
               },
               {
                 icon: <Pause size={16} />,
-                title: 'The remote-holder picks the moment',
-                body: 'They let the scene finish, then pause and confirm.',
+                title: 'We stop together',
+                body: 'The remote-holder pauses at the break and confirms it. Every screen freezes on the same second.',
               },
               {
                 icon: <MessageCircle size={16} />,
-                title: 'We talk',
-                body: 'The part the whole system exists to protect.',
+                title: 'The game catches up, and we react',
+                body: 'Squares claimed, the board settled, then the shouting. No timer on it — as long as the scene earned.',
               },
               {
                 icon: <Play size={16} />,

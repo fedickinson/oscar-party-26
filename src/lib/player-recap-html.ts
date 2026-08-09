@@ -42,6 +42,24 @@ const C = {
 } as const
 
 /**
+ * The accent's raw channels, derived from C.accent rather than written twice.
+ *
+ * Every translucent accent wash in the stylesheet is built from this. They used
+ * to be hand-written `rgba(212,175,55,...)` literals, which meant repainting the
+ * theme updated the solid accents and silently left every wash on the previous
+ * palette — the file rendered half in one identity and half in the other.
+ * Deriving them removes that failure mode entirely.
+ */
+const ACCENT_RGB = (() => {
+  const hex = C.accent.replace('#', '')
+  const n = parseInt(hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex, 16)
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`
+})()
+
+/** Accent at a given alpha. */
+const accentA = (alpha: number) => `rgba(${ACCENT_RGB},${alpha})`
+
+/**
  * Escapes text for interpolation into HTML body content and quoted attributes.
  *
  * This file writes raw markup, so every value that came from a human MUST pass
@@ -94,6 +112,72 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
         })
         .join('')
     : `<div class="card"><p class="quiet">No roster on record.</p></div>`
+
+  const draftSummaryHtml = `
+    <div class="card draft-summary">
+      <div class="ds-row">
+        <div><p class="kicker">Drafted</p><h3>${d.draft.totalPoints} pts</h3></div>
+        ${d.draft.best
+          ? `<div class="ds-right"><p class="kicker">Best pick</p><h3>${esc(d.draft.best.name)}</h3><p class="detail">${d.draft.best.points} pts, taken at ${d.draft.best.pickNumber}</p></div>`
+          : ''}
+      </div>
+      ${d.draft.blanks.length
+        ? `<p class="detail ds-blanks">Returned nothing: ${d.draft.blanks.map(esc).join(', ')}.</p>`
+        : ''}
+      ${d.draft.passedOn
+        ? `<p class="detail ds-passed"><span class="ds-label">Left on the board</span>
+             At pick ${d.draft.passedOn.pickNumber} you took ${esc(d.draft.passedOn.youTook)} for ${d.draft.passedOn.yourPoints}.
+             Still available: someone who went on to score ${d.draft.passedOn.theirPoints}${d.draft.passedOn.takenBy ? `, and ${esc(d.draft.passedOn.takenBy)} took them` : ' — and nobody took them'}.</p>`
+        : ''}
+    </div>`
+
+  const predRow = (p: PlayerRecapData['predictions'][number]) => `
+      <li class="pred ${p.outcome}">
+        <span class="pred-conf">${p.confidence}</span>
+        <span class="pred-body">
+          <span class="pred-event">${esc(p.event)}</span>
+          <span class="pred-detail">${
+            p.outcome === 'hit'
+              ? `You called ${esc(p.yourPick)}`
+              : p.outcome === 'miss'
+                ? `You said ${esc(p.yourPick)} &middot; it was ${esc(p.actual ?? 'someone else')}`
+                : `You said ${esc(p.yourPick)} &middot; never called`
+          }</span>
+        </span>
+        <span class="pred-mark">${p.outcome === 'hit' ? `+${p.confidence}` : p.outcome === 'miss' ? '0' : '&mdash;'}</span>
+      </li>`
+
+  const hits = d.predictions.filter((p) => p.outcome === 'hit')
+  const misses = d.predictions.filter((p) => p.outcome === 'miss')
+  const unresolved = d.predictions.filter((p) => p.outcome === 'unresolved')
+
+  const predictionsHtml = d.predictions.length
+    ? `
+  <section>
+    <h2>What you called</h2>
+    <p class="section-note">${d.predictionSummary.hits} of ${d.predictionSummary.total} right &middot; ${d.predictionSummary.banked} points banked${
+      d.predictionSummary.strandedPoints > 0
+        ? ` &middot; ${d.predictionSummary.strandedPoints} staked on events that were never called`
+        : ''
+    }</p>
+
+    ${hits.length ? `<details class="pred-group" open>
+      <summary><span class="pg-title">Got right</span><span class="pg-count">${hits.length}</span></summary>
+      <ul class="pred-list">${hits.map(predRow).join('')}</ul>
+    </details>` : ''}
+
+    ${misses.length ? `<details class="pred-group">
+      <summary><span class="pg-title">Got wrong</span><span class="pg-count">${misses.length}</span></summary>
+      <ul class="pred-list">${misses.map(predRow).join('')}</ul>
+    </details>` : ''}
+
+    ${unresolved.length ? `<details class="pred-group">
+      <summary><span class="pg-title">Never called</span><span class="pg-count">${unresolved.length}</span></summary>
+      <p class="pg-note">The host never resolved these, so whatever you staked on them scored nothing either way.</p>
+      <ul class="pred-list">${unresolved.map(predRow).join('')}</ul>
+    </details>` : ''}
+  </section>`
+    : ''
 
   const momentsHtml = d.moments.length
     ? d.moments
@@ -261,7 +345,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .scoreline .accent .big { color: ${C.accent}; }
 
   /* ── Verdict ── */
-  .verdict { border-color: rgba(212,175,55,.25); background: rgba(212,175,55,.06); }
+  .verdict { border-color: ${accentA(.25)}; background: ${accentA(.06)}; }
   .verdict-text { font-style: italic; font-size: 15px; line-height: 1.6; color: rgba(255,255,255,.82); margin: 0; }
   .verdict-by { font-size: 12px; color: rgba(255,255,255,.4); margin: 12px 0 0; }
 
@@ -274,6 +358,57 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .wins span { color: rgba(255,255,255,.7); }
   .wins em { font-style: normal; color: ${C.accent}; font-variant-numeric: tabular-nums; }
 
+  /* ── Draft summary ── */
+  .draft-summary { border-color: ${accentA(.2)}; background: ${accentA(.05)}; }
+  .ds-row { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  .ds-right { text-align: right; }
+  .ds-blanks { padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+  .ds-passed { padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+  .ds-label {
+    display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: ${C.accentDim}; margin-bottom: 4px; font-weight: 600;
+  }
+
+  /* ── Predictions ── */
+  .pred-group {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 13px; margin-bottom: 6px; overflow: hidden;
+  }
+  .pred-group summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 13px 15px; cursor: pointer; list-style: none;
+  }
+  .pred-group summary::-webkit-details-marker { display: none; }
+  .pred-group summary:focus-visible { outline: 2px solid ${C.accent}; outline-offset: -2px; }
+  .pg-title {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: rgba(255,255,255,.6); font-weight: 600;
+  }
+  .pg-count {
+    font-size: 12px; color: rgba(255,255,255,.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .pg-note { font-size: 12px; color: rgba(255,255,255,.4); margin: 0; padding: 0 15px 4px; line-height: 1.5; }
+  .pred-list { list-style: none; margin: 0; padding: 0 15px 12px; }
+  .pred {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 9px 0; border-top: 1px solid rgba(255,255,255,.06);
+  }
+  .pred-conf {
+    width: 26px; flex-shrink: 0; text-align: right;
+    font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: rgba(255,255,255,.3);
+  }
+  .pred.hit .pred-conf { color: ${C.accent}; }
+  .pred-body { flex: 1; min-width: 0; }
+  .pred-event { display: block; font-size: 13px; color: rgba(255,255,255,.85); }
+  .pred-detail { display: block; font-size: 12px; color: rgba(255,255,255,.42); margin-top: 2px; line-height: 1.45; }
+  .pred-mark {
+    flex-shrink: 0; font-size: 12px; font-variant-numeric: tabular-nums;
+    color: rgba(255,255,255,.25);
+  }
+  .pred.hit .pred-mark { color: ${C.accent}; }
+
   /* ── Bingo ── */
   .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
   .cell {
@@ -284,11 +419,11 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     overflow: hidden;
   }
   .cell.hit {
-    background: rgba(212,175,55,.28); border-color: rgba(212,175,55,.65);
+    background: ${accentA(.28)}; border-color: ${accentA(.65)};
     color: #fff; font-weight: 600;
   }
   /* A completed line reads brightest — that is the thing worth pointing at. */
-  .cell.inline { background: rgba(212,175,55,.55); border-color: ${C.accent}; color: #0A0E27; font-weight: 700; }
+  .cell.inline { background: ${accentA(.55)}; border-color: ${C.accent}; color: ${C.bgFrom}; font-weight: 700; }
   .cell.free { color: ${C.accentDim}; font-weight: 700; }
 
   /* ── Bingo detail ── */
@@ -297,7 +432,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
     border-radius: 11px; overflow: hidden;
   }
-  .square.hit { background: rgba(212,175,55,.07); border-color: rgba(212,175,55,.22); }
+  .square.hit { background: ${accentA(.07)}; border-color: ${accentA(.22)}; }
   .square summary {
     display: flex; align-items: center; gap: 10px;
     padding: 11px 13px; cursor: pointer; list-style: none;
@@ -326,7 +461,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
 
   /* ── Lines ── */
   .line-text { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.82); margin: 0; }
-  .line.you { border-color: rgba(212,175,55,.22); }
+  .line.you { border-color: ${accentA(.22)}; }
   .line-author { font-size: 11px; color: rgba(255,255,255,.38); margin: 10px 0 0; }
   /* The companion's reason this line was chosen. */
   .line-note {
@@ -343,9 +478,9 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
 
   @media print {
     body { background: ${C.bgFrom}; }
-    .card, .square { break-inside: avoid; }
+    .card, .square, .pred-group { break-inside: avoid; }
     /* A printed keepsake cannot be expanded, so open everything. */
-    .square-body { display: block !important; }
+    .square-body, .pred-list, .pg-note { display: block !important; }
   }
 </style>
 
@@ -371,10 +506,13 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   ${momentsHtml ? `<section><h2>Your night</h2>${momentsHtml}</section>` : ''}
 
   <section>
-    <h2>Your roster</h2>
-    <p class="section-note">${d.ensembleScore} points drafted</p>
+    <h2>Your draft</h2>
+    <p class="section-note">${d.roster.length} on the roster &middot; biggest earner first</p>
+    ${draftSummaryHtml}
     ${rosterHtml}
   </section>
+
+  ${predictionsHtml}
 
   ${bingoHtml}
 

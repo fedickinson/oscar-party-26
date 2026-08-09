@@ -11,6 +11,7 @@
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { PlayerRow } from '../../types/database'
 import { AVATAR_CONFIGS } from '../../data/avatars'
+import { PLAYER_AVATARS } from '../../data/avatar-config'
 
 export interface ShareCardProps {
   leaderboard: ScoredPlayer[]
@@ -19,8 +20,12 @@ export interface ShareCardProps {
 }
 
 function getPlayerColor(avatarId: string): string {
+  // Players now carry house-sigil ids (avatar-config); AVATAR_CONFIGS is the
+  // legacy Oscars cast kept as fallback for old rooms. Warm ashlar if unknown.
+  const house = PLAYER_AVATARS.find((a) => a.id === avatarId)
+  if (house) return house.color
   const config = AVATAR_CONFIGS.find((a) => a.id === avatarId)
-  return config?.colorPrimary ?? '#888888'
+  return config?.colorPrimary ?? '#6E665B'
 }
 
 function getPlayerInitials(name: string): string {

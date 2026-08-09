@@ -16,6 +16,7 @@
  */
 
 import { AVATAR_CONFIGS } from '../../data/avatars'
+import { PLAYER_AVATARS } from '../../data/avatar-config'
 import { getCompanionById } from '../../data/ai-companions'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { PlayerAward } from '../../lib/night-awards'
@@ -31,10 +32,13 @@ export interface PlayerShareCardProps {
 }
 
 function playerColors(avatarId: string): { primary: string; secondary: string } {
+  // House-sigil ids first (the live roster); legacy Oscars cast as fallback.
+  const house = PLAYER_AVATARS.find((a) => a.id === avatarId)
+  if (house) return { primary: house.color, secondary: '#6E665B' }
   const config = AVATAR_CONFIGS.find((a) => a.id === avatarId)
   return {
-    primary: config?.colorPrimary ?? '#888888',
-    secondary: config?.colorSecondary ?? '#444444',
+    primary: config?.colorPrimary ?? '#6E665B',
+    secondary: config?.colorSecondary ?? '#4A443C',
   }
 }
 

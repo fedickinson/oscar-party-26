@@ -67,6 +67,40 @@ export interface RecapLine {
   note?: string
 }
 
+/** One event the player staked confidence on, and how it resolved. */
+export interface PredictionRow {
+  event: string
+  yourPick: string
+  /** Who actually won. Null when the host never called this event. */
+  actual: string | null
+  confidence: number
+  outcome: 'hit' | 'miss' | 'unresolved'
+}
+
+export interface DraftInsight {
+  totalPoints: number
+  /** Your highest-earning pick, if anything scored. */
+  best: { name: string; points: number; pickNumber: number } | null
+  /** Picks that returned nothing. */
+  blanks: string[]
+  /**
+   * The single biggest thing you left on the board.
+   *
+   * For each of your picks, the best-scoring entity that was STILL AVAILABLE at
+   * that moment — anyone taken later, or never taken at all — then the pick with
+   * the widest gap. This is the only draft regret that is actually fair to
+   * surface: it excludes everyone already gone when your turn came, so it never
+   * blames you for a pick you could not have made.
+   */
+  passedOn: {
+    youTook: string
+    theirPoints: number
+    yourPoints: number
+    pickNumber: number
+    takenBy: string | null
+  } | null
+}
+
 export interface BingoCell {
   index: number
   label: string
@@ -103,6 +137,10 @@ export interface PlayerRecapData {
   bingoScore: number
 
   roster: RosterEntry[]
+  draft: DraftInsight
+  predictions: PredictionRow[]
+  /** Aggregates for the prediction section header. */
+  predictionSummary: { hits: number; total: number; banked: number; strandedPoints: number }
   moments: RecapMoment[]
   bingo: { cells: BingoCell[]; lineCount: number; approvedCount: number } | null
   lines: RecapLine[]
@@ -223,6 +261,87 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     }))
     // Biggest earner first — the roster reads as a story, not a draft order.
     .sort((a, b) => b.points - a.points)
+
+  // ── Draft insight ─────────────────────────────────────────────────────────
+  const mine = [...tallies.values()].filter((t) => t.ownerId === player.id)
+  const best = [...mine].sort((a, b) => b.points - a.points)[0]
+
+  // "Still available when you picked" means taken later, or never taken. Anyone
+  // already off the board is excluded — regret for a pick you could not have
+  // made is just noise.
+  let passedOn: DraftInsight['passedOn'] = null
+  for (const t of mine) {
+    if (t.pickNumber == null) continue
+    const alternatives = [...tallies.values()].filter(
+      (o) =>
+        o.entity.id !== t.entity.id &&
+        o.ownerId !== player.id &&
+        (o.pickNumber == null || o.pickNumber > t.pickNumber!),
+    )
+    const bestAlt = alternatives.sort((a, b) => b.points - a.points)[0]
+    if (!bestAlt || bestAlt.points <= t.points) continue
+    const gap = bestAlt.points - t.points
+    if (passedOn && gap <= passedOn.theirPoints - passedOn.yourPoints) continue
+    passedOn = {
+      youTook: t.entity.name,
+      theirPoints: bestAlt.points,
+      yourPoints: t.points,
+      pickNumber: (t.pickNumber ?? 0) + 1,
+      takenBy: bestAlt.ownerName,
+    }
+  }
+
+  const draft: DraftInsight = {
+    totalPoints: entry?.ensembleScore ?? 0,
+    best: best && best.points > 0
+      ? { name: best.entity.name, points: best.points, pickNumber: (best.pickNumber ?? 0) + 1 }
+      : null,
+    blanks: mine.filter((t) => t.points === 0).map((t) => t.entity.name),
+    passedOn,
+  }
+
+  // ── Prediction scorecard ──────────────────────────────────────────────────
+  //
+  // Every event this player staked on, including the ones the host never
+  // called. Those are not a rounding error: the budget is spent up front across
+  // the whole slate, so an unresolved event silently voids whatever was put on
+  // it, and the player has no other way to find out that is why they lost.
+  const nomineeName = (id: string | null | undefined) =>
+    id ? (nominees.find((n) => n.id === id)?.name ?? null) : null
+
+  const predictions: PredictionRow[] = confidencePicks
+    .filter((p) => p.player_id === player.id)
+    .map((p) => {
+      const cat = categories.find((c) => c.id === p.category_id)
+      const resolved = cat?.winner_id != null
+      const outcome: PredictionRow['outcome'] = !resolved
+        ? 'unresolved'
+        : p.is_correct === true
+          ? 'hit'
+          : 'miss'
+      const actualNames = resolved
+        ? [nomineeName(cat?.winner_id), nomineeName(cat?.tie_winner_id)].filter(Boolean)
+        : []
+      return {
+        event: cat?.name ?? 'an event',
+        yourPick: nomineeName(p.nominee_id) ?? 'nobody',
+        actual: actualNames.length ? actualNames.join(' & ') : null,
+        confidence: p.confidence,
+        outcome,
+      }
+    })
+    // Biggest stakes first — that is the order the night is remembered in.
+    .sort((a, b) => b.confidence - a.confidence)
+
+  const resolvedRows = predictions.filter((p) => p.outcome !== 'unresolved')
+  const predictionSummary = {
+    hits: predictions.filter((p) => p.outcome === 'hit').length,
+    total: resolvedRows.length,
+    banked: predictions.filter((p) => p.outcome === 'hit').reduce((s, p) => s + p.confidence, 0),
+    strandedPoints: predictions
+      .filter((p) => p.outcome === 'unresolved')
+      .reduce((s, p) => s + p.confidence, 0),
+  }
 
   // ── Moments ───────────────────────────────────────────────────────────────
   const myPicks = confidencePicks.filter((p) => p.player_id === player.id)
@@ -377,6 +496,9 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     ensembleScore: entry?.ensembleScore ?? 0,
     bingoScore: entry?.bingoScore ?? 0,
     roster,
+    draft,
+    predictions,
+    predictionSummary,
     moments,
     bingo,
     lines,
