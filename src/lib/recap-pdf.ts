@@ -31,24 +31,27 @@ import type {
   PlayerVerdictRow,
 } from '../types/database'
 
-// ---- Color constants (Oscar theme) ------------------------------------------
+// ---- Color constants (Fire & Blood castle theme) ----------------------------
+// Mirrors the --t-* tokens in index.css; literal because jsPDF has no cascade.
+// Correct/wrong are bone/ash, NOT green/red — in a Blacks-vs-Greens game those
+// hues are faction colors and must never mark game state.
 
-const GOLD = '#D4AF37'
-const DARK_BG = '#0A0E27'
-const DARK_CARD = '#151A3A'
-const DARK_ROW_ALT = '#111530'
+const GOLD = '#B9863F'          // beacon ochre accent
+const DARK_BG = '#151009'       // soot
+const DARK_CARD = '#241B15'     // leather
+const DARK_ROW_ALT = '#1B140E'
 const WHITE = '#FFFFFF'
-const WHITE_80 = '#CCCCCC'
-const WHITE_60 = '#999999'
-const WHITE_40 = '#666666'
-const WHITE_20 = '#5A5E7A'
-const GREEN = '#22C55E'
-const GREEN_DIM = '#166534'
-const RED = '#EF4444'
-const RED_DIM = '#7F1D1D'
-const AMBER = '#F59E0B'
-const PURPLE = '#8B5CF6'
-const PURPLE_DIM = '#4C1D95'
+const WHITE_80 = '#C8BEAD'      // warm mortar tints
+const WHITE_60 = '#9A8F80'
+const WHITE_40 = '#6E6558'
+const WHITE_20 = '#4A443C'
+const GREEN = '#E3D8BF'         // correct = bone
+const GREEN_DIM = '#4A4436'
+const RED = '#A89B92'           // wrong = ash
+const RED_DIM = '#3E3833'
+const AMBER = '#C69A50'         // pending ochre
+const PURPLE = '#5A7355'        // verdigris (was purple)
+const PURPLE_DIM = '#2C4034'
 
 // ---- Types ------------------------------------------------------------------
 

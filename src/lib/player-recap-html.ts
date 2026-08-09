@@ -34,10 +34,11 @@ import type { PlayerRecapData } from './player-recap'
  * four-line edit rather than a hunt through a template literal.
  */
 const C = {
-  accent: '#D4AF37',
-  accentDim: 'rgba(212,175,55,.6)',
-  bgFrom: '#0A0E27',
-  bgVia: '#12163A',
+  // Fire & Blood castle palette — mirrors the --t-* tokens in index.css
+  accent: '#B9863F',                 // beacon ochre (was Oscars gold)
+  accentDim: 'rgba(185,134,63,.6)',
+  bgFrom: '#151009',                 // soot
+  bgVia: '#241B15',                  // leather
 } as const
 
 /**
@@ -129,6 +130,23 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
           const tier = TIER_LABELS[c.tier] ?? ''
           const odds = c.probabilityPct > 0 ? `${c.probabilityPct}% likely` : ''
           const meta = [tier, odds].filter(Boolean).join(' &middot; ')
+
+          // The square pool currently stores the same sentence in both `text`
+          // and `win_condition`. Printing both renders the rule twice and reads
+          // like a bug. Show the description only when it genuinely differs from
+          // the adjudication rule; otherwise the rule alone says everything, and
+          // "Counts when" is the more useful framing of the two.
+          const norm = (v: string) => v.trim().replace(/\s+/g, ' ').toLowerCase()
+          const rule = c.winCondition.trim()
+          const blurbDiffers = c.text.trim().length > 0 && norm(c.text) !== norm(rule)
+          const bodyHtml = [
+            blurbDiffers ? `<p class="sq-text">${esc(c.text)}</p>` : '',
+            rule
+              ? `<p class="sq-rule"><span>Counts when</span> ${esc(rule)}</p>`
+              : (!blurbDiffers && c.text.trim() ? `<p class="sq-text">${esc(c.text)}</p>` : ''),
+            meta ? `<p class="sq-meta">${meta}</p>` : '',
+          ].filter(Boolean).join('\n          ')
+
           return `
       <details class="square${c.approved ? ' hit' : ''}">
         <summary>
@@ -137,9 +155,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
           <span class="sq-state">${c.inLine ? 'In a line' : c.approved ? 'Hit' : 'Missed'}</span>
         </summary>
         <div class="square-body">
-          ${c.text ? `<p class="sq-text">${esc(c.text)}</p>` : ''}
-          ${c.winCondition ? `<p class="sq-rule"><span>Counts when</span> ${esc(c.winCondition)}</p>` : ''}
-          ${meta ? `<p class="sq-meta">${meta}</p>` : ''}
+          ${bodyHtml}
         </div>
       </details>`
         })
