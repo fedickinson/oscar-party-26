@@ -29,8 +29,9 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HallmarkDefs } from './components/ui/Hallmarks'
+import { allegianceForAvatar } from './lib/allegiance'
 import { WifiOff } from 'lucide-react'
-import { GameProvider } from './context/GameContext'
+import { GameProvider, useGame } from './context/GameContext'
 import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import Room from './pages/Room'
@@ -96,6 +97,14 @@ function ReconnectBanner() {
 
 function AppInner() {
   const location = useLocation()
+  const { player } = useGame()
+
+  // Your house is your side. The --t-personal-* token layer (active tab, own
+  // leaderboard row, chat edge, primary actions) resolves through this
+  // attribute — see src/lib/allegiance.ts for the house → claim mapping.
+  useEffect(() => {
+    document.documentElement.dataset.allegiance = allegianceForAvatar(player?.avatar_id)
+  }, [player?.avatar_id])
 
   return (
     <>

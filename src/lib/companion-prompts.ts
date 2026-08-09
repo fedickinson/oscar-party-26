@@ -1355,3 +1355,40 @@ Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}
 
   return { system: CHAT_REACTIVE_SYSTEM, user }
 }
+
+// ─── buildBingoReactionPrompt ─────────────────────────────────────────────────
+//
+// Bingo approvals are the second "declared truly happened" stream, alongside
+// GM-logged events. The host confirming "Someone says 'Dracarys'" IS an event —
+// the square text tells the cast what happened on screen without anyone typing
+// a play-by-play. Squares get ONE light reaction (heavily throttled upstream);
+// a completed LINE is a game moment and always lands.
+
+export function buildBingoReactionPrompt(
+  companionId: string,
+  playerName: string,
+  squareText: string,
+  kind: 'square' | 'line',
+): { system: string; user: string } {
+  const companionName =
+    AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
+
+  const user = kind === 'line'
+    ? `BINGO: ${playerName} just completed a full bingo line. The square that sealed it: "${squareText}" — which the host confirmed genuinely happened on screen.
+
+${companionName} reacts — ONE message, 1-2 sentences, in character:
+- This is ${playerName}'s moment. Name them. Crown it, mock it, or grudgingly salute it, per your voice.
+- You may also react to the sealing moment itself ("${squareText}") — it DID just happen in the episode.
+- Do not explain bingo rules. Do not list other squares.
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
+    : `Confirmed on screen just now: "${squareText}". (It was a square on ${playerName}'s bingo card; the host verified it happened.)
+
+${companionName} reacts to THE MOMENT ITSELF — ONE message, 1-2 sentences, in character:
+- React to what happened on screen, not to the bingo game. Mention ${playerName} only if you can do it in passing, in three words or fewer ("${playerName} saw it too").
+- You know nothing about the scene beyond the square's text. Do not invent details.
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
+
+  return { system: CHAT_REACTIVE_SYSTEM, user }
+}

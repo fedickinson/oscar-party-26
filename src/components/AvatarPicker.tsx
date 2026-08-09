@@ -99,6 +99,18 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
                   </p>
                 </div>
                 <p className="text-xs text-white/45 mt-0.5 truncate">{avatar.object}</p>
+                {/* Your house is your side — declared at pick time */}
+                <p
+                  className="text-[10px] font-bold uppercase tracking-widest mt-1"
+                  style={{
+                    color:
+                      allegianceForAvatar(avatar.id) === 'green'
+                        ? 'var(--t-team-b-text)'
+                        : 'var(--t-team-a-text)',
+                  }}
+                >
+                  {allegianceLabel(avatar.id)}
+                </p>
               </div>
             )}
 

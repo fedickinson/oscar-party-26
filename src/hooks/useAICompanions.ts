@@ -20,6 +20,7 @@ import React, { useEffect, useRef } from 'react'
 import { useGame } from '../context/GameContext'
 import { supabase } from '../lib/supabase'
 import {
+  buildBingoReactionPrompt,
   buildPlayerWelcomePrompt,
   buildPreCeremonyPrompt,
   buildShowStartedPrompt,
@@ -42,6 +43,7 @@ import type { StoredPrediction } from '../lib/chat-reactivity-utils'
 import { COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, pickGreeterForHouse } from '../data/ai-companions'
 import { getAvatarById } from '../data/avatar-config'
 import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
+import { checkBingo } from '../lib/bingo-utils'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -57,6 +59,7 @@ export function useAICompanions(
   showStarted?: boolean,
 ): { isGenerating: boolean } {
   const { room, players } = useGame()
+  const roomIdForBingo = room?.id
   const isHostRef = useRef(isHost)
   isHostRef.current = isHost
 
@@ -496,6 +499,110 @@ export function useAICompanions(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [players, isHost])
+
+  // ── Effect 1e: Bingo declarations ───────────────────────────────────────────
+  //
+  // The design principle for the whole night: nobody narrates the episode.
+  // The GAME's declarations are the event stream — a GM-logged beat is one
+  // kind, and a host-approved bingo square is the other. "Someone says
+  // 'Dracarys' — confirmed" tells the cast what happened on screen without
+  // anyone typing a play-by-play.
+  //
+  // Squares are LIGHT: probability-gated and cooled down hard, because on a
+  // heavy episode approvals cluster and a reaction per square would be a
+  // metronome. A completed LINE is a game moment and always lands, with the
+  // player's name on it.
+  const processedMarkIdsRef = useRef<Set<string>>(new Set())
+  const lastSquareReactionAtRef = useRef(0)
+  const cardLineCountRef = useRef<Map<string, number>>(new Map())
+  const bingoSquaresCacheRef = useRef<Map<number, string> | null>(null)
+
+  useEffect(() => {
+    if (!roomIdForBingo) return
+
+    async function squareText(id: number): Promise<string | null> {
+      if (!bingoSquaresCacheRef.current) {
+        const { data } = await supabase.from('bingo_squares').select('id, text')
+        bingoSquaresCacheRef.current = new Map(
+          (data ?? []).map((sq) => [sq.id as number, sq.text as string]),
+        )
+      }
+      return bingoSquaresCacheRef.current.get(id) ?? null
+    }
+
+    async function onMark(mark: { id: string; card_id: string; square_index: number; status: string }) {
+      if (!isHostRef.current) return
+      if (mark.status !== 'approved') return
+      if (processedMarkIdsRef.current.has(mark.id)) return
+      processedMarkIdsRef.current.add(mark.id)
+
+      // bingo_marks carries no room_id — resolve through the card, and drop
+      // marks from other rooms (the subscription cannot filter them out).
+      const { data: card } = await supabase
+        .from('bingo_cards')
+        .select('id, room_id, player_id, squares')
+        .eq('id', mark.card_id)
+        .maybeSingle()
+      if (!card || card.room_id !== roomRef.current?.id) return
+
+      const player = playersRef.current.find((p) => p.id === card.player_id)
+      if (!player) return
+
+      // Line detection first — a new completed line outranks the square gate.
+      const { data: approved } = await supabase
+        .from('bingo_marks')
+        .select('square_index')
+        .eq('card_id', card.id)
+        .eq('status', 'approved')
+      const marked = new Set<number>([12, ...(approved ?? []).map((m) => m.square_index as number)])
+      const lines = checkBingo(marked, []).lines.length
+      // First sight of this card (host reload mid-game): baseline is the card
+      // WITHOUT the mark that just arrived, so a line completed an hour ago
+      // does not get re-celebrated now.
+      let prevLines = cardLineCountRef.current.get(card.id)
+      if (prevLines === undefined) {
+        const before = new Set(marked)
+        before.delete(mark.square_index)
+        prevLines = checkBingo(before, []).lines.length
+      }
+      cardLineCountRef.current.set(card.id, lines)
+
+      const squareId = (card.squares as number[])[mark.square_index]
+      const text = squareId ? await squareText(squareId) : null
+      if (!text) return
+
+      const isNewLine = lines > prevLines
+      if (!isNewLine) {
+        // Square-level throttle: at most one reaction per 2.5 minutes, and
+        // even then only some squares get one. Silence is a valid reaction.
+        if (Date.now() - lastSquareReactionAtRef.current < 150_000) return
+        if (Math.random() > 0.45) return
+      }
+      lastSquareReactionAtRef.current = Date.now()
+
+      const spoken = await spokenCompanionIds()
+      if (!spoken.length) return
+      const who = spoken[Math.floor(Math.random() * spoken.length)]
+      // A short human lag — the cast noticed, they did not autocomplete.
+      const tid = setTimeout(() => {
+        void fireCompanionMessages(
+          buildBingoReactionPrompt(who, player.name, text, isNewLine ? 'line' : 'square'),
+          400,
+        )
+      }, 3_000 + Math.random() * 5_000)
+      pendingTimeoutsRef.current.push(tid)
+    }
+
+    const channel = supabase
+      .channel(`bingo-reactions:${roomIdForBingo}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bingo_marks' },
+        (payload) => void onMark(payload.new as never))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bingo_marks' },
+        (payload) => void onMark(payload.new as never))
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomIdForBingo])
 
   // ── Effect 2: Winner reactions ────────────────────────────────────────────────
   // First meaningful data load: initialize seen set without firing reactions.
