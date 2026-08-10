@@ -296,6 +296,23 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
           .upsert({ room_id: roomId, category_id: nextId, winner_id: nomineeId, tie_winner_id: null })
         if (rwErr) throw rwErr
 
+        // Announce in the shared chat so every phone SEES the declaration as
+        // a fact of the night, not just a score change. winner-divider rows
+        // render with the announcement styling; messages INSERT is open to
+        // all, so this works from whichever player declared.
+        {
+          const who = nomineeId
+          void (async () => {
+            const { data: nom } = await supabase
+              .from('nominees').select('name').eq('id', who).maybeSingle()
+            await supabase.from('messages').insert({
+              room_id: roomId,
+              player_id: 'winner-divider',
+              text: nom?.name ? `${trimmed} — ${nom.name} (+${points})` : `${trimmed} (+${points})`,
+            })
+          })()
+        }
+
         // Optimistic local apply — realtime will echo, and both paths dedupe.
         stampsRef.current.set(nextId, Date.now())
         setCategories((prev) =>

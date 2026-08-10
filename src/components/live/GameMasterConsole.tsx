@@ -67,6 +67,15 @@ export default function GameMasterConsole({
 
   const [draft, setDraft] = useState('')
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
+  // Two-tap declare: first tap ARMS a beat ("tap again to confirm"), second
+  // fires. Disarms itself after 4s. One-tap was too easy to fat-finger for
+  // something that moves the whole leaderboard and summons the cast.
+  const [armedBeatId, setArmedBeatId] = useState<number | null>(null)
+  useEffect(() => {
+    if (armedBeatId == null) return
+    const t = setTimeout(() => setArmedBeatId(null), 4000)
+    return () => clearTimeout(t)
+  }, [armedBeatId])
 
   // ── Signature beats — pre-authored per-character moments ───────────────────
   // Content is being written against docs/signature-beats-brief.md in another
@@ -277,7 +286,7 @@ export default function GameMasterConsole({
           const isDragon = ent?.type === 'film'
           for (const b of beatsByName.get(c.name) ?? []) {
             if (loggedNames.has(b.name)) continue
-            if (!isDragon && !activatedBeatIds.has(b.id)) continue
+            // Activation gate removed mid-party — all beats declarable.
             rows.push({ nom: c, beat: b })
           }
         }
@@ -293,15 +302,22 @@ export default function GameMasterConsole({
                 whileTap={{ scale: 0.98 }}
                 disabled={isLogging}
                 title={beat.trigger_text}
-                onClick={() => void logEvent(beat.name, beat.points, nom.id)}
+                onClick={() => {
+                  if (armedBeatId === beat.id) {
+                    setArmedBeatId(null)
+                    void logEvent(beat.name, beat.points, nom.id)
+                  } else {
+                    setArmedBeatId(beat.id)
+                  }
+                }}
                 className="material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl
                            border border-[color:var(--t-personal-device)] text-left"
               >
                 <span className="text-[11px] font-bold text-[color:var(--t-personal-text)] flex-shrink-0 w-20 truncate">
                   {nom.name.split(' ')[0]}
                 </span>
-                <span className="text-xs font-medium text-[color:var(--t-text)] flex-1 min-w-0 truncate">
-                  {beat.name}
+                <span className={`text-xs flex-1 min-w-0 truncate ${armedBeatId === beat.id ? 'font-bold text-[color:var(--t-personal-text)]' : 'font-medium text-[color:var(--t-text)]'}`}>
+                  {armedBeatId === beat.id ? 'Tap again to confirm' : beat.name}
                 </span>
                 <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
                   {beat.points}
