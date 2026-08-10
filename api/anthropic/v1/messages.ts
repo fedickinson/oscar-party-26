@@ -44,9 +44,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(429).json({ error: 'Rate limit exceeded' })
   }
 
-  const check = validateBody(req.body)
-  if (!check.ok) {
-    return res.status(check.status).json({ error: check.error })
+  const failure = validateBody(req.body)
+  if (failure) {
+    return res.status(failure.status).json({ error: failure.error })
   }
 
   // ANTHROPIC_API_KEY is the correct name; VITE_ANTHROPIC_API_KEY is accepted as

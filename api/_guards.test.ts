@@ -71,57 +71,54 @@ describe('parseAllowedOrigins', () => {
 
 describe('validateBody', () => {
   it('accepts the body the app actually sends', () => {
-    expect(validateBody(realBody)).toEqual({ ok: true })
+    expect(validateBody(realBody)).toBeNull()
   })
 
   it('accepts the haiku chat path too', () => {
     expect(validateBody({ ...realBody, model: 'claude-haiku-4-5', max_tokens: 200 }))
-      .toEqual({ ok: true })
+      .toBeNull()
   })
 
   it('rejects a model the app never calls', () => {
     const result = validateBody({ ...realBody, model: 'claude-opus-4-1' })
-    expect(result).toMatchObject({ ok: false, status: 400 })
+    expect(result).toMatchObject({ status: 400 })
   })
 
   it('rejects a token budget above the ceiling', () => {
     const result = validateBody({ ...realBody, max_tokens: MAX_TOKENS_CEILING + 1 })
-    expect(result).toMatchObject({ ok: false, status: 400 })
+    expect(result).toMatchObject({ status: 400 })
   })
 
   it('allows the largest real call, the verdicts batch', () => {
-    expect(validateBody({ ...realBody, max_tokens: 3000 })).toEqual({ ok: true })
+    expect(validateBody({ ...realBody, max_tokens: 3000 })).toBeNull()
   })
 
   it('rejects a non-integer or absent token budget', () => {
-    expect(validateBody({ ...realBody, max_tokens: 1.5 })).toMatchObject({ ok: false })
-    expect(validateBody({ ...realBody, max_tokens: 0 })).toMatchObject({ ok: false })
+    expect(validateBody({ ...realBody, max_tokens: 1.5 })).not.toBeNull()
+    expect(validateBody({ ...realBody, max_tokens: 0 })).not.toBeNull()
     const { max_tokens: _dropped, ...withoutTokens } = realBody
-    expect(validateBody(withoutTokens)).toMatchObject({ ok: false })
+    expect(validateBody(withoutTokens)).not.toBeNull()
   })
 
   it('rejects an unexpected top-level field', () => {
     // Notably `stream`, which would change the response contract entirely.
-    expect(validateBody({ ...realBody, stream: true })).toMatchObject({
-      ok: false,
-      status: 400,
-    })
+    expect(validateBody({ ...realBody, stream: true })).toMatchObject({ status: 400 })
   })
 
   it('rejects an empty or missing message list', () => {
-    expect(validateBody({ ...realBody, messages: [] })).toMatchObject({ ok: false })
-    expect(validateBody({ ...realBody, messages: 'hello' })).toMatchObject({ ok: false })
+    expect(validateBody({ ...realBody, messages: [] })).not.toBeNull()
+    expect(validateBody({ ...realBody, messages: 'hello' })).not.toBeNull()
   })
 
   it('rejects anything that is not a JSON object', () => {
-    expect(validateBody(null)).toMatchObject({ ok: false, status: 400 })
-    expect(validateBody([realBody])).toMatchObject({ ok: false, status: 400 })
-    expect(validateBody('a string')).toMatchObject({ ok: false, status: 400 })
+    expect(validateBody(null)).toMatchObject({ status: 400 })
+    expect(validateBody([realBody])).toMatchObject({ status: 400 })
+    expect(validateBody('a string')).toMatchObject({ status: 400 })
   })
 
   it('rejects an oversized body with 413', () => {
     const huge = { ...realBody, system: [{ type: 'text', text: 'x'.repeat(300 * 1024) }] }
-    expect(validateBody(huge)).toMatchObject({ ok: false, status: 413 })
+    expect(validateBody(huge)).toMatchObject({ status: 413 })
   })
 })
 

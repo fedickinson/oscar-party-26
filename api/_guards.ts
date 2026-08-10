@@ -36,10 +36,24 @@ const ALLOWED_FIELDS: ReadonlySet<string> = new Set([
 /** ~40KB of cached system prompt plus history; 256KB is generous for that. */
 export const MAX_BODY_BYTES = 256 * 1024
 
-export type GuardResult = { ok: true } | { ok: false; status: number; error: string }
+/**
+ * A guard returns null when the request is fine, and a failure when it is not.
+ *
+ * Deliberately NOT a discriminated union on `ok: true | false`. Vercel compiles
+ * these functions with its own non-strict config, where narrowing by boolean
+ * literal degrades and `check.error` becomes a type error the deploy log
+ * reports while shipping the broken function anyway. Null-or-failure narrows
+ * correctly under strict and non-strict alike.
+ */
+export interface GuardFailure {
+  status: number
+  error: string
+}
 
-const OK: GuardResult = { ok: true }
-const deny = (status: number, error: string): GuardResult => ({ ok: false, status, error })
+export type GuardResult = GuardFailure | null
+
+const OK: GuardResult = null
+const deny = (status: number, error: string): GuardResult => ({ status, error })
 
 /**
  * Same-origin only, plus localhost for development.
