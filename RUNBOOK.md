@@ -187,6 +187,53 @@ plus a new entry in the warrant ranking: source-material canon ranks BELOW
 published record for screen events, at "attitude only" — the same rank as a
 voice's own canon, and for the same reason.
 
+## The settlement layer (8/10 — the post-op, made structural)
+
+The day after proved something the night only hinted at: **the game has three
+epistemic phases, and we had only designed two.**
+
+- **PRIOR** (authoring): the board is written against a *predicted* episode —
+  triggers, odds tiers, 226 wagers. Research level: canon, trailers, discourse.
+- **LIVE** (the party): declarations and marks against a *witnessed* episode —
+  honor-system eyewitness. High immediacy, low precision. The scoreboard at
+  the credits is PROVISIONAL.
+- **RECORD** (settlement): the *researched* episode — multi-source recap sweep
+  under the two-canons rule, sentiment sweep, marks re-bucketed by timestamp,
+  every claim re-warranted against trigger text, ambiguities ruled, amendments
+  and corrections dated, the final ledger published as artifacts. This ran in
+  ~a day with two research agents. It is not an optional recap; it is the
+  clearing house. Like markets: the floor trades live, settlement makes it
+  true. Product shape: pre-pack → live night → **settlement drop** — three
+  deliverables from one primitive set, and the drop is the thing friends
+  actually share.
+
+**Adjudication needs case law, not just contracts.** Two incidents, same
+lesson from opposite sides: the Alyn miscall (vivid title, unread fine print)
+and the Daeron dispute ("explicitly accepts" — but only his proxy appeared).
+Trigger text cannot anticipate everything; the fix is a small body of dated
+precedents kept in the record. First entry, ruled by the table 8/10 — **the
+Gwayne rule**: an avowed proxy's act, unrefused on screen, accepts for the
+principal.
+
+**Trigger-authoring doctrine** (for the next pack): every wager must be
+(1) screen-decidable — an eyewitness on a couch can rule it in the moment;
+(2) proxy-aware — say whether agents count, deaths off-screen count, mentions
+count; (3) honestly titled — the title must promise the same event the
+trigger pays. The bingo pool already did this right (win_condition + "what
+does not count" notes); the draft beats shipped with one bare sentence each.
+Author beats like bingo squares.
+
+**The flywheel.** The settlement pipeline pointed backward at episode N is
+the authoring pipeline pointed forward at episode N+1: the same recap mining
+builds the entity list, the same sentiment mining writes the discourse
+dossier that prices the odds AND feeds the cast's best takes, the same
+grounded-generation ships the commentary. Post-op of one show is the
+show-pack factory for the next. The witness ladder (layer 4) slots in as
+progressively better LIVE warrant — it shrinks the settlement delta but never
+kills the settlement phase, because part of what settlement knows (what the
+audience felt, what the discourse decided) cannot be seen by any camera
+watcher.
+
 ## The foundation: ontology & epistemology (8/10)
 
 ONTOLOGY — four kinds, two worlds. Events happen in W1 (the screen) or W2
