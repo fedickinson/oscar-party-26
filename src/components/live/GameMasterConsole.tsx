@@ -74,7 +74,7 @@ export default function GameMasterConsole({
   const [expandedFighter, setExpandedFighter] = useState<string | null>(null)
   useEffect(() => {
     if (armedBeatId == null) return
-    const t = setTimeout(() => setArmedBeatId(null), 4000)
+    const t = setTimeout(() => setArmedBeatId(null), 15000)
     return () => clearTimeout(t)
   }, [armedBeatId])
 
@@ -316,33 +316,61 @@ export default function GameMasterConsole({
                         const used = loggedNames.has(beat.name)
                         const armed = armedBeatId === beat.id
                         return (
-                          <motion.button
-                            key={beat.id}
-                            whileTap={{ scale: 0.98 }}
-                            disabled={used || isLogging}
-                            title={beat.trigger_text}
-                            onClick={() => {
-                              if (armed) {
-                                setArmedBeatId(null)
-                                void logEvent(beat.name, beat.points, nom.id)
-                              } else {
-                                setArmedBeatId(beat.id)
-                              }
-                            }}
-                            className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
-                              ${used
-                                ? 'border-[color:var(--t-line-soft)] opacity-45 line-through'
-                                : armed
-                                  ? 'border-[color:var(--t-personal-text)]'
-                                  : 'border-[color:var(--t-line)]'}`}
-                          >
-                            <span className={`text-xs flex-1 min-w-0 truncate ${armed ? 'font-bold text-[color:var(--t-personal-text)]' : 'font-medium text-[color:var(--t-text)]'}`}>
-                              {armed ? 'Tap again to confirm' : beat.name}
-                            </span>
-                            <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
-                              {beat.points}
-                            </span>
-                          </motion.button>
+                          <div key={beat.id}>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              disabled={used || isLogging}
+                              onClick={() => setArmedBeatId(armed ? null : beat.id)}
+                              className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
+                                ${used
+                                  ? 'border-[color:var(--t-line-soft)] opacity-45 line-through'
+                                  : armed
+                                    ? 'border-[color:var(--t-personal-text)] rounded-b-none'
+                                    : 'border-[color:var(--t-line)]'}`}
+                            >
+                              <span className={`text-xs flex-1 min-w-0 truncate ${armed ? 'font-bold text-[color:var(--t-personal-text)]' : 'font-medium text-[color:var(--t-text)]'}`}>
+                                {beat.name}
+                              </span>
+                              <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
+                                {beat.points}
+                              </span>
+                            </motion.button>
+                            {/* Detail drawer — titles compress; the trigger text
+                                is the actual claim being made. Read, THEN swear
+                                to it. Mobile has no hover, so this drawer is the
+                                only way the details exist at all. */}
+                            {armed && !used && (
+                              <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-black/25">
+                                <p className="text-xs text-[color:var(--t-text)] leading-relaxed">
+                                  {beat.trigger_text}
+                                </p>
+                                {beat.pitch && (
+                                  <p className="text-[11px] italic text-[color:var(--t-text-muted)] leading-relaxed">
+                                    {beat.pitch}
+                                  </p>
+                                )}
+                                <div className="flex gap-2 pt-0.5">
+                                  <motion.button
+                                    whileTap={{ scale: 0.97 }}
+                                    disabled={isLogging}
+                                    onClick={() => {
+                                      setArmedBeatId(null)
+                                      void logEvent(beat.name, beat.points, nom.id)
+                                    }}
+                                    className="flex-1 min-h-10 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-vellum-light,#f0e5cb)] text-xs font-bold"
+                                  >
+                                    It happened — declare +{beat.points}
+                                  </motion.button>
+                                  <button
+                                    onClick={() => setArmedBeatId(null)}
+                                    className="px-3 min-h-10 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
+                                  >
+                                    Not yet
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )
                       })}
                     </div>
