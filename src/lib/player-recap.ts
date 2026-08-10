@@ -123,6 +123,8 @@ export interface PlayerRecapData {
   roomCode: string
   playerName: string
   avatarColors: { primary: string; secondary: string }
+  /** Drives the heraldic device and faction edge. Presentation only. */
+  avatarId: string
 
   title: string
   /** True when the title was written for this player rather than drawn from the pool. */
@@ -479,6 +481,7 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     roomCode,
     playerName: player.name,
     avatarColors,
+    avatarId: player.avatar_id,
     // The companion's name for this player wins when there is one; the computed
     // pool title is the guarantee that everyone gets something.
     title: verdict?.title?.trim() || award?.title || 'Kept the Watch',

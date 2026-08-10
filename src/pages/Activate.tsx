@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Check, Loader2, LockKeyhole } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Avatar from '../components/Avatar'
+import { Hallmark } from '../components/ui/Hallmarks'
 import { useGame } from '../context/GameContext'
 import { useBeatActivation } from '../hooks/useBeatActivation'
 import type { SignatureBeatRow } from '../types/database'
@@ -21,6 +22,14 @@ function oddsLabel(odds: string): string {
   return ODDS_LABELS[odds.toLowerCase()] ?? odds
 }
 
+function oddsClass(odds: string): string {
+  const tier = odds.toLowerCase()
+  if (tier === 'likely') return 'text-positive'
+  if (tier === 'long_shot' || tier === 'long shot') return 'text-pending'
+  if (tier === 'wild' || tier === 'chaos') return 'text-[var(--t-personal-text)]'
+  return 'text-[var(--t-text-muted)]'
+}
+
 function BeatRow({
   beat,
   selected,
@@ -36,6 +45,8 @@ function BeatRow({
   onToggle?: () => void
   index: number
 }) {
+  const activatedWager = selected && !alwaysLive
+
   return (
     <motion.button
       type="button"
@@ -46,29 +57,37 @@ function BeatRow({
       disabled={disabled || alwaysLive}
       onClick={onToggle}
       className={[
-        'w-full min-h-11 rounded-xl border px-3 py-2.5 text-left transition-colors',
-        selected ? 'bg-accent/10 border-accent/60' : 'bg-white/5 border-white/10',
+        'relief-glass w-full min-h-11 rounded-xl px-3 py-3 text-left transition-colors',
+        activatedWager ? 'border-l-2 border-l-[var(--t-personal-device)]' : '',
         disabled && !selected ? 'cursor-not-allowed' : '',
       ].join(' ')}
+      style={activatedWager ? { borderLeftColor: 'var(--t-personal-device)' } : undefined}
     >
       <div className="flex items-start gap-3">
         <div className={[
           'mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0',
-          selected ? 'bg-accent border-accent text-ground' : 'border-white/20 text-transparent',
+          selected
+            ? alwaysLive
+              ? 'bg-[var(--t-positive-soft)] border-positive text-positive'
+              : 'bg-[var(--t-personal-device)] border-[var(--t-personal-device)] text-[var(--t-vellum-light)]'
+            : 'border-[var(--t-line)] text-transparent',
         ].join(' ')}>
           <Check size={14} strokeWidth={3} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-sm font-semibold text-white/90">{beat.name}</p>
-            <span className="text-sm font-bold text-accent whitespace-nowrap">{beat.points} pts</span>
+            <p className="text-sm font-semibold text-[var(--t-text)] leading-snug">{beat.name}</p>
+            <span className="inline-flex items-center gap-1 text-sm font-bold text-[var(--t-personal-text)] whitespace-nowrap">
+              {beat.points >= 35 && <Hallmark id="hallmark-comet" size={14} />}
+              {beat.points} pts
+            </span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[10px] uppercase tracking-wide text-white/40">{oddsLabel(beat.odds)}</span>
-            {alwaysLive && <span className="text-[10px] font-semibold uppercase tracking-wide text-accent">always live</span>}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+            <span className={['text-xs uppercase tracking-wide', oddsClass(beat.odds)].join(' ')}>{oddsLabel(beat.odds)}</span>
+            {alwaysLive && <span className="text-xs font-semibold uppercase tracking-wide text-positive">always live</span>}
           </div>
-          <p className="text-xs text-white/45 leading-relaxed mt-1">{beat.trigger_text}</p>
-          {beat.pitch && <p className="text-xs text-white/30 leading-relaxed mt-1">{beat.pitch}</p>}
+          <p className="text-xs text-[var(--t-text-muted)] leading-relaxed mt-1">{beat.trigger_text}</p>
+          {beat.pitch && <p className="text-xs text-[var(--t-text-dim)] leading-relaxed mt-1">{beat.pitch}</p>}
         </div>
       </div>
     </motion.button>
@@ -95,7 +114,7 @@ export default function Activate() {
   if (loading || activation.isLoading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
-        <Loader2 className="w-7 h-7 text-accent animate-spin" />
+        <Loader2 className="w-7 h-7 text-[var(--t-personal-text)] animate-spin" />
       </div>
     )
   }
@@ -110,12 +129,12 @@ export default function Activate() {
     <motion.div
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      className="min-h-[calc(100dvh-3rem)] pb-3"
+      className="min-h-[calc(100dvh-3rem)] min-w-0 overflow-x-hidden pb-3"
     >
       <header className="mb-5">
-        <p className="text-xs uppercase tracking-[0.2em] text-accent mb-1">Beat activation</p>
-        <h1 className="text-2xl font-extrabold text-white">Choose your bets</h1>
-        <p className="text-sm text-white/55 leading-relaxed mt-2">
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--t-personal-text)] mb-1">Beat activation</p>
+        <h1 className="font-display text-2xl font-extrabold text-[var(--t-text)]">Choose your bets</h1>
+        <p className="text-sm text-[var(--t-text-muted)] leading-relaxed mt-2">
           Activate exactly 3 beats per character. Only activated beats can score, and hedging opposite outcomes is allowed.
         </p>
       </header>
@@ -124,17 +143,18 @@ export default function Activate() {
         {activation.characters.map(({ entity, beats, activatedBeatIds }) => {
           const chosen = activatedBeatIds.size
           return (
-            <section key={entity.id} className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
+            <section key={entity.id} className="relief-glass rounded-2xl p-4">
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0">
-                  <h2 className="font-bold text-white truncate">{entity.name}</h2>
-                  <p className="text-xs text-white/40 mt-0.5">House {entity.film_name}</p>
+                <div className="min-w-0 pt-1">
+                  <h2 className="font-display font-bold text-[var(--t-text)] truncate">{entity.name}</h2>
+                  <p className="text-xs text-[var(--t-text-dim)] mt-0.5">House {entity.film_name}</p>
                 </div>
                 <span className={[
-                  'text-xs font-bold tabular-nums whitespace-nowrap',
-                  chosen === 3 ? 'text-accent' : 'text-white/50',
+                  'relief-glass inline-flex min-h-11 items-center rounded-xl px-3 font-display text-lg font-bold tabular-nums whitespace-nowrap',
+                  chosen === 3 ? 'text-[var(--t-personal-text)]' : 'text-[var(--t-text-muted)]',
                 ].join(' ')}>
-                  {chosen} of 3 chosen
+                  {chosen} of 3
+                  <span className="sr-only"> chosen</span>
                 </span>
               </div>
               <div className="space-y-2">
@@ -157,14 +177,14 @@ export default function Activate() {
         })}
 
         {activation.dragon && (
-          <section className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4">
+          <section className="relief-glass rounded-2xl p-4">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
-                <h2 className="font-bold text-white">{activation.dragon.entity.name}</h2>
-                <p className="text-xs text-white/40 mt-0.5">Dragon</p>
+                <h2 className="font-display font-bold text-[var(--t-text)]">{activation.dragon.entity.name}</h2>
+                <p className="text-xs text-[var(--t-text-dim)] mt-0.5">Dragon</p>
               </div>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-accent">
-                <LockKeyhole size={12} />
+              <span className="inline-flex min-h-11 items-center gap-1 text-xs font-bold uppercase tracking-wide text-positive">
+                <LockKeyhole size={14} />
                 always live
               </span>
             </div>
@@ -177,49 +197,49 @@ export default function Activate() {
         )}
       </div>
 
-      <footer className="sticky bottom-0 z-20 mt-5 -mx-4 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] bg-ground-deep/95 backdrop-blur-xl border-t border-white/10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-white">Your progress</span>
+      <footer className="relief-glass sticky bottom-0 z-20 mt-5 -mx-4 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] rounded-b-none">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <span className="text-sm font-semibold text-[var(--t-text)]">Your progress</span>
           <span className={[
-            'text-sm font-bold tabular-nums',
-            activation.myActivatedCount === activation.myRequiredCount ? 'text-accent' : 'text-white/60',
+            'font-display text-sm font-bold tabular-nums text-right',
+            activation.myActivatedCount === activation.myRequiredCount ? 'text-[var(--t-personal-text)]' : 'text-[var(--t-text-muted)]',
           ].join(' ')}>
             {activation.myActivatedCount} of {activation.myRequiredCount} chosen
           </span>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-3">
+        <div className="flex flex-wrap gap-2 pb-3">
           {activation.progress
             .filter((entry) => entry.player.id !== player.id)
             .map((entry) => (
-              <div key={entry.player.id} className="flex items-center gap-2 flex-shrink-0 min-h-11 rounded-xl bg-white/5 border border-white/10 px-2.5">
+              <div key={entry.player.id} className="relief-glass flex min-w-0 max-w-full items-center gap-2 min-h-11 rounded-xl px-2.5">
                 <Avatar avatarId={entry.player.avatar_id} size="sm" />
-                <div>
-                  <p className="text-xs text-white/65">{entry.player.name.split(' ')[0]}</p>
-                  <p className="text-[10px] tabular-nums text-white/40">{entry.activatedCount}/{entry.requiredCount}</p>
+                <div className="min-w-0">
+                  <p className="max-w-28 truncate text-xs text-[var(--t-text-muted)]">{entry.player.name.split(' ')[0]}</p>
+                  <p className="text-xs tabular-nums text-[var(--t-text-dim)]">{entry.activatedCount}/{entry.requiredCount}</p>
                 </div>
               </div>
             ))}
         </div>
 
-        {activation.error && <p className="text-xs text-red-400 mb-2">{activation.error}</p>}
+        {activation.error && <p className="text-xs text-negative mb-2">{activation.error}</p>}
         {player.is_host ? (
           activation.allComplete ? (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => void activation.hostAdvance()}
-              className="w-full min-h-11 rounded-xl bg-accent text-ground font-bold"
+              className="relief-raised w-full min-h-11 rounded-xl border border-[var(--t-personal-device)] bg-[var(--t-personal-field)] text-[var(--t-personal-text)] font-bold"
             >
               Start the show
             </motion.button>
           ) : confirmAnyway ? (
             <div className="grid grid-cols-[1fr_2fr] gap-2">
-              <button onClick={() => setConfirmAnyway(false)} className="min-h-11 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60">
+              <button onClick={() => setConfirmAnyway(false)} className="relief-glass min-h-11 rounded-xl text-sm text-[var(--t-text-muted)]">
                 Go back
               </button>
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => void activation.hostAdvance()}
-                className="min-h-11 rounded-xl bg-accent/15 border border-accent/40 text-sm font-bold text-accent"
+                className="relief-raised min-h-11 rounded-xl border border-[var(--t-personal-device)] bg-[var(--t-personal-field)] text-sm font-bold text-[var(--t-personal-text)]"
               >
                 Confirm start anyway
               </motion.button>
@@ -227,13 +247,13 @@ export default function Activate() {
           ) : (
             <button
               onClick={() => setConfirmAnyway(true)}
-              className="w-full min-h-11 rounded-xl bg-white/5 border border-white/15 text-sm font-semibold text-white/65"
+              className="relief-glass w-full min-h-11 rounded-xl text-sm font-semibold text-pending"
             >
               Start anyway — {missingCount} picks missing
             </button>
           )
         ) : (
-          <div className="min-h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm text-white/45">
+          <div className="relief-glass min-h-11 rounded-xl flex items-center justify-center text-sm text-[var(--t-text-dim)]">
             Waiting for the host
           </div>
         )}

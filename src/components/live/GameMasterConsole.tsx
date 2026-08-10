@@ -508,7 +508,7 @@ export default function GameMasterConsole({
             <p className="text-sm text-white/40">
               {isHost
                 ? 'Nothing logged yet. Call the first one.'
-                : 'Waiting for the host to log the first event.'}
+                : 'The chronicle is blank until the first event is logged.'}
             </p>
           </div>
         ) : (

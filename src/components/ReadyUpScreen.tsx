@@ -79,18 +79,22 @@ export default function ReadyUpScreen({
   useEffect(() => {
     if (stage !== 'go' || celebratedRef.current) return
     celebratedRef.current = true
+    const rootStyle = getComputedStyle(document.documentElement)
     confetti({
       particleCount: 120,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#B9863F', '#ffffff', '#12163A'],
+      colors: [
+        rootStyle.getPropertyValue('--t-personal-device').trim(),
+        rootStyle.getPropertyValue('--t-text').trim(),
+        rootStyle.getPropertyValue('--t-ground-deep').trim(),
+      ],
     })
   }, [stage])
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #0A0E27ee, #12163Aee)' }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-x-hidden bg-[var(--t-overlay)] px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
@@ -108,7 +112,7 @@ export default function ReadyUpScreen({
             <AnimatePresence mode="wait">
               <motion.span
                 key={count}
-                className="text-[160px] font-black text-accent leading-none select-none"
+                className="font-display text-[160px] font-black text-[var(--t-personal-text)] leading-none select-none tabular-nums"
                 initial={{ scale: 2, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.4, opacity: 0 }}
@@ -123,13 +127,13 @@ export default function ReadyUpScreen({
         {stage === 'go' && (
           <motion.div
             key="go-overlay"
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.span
-              className="text-7xl font-black text-accent leading-none select-none"
+              className="font-display text-6xl font-black text-[var(--t-personal-text)] leading-none text-center select-none"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 500, damping: 20 }}
@@ -142,39 +146,39 @@ export default function ReadyUpScreen({
 
       {/* Player list — visible during 'waiting', fades when countdown starts */}
       <motion.div
-        className="w-full max-w-md flex flex-col gap-5"
+        className="w-full max-w-md min-w-0 flex flex-col gap-5"
         animate={{ opacity: stage === 'waiting' ? 1 : 0 }}
         transition={{ duration: 0.3 }}
       >
         {/* Header */}
         <div className="text-center">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">The Draft</p>
-          <h1 className="text-2xl font-bold text-white">Ready up</h1>
-          <p className="text-white/50 text-sm mt-1">Waiting for everyone to read the rules</p>
+          <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-widest mb-1">The Draft</p>
+          <h1 className="font-display text-2xl font-bold text-[var(--t-text)]">Ready up</h1>
+          <p className="text-[var(--t-text-muted)] text-sm mt-1">Waiting for everyone to read the rules</p>
         </div>
 
         {/* Player list */}
-        <div className="relief-glass p-5">
-          <motion.ul className="space-y-3" layout>
+        <div className="relief-glass p-4 sm:p-5">
+          <motion.ul className="space-y-2" layout>
             {players.map((p) => {
               const isReady = readyPlayerIds.includes(p.id)
               return (
                 <motion.li
                   key={p.id}
                   layout
-                  className="flex items-center gap-3"
+                  className="relief-glass flex min-h-11 min-w-0 items-center gap-3 px-3 py-2"
                 >
                   <Avatar
                     avatarId={p.avatar_id}
                     size="md"
                     emotion={isReady ? 'happy' : 'neutral'}
                   />
-                  <span className="flex-1 font-semibold text-white truncate">{p.name}</span>
+                  <span className="flex-1 min-w-0 font-semibold text-[var(--t-text)] truncate">{p.name}</span>
                   <AnimatePresence mode="wait">
                     {isReady ? (
                       <motion.div
                         key="ready"
-                        className="flex items-center gap-1.5 text-positive text-sm font-medium"
+                        className="flex flex-shrink-0 items-center gap-1.5 text-positive text-sm font-medium"
                         initial={{ opacity: 0, x: 8 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0 }}
@@ -186,7 +190,7 @@ export default function ReadyUpScreen({
                     ) : (
                       <motion.div
                         key="reading"
-                        className="flex items-center gap-1.5 text-amber-400/80 text-sm"
+                        className="flex flex-shrink-0 items-center gap-1.5 text-pending text-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -206,7 +210,7 @@ export default function ReadyUpScreen({
         <AnimatePresence>
           {allReady && (
             <motion.p
-              className="text-center text-accent font-semibold text-sm"
+              className="text-center text-positive font-semibold text-sm"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
             >

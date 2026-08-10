@@ -267,7 +267,7 @@ export default function Room() {
 
               {!canStart && (
                 <p className="text-[var(--t-text-dim)] text-sm">
-                  Waiting for at least 2 players to join…
+                  The hall needs at least 2 players…
                 </p>
               )}
 

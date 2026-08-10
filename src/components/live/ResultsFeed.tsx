@@ -37,7 +37,7 @@ export default function ResultsFeed({ results }: Props) {
           <ScrollText size={20} className="text-white/15" />
         </div>
         <p className="text-sm text-white/30 font-medium">No winners announced yet</p>
-        <p className="text-xs text-white/20">Waiting for the ceremony to begin</p>
+        <p className="text-xs text-white/20">The record awaits the first event</p>
       </div>
     )
   }

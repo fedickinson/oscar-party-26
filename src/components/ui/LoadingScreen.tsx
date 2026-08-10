@@ -13,7 +13,7 @@ interface Props {
   message?: string
 }
 
-export default function LoadingScreen({ message = 'Loading…' }: Props) {
+export default function LoadingScreen({ message = 'The ravens are flying…' }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5">
       <motion.div

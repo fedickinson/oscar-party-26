@@ -119,7 +119,7 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
         {/* Nominee list */}
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
           {nomineeIds === null && (
-            <p className="text-sm text-white/40 text-center py-6">Loading...</p>
+            <p className="text-sm text-white/40 text-center py-6">The ravens are flying…</p>
           )}
 
           {nomineeIds !== null && nominees.length === 0 && (

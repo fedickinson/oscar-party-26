@@ -1,8 +1,8 @@
 /**
- * film-icons.tsx — maps nominated film titles to thematic SVG icons.
+ * film-icons.tsx — maps houses, faction groups and dragons to heraldic icons.
  *
  * Usage:
- *   <FilmIcon filmName="Sinners" size={16} className="text-accent" />
+ *   <FilmIcon filmName="The Blacks" size={16} className="text-accent" />
  *
  * Pattern-matched on lowercased title. Falls back to a neutral heraldic shield
  * for unknown titles.

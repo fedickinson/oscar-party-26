@@ -23,28 +23,28 @@ const CONTENT: Record<Phase, {
   tip: string
 }> = {
   draft: {
-    icon: <Users size={40} className="text-accent" />,
+    icon: <Users size={40} className="text-[var(--t-personal-device)]" />,
     title: 'The Draft',
     what: "One dragon each, then four characters each. When your pick does something tonight — a kill, a betrayal, a death, a dragon falling — you score. You are drafting who matters in this episode.",
     different: "This is the only part where you compete for picks. Once someone takes Vhagar, she is theirs. Everyone needs to be here, because it goes in turns.",
     tip: "Dragons go first and there are only eleven, so somebody is not getting Vhagar. After that, characters who could plausibly die, kill, or betray are worth more than characters who will simply be present.",
   },
   confidence: {
-    icon: <Hash size={40} className="text-accent" />,
+    icon: <Hash size={40} className="text-[var(--t-personal-device)]" />,
     title: 'Picks',
     what: '',
     different: '',
     tip: '',
   },
   bingo: {
-    icon: <Grid3X3 size={40} className="text-accent" />,
+    icon: <Grid3X3 size={40} className="text-[var(--t-personal-device)]" />,
     title: 'Bingo',
     what: "Your card has 25 things that might happen in the episode. Tap a square when you see it. Every square you land scores on its own — the unlikely ones are worth up to five times the obvious ones — and five in a row is a bonus on top.",
     different: "This one is not about predicting anything — it is about paying attention. Every card is dealt to the same difficulty, so nobody gets the easy one. The squares with a dot are the long shots, and that is where the points are.",
     // Not "spells out what does not count" — six of the 75 squares qualify the
     // other way ("A refusal counts if it changes what happens"), and the app is
     // careful not to claim otherwise.
-    tip: "Read a square before you mark it — each one spells out exactly what counts, and what doesn't. Nobody approves these: it is on your honour, and tapping a marked square takes it back.",
+    tip: "Read a square before you claim it — each one spells out exactly what counts, and what doesn't. Marking is on your honor — tap a marked square to undo it.",
   },
 }
 
@@ -62,23 +62,19 @@ export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #0A0E27ee, #12163Aee)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden bg-[var(--t-overlay)] px-4 py-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="w-full max-w-md relief-glass p-6 flex flex-col gap-5"
+        className="material-vellum deckled relief-raised w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto p-6 flex flex-col gap-5 text-[var(--t-ink)] font-manuscript"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
         {/* Game number eyebrow label */}
-        <p
-          className="text-center text-xs font-semibold uppercase tracking-widest"
-          style={{ color: '#B9863F' }}
-        >
+        <p className="text-center text-xs font-semibold uppercase tracking-widest text-[var(--t-ink-muted)]">
           {GAME_LABEL[phase]}
         </p>
 
@@ -88,31 +84,31 @@ export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-white text-center">{title}</h1>
+        <h1 className="font-display text-2xl font-bold text-[var(--t-ink)] text-center">{title}</h1>
 
         {/* What you're doing */}
         <div>
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1.5">What you're doing</p>
-          <p className="text-white/80 text-sm leading-relaxed">{what}</p>
+          <p className="font-sans text-xs font-semibold text-[var(--t-ink-muted)] uppercase tracking-widest mb-1.5">What you're doing</p>
+          <p className="text-[var(--t-ink)] text-base font-semibold leading-relaxed">{what}</p>
         </div>
 
         {/* How it's different — visually distinct callout */}
-        <div className="border-l-2 border-accent/50 pl-4 bg-accent/5 rounded-r-xl py-3 pr-3">
-          <p className="text-xs text-accent/60 uppercase tracking-widest mb-1.5">How it's different</p>
-          <p className="text-white/80 text-sm leading-relaxed">{different}</p>
+        <div className="border-l-2 border-[var(--t-personal-device)] pl-4 bg-[var(--t-clear)] rounded-r-xl py-3 pr-3">
+          <p className="font-sans text-xs font-semibold text-[var(--t-ink-muted)] uppercase tracking-widest mb-1.5">How it's different</p>
+          <p className="text-[var(--t-ink)] text-base font-semibold leading-relaxed">{different}</p>
         </div>
 
         {/* Pro tip */}
         <div className="flex gap-2.5 items-start">
-          <Sparkles size={15} className="text-accent flex-shrink-0 mt-0.5" />
-          <p className="text-white/55 text-sm italic leading-relaxed">{tip}</p>
+          <Sparkles size={15} className="text-[var(--t-personal-device)] flex-shrink-0 mt-0.5" />
+          <p className="text-[var(--t-ink-muted)] text-base font-semibold italic leading-relaxed">{tip}</p>
         </div>
 
         {/* Got it */}
         <motion.button
           onClick={onContinue}
           whileTap={{ scale: 0.97 }}
-          className="w-full py-4 rounded-2xl font-bold text-lg bg-accent text-ground mt-1"
+          className="relief-raised w-full min-h-11 py-3 rounded-2xl border border-[var(--t-personal-device)] font-sans font-bold text-lg bg-[var(--t-personal-field)] text-[var(--t-personal-text)] mt-1"
         >
           Got it
         </motion.button>
