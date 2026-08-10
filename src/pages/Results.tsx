@@ -38,6 +38,7 @@ import {
 import { computeNightAwards } from '../lib/night-awards'
 import { usePlayerVerdicts } from '../hooks/usePlayerVerdicts'
 import PostCeremonyView from '../components/home/PostCeremonyView'
+import { Hallmark } from '../components/ui/Hallmarks'
 
 export default function Results() {
   const { code } = useParams<{ code: string }>()
@@ -272,28 +273,72 @@ export default function Results() {
   // the gate — the standings stay veiled until the ceremony has been entered
   // (or deliberately declined). One flag, per device.
   if (gated) {
+    // The gate IS the ceremony's closed curtain — same velvet, same seam,
+    // same type. Passing through should feel like the same doorway.
     return (
-      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-8 text-center"
-        style={{ background: 'radial-gradient(ellipse 90% 70% at 50% 38%, #1a0f0c 0%, #07070a 70%)' }}>
-        <p className="font-mono text-[11px] tracking-[0.4em] uppercase text-oscar-gold/70">The record is sealed</p>
-        <h1 className="mt-3 text-3xl font-bold text-white leading-tight">The Night<br />of the Dance</h1>
-        <p className="mt-3 text-sm text-white/55 max-w-[30ch] leading-relaxed">
-          The ceremony must be witnessed before the ledger opens.
-        </p>
-        <a
-          href="/ceremony.html"
-          onClick={() => localStorage.setItem('ceremony_gate_v1', 'passed')}
-          className="mt-8 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-oscar-gold bg-oscar-gold/10 px-8 py-4 text-lg font-bold text-oscar-gold shadow-lg min-h-[56px]"
+      <div
+        className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-8 text-center"
+        style={{
+          background: [
+            'repeating-linear-gradient(90deg, rgba(126,44,34,.52) 0 13px, rgba(34,11,10,.74) 13px 38px, rgba(88,30,24,.44) 38px 51px, rgba(24,8,8,.80) 51px 74px)',
+            'linear-gradient(180deg,#2b100c 0%,#1a0908 55%,#120606 100%)',
+          ].join(','),
+        }}
+      >
+        {/* the seam where the curtain will part */}
+        <div
+          className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 pointer-events-none"
+          style={{ borderLeft: '3px double rgba(185,134,63,.5)' }}
+        />
+        <div
+          className="relative rounded-2xl px-7 py-9 flex flex-col items-center"
+          style={{
+            background: 'rgba(7,6,9,.58)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(226,213,185,.10)',
+          }}
         >
-          <Clapperboard size={22} />
-          Enter the Ceremony
-        </a>
-        <button
-          onClick={() => { localStorage.setItem('ceremony_gate_v1', 'passed'); setGateDismissed(true) }}
-          className="mt-6 text-xs text-white/35 underline underline-offset-4 min-h-[44px]"
-        >
-          I have witnessed it — open the standings
-        </button>
+          <Hallmark id="hallmark-dance" size={56} className="text-[#b9863f]" />
+          <p
+            className="mt-5 text-[11px] uppercase text-[#b9863f]"
+            style={{ fontFamily: '"SF Mono",Menlo,Consolas,monospace', letterSpacing: '0.4em' }}
+          >
+            The record is sealed
+          </p>
+          <h1
+            className="mt-3 text-[34px] font-bold leading-tight text-[#f0e5cb]"
+            style={{ fontFamily: '"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif' }}
+          >
+            The Night<br />of the Dance
+          </h1>
+          <p
+            className="mt-3 text-[15px] italic max-w-[28ch] leading-relaxed text-[#cdbc98]"
+            style={{ fontFamily: '"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif' }}
+          >
+            The ceremony must be witnessed before the ledger opens.
+          </p>
+          <a
+            href="/ceremony.html"
+            onClick={() => localStorage.setItem('ceremony_gate_v1', 'passed')}
+            className="mt-8 flex items-center justify-center gap-2.5 rounded-full px-8 min-h-[52px] text-[13px] font-semibold uppercase text-[#b9863f]"
+            style={{
+              fontFamily: '"SF Mono",Menlo,Consolas,monospace',
+              letterSpacing: '0.16em',
+              border: '1px solid #b9863f',
+              background: 'rgba(185,134,63,.10)',
+            }}
+          >
+            Enter the Ceremony
+          </a>
+          <button
+            onClick={() => { localStorage.setItem('ceremony_gate_v1', 'passed'); setGateDismissed(true) }}
+            className="mt-5 text-[11px] min-h-[44px] text-[#cdbc98]/60 underline underline-offset-4"
+            style={{ fontFamily: '"SF Mono",Menlo,Consolas,monospace', letterSpacing: '0.08em' }}
+          >
+            I have witnessed it — open the standings
+          </button>
+        </div>
       </div>
     )
   }
