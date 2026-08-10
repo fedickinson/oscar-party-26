@@ -49,12 +49,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(failure.status).json({ error: failure.error })
   }
 
-  // ANTHROPIC_API_KEY is the correct name; VITE_ANTHROPIC_API_KEY is accepted as
-  // a fallback so an existing deployment keeps working through the rename. A
-  // VITE_-prefixed secret is a footgun — the day anything in src/ references it,
-  // Vite inlines it into the client bundle. Remove the fallback once the new
-  // variable is set in the Vercel project.
-  const apiKey = process.env.ANTHROPIC_API_KEY ?? process.env.VITE_ANTHROPIC_API_KEY
+  // Deliberately NOT named VITE_ANYTHING. That prefix is Vite's allowlist for
+  // values it will inline into the browser bundle, so a server secret carrying
+  // it is one stray `import.meta.env.VITE_ANTHROPIC_API_KEY` away from being
+  // served to every visitor. The name is the guardrail.
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return res.status(500).json({ error: 'Anthropic API key not configured' })
   }

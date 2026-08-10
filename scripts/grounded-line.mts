@@ -29,7 +29,7 @@
 import { readFileSync } from 'fs'
 
 const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-const KEY = env.split('\n').find((l) => l.startsWith('VITE_ANTHROPIC_API_KEY='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
+const KEY = env.split('\n').find((l) => l.startsWith('ANTHROPIC_API_KEY='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
 const promptsSrc = readFileSync(new URL('../src/lib/companion-prompts.ts', import.meta.url), 'utf8')
 const SYSTEM = promptsSrc.match(/const SHARED_SYSTEM = `([\s\S]*?)`\n\n/)?.[1] ?? ''
 

@@ -22,7 +22,7 @@ import { buildCategoryContext } from '../src/lib/ceremony-context'
 
 const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
 const pick = (k: string) => env.split('\n').find((l) => l.startsWith(k + '='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
-const URL_ = pick('VITE_SUPABASE_URL'), KEY = pick('VITE_SUPABASE_ANON_KEY'), AKEY = pick('VITE_ANTHROPIC_API_KEY')
+const URL_ = pick('VITE_SUPABASE_URL'), KEY = pick('VITE_SUPABASE_ANON_KEY'), AKEY = pick('ANTHROPIC_API_KEY')
 const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' }
 const get = async (p: string) => (await fetch(`${URL_}/rest/v1/${p}`, { headers: H })).json()
 const ins = (t: string, b: object) => fetch(`${URL_}/rest/v1/${t}`, { method: 'POST', headers: { ...H, Prefer: 'return=minimal' }, body: JSON.stringify(b) })

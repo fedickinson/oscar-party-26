@@ -84,7 +84,7 @@ export function supabaseConfig(defaultTarget: Target): SupabaseConfig {
     target,
     url,
     anonKey,
-    anthropicKey: env.ANTHROPIC_API_KEY || env.VITE_ANTHROPIC_API_KEY,
+    anthropicKey: env.ANTHROPIC_API_KEY,
   }
 }
 
