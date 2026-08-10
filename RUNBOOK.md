@@ -84,3 +84,18 @@ The night proved the game has three layers, and we'd only built two:
    Long-term this becomes an operator UI: presence, activity feed, engine
    health, referee actions (undo with a public banner), and restore — the
    difference between hosting a game and merely being in one.
+
+## Layer 4: the witness (vision, captured 8/9 late)
+
+Tonight's architecture reduces the entire game to one narrow interface: "this
+moment happened, attributed to this character." Humans push that button today.
+The next level is an AI WATCHER that pushes it: screen/audio capture on the
+laptop, frames sampled every few seconds, sent multimodal with the live board
+as context ("here are the undeclared possibilities — did any just occur?").
+Character ID via reference portraits (pipeline exists). Output is a PROPOSAL
+card — "Vermithor just fell: declare +25?" — one tap to confirm, preserving
+the honor-system social layer and absorbing hallucinations; confidence-gated
+auto-declare later. Sync substrate already built (per-screen episode clocks,
+drift beacons). The cast proved comprehension; perception is the only missing
+organ. Ladder: humans declare → AI proposes → AI declares, humans overrule.
+The clerical work leaves; the shouting stays.
