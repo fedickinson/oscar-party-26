@@ -264,6 +264,27 @@ export default function Results() {
 
   return (
     <>
+      <div className="max-w-md mx-auto px-4 pt-6">
+        <a
+          href="/ceremony.html"
+          className="block rounded-2xl border-2 border-oscar-gold/50 bg-white/5 backdrop-blur-lg p-5 shadow-lg"
+        >
+          <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-oscar-gold/70">
+            The morning after
+          </div>
+          <div className="mt-1 text-xl font-bold text-white">
+            The Ceremony has been written
+          </div>
+          <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+            The true record of the finale — every beat adjudicated, the cast's
+            verdicts, and your own card waiting at the end.
+          </p>
+          <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-oscar-gold/60 px-4 py-2.5 font-semibold text-oscar-gold">
+            <Clapperboard size={18} />
+            Enter the Ceremony
+          </div>
+        </a>
+      </div>
       <a
         href="/ceremony.html"
         className="fixed bottom-4 inset-x-4 z-40 mx-auto max-w-md flex items-center justify-center gap-2 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3.5 font-semibold text-oscar-gold shadow-lg"

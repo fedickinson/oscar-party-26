@@ -55,6 +55,7 @@ export default function Room() {
     if (room.phase === 'draft') navigate(`/room/${code}/draft`)
     if (room.phase === 'confidence') navigate(`/room/${code}/confidence`)
     if (room.phase === 'live') navigate(`/room/${code}/live`)
+    if (room.phase === 'finished') navigate(`/room/${code}/results`)
   }, [room?.phase, code, navigate])
 
   // ── Guard: no session ──────────────────────────────────────────────────────
