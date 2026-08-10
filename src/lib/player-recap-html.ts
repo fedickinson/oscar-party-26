@@ -461,7 +461,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     color: ${C.inkMuted}; margin: 6px 0 0; text-wrap: balance;
   }
 
-  .signet { display: block; width: 124px; height: 124px; margin: 18px auto 0; }
+  .signet { display: block; width: 124px; height: 124px; margin: 10px auto 0; }
 
   .identity { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
   .medallion {
@@ -504,30 +504,40 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   }
 
   /* ── Artwork ─────────────────────────────────────────────────────────── */
-  /* Prints as an inked plate rather than a photograph: desaturated toward the
-     ink, blended into the vellum so it sits IN the paper. A full-colour crop
-     dropped on parchment reads as a sticker. */
-  .crest { display: flex; justify-content: center; margin: 0 0 12px; }
-  .crest img {
-    width: 92px; height: 92px; object-fit: contain;
-    filter: sepia(.35) saturate(.6) contrast(1.05);
-    mix-blend-mode: multiply;
-  }
-  .hero { float: right; margin: 0 0 10px 16px; }
-  .hero img {
-    width: 104px; height: 104px; object-fit: cover;
+  /*
+    Photographic stills, mounted as aged plates.
+    The first pass used mix-blend-mode: multiply, which is right for a pale ink
+    wash and wrong for a photograph: multiply keeps darks and drops lights, so a
+    lit portrait crushed into a black block on the vellum. These are toned
+    toward the ink instead — part-grey, part-sepia, slightly lifted — and then
+    physically mounted with an ink rule and a vellum-deep mat, so they read as
+    something pasted into the record rather than a colour crop dropped on top.
+  */
+  .plate {
+    filter: grayscale(.42) sepia(.48) contrast(1.06) brightness(1.03) saturate(.9);
     border: 1px solid ${C.ink};
-    box-shadow: 0 0 0 4px rgba(102,86,66,.14);
-    filter: sepia(.4) saturate(.55) contrast(1.04);
-    mix-blend-mode: multiply;
+    outline: 4px solid ${C.vellumDeep};
+    outline-offset: 0;
+    display: block;
+  }
+  .crest { display: flex; justify-content: center; margin: 16px 0 0; }
+  .crest img { width: 78px; height: 78px; object-fit: cover; }
+  .hero { float: right; margin: 2px 0 12px 18px; }
+  .hero img { width: 112px; height: 112px; object-fit: cover; }
+  .hero figcaption {
+    font-family: ${DISPLAY}; font-size: 9px; letter-spacing: .13em;
+    text-transform: uppercase; color: ${C.inkMuted};
+    text-align: center; margin-top: 9px; max-width: 112px;
   }
   @media (max-width: 420px) {
-    .hero { float: none; margin: 0 0 12px; display: flex; justify-content: center; }
+    .hero { float: none; margin: 0 auto 14px; }
+    .hero figcaption { margin-left: auto; margin-right: auto; }
   }
   .portrait {
-    width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
-    filter: sepia(.4) saturate(.55); mix-blend-mode: multiply;
-    border: 1px solid rgba(41,34,25,.35);
+    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    filter: grayscale(.42) sepia(.48) contrast(1.06);
+    border: 1px solid rgba(41,34,25,.45);
+    flex-shrink: 0;
   }
 
   /* ── Verdict ─────────────────────────────────────────────────────────── */
@@ -691,10 +701,10 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     ${motifBand()}
 
     <header>
-      ${d.imagery.crest ? `<div class="crest"><img src="${d.imagery.crest.src}" alt="${esc(d.imagery.crest.alt)}"></div>` : ''}
       <p class="presents">Party Night Presents</p>
       <p class="masthead">Fire <em>&amp;</em> Blood</p>
       <p class="episode">House of the Dragon &mdash; Season 3 Finale</p>
+      ${d.imagery.crest ? `<div class="crest"><img class="plate" src="${d.imagery.crest.src}" alt="${esc(d.imagery.crest.alt)}"></div>` : ''}
 
       ${signet(house)}
 
@@ -718,7 +728,7 @@ ${verdictHtml}${momentsHtml}
       <section>
         <h2>Your draft</h2>
         <p class="section-note">${d.roster.length} claimed &middot; biggest earner first</p>
-        ${d.imagery.hero ? `<div class="hero"><img src="${d.imagery.hero.src}" alt="${esc(d.imagery.hero.alt)}"></div>` : ''}
+        ${d.imagery.hero ? `<figure class="hero"><img class="plate" src="${d.imagery.hero.src}" alt="${esc(d.imagery.hero.alt)}"><figcaption>${esc(d.imagery.hero.alt)}</figcaption></figure>` : ''}
         ${draftSummaryHtml}
         ${rosterHtml}
       </section>

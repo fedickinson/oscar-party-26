@@ -19,7 +19,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Grid3X3, Trophy, Flame, ChevronDown, ChevronUp, BarChart2, Play } from 'lucide-react'
+import { Grid3X3, Trophy, Flame, ChevronDown, ChevronUp, BarChart2, Play, Maximize2, Minimize2 } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import ChatSection from './ChatSection'
 import TeamPicker from '../TeamPicker'
@@ -131,6 +131,7 @@ export default function PreCeremonyView({
   // at 9pm is not the moment to fix it.
   const canStart = player ? isHost || remoteHolderIds(players).includes(player.id) : false
   const [starting, setStarting] = useState(false)
+  const [chatExpanded, setChatExpanded] = useState(false)
 
   async function handleStartShow() {
     if (starting) return
@@ -143,9 +144,9 @@ export default function PreCeremonyView({
   }
 
   return (
-    <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
-      {/* Fixed top: hero card + collapsible stats */}
-      <div className="px-4 pt-4 space-y-3 flex-shrink-0">
+    <div className="h-full max-w-md mx-auto overflow-y-auto">
+      {/* Stacked cards — the page scrolls; nothing can be crushed off-screen */}
+      <div className="px-4 pt-4 space-y-3">
         {/* Compact hero card */}
         <div className="relief-glass p-4">
           <div className="flex items-center gap-3">
@@ -252,11 +253,52 @@ export default function PreCeremonyView({
         />
       </div>
 
-      {/* Chat fills remaining vertical space */}
-      <div className="flex-1 flex flex-col min-h-0 px-4 pt-3" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-        <p className="text-xs uppercase tracking-wider text-white/35 mb-2 px-1 flex-shrink-0">Chat</p>
+      {/* Chat: guaranteed height, never crushed by the cards above; the
+          expand button hands it the entire screen. */}
+      <div
+        className="flex flex-col px-4 pt-3"
+        style={{ height: '62vh', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-center justify-between mb-2 px-1">
+          <p className="text-xs uppercase tracking-wider text-white/35">Chat</p>
+          <button
+            onClick={() => setChatExpanded(true)}
+            aria-label="Expand chat"
+            className="w-9 h-9 -mr-1 flex items-center justify-center text-white/45 hover:text-white"
+          >
+            <Maximize2 size={15} />
+          </button>
+        </div>
         <ChatSection fill />
       </div>
+
+      {/* Fullscreen chat — the phone's natural pre-show mode */}
+      <AnimatePresence>
+        {chatExpanded && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-50 flex flex-col bg-[var(--t-ground,#0A0E27)] max-w-md mx-auto"
+            style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))', paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          >
+            <div className="flex items-center justify-between px-4 pb-2 flex-shrink-0">
+              <p className="text-xs uppercase tracking-wider text-white/35">Chat</p>
+              <button
+                onClick={() => setChatExpanded(false)}
+                aria-label="Close chat"
+                className="w-9 h-9 -mr-1 flex items-center justify-center text-white/60 hover:text-white"
+              >
+                <Minimize2 size={16} />
+              </button>
+            </div>
+            <div className="flex-1 flex flex-col min-h-0 px-4">
+              <ChatSection fill />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

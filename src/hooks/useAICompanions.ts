@@ -201,6 +201,15 @@ export function useAICompanions(
       const raw = await callClaude(prompt, maxTokens)
       if (!raw) return
       const messages = parseCompanionResponse(raw)
+      // Delays live in client setTimeouts on the host, and the host tonight is
+      // a PHONE — locks, reloads, suspensions all wipe in-flight timers. The
+      // 8-minute entrance arc was designed for an always-awake tab; under real
+      // phone conditions long delays mostly died and re-fired from zero on the
+      // next reload, which is why the chat crawled. Cap the tail: intros still
+      // stagger, but everything lands within a plausible awake-window.
+      for (const msg of messages) {
+        msg.delay_seconds = Math.min(msg.delay_seconds, 90)
+      }
       for (const msg of messages) {
         if (msg.delay_seconds === 0) {
           await insertCompanionMessage(msg.companion_id, msg.text)

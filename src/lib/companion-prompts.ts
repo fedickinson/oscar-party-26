@@ -1252,6 +1252,8 @@ YOU PRODUCE THREE THINGS PER PLAYER:
      It suits "crest" only when that companion defined the player's night.
    - Prefer a portrait of the character who actually carried them for "hero".
      If no such portrait exists in the catalogue, leave "hero" empty.
+   - Do not use the SAME image for both placements. The sheet would show one
+     picture twice. If only one image fits, use it once and leave the other empty.
    - "note" is one short line on why, under 12 words.
 
 GENERAL:

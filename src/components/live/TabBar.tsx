@@ -27,9 +27,16 @@ interface Props {
   onSelect: (tab: number) => void
   /** Tab IDs that should show a notification badge dot */
   badges?: Set<number>
+  /** GM console tab renders only for the host. */
+  isHost?: boolean
 }
 
-export default function TabBar({ activeTab, onSelect, badges }: Props) {
+export default function TabBar({ activeTab, onSelect, badges, isHost = true }: Props) {
+  // The Events tab is the GM console — for everyone else it was a wall of
+  // admin controls disconnected from play, and mid-episode it read as noise.
+  // Players get events through the chat and the scoreboard; the tab is the
+  // host's tool only.
+  const tabs = TABS.filter((t) => t.id !== 3 || isHost)
   return (
     <div
       className="flex-shrink-0 relief-glass"
@@ -43,7 +50,7 @@ export default function TabBar({ activeTab, onSelect, badges }: Props) {
       }}
     >
       <div className="flex h-[60px]">
-        {TABS.map(({ id, label, Icon }) => {
+        {tabs.map(({ id, label, Icon }) => {
           const isActive = activeTab === id
           const hasBadge = !isActive && badges?.has(id)
           return (

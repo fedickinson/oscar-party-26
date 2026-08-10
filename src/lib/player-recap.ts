@@ -506,11 +506,29 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     return src ? { src, alt } : undefined
   }
 
-  for (const chosen of (verdict?.imagery ?? []) as Array<{ slot?: string; slug?: string }>) {
-    if (!chosen.slug || (chosen.slot !== 'crest' && chosen.slot !== 'hero')) continue
+  // Deduplicated at render, not at write: the same portrait in both slots is a
+  // visual defect (the sheet shows one picture twice), but it is also a
+  // perfectly reasonable model answer when one character genuinely defined the
+  // night. Resolving it here means already-stored rows render correctly without
+  // being regenerated.
+  //
+  // HERO WINS THE TIE. It sits beside the draft ledger with a caption naming
+  // who it is, next to the points they earned — the picture is explained there.
+  // The crest is unlabelled decoration at the masthead, and the sheet already
+  // carries the wax signet as its mark, so a duplicate at the top is the one
+  // worth losing.
+  const usedSlugs = new Set<string>()
+  for (const slot of ['hero', 'crest'] as const) {
+    const chosen = ((verdict?.imagery ?? []) as Array<{ slot?: string; slug?: string }>).find(
+      (i) => i.slot === slot,
+    )
+    if (!chosen?.slug || usedSlugs.has(chosen.slug)) continue
     const entry = getLibraryImage(chosen.slug)
     const resolved = resolve(chosen.slug, entry?.label ?? '')
-    if (resolved) imagery[chosen.slot] = resolved
+    if (resolved) {
+      imagery[slot] = resolved
+      usedSlugs.add(chosen.slug)
+    }
   }
 
   if (verdict?.companion_id) {

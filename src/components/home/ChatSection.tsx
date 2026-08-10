@@ -161,10 +161,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const prevMessageCountRef = useRef(0)
   const initialScrollDoneRef = useRef(false)
 
-  // Which intro companion should show a typing indicator right now?
-  // Find the first in sequence that hasn't sent a message yet.
-  const spokCompanions = new Set(messages.filter((m) => INTRO_COMPANION_IDS.includes(m.player_id)).map((m) => m.player_id))
-  const nextTypingCompanionId = !isLoading ? INTRO_COMPANION_IDS.find((id) => !spokCompanions.has(id)) : undefined
+  // The derived "whoever hasn't spoken yet is typing" indicator is GONE. It
+  // lied whenever the host's schedule shifted (phone lock, reload): it showed
+  // e.g. "Cersei is typing" for MINUTES because she was merely next in intro
+  // order, with no insert actually in flight. Only broadcast-driven indicators
+  // remain — those reflect a real scheduled message on the host.
+  const nextTypingCompanionId = undefined as string | undefined
 
   // Companions with pending delayed messages (host-side, from useAICompanions)
   const pendingCompanionIds = usePendingCompanions()

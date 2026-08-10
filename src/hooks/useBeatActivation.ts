@@ -204,12 +204,20 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
         beat_id: beatId,
       })
       if (insertError) {
-        setActivations((prev) => {
-          const next = prev.filter((activation) => activation.beat_id !== beatId)
-          activationsRef.current = next
-          return next
-        })
-        setError(insertError.message)
+        // 23505 = the row already exists — an earlier tap landed but this
+        // client missed the realtime echo (phones suspend sockets in the
+        // background). The beat IS active; rolling back the optimistic state
+        // made the checkbox "instantly un-pick" while the DB disagreed. Keep it.
+        if (insertError.code === '23505') {
+          /* already active — optimistic state is correct */
+        } else {
+          setActivations((prev) => {
+            const next = prev.filter((activation) => activation.beat_id !== beatId)
+            activationsRef.current = next
+            return next
+          })
+          setError(insertError.message)
+        }
       }
     }
     togglingRef.current.delete(beatId)

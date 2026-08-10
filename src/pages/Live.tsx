@@ -70,6 +70,28 @@ export default function Live() {
   const currentPlayerId = player?.id ?? ''
   const showStarted = room?.show_started ?? false
 
+  // The host client is the room's engine: companion schedules, welcome queues,
+  // bingo reactions all run in ITS timers. A locked phone suspends them all.
+  // Ask the browser to keep the screen awake while the host is on this page;
+  // re-acquire whenever the tab becomes visible again (locks release it).
+  useEffect(() => {
+    if (!isHost || !('wakeLock' in navigator)) return
+    let lock: { release: () => Promise<void> } | null = null
+    const acquire = async () => {
+      try {
+        lock = await (navigator as Navigator & { wakeLock: { request: (t: string) => Promise<never> } })
+          .wakeLock.request('screen')
+      } catch { /* denied or unsupported — reload-recovery guards still cover us */ }
+    }
+    void acquire()
+    const onVis = () => { if (document.visibilityState === 'visible') void acquire() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      document.removeEventListener('visibilitychange', onVis)
+      void lock?.release().catch(() => {})
+    }
+  }, [isHost])
+
   useRoomSubscription(roomId)
   // Players must stay live here, not just in the lobby. The watch-sync layer
   // reads per-player rows — episode_started_at, watch_group, is_remote_holder —
@@ -730,6 +752,7 @@ export default function Live() {
           activeTab={tab}
           onSelect={(next) => next === 1 ? handleNavigateToBingo() : selectTab(next)}
           badges={tabBadges}
+          isHost={isHost}
         />
       </div>
 
