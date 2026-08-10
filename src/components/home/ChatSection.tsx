@@ -258,7 +258,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
       {/* Message list */}
       {!collapsed && (
       <div
-        className={['overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
+        className={['overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
         <AnimatePresence initial={false}>
@@ -274,7 +274,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   className="flex items-center gap-3 py-2"
                 >
                   <div className="flex-1 h-px bg-white/15" />
-                  <span className="text-[11px] uppercase tracking-wider text-white/30 font-medium whitespace-nowrap">
+                  <span className="text-[11px] uppercase tracking-wider text-white/30 font-medium text-center min-w-0 break-words">
                     {msg.text}
                   </span>
                   <div className="flex-1 h-px bg-white/15" />
@@ -293,7 +293,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   className="flex items-center gap-2 py-1"
                 >
                   <div className="flex-1 h-px bg-accent/15" />
-                  <span className="text-[10px] uppercase tracking-widest text-accent/55 font-semibold whitespace-nowrap">
+                  <span className="text-[10px] uppercase tracking-widest text-accent/55 font-semibold text-center min-w-0 break-words">
                     {msg.text}
                   </span>
                   <div className="flex-1 h-px bg-accent/15" />

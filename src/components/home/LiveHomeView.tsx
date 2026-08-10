@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, Clock, Info, Scroll, Trophy, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clock, Info, Scroll, Trophy, X, Clapperboard } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { supabase } from '../../lib/supabase'
 import ChatSection from './ChatSection'
@@ -395,7 +395,8 @@ function NextUpCard({
 // ─── Collapsible Scores ───────────────────────────────────────────────────────
 
 function CollapsibleScores({ leaderboard }: { leaderboard: ScoredPlayer[] }) {
-  const { player } = useGame()
+  const { player, room } = useGame()
+  const finished = room?.phase === 'finished'
   const [expanded, setExpanded] = useState(false)
   const currentPlayerId = player?.id ?? ''
 
@@ -488,6 +489,8 @@ export default function LiveHomeView({
   isEndingCeremony,
   onFilmLinkTap,
 }: Props) {
+  const { room } = useGame()
+  const finished = room?.phase === 'finished'
   return (
     <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
       {/* Fixed top: score summary. The Oscars build led with a "Next up"
@@ -495,6 +498,24 @@ export default function LiveHomeView({
           first unresolved seeded event as "next" was a fiction. Events arrive
           when the episode provides them; the chat and feed carry that. */}
       <div className="px-4 pt-4 space-y-3 flex-shrink-0">
+        {finished && (
+          <a
+            href="/ceremony.html"
+            className="block rounded-2xl border-2 border-oscar-gold/60 bg-gradient-to-b from-oscar-gold/12 to-white/5 backdrop-blur-lg p-4 shadow-lg"
+          >
+            <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-oscar-gold/70">
+              The ending
+            </div>
+            <div className="mt-0.5 text-lg font-bold text-white">The Night of the Dance</div>
+            <p className="mt-1 text-[13px] text-white/60 leading-snug">
+              The ceremony of the record — every beat, the cast, your card at the end.
+            </p>
+            <div className="mt-2.5 inline-flex items-center gap-2 rounded-xl border border-oscar-gold/60 px-3.5 py-2 text-sm font-semibold text-oscar-gold">
+              <Clapperboard size={15} />
+              Watch the Ceremony
+            </div>
+          </a>
+        )}
         <CollapsibleScores leaderboard={leaderboard} />
       </div>
 
