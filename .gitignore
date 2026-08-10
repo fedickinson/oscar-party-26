@@ -34,3 +34,4 @@ docs/
 .vercel
 .env*.local
 .gstack/
+public/ceremony.html

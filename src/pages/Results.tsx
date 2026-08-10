@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react'
+import { Clapperboard } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
 import { useRoomSubscription } from '../hooks/useRoom'
@@ -262,7 +263,16 @@ export default function Results() {
   if (!room || !player) return null
 
   return (
-    <PostCeremonyView
+    <>
+      <a
+        href="/ceremony.html"
+        className="fixed bottom-4 inset-x-4 z-40 mx-auto max-w-md flex items-center justify-center gap-2 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3.5 font-semibold text-oscar-gold shadow-lg"
+        style={{ paddingBottom: 'max(0.875rem, env(safe-area-inset-bottom))' }}
+      >
+        <Clapperboard size={18} />
+        The Ceremony — relive the night
+      </a>
+      <PostCeremonyView
       leaderboard={scores.leaderboard}
       players={players}
       timeline={timeline}
@@ -294,5 +304,6 @@ export default function Results() {
         )
       }}
     />
+    </>
   )
 }
