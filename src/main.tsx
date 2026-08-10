@@ -25,6 +25,25 @@ if (new URLSearchParams(window.location.search).has('fresh')) {
   window.history.replaceState(null, '', window.location.pathname)
 }
 
+// Phones suspend WebSockets when the screen locks or the browser backgrounds;
+// Supabase realtime reconnects on return but events that fired while suspended
+// are NOT replayed — the phone silently shows stale state until a manual
+// refresh. Desktop tabs never sleep, which is why the same room looks instant
+// there. So: coming back from a real absence (>35s) reloads the page. Reload
+// is cheap and safe by design here — identity restores from localStorage,
+// every hook refetches, and the host-side schedulers all have reload guards.
+// Short app-switches stay seamless; the socket usually survives those.
+let hiddenAt: number | null = null
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    hiddenAt = Date.now()
+  } else if (hiddenAt !== null && Date.now() - hiddenAt > 35_000) {
+    window.location.reload()
+  } else {
+    hiddenAt = null
+  }
+})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
