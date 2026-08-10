@@ -35,3 +35,6 @@ docs/
 .env*.local
 .gstack/
 public/ceremony.html
+
+# Supabase CLI local state
+supabase/.branches/

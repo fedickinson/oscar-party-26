@@ -88,9 +88,29 @@ canonical rows.
 
 ## Database
 
-19 timestamped migrations in `supabase/migrations/`. One Supabase project, and it is production.
+`supabase/migrations/` holds **one** migration: `00000000000000_baseline.sql`, the whole schema —
+17 tables, 41 policies, 10 realtime-published tables, generated from the live project by
+`scripts/schema-baseline.mts`. Regenerate it rather than hand-editing, and prove it with
+`scripts/schema-diff.mts`, which fingerprints local and remote and compares object by object
+(641 objects, identical at the time of writing).
+
+The 19 historical migrations now live in `supabase/migrations-archive/`. They were squashed
+because they cannot replay onto a current-state baseline: a 2026-08-09 seed insert predates the
+`bingo_squares.slug` column that the same schema now requires. They are kept for history, not for
+execution.
+
+**Before the first `supabase db push`, read this.** Local migration history is one baseline;
+production's history table still lists all 19 versions. Pushing without reconciling would try to
+apply the baseline to production. Run `supabase migration repair --status applied 00000000000000`
+against the linked project first — it writes one bookkeeping row and executes no DDL. Nobody has
+done this yet, deliberately, because it is a write to production.
+
+`supabase/seed.sql` carries authored content only — the board, the cast, the pool, the draftable
+entities — so a fresh local database is playable. It contains no rooms, players or messages: that
+data is a real evening with real names and this repository is public.
+
 Row types live in `src/types/database.ts` — `Row` / `Insert` / `Update` per table. Keep them in
-sync with migrations by hand; there is no codegen step wired up.
+sync by hand; there is no codegen step wired up.
 
 The `categories` table is **global** — no `room_id`. Anything written there shows up in every
 room forever. `dogfood-e2e.mts` tears down its own rows for exactly this reason; any new script

@@ -36,13 +36,11 @@
  *   --name NAME    ghost's player name (default "Ghost (2nd room)")
  */
 
-import { readFileSync } from 'fs'
+import { supabaseConfig } from './lib/env.mts'
 
-const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-const pick = (k: string) =>
-  env.split('\n').find((l) => l.startsWith(k + '='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
-const URL_ = pick('VITE_SUPABASE_URL')
-const KEY = pick('VITE_SUPABASE_ANON_KEY')
+// Defaults to the local stack: this joins a room as a real player and writes.
+// SUPABASE_TARGET=remote to run it as a counterparty against production.
+const { url: URL_, anonKey: KEY } = supabaseConfig('local')
 
 const args = process.argv.slice(2)
 const flag = (name: string) => {

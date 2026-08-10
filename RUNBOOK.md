@@ -5,6 +5,16 @@ the app.** Picks, marks, scores, messages, teams, episode clocks, welcomes —
 all of it survives any deploy, any reload, any phone dying. The app is a
 disposable window onto the database. Everything below follows from that.
 
+## Which database a command talks to (added 8/10)
+
+There is now a local stack (`supabase start`), so every script announces its
+target before doing anything. **The operator's lens — `gm-pulse`,
+`snapshot-game`, `companion-daemon` — still defaults to production**, which is
+what you want on show night: nothing below changes. The scripts that WRITE test
+data (`dogfood-e2e`, `ghost-screen`) now default to local, so add
+`SUPABASE_TARGET=remote` if you deliberately want them against the real room.
+`npm run dev` talks to the local stack; production builds are unaffected.
+
 ## Mid-game hotfix, in order
 
 1. **Fix locally** → `npx tsc -p tsconfig.app.json --noEmit` → `npm run build`.

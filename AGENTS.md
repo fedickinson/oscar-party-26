@@ -60,8 +60,11 @@ Verified in this repository on the current checkout:
 | **Build gate** | `npm run build` | `tsc -b && vite build`, covering `src`, `api` and the configs. Green build is the ship gate; nothing ships red. |
 | **Unit tests** | `npm test` | Vitest over the pure layer — `src/lib` and the proxy guards. 102 tests, no network, no database. |
 | Tests, watching | `npm run test:watch` | Inner loop while changing `src/lib`. |
-| Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | ~50 assertions, real write shapes, **against the live database**; cleans up after itself. Required when a change touches backend writes. |
-| Second player | `npx tsx scripts/ghost-screen.mts` | Joins your room as a real counterparty. |
+| Local stack | `supabase start` / `supabase stop` | Full Postgres + PostgREST + Realtime in Docker. `npm run dev` talks to it automatically. |
+| Rebuild local DB | `supabase db reset` | Replays the baseline migration and `supabase/seed.sql` (authored content, no player data). |
+| Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | 50 assertions, real write shapes. **Runs against local by default.** Required when a change touches backend writes. |
+| Second player | `npx tsx scripts/ghost-screen.mts` | Joins your room as a real counterparty. Local by default. |
+| Schema parity | `npx tsx scripts/schema-diff.mts` | Fingerprints local against production and diffs, object by object. Non-zero exit on drift. |
 | Room dashboard | `npx tsx scripts/gm-pulse.mts --room CODE` | Presence, declares, marks, cast liveness. |
 | DB snapshot | `npx tsx scripts/snapshot-game.mts [--loop 300]` | Dumps all tables to `.private/snapshots/`. |
 | Cast daemon | `npx tsx scripts/companion-daemon.mts --room CODE` | Phone-independent narrative engine. |
@@ -106,9 +109,14 @@ every push and pull request.
    prompts. Screen canon and source-material canon are different worlds; where they diverge the
    screen wins, where the screen is silent the verdict is UNVERIFIABLE. (RUNBOOK: grounding
    doctrine, two-canons rule.)
-9. **This repository is public and its database is production.** There is one Supabase project
-   and it is the live one. No secrets in tracked files. `docs/`, `.private/`, `.env.local`, and
-   `.claude/settings.local.json` are gitignored — do not move their contents into tracked files.
+9. **This repository is public, and the hosted Supabase project is production.** Develop against
+   the local stack; `SUPABASE_TARGET=remote` is what makes a script touch the real one, and every
+   script prints the target it resolved before it does anything. Writers (`dogfood-e2e`,
+   `ghost-screen`) default to local; the operator's lens (`gm-pulse`, `snapshot-game`,
+   `companion-daemon`) defaults to remote, because it exists to watch a live party. No secrets in
+   tracked files: `docs/`, `.private/`, `.env*.local`, and `.claude/settings.local.json` are
+   gitignored, and `supabase/seed.sql` carries authored content only — never rooms, players or
+   messages.
 10. **Mobile is the only viewport that matters.** Design and check at 375×812. Fixed overlays
     publish their height and content pads to the sum below it; every screen scrolls; an
     overflowing column is never flex-centered. (RUNBOOK: the mobile grammar.)

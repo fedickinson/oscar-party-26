@@ -88,13 +88,18 @@ All four are powered by Claude Sonnet via a serverless Vercel proxy.
 
 ## Run Locally
 
-**Prerequisites:** Node 20+, a Supabase project with the schema applied.
+**Prerequisites:** Node 20+, Docker, and the [Supabase CLI](https://supabase.com/docs/guides/cli).
 
 ```bash
 git clone <this-repo>
 cd oscar-party-26
 npm install
+supabase start   # Postgres, PostgREST and Realtime in Docker, schema and content included
 ```
+
+That gives you a complete database locally — the full schema from
+`supabase/migrations/00000000000000_baseline.sql` plus the authored game content from
+`supabase/seed.sql`. No hosted project required, and nothing you do can reach production.
 
 Copy the env template and fill in your credentials:
 

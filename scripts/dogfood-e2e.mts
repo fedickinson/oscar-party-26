@@ -21,19 +21,17 @@
  *   npx tsx scripts/dogfood-e2e.mts
  */
 
-import { readFileSync } from 'fs'
 import { computeLeaderboard, findDraftPointsForWinner, compareForRank } from '../src/lib/scoring'
 import { computeNightAwards } from '../src/lib/night-awards'
 import { computeScoreTimeline } from '../src/lib/timeline-utils'
 import { assignVerdictAuthors } from '../src/lib/companion-prompts'
 import { remoteHolderIds, screenKey, isSoloWatcher } from '../src/lib/watch-groups'
 import { generateBingoCard, checkBingo, FREE_CENTER_INDEX } from '../src/lib/bingo-utils'
+import { supabaseConfig } from './lib/env.mts'
 
-const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-const pick = (k: string) =>
-  env.split('\n').find((l) => l.startsWith(k + '='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
-const URL_ = pick('VITE_SUPABASE_URL')
-const KEY = pick('VITE_SUPABASE_ANON_KEY')
+// Defaults to the local stack: this script writes, and test writes belong in a
+// database nobody is playing in. SUPABASE_TARGET=remote to aim at production.
+const { url: URL_, anonKey: KEY } = supabaseConfig('local')
 
 /** The seed ends at category 20; anything above it was created by a Game Master. */
 const SEEDED_CATEGORY_MAX = 20
