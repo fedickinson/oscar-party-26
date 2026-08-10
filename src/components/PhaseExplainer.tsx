@@ -108,7 +108,7 @@ export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24
         <motion.button
           onClick={onContinue}
           whileTap={{ scale: 0.97 }}
-          className="relief-raised w-full min-h-11 py-3 rounded-2xl border border-[var(--t-personal-device)] font-sans font-bold text-lg bg-[var(--t-personal-field)] text-[var(--t-personal-text)] mt-1"
+          className="relief-raised w-full min-h-11 py-3 rounded-2xl border border-[var(--t-line-strong)] font-sans font-bold text-lg bg-[var(--t-personal-device)] text-[var(--t-vellum-light)] mt-1"
         >
           Got it
         </motion.button>

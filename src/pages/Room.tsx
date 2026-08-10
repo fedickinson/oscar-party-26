@@ -301,7 +301,7 @@ export default function Room() {
                 className={[
                   'w-full min-h-[52px] py-3 rounded-2xl border font-bold text-lg transition-all',
                   canStart && !isStarting && (!watchSetupIncomplete || overrodeWatchSetup)
-                    ? 'material-enamel relief-raised text-[var(--t-personal-text)] border-[var(--t-personal-device)]'
+                    ? 'relief-raised bg-[var(--t-personal-device)] text-[var(--t-vellum-light)] border-[var(--t-line-strong)]'
                     : 'text-[var(--t-negative)] border-[var(--t-line-soft)] cursor-not-allowed',
                 ].join(' ')}
                 style={canStart && !isStarting && (!watchSetupIncomplete || overrodeWatchSetup)

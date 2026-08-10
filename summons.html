@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b191b">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="A summons to the last hour of the Dance.">
+</head>
+<body>
 <title>Fire &amp; Blood — Party Night</title>
 
 <style>
@@ -60,6 +70,8 @@
   html, body {
     margin: 0;
     height: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     /* The artifact composites over a ground the viewer paints in its own
        theme, so this must be explicit or the page borrows the host's. */
     background: var(--ground);
@@ -191,9 +203,9 @@
   .eyebrow {
     margin: 0;
     text-align: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: .26em;
+    letter-spacing: .24em;
     text-transform: uppercase;
     color: var(--ornament);
   }
@@ -209,13 +221,13 @@
     color: var(--text);
     line-height: 1.08;
   }
-  h1 { font-size: clamp(36px, min(14.5vw, 7.6vh), 62px); letter-spacing: .07em; }
-  h2 { font-size: clamp(27px, min(11vw, 5.7vh), 46px); }
+  h1 { font-size: clamp(38px, min(15.5vw, 8vh), 66px); letter-spacing: .07em; }
+  h2 { font-size: clamp(29px, min(11.8vw, 6.1vh), 50px); }
 
   .lede {
     margin: 0;
     text-align: center;
-    font-size: clamp(16px, 2.3vh, 18px);
+    font-size: clamp(17px, 2.5vh, 20px);
     letter-spacing: .03em;
     color: var(--text-muted);
   }
@@ -225,7 +237,7 @@
      who did not ask for homework. */
   p.body {
     margin: 0;
-    font-size: clamp(17px, 2.7vh, 22px);
+    font-size: clamp(18px, 2.95vh, 24px);
     line-height: 1.5;
     color: var(--text-muted);
   }
@@ -243,8 +255,8 @@
     background: rgba(36, 35, 31, .55);
     color: var(--ornament);
     font-family: var(--display);
-    font-size: 15px;
-    letter-spacing: .12em;
+    font-size: 16px;
+    letter-spacing: .1em;
     text-transform: uppercase;
     text-align: center;
     color: var(--ornament-muted);
@@ -301,7 +313,7 @@
   .vellum p {
     margin: 0;
     font-family: var(--manuscript);
-    font-size: clamp(19px, 3.05vh, 25px);
+    font-size: clamp(20px, 3.3vh, 27px);
     line-height: 1.4;
     color: var(--ink);
   }
@@ -310,7 +322,7 @@
   .vellum h3 {
     margin: 0 0 clamp(12px, 2.2vh, 18px);
     font-family: var(--display);
-    font-size: clamp(20px, 3.2vh, 26px);
+    font-size: clamp(21px, 3.45vh, 28px);
     font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -332,8 +344,8 @@
     position: relative;
     padding-left: 22px;
     font-family: var(--manuscript);
-    font-size: clamp(17px, 2.75vh, 22px);
-    line-height: 1.32;
+    font-size: clamp(18px, 3vh, 24px);
+    line-height: 1.34;
     color: var(--ink);
   }
   .vellum li::before {
@@ -397,8 +409,8 @@
     align-items: center;
     justify-content: center;
     gap: 9px;
-    font-size: 13px;
-    letter-spacing: .22em;
+    font-size: 14px;
+    letter-spacing: .2em;
     text-transform: uppercase;
     color: var(--ornament-muted);
     transition: opacity .4s var(--ease);
@@ -1054,3 +1066,6 @@
     });
   })();
 </script>
+
+</body>
+</html>

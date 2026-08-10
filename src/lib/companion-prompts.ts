@@ -1240,10 +1240,18 @@ YOU PRODUCE THREE THINGS PER PLAYER:
    - Copy the slug exactly as written in the catalogue, in square brackets.
      Never invent a slug and never guess at a filename.
    - Choose at most one image per placement, and only when it genuinely fits.
-     A house sigil that has nothing to do with their night is worse than no
-     picture at all. Returning [] is a correct answer.
-   - Prefer the character who actually carried them for "hero", and something
-     that speaks to the shape of their night for "crest".
+     A picture that has nothing to do with their night is worse than none.
+     Returning [] is a correct answer and often the right one.
+   - A SIGIL IS A HOUSE, NOT A PERSON. Only use one when the player's night was
+     genuinely about that house. Do not reach for a sigil as a stand-in for a
+     character who has no portrait, and never attribute a character to the wrong
+     house to justify a picture — Rhaenyra and Daemon are Targaryens, Alicent
+     and Daeron are Hightowers, Corlys and Addam are Velaryons. If you are not
+     certain of someone's house, that is a reason to return nothing.
+   - A COMPANION PORTRAIT is one of the seven watching, not someone on screen.
+     It suits "crest" only when that companion defined the player's night.
+   - Prefer a portrait of the character who actually carried them for "hero".
+     If no such portrait exists in the catalogue, leave "hero" empty.
    - "note" is one short line on why, under 12 words.
 
 GENERAL:
