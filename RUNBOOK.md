@@ -114,3 +114,27 @@ Twist that restores differentiation: lonely bets pay full, crowded bets split.
 Right-and-alone is the jackpot. Architecture impact: near zero — board,
 declare flow, banners, cast, witness all unchanged; "drafted by" becomes
 "believed by". The choose-3 activation was already this mechanic in miniature.
+
+## Tomorrow: the animated post-op (promised to the players, 8/9)
+
+The deal with the friends: "I'm gonna really analyze what actually happened —
+send me an update." Build a replay: the night as an animated timeline —
+declarations landing as scoreboard movements over the episode's runtime, bingo
+marks ticking, lead changes, the cast's best lines as pull-quotes — ending in
+the winner declared like a match report. All source data is timestamped and
+preserved: messages.created_at (chat + banners with caller/beneficiary),
+bingo_marks.marked_at, room_winners.created_at, plus full 5-min snapshots in
+.private/snapshots. Also run the calibration report (square mark-rates, beat
+fire-rates vs authored odds) — same dataset, feeds the content doctrine.
+
+## The primitives thesis (closing thought, 8/9)
+
+Two OPPOSITE show types now modeled live: an awards ceremony (external,
+structured, scheduled event stream — the app consumes reality) and a prestige
+drama finale (no structure — the ROOM declares reality). What survived both
+unchanged is the platform: declared-facts as the spine, the board of
+possibilities, cascading scores, a character cast reacting to facts, the chat
+as record, the operator's lens. What flipped between them is only WHO/WHAT
+feeds the spine: broadcast schedule vs honor-system humans (vs, next, the AI
+witness). That's the primitive set for "any show, any live event" — each new
+show type is a new fact-source plugged into the same spine.
