@@ -99,11 +99,16 @@ because they cannot replay onto a current-state baseline: a 2026-08-09 seed inse
 `bingo_squares.slug` column that the same schema now requires. They are kept for history, not for
 execution.
 
-**Before the first `supabase db push`, read this.** Local migration history is one baseline;
-production's history table still lists all 19 versions. Pushing without reconciling would try to
-apply the baseline to production. Run `supabase migration repair --status applied 00000000000000`
-against the linked project first — it writes one bookkeeping row and executes no DDL. Nobody has
-done this yet, deliberately, because it is a write to production.
+**Migration history is reconciled** (2026-08-10). Production's history table was squashed to match
+local: the baseline marked applied, the 19 archived versions marked reverted. `supabase migration
+list` shows `00000000000000` on both sides and `supabase db push` reports the remote database up
+to date. No DDL ran — `schema-diff` reported the same 641 identical objects before and after — and
+the pre-repair history table is saved at
+`.private/snapshots/migration-history/2026-08-10T17-schema_migrations.json` if it is ever needed.
+
+Schema changes are therefore now ordinary migrations: write the SQL into `supabase/migrations/`,
+test it with `supabase db reset` locally, then `supabase db push`. That loop did not exist before
+the baseline — the database could only be changed by hand in the SQL editor.
 
 `supabase/seed.sql` carries authored content only — the board, the cast, the pool, the draftable
 entities — so a fresh local database is playable. It contains no rooms, players or messages: that
