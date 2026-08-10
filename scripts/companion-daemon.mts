@@ -84,19 +84,22 @@ async function react(categoryId: number) {
   log(`cat ${categoryId} "${cat.name}": reactions queued`)
 }
 
-for (;;) {
-  await new Promise((r) => setTimeout(r, 10_000))
-  try {
-    const winners = await get(`room_winners?room_id=eq.${RID}&select=category_id`)
-    for (const w of winners) {
-      if (seen.has(w.category_id)) continue
-      seen.add(w.category_id)
-      // grace: let a live host tab go first
-      setTimeout(() => void react(w.category_id), 45_000)
-      log(`new declaration cat ${w.category_id} — reacting in 45s unless host tab does`)
-    }
-  } catch (e) { log(`transient: ${String(e).slice(0, 80)}`) }
+async function watchEvents() {
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 10_000))
+    try {
+      const winners = await get(`room_winners?room_id=eq.${RID}&select=category_id`)
+      for (const w of winners) {
+        if (seen.has(w.category_id)) continue
+        seen.add(w.category_id)
+        // grace: let a live host tab go first
+        setTimeout(() => void react(w.category_id), 45_000)
+        log(`new declaration cat ${w.category_id} — reacting in 45s unless host tab does`)
+      }
+    } catch (e) { log(`transient: ${String(e).slice(0, 80)}`) }
+  }
 }
+void watchEvents()
 
 // ─── Bingo watch — announcements + reactions, also freed from the phone ──────
 // Marks were announced by the host tab's listener; locked phone = silent
