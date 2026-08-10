@@ -263,6 +263,56 @@ export default function GameMasterConsole({
 
   return (
     <div className="px-4 py-6 space-y-6">
+      {/* ── YOUR FIGHTERS' MOMENTS — the whole game in one panel ─────────
+          Every live, un-fired beat for the CURRENT player's roster, flat,
+          one tap to declare. No character-select step, no scrolling a
+          38-name wall: watch the show, see your moment happen, tap it.
+          Fired beats disappear (space is precious mid-episode). ──────── */}
+      {(() => {
+        const mine = new Set(myRosterNames.map((n) => n.toLowerCase()))
+        const rows: { nom: (typeof characters)[number]; beat: { id: number; name: string; points: number; trigger_text: string } }[] = []
+        for (const c of characters) {
+          if (!mine.has(c.name.toLowerCase())) continue
+          const ent = entityByName.get(c.name)
+          const isDragon = ent?.type === 'film'
+          for (const b of beatsByName.get(c.name) ?? []) {
+            if (loggedNames.has(b.name)) continue
+            if (!isDragon && !activatedBeatIds.has(b.id)) continue
+            rows.push({ nom: c, beat: b })
+          }
+        }
+        if (!rows.length) return null
+        return (
+          <div className="material-iron relief-inset rounded-2xl p-4 space-y-2">
+            <p className="text-xs font-semibold text-[color:var(--t-personal-text)] uppercase tracking-wider">
+              Your fighters' moments — tap when it happens
+            </p>
+            {rows.map(({ nom, beat }) => (
+              <motion.button
+                key={beat.id}
+                whileTap={{ scale: 0.98 }}
+                disabled={isLogging}
+                title={beat.trigger_text}
+                onClick={() => void logEvent(beat.name, beat.points, nom.id)}
+                className="material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl
+                           border border-[color:var(--t-personal-device)] text-left"
+              >
+                <span className="text-[11px] font-bold text-[color:var(--t-personal-text)] flex-shrink-0 w-20 truncate">
+                  {nom.name.split(' ')[0]}
+                </span>
+                <span className="text-xs font-medium text-[color:var(--t-text)] flex-1 min-w-0 truncate">
+                  {beat.name}
+                </span>
+                <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
+                  {beat.points}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        )
+      })()}
+
+
       {/* ── Composer — EVERYONE. The host-only gate came from the Oscars
           griefing worry; the honor system that runs bingo runs this too now.
           Six friends, undo exists, and the host cannot be the only person

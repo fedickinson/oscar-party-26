@@ -594,16 +594,9 @@ export default function Live() {
         {/* Hidden on the Bingo tab: the card needs every vertical pixel, and
             the big pre-show start button was sitting on top of it. Sync
             controls stay one tab-tap away. */}
-        {/* Watch-sync DISABLED mid-party (user call): the room is running as
-            one conversation, not two tracked playbacks — the bar was costing
-            screen space without earning it tonight. Flip to re-enable. */}
-        {false && room && currentPlayerId && tab !== 1 && (
-          <div className="flex-shrink-0 px-4 pt-3 pb-1 space-y-2">
-            <WatchSyncBar room={room} players={players} currentPlayerId={currentPlayerId} />
-            {/* Dev-only; renders nothing in a production build. */}
-            <SyncDevPanel room={room} players={players} currentPlayerId={currentPlayerId} />
-          </div>
-        )}
+        {/* Watch-sync DISABLED mid-party (user call): the room runs as one
+            conversation, not two tracked playbacks. Remount WatchSyncBar here
+            to re-enable — the hook, RPCs and bar all still work. */}
 
         {/* Scrollable tab content */}
         <div className="flex-1 overflow-hidden relative">
