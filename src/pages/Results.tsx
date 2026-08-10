@@ -14,7 +14,7 @@
  *   7. Final stretch narrative
  */
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Clapperboard } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
@@ -47,6 +47,11 @@ export default function Results() {
   useRoomSubscription(room?.id)
 
   const scores = useScores(room?.id)
+
+  const [gateDismissed, setGateDismissed] = useState(
+    () => localStorage.getItem('ceremony_gate_v1') === 'passed',
+  )
+  const gated = !gateDismissed
 
   const bingo = useBingo(room?.id, scores.categories, scores.nominees)
 
@@ -261,6 +266,37 @@ export default function Results() {
   }
 
   if (!room || !player) return null
+
+  // ── The liminal passage ────────────────────────────────────────────────────
+  // The ceremony is the ending; the ledger is the appendix. First arrival gets
+  // the gate — the standings stay veiled until the ceremony has been entered
+  // (or deliberately declined). One flag, per device.
+  if (gated) {
+    return (
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-8 text-center"
+        style={{ background: 'radial-gradient(ellipse 90% 70% at 50% 38%, #1a0f0c 0%, #07070a 70%)' }}>
+        <p className="font-mono text-[11px] tracking-[0.4em] uppercase text-oscar-gold/70">The record is sealed</p>
+        <h1 className="mt-3 text-3xl font-bold text-white leading-tight">The Night<br />of the Dance</h1>
+        <p className="mt-3 text-sm text-white/55 max-w-[30ch] leading-relaxed">
+          The ceremony must be witnessed before the ledger opens.
+        </p>
+        <a
+          href="/ceremony.html"
+          onClick={() => localStorage.setItem('ceremony_gate_v1', 'passed')}
+          className="mt-8 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-oscar-gold bg-oscar-gold/10 px-8 py-4 text-lg font-bold text-oscar-gold shadow-lg min-h-[56px]"
+        >
+          <Clapperboard size={22} />
+          Enter the Ceremony
+        </a>
+        <button
+          onClick={() => { localStorage.setItem('ceremony_gate_v1', 'passed'); setGateDismissed(true) }}
+          className="mt-6 text-xs text-white/35 underline underline-offset-4 min-h-[44px]"
+        >
+          I have witnessed it — open the standings
+        </button>
+      </div>
+    )
+  }
 
   return (
     <>

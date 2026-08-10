@@ -52,6 +52,8 @@ interface Props {
   marks: BingoMarkRow[]
   bingoLines: number[][]
   disabled?: boolean
+  /** Post-game mode: chips open the details panel, nothing can be marked */
+  inspectOnly?: boolean
   selectedIndex: number | null
   onSelect: (index: number) => void
   onDeselect: () => void
@@ -63,6 +65,7 @@ export default function BingoCard({
   marks,
   bingoLines,
   disabled = false,
+  inspectOnly = false,
   selectedIndex,
   onSelect,
   onDeselect,
@@ -96,6 +99,13 @@ export default function BingoCard({
   }
 
   function handleTap(index: number) {
+    if (inspectOnly) {
+      const status = getStatus(index)
+      if (status === 'free') return
+      if (selectedIndex === index) onDeselect()
+      else onSelect(index)
+      return
+    }
     if (disabled) return
     const status = getStatus(index)
     if (status === 'free') return
@@ -282,6 +292,17 @@ export default function BingoCard({
               probabilityPct={selectedSquare.probability_pct}
             />
 
+            {inspectOnly ? (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                onClick={onDeselect}
+                className="mt-2.5 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--t-line)] text-xs font-semibold text-[var(--t-text-dim)]"
+              >
+                <X size={14} />
+                Close
+              </motion.button>
+            ) : (
             <div className="flex items-center gap-2 mt-2.5">
               <motion.button
                 whileTap={{ scale: 0.97 }}
@@ -308,6 +329,7 @@ export default function BingoCard({
                 )}
               </motion.button>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

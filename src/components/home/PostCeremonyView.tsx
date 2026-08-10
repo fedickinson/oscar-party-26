@@ -85,6 +85,7 @@ export default function PostCeremonyView({
 }: Props) {
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
+  const [inspectedSquare, setInspectedSquare] = useState<number | null>(null)
 
   // Fire three-burst confetti cannon on mount
   useEffect(() => {
@@ -169,12 +170,17 @@ export default function PostCeremonyView({
     3: '#CD7F32',
   }
 
+  useEffect(() => {
+    document.documentElement.classList.add('results-snap')
+    return () => document.documentElement.classList.remove('results-snap')
+  }, [])
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="flex flex-col gap-6 pb-16 px-4 py-6 max-w-md mx-auto"
+      className="flex flex-col gap-6 pb-16 px-4 py-6 max-w-md mx-auto [&>*]:snap-start [&>*]:scroll-mt-4"
     >
       {/* ── Floating background particles ────────────────────────────────────── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
@@ -836,10 +842,10 @@ export default function PostCeremonyView({
                     squares={bingoSquares}
                     marks={bingoMarks ?? []}
                     bingoLines={bingoLines ?? []}
-                    disabled
-                    selectedIndex={null}
-                    onSelect={() => {}}
-                    onDeselect={() => {}}
+                    inspectOnly
+                    selectedIndex={inspectedSquare}
+                    onSelect={setInspectedSquare}
+                    onDeselect={() => setInspectedSquare(null)}
                     onConfirm={async () => {}}
                   />
                 </div>

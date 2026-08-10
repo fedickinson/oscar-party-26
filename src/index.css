@@ -534,3 +534,6 @@ input:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+/* Results page: gentle section paging — proximity, never a trap */
+html.results-snap{scroll-snap-type:y proximity}
