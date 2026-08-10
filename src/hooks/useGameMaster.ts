@@ -301,14 +301,42 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
         // render with the announcement styling; messages INSERT is open to
         // all, so this works from whichever player declared.
         {
+          // The banner is the STORY BEING WRITTEN: the moment, whose fighter
+          // it pays, and who called it. "Springs a Trap — Ormund (+20 to Tom
+          // and Betty) · called by Alec" tells the whole room what happened,
+          // who benefits, and who witnessed it — the three things a
+          // declaration-driven night runs on.
           const who = nomineeId
           void (async () => {
             const { data: nom } = await supabase
               .from('nominees').select('name').eq('id', who).maybeSingle()
+            let toClause = ''
+            if (nom?.name) {
+              const { data: ent } = await supabase
+                .from('draft_entities').select('id').eq('name', nom.name).maybeSingle()
+              if (ent) {
+                const { data: dp } = await supabase
+                  .from('draft_picks').select('player_id').eq('room_id', roomId).eq('entity_id', ent.id).maybeSingle()
+                if (dp) {
+                  const { data: pl } = await supabase
+                    .from('players').select('name').eq('id', dp.player_id).maybeSingle()
+                  if (pl?.name) toClause = ` to ${pl.name}`
+                }
+              }
+            }
+            const callerId = localStorage.getItem('oscar_player_id')
+            let caller = ''
+            if (callerId) {
+              const { data: cp } = await supabase
+                .from('players').select('name').eq('id', callerId).maybeSingle()
+              if (cp?.name) caller = ` · called by ${cp.name}`
+            }
             await supabase.from('messages').insert({
               room_id: roomId,
               player_id: 'winner-divider',
-              text: nom?.name ? `${trimmed} — ${nom.name} (+${points})` : `${trimmed} (+${points})`,
+              text: nom?.name
+                ? `${trimmed} — ${nom.name} (+${points}${toClause})${caller}`
+                : `${trimmed} (+${points})${caller}`,
             })
           })()
         }
