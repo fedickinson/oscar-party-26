@@ -1,5 +1,44 @@
 # Show-night runbook — hotfixes without losing the game
 
+## THE DOCKET (updated 8/10 end-of-day — start here next session)
+
+**Design/visual (Codex lanes — full specs in .private/postop/CODEX-BRIEF.md,
+live status in .private/postop/HANDOFF.md):**
+
+- Tiered all-characters muster (heavy hitters / impact / just there / no scene
+  — tiers.json ready)
+- Multi-quote pundit desk with reference chips (takes.json ready, incl. new
+  Cersei-on-prophecy, Daenerys-on-the-betrayal, Arya-on-Roddy)
+- Wager-sheet trigger drawers (trig text in board.json)
+- "The show begins" dedicated curtain-parting slide
+- No-card honest-gap callout styling; betrayal death-tier emphasis
+- Full per-square bingo line split on beat slides (beatlines.json ready)
+
+**Product debt (app):**
+
+- Calibration report — square mark-rates & beat fire-rates vs authored odds;
+  promised since 8/9, never run; spec in "Tomorrow: the animated post-op" below
+- Reclaim flow forces a decoy sigil pick (bug found party night, still open)
+- "Close the night" GM action — the phase machine has no terminus; WDKH had
+  to be finished by hand a day late (see settlement write-back)
+
+**Platformization (each has a doctrine section below):**
+
+1. Settlement command — one operator action: strike provisional record, write
+   the true one, write it BACK to the app, close the room ("The settlement
+   layer" + "The write-back")
+2. Show-pack factory — productize the recap/sentiment/grounded-generation
+   pipeline as authoring tooling; the flywheel section is the spec seed
+3. Trigger-authoring doctrine → enforce in seed tooling (screen-decidable,
+   proxy-aware, honestly titled; author beats like bingo squares)
+4. Operator UI (layer 3) — presence, engine health, referee actions, restore
+5. AI witness ladder (layer 4) — humans declare → AI proposes → AI declares
+6. Conviction-portfolio redesign ("The conviction question") — scarcity moves
+   from characters to conviction; lonely bets pay full
+7. Ceremony engine as a reusable primitive — acts/beats grammar, beat-weight
+   tiers, mobile grammar, personal editions + gate; currently a one-off HTML,
+   should become the settlement drop generator for any show
+
 The load-bearing fact: **every piece of game state lives in Supabase, not in
 the app.** Picks, marks, scores, messages, teams, episode clocks, welcomes —
 all of it survives any deploy, any reload, any phone dying. The app is a
