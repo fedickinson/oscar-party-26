@@ -159,7 +159,7 @@ function PreCeremonyStats({
           <SectionLabel icon={Target} label="Prestige consensus" />
           {consensus.agreed.length > 0 && (
             <div className="mb-2">
-              <p className="text-[11px] text-emerald-400/70 mb-1.5">Everyone agrees</p>
+              <p className="text-[11px] text-positive/70 mb-1.5">Everyone agrees</p>
               <div className="space-y-1">
                 {consensus.agreed.map((a, i) => (
                   <div key={i} className="flex items-center justify-between gap-2">
@@ -288,7 +288,7 @@ function DraftHitRateCard({ draftEfficiency }: { draftEfficiency: DraftHitEntry[
               </div>
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-emerald-400 rounded-full"
+                  className="h-full bg-positive rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
                   transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}

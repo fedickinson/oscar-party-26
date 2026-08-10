@@ -25,6 +25,18 @@ export function allegianceForAvatar(avatarId: string | null | undefined): Allegi
   return GREEN_HOUSES.has(avatarId.toLowerCase()) ? 'green' : 'black'
 }
 
+/**
+ * The authoritative resolution. An explicit players.team declaration (the
+ * TeamPicker — including mid-episode defection) always wins; the house-derived
+ * default covers players who never touched the picker.
+ */
+export function allegianceForPlayer(
+  player: { team?: 'black' | 'green' | null; avatar_id?: string | null } | null | undefined,
+): Allegiance {
+  if (player?.team) return player.team
+  return allegianceForAvatar(player?.avatar_id)
+}
+
 /** Display label for the join flow: which claim this house declares for. */
 export function allegianceLabel(avatarId: string): string {
   return allegianceForAvatar(avatarId) === 'green' ? 'For the Greens' : 'For the Blacks'

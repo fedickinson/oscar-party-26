@@ -49,7 +49,7 @@ export default function SubmitStatus({
   const allSubmitted = submittedCount >= players.length
 
   return (
-    <div className="flex-shrink-0 backdrop-blur-lg bg-white/8 border-t border-white/10 px-4 pt-4 pb-6 space-y-4">
+    <div className="relief-glass flex-shrink-0 border-t px-4 pt-4 pb-6 space-y-4" style={{ borderColor: 'var(--t-line)' }}>
       <AnimatePresence mode="wait" initial={false}>
         {myHasSubmitted ? (
           <motion.div
@@ -61,26 +61,26 @@ export default function SubmitStatus({
             className="space-y-4"
           >
             {/* Player submit status row */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3 min-w-0">
               {/* Count label */}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/60 leading-none">
+                <p className="text-xs font-semibold text-[var(--t-text-muted)] leading-none tabular-nums">
                   {submittedCount} of {players.length} submitted
                 </p>
                 {!allSubmitted && (
-                  <p className="text-[11px] text-white/30 mt-1 leading-none">
+                  <p className="text-xs text-[var(--t-pending)] mt-1 leading-none">
                     Waiting for others…
                   </p>
                 )}
                 {allSubmitted && (
-                  <p className="text-[11px] text-emerald-400/80 mt-1 leading-none">
+                  <p className="text-xs text-[var(--t-positive)] mt-1 leading-none">
                     All picks are in
                   </p>
                 )}
               </div>
 
               {/* Player avatar dots */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-start justify-end gap-2 min-w-0">
                 {players.map((player, i) => {
                   const hasSubmitted = submittedPlayerIds.has(player.id)
                   const isMe = player.id === myPlayerId
@@ -103,30 +103,30 @@ export default function SubmitStatus({
                           'w-8 h-8 rounded-full flex items-center justify-center border-2',
                           hasSubmitted
                             ? 'border-transparent'
-                            : 'border-dashed border-white/20',
+                            : 'border-dashed border-[var(--t-line)]',
                         ].join(' ')}
                         style={hasSubmitted ? { backgroundColor: player.color } : undefined}
                         animate={hasSubmitted ? { scale: [1, 1.15, 1] } : {}}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
                       >
                         {hasSubmitted ? (
-                          <Check size={13} className="text-white" strokeWidth={3} />
+                          <Check size={13} className="text-[var(--t-text)]" strokeWidth={3} />
                         ) : (
-                          <Clock size={12} className="text-white/25" />
+                          <Clock size={12} className="text-[var(--t-negative)]" />
                         )}
                       </motion.div>
 
                       {/* Name label */}
                       <span
                         className={[
-                          'text-[10px] leading-none font-medium',
+                          'text-xs leading-none font-medium',
                           isMe
                             ? hasSubmitted
-                              ? 'text-white/70'
-                              : 'text-white/50'
+                              ? 'text-[var(--t-text)]'
+                              : 'text-[var(--t-text-muted)]'
                             : hasSubmitted
-                              ? 'text-white/40'
-                              : 'text-white/20',
+                              ? 'text-[var(--t-text-muted)]'
+                              : 'text-[var(--t-negative)]',
                         ].join(' ')}
                       >
                         {isMe ? 'You' : player.name.split(' ')[0]}
@@ -141,7 +141,7 @@ export default function SubmitStatus({
             {isHost && (
               <div className="space-y-2">
                 {!allSubmitted && (
-                  <p className="text-[11px] text-white/35 text-center leading-snug">
+                  <p className="text-xs text-[var(--t-negative)] text-center leading-snug">
                     Players who haven't submitted will have picks auto-assigned.
                   </p>
                 )}
@@ -150,15 +150,16 @@ export default function SubmitStatus({
                   disabled={isLocking}
                   whileTap={!isLocking ? { scale: 0.97 } : undefined}
                   className={[
-                    'w-full py-3.5 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2',
+                    'w-full min-h-[52px] py-3 rounded-2xl border font-bold text-base transition-all flex items-center justify-center gap-2',
                     !isLocking
-                      ? 'bg-accent text-ground hover:bg-accent-light'
-                      : 'bg-white/10 text-white/30 cursor-not-allowed',
+                      ? 'material-enamel relief-raised text-[var(--t-personal-text)] border-[var(--t-personal-device)]'
+                      : 'text-[var(--t-negative)] border-[var(--t-line-soft)] cursor-not-allowed',
                   ].join(' ')}
+                  style={!isLocking ? undefined : { backgroundColor: 'var(--t-negative-soft)' }}
                 >
                   {isLocking ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-ground/50 border-t-ground rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[var(--t-line)] border-t-[var(--t-text)] rounded-full animate-spin" />
                       Locking…
                     </>
                   ) : (
@@ -172,7 +173,7 @@ export default function SubmitStatus({
             )}
 
             {!isHost && (
-              <p className="text-xs text-white/30 text-center">
+              <p className="text-xs text-[var(--t-pending)] text-center">
                 Waiting for the host to lock picks…
               </p>
             )}
@@ -188,21 +189,22 @@ export default function SubmitStatus({
           >
             {/* Progress bar */}
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--t-negative-soft)' }}>
                 <motion.div
-                  className="h-full bg-accent rounded-full"
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: 'var(--t-pending)' }}
                   animate={{ width: `${(completedPickCount / Math.max(totalCategories, 1)) * 100}%` }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                 />
               </div>
-              <span className="text-xs text-white/40 font-mono flex-shrink-0 tabular-nums">
+              <span className="font-display text-xs text-[var(--t-text-muted)] flex-shrink-0 tabular-nums">
                 {completedPickCount}/{totalCategories}
               </span>
             </div>
 
             {/* Confidence number nudge */}
             {missingConfidenceCount > 0 && completedPickCount + missingConfidenceCount === totalCategories && (
-              <p className="text-xs text-amber-400/80 text-center leading-snug">
+              <p className="text-xs text-[var(--t-pending)] text-center leading-snug">
                 {missingConfidenceCount} {missingConfidenceCount === 1 ? 'category is' : 'categories are'} missing a confidence number — look for the amber badges above
               </p>
             )}
@@ -213,15 +215,16 @@ export default function SubmitStatus({
               disabled={!isComplete || isSubmitting}
               whileTap={isComplete && !isSubmitting ? { scale: 0.97 } : undefined}
               className={[
-                'w-full py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2',
+                'w-full min-h-[52px] py-3 rounded-2xl border font-bold text-lg transition-all flex items-center justify-center gap-2',
                 isComplete && !isSubmitting
-                  ? 'bg-accent text-ground hover:bg-accent-light'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed',
+                  ? 'material-enamel relief-raised text-[var(--t-personal-text)] border-[var(--t-personal-device)]'
+                  : 'text-[var(--t-negative)] border-[var(--t-line-soft)] cursor-not-allowed',
               ].join(' ')}
+              style={isComplete && !isSubmitting ? undefined : { backgroundColor: 'var(--t-negative-soft)' }}
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[var(--t-line)] border-t-[var(--t-text)] rounded-full animate-spin" />
                   Submitting…
                 </>
               ) : isComplete ? (

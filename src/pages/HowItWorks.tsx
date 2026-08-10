@@ -541,7 +541,10 @@ export default function HowItWorks() {
               </P>
             </Disclosure>
             <Disclosure label="What a beat is worth">
-              <P>Beats are priced by how likely they are to happen:</P>
+              <P>
+                Beats are priced by how likely they are to happen. These are base points
+                &mdash; what actually lands on the board is higher, see below:
+              </P>
               <Ladder
                 rows={BEAT_ODDS.map((o) => ({
                   label: o.label,

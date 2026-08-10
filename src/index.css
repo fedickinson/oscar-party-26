@@ -7,6 +7,10 @@
   --color-ground-deep: var(--t-ground-deep);
   --color-surface: var(--t-surface);
   --color-surface-line: var(--t-surface-line);
+  /* Faction-neutral game states — bone / ash / ochre, never green / red */
+  --color-positive: var(--t-positive);
+  --color-negative: var(--t-negative);
+  --color-pending: var(--t-pending);
   --font-family-sans: "Inter", sans-serif;
   --font-family-display: "Cinzel", Georgia, serif;
   --font-family-manuscript: "Cormorant Garamond", Georgia, serif;

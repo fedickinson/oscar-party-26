@@ -34,8 +34,8 @@ const SECTIONS: ScoringSection[] = [
   {
     icon: <Grid3x3 size={14} className="text-purple-400 flex-shrink-0" />,
     label: 'Bingo',
-    description: 'Every approved square scores. Rarer squares score more.',
-    detail: 'A square pays 1, 2, 3 or 5 points depending on how likely it was — a chaos square is worth five of a likely one. Complete a row, column or diagonal on top of that for 15, then 10, then 5 each. Every square needs host approval.',
+    description: 'Every marked square scores. Rarer squares score more.',
+    detail: 'A square pays 1, 2, 3 or 5 points depending on how likely it was — a chaos square is worth five of a likely one. Complete a row, column or diagonal on top of that for 15, then 10, then 5 each. Marking is on your honor — tap a marked square to undo it.',
   },
   {
     icon: <Trophy size={14} className="text-accent flex-shrink-0" />,

@@ -8,9 +8,9 @@
  * Tapping another player's progress row opens a read-only PeekCardOverlay
  * of their card.
  *
- * HOST ONLY:
- *   When there are pending bingo marks, a "N Pending" button appears below
- *   the card hint. Tapping it opens BingoApprovalSheet — a drag-to-dismiss
+ * MARKING:
+ *   Honor-system (markSquare inserts approved directly; tapping a marked
+ *   square deletes the mark). The old host-approval flow is gone — no
  *   bottom sheet for approving or denying each claim.
  *
  * Receives categories and nominees from the parent (already fetched by
@@ -19,14 +19,12 @@
 
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, CheckCircle, ClipboardList } from 'lucide-react'
+import { BookOpen, CheckCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useBingo } from '../../hooks/useBingo'
-import { useBingoApprovals } from '../../hooks/useBingoApprovals'
 import { useOtherBingoCards } from '../../hooks/useOtherBingoCards'
 import BingoCard from '../bingo/BingoCard'
 import BingoAlert from '../bingo/BingoAlert'
-import BingoApprovalSheet from '../bingo/BingoApprovalSheet'
 import PeekCardOverlay from '../bingo/PeekCardOverlay'
 import PipLegend from '../bingo/PipLegend'
 import Avatar from '../Avatar'
@@ -47,7 +45,6 @@ interface Props {
 export default function BingoTab({ roomId, isHost, categories, nominees, leaderboard, onShowExplainer, onSquareApproved }: Props) {
   const { player } = useGame()
   const [peekingPlayerId, setPeekingPlayerId] = useState<string | null>(null)
-  const [showApprovals, setShowApprovals] = useState(false)
 
   const {
     squares,
@@ -67,7 +64,6 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     dismissCelebration,
   } = useBingo(roomId, categories, nominees, onSquareApproved)
 
-  const { pendingMarks, approveMark, denyMark } = useBingoApprovals(roomId)
 
   // Other players' cards for peek feature
   const otherPlayers = useMemo(
@@ -165,34 +161,6 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
             Tap a square to see what counts, then mark it. Tap it again to undo.
           </p>
         </div>
-
-        {/* Host: pending approvals button */}
-        <AnimatePresence>
-          {isHost && pendingMarks.length > 0 && (
-            <motion.div
-              key="approvals-btn"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="w-full"
-            >
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setShowApprovals(true)}
-                className="w-full flex items-center justify-between px-4 py-3 backdrop-blur-lg bg-amber-500/10 border border-amber-500/25 rounded-2xl"
-              >
-                <div className="flex items-center gap-2.5">
-                  <ClipboardList size={16} className="text-amber-400" />
-                  <span className="text-sm font-semibold text-white">Pending Approvals</span>
-                </div>
-                <span className="text-xs font-bold text-ground bg-amber-400 px-2.5 py-1 rounded-full">
-                  {pendingMarks.length}
-                </span>
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Other players' bingo progress — tappable to peek */}
         {leaderboard.length > 1 && (
@@ -297,17 +265,6 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
         })()}
       </AnimatePresence>
 
-      {/* Host approval sheet */}
-      <AnimatePresence>
-        {showApprovals && (
-          <BingoApprovalSheet
-            marks={pendingMarks}
-            onApprove={approveMark}
-            onDeny={denyMark}
-            onDismiss={() => setShowApprovals(false)}
-          />
-        )}
-      </AnimatePresence>
     </>
   )
 }

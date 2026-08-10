@@ -29,9 +29,9 @@ interface Props {
 }
 
 function timerColor(t: number): string {
-  if (t > 20) return '#059669' // emerald
-  if (t > 10) return '#D97706' // amber
-  return '#DC2626' // red
+  if (t > 20) return '#E3D8BF' // bone — plenty of time
+  if (t > 10) return '#C69A50' // ochre — running down
+  return '#C0614C' // madder-light — the fire is close
 }
 
 export default function DraftTimer({

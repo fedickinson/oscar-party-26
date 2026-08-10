@@ -37,7 +37,7 @@ const TIER_LABEL_COLORS: Record<number, string> = {
   1: 'text-accent',
   2: 'text-violet-400',
   3: 'text-sky-400',
-  4: 'text-emerald-400',
+  4: 'text-positive',
   5: 'text-white/30',
 }
 
@@ -103,7 +103,7 @@ export default function PicksReveal({
               const totalPickers = picksForCategory.length
               const agreementBadge = totalPickers >= 2
                 ? uniqueNominees === 1
-                  ? { label: 'unanimous', className: 'text-emerald-400 bg-emerald-400/10' }
+                  ? { label: 'unanimous', className: 'text-positive bg-positive/10' }
                   : uniqueNominees === totalPickers
                     ? { label: 'divided', className: 'text-white/30 bg-white/5' }
                     : { label: 'split', className: 'text-amber-400 bg-amber-400/10' }

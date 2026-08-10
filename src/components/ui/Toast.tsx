@@ -16,7 +16,7 @@
  *
  * TYPE COLORS:
  *   error   → red background
- *   success → emerald background
+ *   success → bone background (faction-neutral: green belongs to Team Green)
  *   warning → amber background
  */
 
@@ -57,7 +57,7 @@ interface Props {
 
 const COLORS: Record<ToastType, string> = {
   error: 'bg-red-500/95 border-red-400/40',
-  success: 'bg-emerald-600/95 border-emerald-400/40',
+  success: 'bg-[color:var(--t-positive)] border-[color:var(--t-line-strong)] text-[color:var(--t-ink)]',
   warning: 'bg-amber-500/95 border-amber-400/40',
 }
 

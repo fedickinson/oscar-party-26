@@ -241,12 +241,88 @@ function DemonMic({ size, className }: { size?: number; className?: string }) {
   )
 }
 
-// ─── Resolver ──────────────────────────────────────────────────────────────────
+// ─── Westeros icons ───────────────────────────────────────────────────────────
+// nominees.film_name now carries the HOUSE / faction group, and dragons carry
+// their own names — so this resolver leads with heraldry. House devices render
+// via the hallmark symbol defs mounted at the app root (currentColor fills).
 
 type FilmIconComponent = (props: { size?: number; className?: string }) => React.ReactElement
 
+const deviceIcon = (device: string): FilmIconComponent =>
+  function DeviceIcon({ size = 24, className = '' }) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 100 100" className={className} aria-hidden>
+        <use href={`#hallmark-device-${device}`} />
+      </svg>
+    )
+  }
+
+// The Greens — Aegon's crown
+function GreenCrown({ size, className }: { size?: number; className?: string }) {
+  return (
+    <Svg size={size} className={className}>
+      <path d="M4 8l4.5 4L12 6l3.5 6L20 8l-1.6 10H5.6L4 8z" />
+      <path d="M5.5 21h13" />
+    </Svg>
+  )
+}
+
+// Harrenhal — the melted towers
+function MeltedTower({ size, className }: { size?: number; className?: string }) {
+  return (
+    <Svg size={size} className={className}>
+      <path d="M6 21V9l-1.5-5L8 6l1-3 1.5 4v14M14 21V11l-1-4 2.5 1.5L16 4l2 5-.5 12" />
+      <path d="M3 21h18" />
+    </Svg>
+  )
+}
+
+// The Dragonseeds — an unclaimed egg
+function DragonEgg({ size, className }: { size?: number; className?: string }) {
+  return (
+    <Svg size={size} className={className}>
+      <path d="M12 2.5C8 6 5.5 10.5 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 10.5 16 6 12 2.5z" />
+      <path d="M9 9l3 2 3-2M8 13.5l4 2.5 4-2.5" />
+    </Svg>
+  )
+}
+
+// A dragon in profile — used for every named dragon
+function DragonHead({ size, className }: { size?: number; className?: string }) {
+  return (
+    <Svg size={size} className={className}>
+      <path d="M3 14c3-1 5-3 6-6l2-4 1.5 3.5L17 6l-1 3 5 1.5-4 2c.5 3-1 6-4 7.5-3.5 1.7-7.5.5-10-2.5l3-1.5L3 14z" />
+      <circle cx="13.2" cy="10.2" r="0.8" fill="currentColor" stroke="none" />
+    </Svg>
+  )
+}
+
+const DRAGON_NAMES = new Set([
+  'caraxes', 'vermithor', 'vhagar', 'tessarion', 'sunfyre', 'seasmoke',
+  'silverwing', 'dreamfyre', 'sheepstealer', 'moondancer', 'syrax',
+])
+
+// ─── Resolver ──────────────────────────────────────────────────────────────────
+
 function resolveFilmIcon(name: string): FilmIconComponent {
   const n = name.toLowerCase().trim()
+
+  // Dragons by name
+  if (DRAGON_NAMES.has(n)) return DragonHead
+
+  // Houses and faction groups (nominees.film_name)
+  if (n === 'the blacks') return deviceIcon('targaryen')
+  if (n === 'the greens') return GreenCrown
+  if (n.includes('hightower')) return deviceIcon('hightower')
+  if (n.includes('velaryon')) return deviceIcon('velaryon')
+  if (n === 'harrenhal') return MeltedTower
+  if (n.includes('dragonseed')) return DragonEgg
+  if (n.includes('north') || n.includes('riverland')) return deviceIcon('stark')
+  if (n.includes('stark')) return deviceIcon('stark')
+  if (n.includes('lannister')) return deviceIcon('lannister')
+  if (n.includes('baratheon')) return deviceIcon('baratheon')
+  if (n.includes('blackwood')) return deviceIcon('blackwood')
+  if (n.includes('targaryen')) return deviceIcon('targaryen')
 
   if (n.includes('sinners')) return Guitar
   if (n.includes('one battle')) return ShieldBattle

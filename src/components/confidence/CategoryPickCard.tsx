@@ -11,11 +11,11 @@
  *   └─────────────────────────────────────────────────────┘
  *
  * Left border color indicates tier:
- *   Tier 1 (Major Awards)              → gold
- *   Tier 2 (Prestige Craft)            → violet
- *   Tier 3 (Technical & Performance)   → sky
- *   Tier 4 (Specialty)                 → emerald
- *   Tier 5 (Short Films)               → white/muted
+ *   Tier 1 (Major Awards)              → ochre
+ *   Tier 2 (Prestige Craft)            → bone
+ *   Tier 3 (Technical & Performance)   → ashlar
+ *   Tier 4 (Specialty)                 → dim ash
+ *   Tier 5 (Short Films)               → quiet ash
  *
  * Tapping a nominee row selects it (toggles off if already selected).
  * Tapping the confidence badge opens the number picker in the parent.
@@ -28,6 +28,7 @@ import type { CategoryWithNominees } from '../../types/game'
 import type { LocalPick } from '../../hooks/useConfidence'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
+import { Hallmark } from '../ui/Hallmarks'
 
 interface Props {
   category: CategoryWithNominees
@@ -42,29 +43,29 @@ const TIER_STYLES: Record<
   { border: string; label: string; labelBg: string }
 > = {
   1: {
-    border: 'border-l-accent',
-    label: 'text-accent',
-    labelBg: 'bg-accent/10 text-accent',
+    border: 'border-l-[var(--t-pending)]',
+    label: 'text-[var(--t-pending)]',
+    labelBg: 'bg-[var(--t-pending-soft)] text-[var(--t-pending)]',
   },
   2: {
-    border: 'border-l-violet-400',
-    label: 'text-violet-400',
-    labelBg: 'bg-violet-400/10 text-violet-400',
+    border: 'border-l-[var(--t-text-muted)]',
+    label: 'text-[var(--t-text-muted)]',
+    labelBg: 'bg-[var(--t-surface)] text-[var(--t-text-muted)]',
   },
   3: {
-    border: 'border-l-sky-400',
-    label: 'text-sky-400',
-    labelBg: 'bg-sky-400/10 text-sky-400',
+    border: 'border-l-[var(--t-ashlar)]',
+    label: 'text-[var(--t-ashlar)]',
+    labelBg: 'bg-[var(--t-surface)] text-[var(--t-ashlar)]',
   },
   4: {
-    border: 'border-l-emerald-400',
-    label: 'text-emerald-400',
-    labelBg: 'bg-emerald-400/10 text-emerald-400',
+    border: 'border-l-[var(--t-text-dim)]',
+    label: 'text-[var(--t-text-dim)]',
+    labelBg: 'bg-[var(--t-surface)] text-[var(--t-text-dim)]',
   },
   5: {
-    border: 'border-l-white/20',
-    label: 'text-white/40',
-    labelBg: 'bg-white/5 text-white/40',
+    border: 'border-l-[var(--t-negative)]',
+    label: 'text-[var(--t-negative)]',
+    labelBg: 'bg-[var(--t-negative-soft)] text-[var(--t-negative)]',
   },
 }
 
@@ -89,7 +90,7 @@ export default function CategoryPickCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.025, duration: 0.2 }}
       className={[
-        'backdrop-blur-lg bg-white/8 border border-white/12 rounded-xl',
+        'relief-glass border rounded-xl',
         'border-l-4 p-3',
         style.border,
         isPickComplete ? 'opacity-100' : 'opacity-100',
@@ -99,7 +100,7 @@ export default function CategoryPickCard({
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-1.5 flex-1 mr-2 min-w-0">
           <CategoryIcon categoryName={category.name} size={14} className={style.label} />
-          <span className="text-sm font-bold text-white leading-tight truncate">
+          <span className="font-display text-sm font-bold text-[var(--t-text)] leading-tight truncate">
             {category.name}
           </span>
         </div>
@@ -109,31 +110,36 @@ export default function CategoryPickCard({
             whileTap={{ scale: 0.92 }}
             onClick={onOpenPicker}
             className={[
-              'w-9 h-9 rounded-lg flex flex-col items-center justify-center relative',
+              'min-w-[44px] h-11 px-1 rounded-lg flex items-center justify-center gap-0.5 relative',
               'border-2 transition-colors',
               pick.confidence != null
-                ? 'bg-accent/15 border-accent/60'
+                ? 'material-vellum border-[var(--t-vellum-deep)] text-[var(--t-ink)]'
                 : hasNominee
-                  ? 'bg-red-500/20 border-red-400 border-dashed'
-                  : 'bg-white/5 border-white/15 border-dashed',
+                  ? 'bg-[var(--t-pending-soft)] border-[var(--t-pending)] border-dashed'
+                  : 'bg-[var(--t-negative-soft)] border-[var(--t-line)] border-dashed',
             ].join(' ')}
           >
             {pick.confidence != null ? (
-              <span className="text-sm font-bold text-accent leading-none">
-                {pick.confidence}
-              </span>
+              <>
+                {pick.confidence === 24 && (
+                  <Hallmark id="hallmark-signet" size={16} className="flex-shrink-0" />
+                )}
+                <span className="font-display text-sm font-bold leading-none tabular-nums">
+                  {pick.confidence}
+                </span>
+              </>
             ) : hasNominee ? (
               <>
-                <span className="text-sm font-bold text-red-400 leading-none">?</span>
+                <span className="font-display text-sm font-bold text-[var(--t-pending)] leading-none">?</span>
                 {/* Pulsing ring */}
                 <motion.span
                   animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
                   transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute inset-0 rounded-lg border-2 border-red-400"
+                  className="absolute inset-0 rounded-lg border-2 border-[var(--t-pending)]"
                 />
               </>
             ) : (
-              <Hash size={13} className="text-white/30" />
+              <Hash size={14} className="text-[var(--t-text-dim)]" />
             )}
           </motion.button>
         </div>
@@ -178,18 +184,18 @@ function NomineeRow({
         'w-full text-left px-2 transition-colors',
         'min-h-[44px] flex flex-col justify-center',
         isSelected
-          ? 'border-l-2 border-accent bg-accent/10 pl-2'
+          ? 'border-l-2 border-[var(--t-pending)] bg-[var(--t-pending-soft)] pl-2'
           : 'border-l-2 border-transparent',
-        !isLast ? 'border-b border-white/5' : '',
+        !isLast ? 'border-b border-[var(--t-line-soft)]' : '',
       ].join(' ')}
     >
-      <span className={['text-sm leading-snug', isSelected ? 'text-accent font-medium' : 'text-white/75 font-normal'].join(' ')}>
+      <span className={['text-sm leading-snug', isSelected ? 'text-[var(--t-text)] font-medium' : 'text-[var(--t-text-muted)] font-normal'].join(' ')}>
         {nominee.name}
       </span>
       {showFilm && (
         <span className="flex items-center gap-1 mt-0.5">
-          <FilmIcon filmName={nominee.film_name!} size={9} className="text-white/40 flex-shrink-0" />
-          <span className="text-xs text-white/60 leading-snug">{nominee.film_name}</span>
+          <FilmIcon filmName={nominee.film_name!} size={9} className="text-[var(--t-text-dim)] flex-shrink-0" />
+          <span className="text-xs text-[var(--t-text-dim)] leading-snug">{nominee.film_name}</span>
         </span>
       )}
     </motion.button>

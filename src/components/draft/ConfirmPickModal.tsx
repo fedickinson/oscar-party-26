@@ -20,6 +20,7 @@
 
 import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
+import { Hallmark } from '../ui/Hallmarks'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -63,7 +64,8 @@ export default function ConfirmPickModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center backdrop-blur-sm"
+      style={{ backgroundColor: 'var(--t-overlay)' }}
       onClick={onCancel}
     >
       {/* Sheet — stops click propagation so tapping inside doesn't close */}
@@ -72,57 +74,59 @@ export default function ConfirmPickModal({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 32, stiffness: 400 }}
-        className="w-full max-w-md bg-ground-deep border border-white/15 rounded-t-3xl p-6 pb-8"
+        className="relief-glass w-full max-w-md rounded-t-3xl p-6 pb-8"
+        style={{ borderColor: 'var(--t-line-strong)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle hint */}
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ backgroundColor: 'var(--t-line-strong)' }} />
 
         {/* Entity header */}
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
             <span
-              className={[
-                'text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded',
-                isFilm
-                  ? 'bg-accent/20 text-accent'
-                  : 'bg-violet-500/20 text-violet-300',
-              ].join(' ')}
+              className="text-xs font-bold uppercase tracking-widest px-2 py-1 rounded"
+              style={{
+                backgroundColor: 'var(--t-pending-soft)',
+                color: 'var(--t-pending)',
+              }}
             >
               {isFilm ? 'Dragon' : 'Character'}
             </span>
           </div>
 
-          <h2 className="text-2xl font-bold leading-tight">{entity.name}</h2>
+          <h2 className="font-display text-2xl font-bold leading-tight tracking-wide text-[var(--t-text)]">
+            {entity.name}
+          </h2>
 
           {!isFilm && entity.film_name && (
             <div className="flex items-center gap-1.5 mt-0.5">
-              <FilmIcon filmName={entity.film_name} size={12} className="text-white/35 flex-shrink-0" />
-              <p className="text-white/50 italic">{entity.film_name}</p>
+              <FilmIcon filmName={entity.film_name} size={12} className="text-[var(--t-text-dim)] flex-shrink-0" />
+              <p className="text-[var(--t-text-muted)] italic">{entity.film_name}</p>
             </div>
           )}
         </div>
 
         {/* Signature beats list */}
         {beats.length > 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 space-y-2">
-            <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Signature beats</p>
+          <div className="relief-glass rounded-xl p-4 mb-5 space-y-2" style={{ borderColor: 'var(--t-line-soft)' }}>
+            <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-widest mb-3">Signature beats</p>
             {beats.map((beat) => (
               <div key={beat.id} className="flex justify-between items-center">
-                <span className="text-sm text-white/80 flex-1 mr-3">{beat.name}</span>
-                <span className="text-sm font-bold text-accent flex-shrink-0">
+                <span className="text-sm text-[var(--t-text-muted)] flex-1 mr-3">{beat.name}</span>
+                <span className="text-sm font-bold text-[var(--t-pending)] flex-shrink-0 tabular-nums">
                   +{beat.points} pts
                 </span>
               </div>
             ))}
-            <div className="border-t border-white/10 pt-2 mt-2 flex justify-between">
-              <span className="text-sm text-white/50">{isFilm ? 'All beats live' : 'Best 3 total'}</span>
-              <span className="text-sm font-bold text-accent">{totalPoints} pts</span>
+            <div className="border-t pt-2 mt-2 flex justify-between" style={{ borderColor: 'var(--t-line-soft)' }}>
+              <span className="text-sm text-[var(--t-text-dim)]">{isFilm ? 'All beats live' : 'Best 3 total'}</span>
+              <span className="text-sm font-bold text-[var(--t-pending)] tabular-nums">{totalPoints} pts</span>
             </div>
           </div>
         ) : (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5">
-            <p className="text-white/30 text-sm text-center">
+          <div className="relief-glass rounded-xl p-4 mb-5" style={{ borderColor: 'var(--t-line-soft)' }}>
+            <p className="text-[var(--t-text-dim)] text-sm text-center">
               Signature beats loading
             </p>
           </div>
@@ -133,7 +137,8 @@ export default function ConfirmPickModal({
           <button
             onClick={onCancel}
             disabled={isSubmitting}
-            className="flex-1 py-4 rounded-2xl bg-white/10 border border-white/15 text-white font-semibold disabled:opacity-50 hover:bg-white/15 transition-colors"
+            className="relief-glass flex-1 min-h-12 py-3 rounded-2xl border text-[var(--t-text)] font-semibold disabled:opacity-50 transition-colors"
+            style={{ borderColor: 'var(--t-line)' }}
           >
             Cancel
           </button>
@@ -141,9 +146,17 @@ export default function ConfirmPickModal({
           <button
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="flex-[2] py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-60 hover:bg-accent-light transition-colors"
+            className="relief-raised flex-[2] min-h-12 py-3 rounded-2xl border font-bold text-lg disabled:opacity-60 transition-colors"
+            style={{
+              backgroundColor: 'var(--t-personal-device)',
+              borderColor: 'var(--t-personal-text)',
+              color: 'var(--t-vellum-light)',
+            }}
           >
-            {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
+            <span className="flex items-center justify-center gap-2">
+              <Hallmark id="hallmark-claim" size={18} className="flex-shrink-0" />
+              {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
+            </span>
           </button>
         </div>
       </motion.div>

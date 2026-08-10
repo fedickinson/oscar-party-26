@@ -41,7 +41,7 @@ const TIER_BADGE_COLORS: Record<number, string> = {
   1: 'bg-accent/20 text-accent',
   2: 'bg-purple-500/20 text-purple-300',
   3: 'bg-blue-500/20 text-blue-300',
-  4: 'bg-emerald-500/20 text-emerald-300',
+  4: 'bg-positive/20 text-positive',
   5: 'bg-white/10 text-white/50',
 }
 

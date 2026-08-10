@@ -50,11 +50,11 @@ const TIER_LABELS: Record<number, string> = {
 }
 
 const TIER_LABEL_COLORS: Record<number, string> = {
-  1: 'text-accent',
-  2: 'text-violet-400',
-  3: 'text-sky-400',
-  4: 'text-emerald-400',
-  5: 'text-white/40',
+  1: 'text-[var(--t-pending)]',
+  2: 'text-[var(--t-text-muted)]',
+  3: 'text-[var(--t-ashlar)]',
+  4: 'text-[var(--t-text-dim)]',
+  5: 'text-[var(--t-negative)]',
 }
 
 export default function Confidence() {
@@ -145,7 +145,7 @@ export default function Confidence() {
   if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -185,16 +185,16 @@ export default function Confidence() {
         <PhaseExplainer phase="confidence" onContinue={() => setShowExplainer(false)} confidenceRange={confidenceRange} />
       )}
 
-      <div className="flex flex-col" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
+      <div className="flex flex-col min-w-0" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
 
         {/* ── Header ── */}
         <div className="flex-shrink-0 mb-3">
-          <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
+          <div className="relief-glass rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs text-white/40 uppercase tracking-widest">
+              <p className="font-display text-xs text-[var(--t-pending)] uppercase tracking-[0.16em]">
                 Prestige Picks
               </p>
-              <p className="text-sm font-semibold text-white mt-0.5">
+              <p className="text-sm font-semibold text-[var(--t-text)] mt-0.5">
                 {myHasSubmitted
                   ? 'Submitted — waiting for others'
                   : `Choose your winner pick and assign prestige points for all ${categories.length} categories`}
@@ -204,14 +204,15 @@ export default function Confidence() {
               {import.meta.env.DEV && !myHasSubmitted && (
                 <button
                   onClick={handleRandomFill}
-                  className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-full"
+                  className="flex min-h-[44px] items-center gap-1 text-xs font-medium text-[var(--t-pending)] border px-3 py-2 rounded-full"
+                  style={{ backgroundColor: 'var(--t-pending-soft)', borderColor: 'var(--t-pending)' }}
                 >
                   <Shuffle size={12} />
                   Random
                 </button>
               )}
               {!myHasSubmitted && (
-                <span className="text-xs font-mono text-white/40 bg-white/5 px-2 py-1 rounded-full tabular-nums">
+                <span className="font-display text-xs text-[var(--t-text-muted)] px-2 py-1 rounded-full tabular-nums border" style={{ backgroundColor: 'var(--t-surface)', borderColor: 'var(--t-line-soft)' }}>
                   {completedPickCount}/{categories.length}
                 </span>
               )}
@@ -229,8 +230,8 @@ export default function Confidence() {
                 <div key={tier}>
                   <p
                     className={[
-                      'text-xs uppercase tracking-widest px-1 mt-3 mb-1.5',
-                      TIER_LABEL_COLORS[tier] ?? 'text-white/30',
+                      'font-display text-xs uppercase tracking-widest px-1 mt-3 mb-1.5',
+                      TIER_LABEL_COLORS[tier] ?? 'text-[var(--t-text-dim)]',
                     ].join(' ')}
                   >
                     {TIER_LABELS[tier] ?? `Tier ${tier}`}
@@ -256,7 +257,7 @@ export default function Confidence() {
                 animate={{ opacity: 1 }}
                 className="pt-1"
               >
-                <p className="text-xs text-white/40 uppercase tracking-widest px-1 mb-3">
+                <p className="font-display text-xs text-[var(--t-text-dim)] uppercase tracking-widest px-1 mb-3">
                   Picks so far
                 </p>
                 <PicksReveal
@@ -312,7 +313,8 @@ export default function Confidence() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-28 left-4 right-4 max-w-md mx-auto bg-red-500/90 text-white text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+            className="relief-glass fixed bottom-28 left-4 right-4 max-w-md mx-auto text-[var(--t-negative)] text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+            style={{ backgroundColor: 'var(--t-negative-soft)', borderColor: 'var(--t-negative)' }}
           >
             {submitError}
           </motion.div>

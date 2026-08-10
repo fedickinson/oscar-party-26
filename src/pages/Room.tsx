@@ -160,7 +160,7 @@ export default function Room() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -175,34 +175,35 @@ export default function Room() {
   return (
     <>
       <motion.div
-        className="flex flex-col gap-5 pb-8"
+        className="flex flex-col gap-5 pb-8 min-w-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         {/* Header */}
         <div className="text-center pt-2">
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Party Night</p>
-          <h1 className="text-2xl font-bold text-white">Lobby</h1>
+          <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-[0.18em] mb-1">Party Night</p>
+          <h1 className="font-display text-2xl font-bold text-[var(--t-text)] tracking-wide">Lobby</h1>
         </div>
 
         {/* Room code — tap to copy */}
         <motion.button
           onClick={copyCode}
           whileTap={{ scale: 0.97 }}
-          className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5 w-full text-center"
+          className="material-vellum relief-raised deckled border rounded-2xl p-5 min-h-[44px] w-full text-center overflow-hidden"
+          style={{ borderColor: 'var(--t-vellum-deep)', color: 'var(--t-ink)' }}
         >
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Room Code</p>
-          <div className="flex gap-3 justify-center mb-3">
+          <p className="text-xs text-[var(--t-ink-muted)] uppercase tracking-[0.2em] mb-3">Room Code</p>
+          <div className="flex gap-2 sm:gap-3 justify-center mb-3 min-w-0">
             {(code ?? '').split('').map((letter, i) => (
-              <span key={i} className="text-5xl font-bold text-accent leading-none">
+              <span key={i} className="font-display text-5xl font-bold text-[var(--t-ink)] leading-none tabular-nums">
                 {letter}
               </span>
             ))}
           </div>
-          <p className="text-xs text-white/40 flex items-center justify-center gap-1.5">
+          <p className="text-xs text-[var(--t-ink-muted)] flex items-center justify-center gap-1.5">
             {copied ? (
-              <><Check size={11} className="text-emerald-400" /> Copied to clipboard</>
+              <><Check size={12} className="text-[var(--t-ink)]" /> Copied to clipboard</>
             ) : (
               <><Copy size={11} /> Tap to copy</>
             )}
@@ -210,10 +211,10 @@ export default function Room() {
         </motion.button>
 
         {/* Player list */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5">
+        <section className="min-w-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-white">Players</h2>
-            <span className="text-xs text-white/40 bg-white/10 px-2 py-1 rounded-full">
+            <h2 className="font-display font-semibold text-[var(--t-text)] tracking-wide">Players</h2>
+            <span className="text-xs text-[var(--t-text-dim)] px-2 py-1 rounded-full border" style={{ backgroundColor: 'var(--t-surface)', borderColor: 'var(--t-line-soft)' }}>
               {players.length} joined
             </span>
           </div>
@@ -231,7 +232,7 @@ export default function Room() {
           </motion.ul>
 
           {players.length === 0 && (
-            <p className="text-white/30 text-sm text-center py-4">No players yet…</p>
+            <p className="text-[var(--t-text-dim)] text-sm text-center py-4">No players yet…</p>
           )}
 
           {/* People assume a lobby means "everyone has to be here right now" and
@@ -239,14 +240,14 @@ export default function Room() {
               code persist, and identity is kept in localStorage, so anyone can
               join hours early, close the tab and come back. Only the draft needs
               everybody present, because it is turn-based with a 45s auto-skip. */}
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <p className="text-xs text-white/40 leading-relaxed">
+          <div className="relief-glass mt-4 p-4 rounded-xl">
+            <p className="text-xs text-[var(--t-text-dim)] leading-relaxed">
               Send the code whenever — people can join now and come back later, and the
               room keeps their spot. Everyone only needs to be here at the same time for
-              the <span className="text-white/60">draft</span>, since it goes in turns.
+              the <span className="text-[var(--t-text-muted)]">draft</span>, since it goes in turns.
             </p>
           </div>
-        </div>
+        </section>
 
         {/* Game Settings — mode selection (host interactive, guests read-only) */}
         {/* ModeSelectPanel removed. Its two controls were Oscars-only: prestige_mode
@@ -256,37 +257,37 @@ export default function Room() {
             to 'full', which is the behaviour we want. */}
 
         {/* Host action / waiting state */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/15 rounded-2xl p-5">
+        <div className="relief-glass rounded-2xl p-5">
           {isHost ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-white/60 text-sm">
-                <Crown size={14} className="text-accent flex-shrink-0" />
+              <div className="flex items-center gap-2 text-[var(--t-text-muted)] text-sm">
+                <Crown size={14} className="text-[var(--t-ornament)] flex-shrink-0" />
                 <span>You're the host</span>
               </div>
 
               {!canStart && (
-                <p className="text-white/40 text-sm">
+                <p className="text-[var(--t-text-dim)] text-sm">
                   Waiting for at least 2 players to join…
                 </p>
               )}
 
               {startError && (
-                <p className="text-red-400 text-sm">{startError}</p>
+                <p className="text-[var(--t-negative)] text-sm">{startError}</p>
               )}
 
               {canStart && watchSetupIncomplete && !overrodeWatchSetup && (
-                <div className="rounded-xl bg-amber-500/10 border border-amber-500/25 px-3 py-2.5">
+                <div className="rounded-xl border px-3 py-2.5" style={{ backgroundColor: 'var(--t-pending-soft)', borderColor: 'var(--t-pending)' }}>
                   {locationsWithoutRemote.length > 0 && (
-                    <p className="text-xs text-amber-200 leading-relaxed mt-1">
+                    <p className="text-xs text-[var(--t-pending)] leading-relaxed mt-1">
                       Nobody in {locationsWithoutRemote.join(' or ')} can pause the episode.
                     </p>
                   )}
-                  <p className="text-[11px] text-amber-200/60 mt-1.5">
+                  <p className="text-xs text-[var(--t-text-muted)] mt-1.5">
                     You can still start — but pausing and staying in sync will not work for them.
                   </p>
                   <button
                     onClick={() => setOverrodeWatchSetup(true)}
-                    className="text-[11px] text-amber-200/80 underline mt-1.5"
+                    className="min-h-[44px] text-xs text-[var(--t-pending)] underline underline-offset-4 mt-1.5"
                   >
                     Start anyway
                   </button>
@@ -298,11 +299,14 @@ export default function Room() {
                 disabled={!canStart || isStarting || (watchSetupIncomplete && !overrodeWatchSetup)}
                 whileTap={canStart ? { scale: 0.97 } : undefined}
                 className={[
-                  'w-full py-4 rounded-2xl font-bold text-lg transition-all',
+                  'w-full min-h-[52px] py-3 rounded-2xl border font-bold text-lg transition-all',
                   canStart && !isStarting && (!watchSetupIncomplete || overrodeWatchSetup)
-                    ? 'bg-accent text-ground hover:bg-accent-light'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed',
+                    ? 'material-enamel relief-raised text-[var(--t-personal-text)] border-[var(--t-personal-device)]'
+                    : 'text-[var(--t-negative)] border-[var(--t-line-soft)] cursor-not-allowed',
                 ].join(' ')}
+                style={canStart && !isStarting && (!watchSetupIncomplete || overrodeWatchSetup)
+                  ? undefined
+                  : { backgroundColor: 'var(--t-negative-soft)' }}
               >
                 {isStarting ? (
                   'Starting…'
@@ -320,9 +324,9 @@ export default function Room() {
           ) : (
             <div className="text-center py-2 space-y-2">
               <div className="flex justify-center">
-                <div className="w-6 h-6 border-2 border-accent/50 border-t-accent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-[var(--t-line)] border-t-[var(--t-pending)] rounded-full animate-spin" />
               </div>
-              <p className="text-white/60 text-sm">Waiting for the host to start…</p>
+              <p className="text-[var(--t-text-muted)] text-sm">Waiting for the host to start…</p>
             </div>
           )}
         </div>
@@ -378,7 +382,7 @@ function PlayerCard({
       transition={{ duration: 0.2 }}
       className="overflow-hidden"
     >
-      <div className="flex items-center gap-3 py-1.5">
+      <div className="relief-glass flex items-center gap-3 min-h-[56px] px-3 py-2 rounded-xl">
         <Avatar
           avatarId={player.avatar_id}
           size="md"
@@ -390,17 +394,17 @@ function PlayerCard({
           <div className="flex items-center gap-1.5">
             <span className="font-semibold truncate">{player.name}</span>
             {player.is_host && (
-              <Crown size={13} className="text-accent flex-shrink-0" />
+              <Crown size={13} className="text-[var(--t-ornament)] flex-shrink-0" />
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             {player.is_host && (
-              <span className="text-[10px] text-accent/80 bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wider font-medium">
+              <span className="text-xs text-[var(--t-ornament)] px-2 py-0.5 rounded-full uppercase tracking-wider font-medium" style={{ backgroundColor: 'var(--t-pending-soft)' }}>
                 Host
               </span>
             )}
             {isCurrentPlayer && (
-              <span className="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-xs text-[var(--t-text-dim)] px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ backgroundColor: 'var(--t-surface)' }}>
                 You
               </span>
             )}

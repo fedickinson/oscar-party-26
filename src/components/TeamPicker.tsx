@@ -21,17 +21,19 @@ const TEAMS = [
     id: 'black' as const,
     label: 'Team Black',
     claimant: 'Rhaenyra',
-    active: 'bg-red-950/70 border-red-500/60 text-red-200',
+    // Jet field, madder device — the Black shield (design-system tokens)
+    active: 'text-[color:var(--t-team-a-text)] bg-[color:var(--t-team-a-field)] border-[color:var(--t-team-a-device)]',
     idle: 'bg-white/5 border-white/10 text-white/55',
-    dot: 'bg-red-500',
+    dot: 'bg-[color:var(--t-team-a-device)]',
   },
   {
     id: 'green' as const,
     label: 'Team Green',
     claimant: 'Aegon',
-    active: 'bg-emerald-950/70 border-emerald-500/60 text-emerald-200',
+    // Bottle field, beacon device — the Green shield
+    active: 'text-[color:var(--t-team-b-text)] bg-[color:var(--t-team-b-field)] border-[color:var(--t-team-b-device)]',
     idle: 'bg-white/5 border-white/10 text-white/55',
-    dot: 'bg-emerald-500',
+    dot: 'bg-[color:var(--t-team-b-device)]',
   },
 ]
 

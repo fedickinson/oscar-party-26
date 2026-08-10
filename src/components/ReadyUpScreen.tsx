@@ -174,7 +174,7 @@ export default function ReadyUpScreen({
                     {isReady ? (
                       <motion.div
                         key="ready"
-                        className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium"
+                        className="flex items-center gap-1.5 text-positive text-sm font-medium"
                         initial={{ opacity: 0, x: 8 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0 }}

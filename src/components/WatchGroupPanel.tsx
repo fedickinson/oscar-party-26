@@ -81,8 +81,9 @@ export default function WatchGroupPanel({ room, players, isHost, currentPlayerId
           <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 mb-2.5">
             <p className="text-xs text-white/70">You're on your own screen.</p>
             <p className="text-[11px] text-white/40 mt-0.5">
-              That's fine — you control your own playback and can pause whenever. Only pick
-              a place if you're sharing a screen with someone.
+              That's fine — you hold your own remote. Scenes play through, and everyone
+              stops together at the break. Only pick a place if you're sharing a screen
+              with someone.
             </p>
           </div>
         )}

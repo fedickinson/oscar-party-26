@@ -128,7 +128,7 @@ export default function Draft() {
   if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -155,7 +155,7 @@ export default function Draft() {
         App.tsx has py-6 (3rem total) on its container, so we subtract that
         to get exactly the remaining viewport height.
       */}
-      <div className="flex flex-col" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
+      <div className="flex flex-col min-w-0" style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}>
 
         {/* ── Top bar ── */}
         <DraftTimer
@@ -173,12 +173,7 @@ export default function Draft() {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="text-center py-2.5 px-4 mb-2 rounded-xl text-sm flex-shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.4)',
-            }}
+            className="relief-glass text-center min-h-[44px] py-2.5 px-4 mb-2 rounded-xl text-sm flex-shrink-0 text-[var(--t-text-dim)]"
           >
             <motion.span
               animate={{ opacity: [1, 0.5, 1] }}
@@ -190,7 +185,7 @@ export default function Draft() {
                 style={{ backgroundColor: currentDrafter.color, opacity: 0.7 }}
               />
               Waiting for{' '}
-              <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>{currentDrafter.name}</span>{' '}
+              <span className="font-semibold text-[var(--t-text-muted)]">{currentDrafter.name}</span>{' '}
               to pick…
             </motion.span>
           </motion.div>
@@ -202,16 +197,17 @@ export default function Draft() {
             key={draftSubPhase}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between flex-shrink-0 px-1 mb-2"
+            className="relief-glass flex items-center justify-between flex-shrink-0 px-3 py-2 mb-2 min-h-[52px] rounded-xl"
           >
             <div className="flex items-center gap-2">
               {isDragonPhase
-                ? <Flame size={14} className="text-accent" />
-                : <Users size={14} className="text-accent" />
+                ? <Flame size={16} className="text-[var(--t-pending)]" />
+                : <Users size={16} className="text-[var(--t-ornament)]" />
               }
-              <span className="text-xs font-semibold text-accent uppercase tracking-widest">
+              <span className="font-display text-xs font-semibold text-[var(--t-text)] uppercase tracking-[0.14em]">
                 {isDragonPhase ? 'Claim a dragon' : 'Draft your characters'}
               </span>
+              <span className="hidden min-[360px]:block h-px w-8" style={{ backgroundColor: 'var(--t-ornament-muted)' }} aria-hidden />
             </div>
             {devAutoPickAll && (
               <button
@@ -221,7 +217,8 @@ export default function Draft() {
                   setIsAutoDrafting(false)
                 }}
                 disabled={isAutoDrafting}
-                className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-full disabled:opacity-40"
+                className="flex min-h-[44px] items-center gap-1 text-xs font-medium text-[var(--t-pending)] border px-3 py-2 rounded-full disabled:opacity-40"
+                style={{ backgroundColor: 'var(--t-pending-soft)', borderColor: 'var(--t-pending)' }}
               >
                 <Shuffle size={12} />
                 {isAutoDrafting ? 'Selecting…' : 'Auto Select'}
@@ -240,9 +237,9 @@ export default function Draft() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-10"
               >
-                <Trophy size={48} className="text-accent mx-auto mb-3" />
-                <p className="text-xl font-bold text-accent mb-1">Roster complete</p>
-                <p className="text-white/50 text-sm">Taking you to choose your bets…</p>
+                <Trophy size={48} className="text-[var(--t-ornament)] mx-auto mb-3" />
+                <p className="font-display text-xl font-bold text-[var(--t-text)] mb-1">Roster complete</p>
+                <p className="text-[var(--t-text-muted)] text-sm">Taking you to choose your bets…</p>
               </motion.div>
             ) : isDragonPhase ? (
               /* ── Dragons sub-draft ── */
@@ -251,7 +248,7 @@ export default function Draft() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-xs text-accent/70 uppercase tracking-widest px-1 mb-2"
+                    className="text-xs text-[var(--t-pending)] uppercase tracking-widest px-1 mb-2"
                   >
                     Tap to claim
                   </motion.p>
@@ -278,14 +275,14 @@ export default function Draft() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-xs text-accent/70 uppercase tracking-widest px-1 mb-2"
+                    className="text-xs text-[var(--t-pending)] uppercase tracking-widest px-1 mb-2"
                   >
                     Tap to claim
                   </motion.p>
                 )}
                 {groupByFaction(activeAvailable).map((group) => (
                   <div key={group.label} className="mb-3">
-                    <p className="text-xs text-white/30 uppercase tracking-widest px-1 mb-1.5">
+                    <p className="font-display text-xs text-[var(--t-text-dim)] uppercase tracking-widest px-1 mb-1.5">
                       {group.label}
                     </p>
                     <div className="space-y-2.5">
@@ -310,7 +307,7 @@ export default function Draft() {
             {/* Drafted entities — greyed, pinned below available */}
             {!isDraftComplete && activeDrafted.length > 0 && (
               <div className="mt-3">
-                <p className="text-xs text-white/30 uppercase tracking-widest px-1 mb-1.5">
+                <p className="font-display text-xs text-[var(--t-negative)] uppercase tracking-widest px-1 mb-1.5">
                   Claimed ({activeDrafted.length})
                 </p>
                 <div className="space-y-2.5">
@@ -366,7 +363,8 @@ export default function Draft() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 left-4 right-4 max-w-md mx-auto bg-red-500/90 text-white text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+            className="relief-glass fixed bottom-24 left-4 right-4 max-w-md mx-auto text-[var(--t-negative)] text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+            style={{ backgroundColor: 'var(--t-negative-soft)', borderColor: 'var(--t-negative)' }}
           >
             {pickError}
           </motion.div>
