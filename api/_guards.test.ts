@@ -9,7 +9,7 @@ import {
   takeToken,
   validateBody,
   type Bucket,
-} from './_guards'
+} from './_guards.js'
 
 /** The shape the companion hooks actually send. */
 const realBody = {

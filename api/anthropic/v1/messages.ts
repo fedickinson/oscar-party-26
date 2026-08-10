@@ -22,7 +22,7 @@ import {
   takeToken,
   validateBody,
   type Bucket,
-} from '../../_guards'
+} from '../../_guards.js'
 
 /** Module scope: survives across invocations on a warm instance, and no longer. */
 const buckets = new Map<string, Bucket>()

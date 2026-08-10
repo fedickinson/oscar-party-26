@@ -4,9 +4,14 @@
     "target": "ES2022",
     "lib": ["ES2023"],
     "types": ["node"],
-    "module": "ESNext",
+    // node16, deliberately: this is what Vercel compiles the functions with. The
+    // first version of this file used "bundler", which type-checked clean here
+    // and then failed in the build with TS2835 — and Vercel deployed the broken
+    // function anyway. A local gate that disagrees with the deploy compiler is
+    // not a gate. Relative imports therefore need explicit .js extensions.
+    "module": "node16",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node16",
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
