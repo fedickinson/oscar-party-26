@@ -272,16 +272,22 @@ trigger pays. The bingo pool already did this right (win_condition + "what
 does not count" notes); the draft beats shipped with one bare sentence each.
 Author beats like bingo squares.
 
-**The write-back (executed 8/10 evening).** Settlement is not complete until
-the APP agrees with the record — friends open the app, not the artifact, and a
-stale in-app scoreboard undoes the whole exercise. Mechanism: five additive
-"True Accounting: <player>" categories, each carrying that player's residual
-draft delta, awarded to the player's own DRAGON (film-type entities pay
-category points exactly 1x, so deltas land whole — person winners get 1.5x
-rounded and would drift). No live rows deleted, no destructive migration; the
-provisional declarations remain in history and the settlement rows read as
-what they are. Verified by recomputing the leaderboard from the live DB with
-the app's own attribution rules: 505/212/211/165/55, exact.
+**The write-back (executed 8/10 evening; corrected same night).** Settlement
+is not complete until the APP agrees with the record — friends open the app,
+not the artifact. First attempt routed each player's residual through their
+DRAGON as a lump sum: totals landed exact, and then Vhagar — absent from the
+episode — was crowned character of the night. THE RULE, from Franky directly:
+**never route points through anything that didn't earn them; never move value
+outside the main system's own semantics.** Settlement rows are analytics
+inputs, not just arithmetic — every downstream lens (character awards, the
+Reckoning, breakdowns) trusts their attribution. Final mechanism: fourteen
+additive categories, one per True-Accounting ledger line, each paying the
+character who actually earned it, at points chosen so the app's own scoring
+(person 1.5x rounded, dragon 1x) reproduces the ledger exactly. One documented
+distortion: Aegon was live-over-credited by 8 (the "Chooses Aemond" call the
+True Accounting struck); additive settlement cannot subtract, so Ulf's line
+absorbs -8 (212 in-app vs 220 true). Verified against the live DB: totals
+505/212/211/165/55 exact; character board true; Vhagar at zero.
 
 **The flywheel.** The settlement pipeline pointed backward at episode N is
 the authoring pipeline pointed forward at episode N+1: the same recap mining
