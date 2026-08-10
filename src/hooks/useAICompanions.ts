@@ -583,10 +583,11 @@ export function useAICompanions(
       const spoken = await spokenCompanionIds()
       if (!spoken.length) return
       const who = spoken[Math.floor(Math.random() * spoken.length)]
-      // ~20s human lag, then RE-VERIFY the mark still exists before speaking.
+      // ~10s human lag, then RE-VERIFY the mark still exists before speaking.
       // Marks are honor-system now and tapping again is the undo — a companion
       // reacting to a misclick that was already taken back would be worse than
-      // any delay. The lag doubles as the misclick grace window.
+      // a short delay. The lag doubles as the misclick grace window: a fat-
+      // finger gets noticed and untapped within seconds or not at all.
       const tid = setTimeout(() => {
         void (async () => {
           const { data: still } = await supabase
@@ -600,7 +601,7 @@ export function useAICompanions(
             400,
           )
         })()
-      }, 16_000 + Math.random() * 8_000)
+      }, 8_000 + Math.random() * 4_000)
       pendingTimeoutsRef.current.push(tid)
     }
 
