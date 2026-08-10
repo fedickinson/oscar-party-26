@@ -99,3 +99,18 @@ auto-declare later. Sync substrate already built (per-screen episode clocks,
 drift beacons). The cast proved comprehension; perception is the only missing
 organ. Ladder: humans declare → AI proposes → AI declares, humans overrule.
 The clerical work leaves; the shouting stays.
+
+## The conviction question (design, captured 8/9 post-game)
+
+Is the game about the characters you OWN or the story you PREDICTED? Draft
+scarcity buys differentiated rooting (conflicting interests make the room
+loud); open predictions buy expressiveness (your theory of the night, no
+dead-weight picks — and every "+N unclaimed" banner tonight was an outcome
+nobody was allowed to have believed in). Synthesis: move scarcity from
+characters to CONVICTION. Tiny identity draft stays (your dragon, your
+banner). Main game: fixed prediction budget staked across ANY beats on the
+board pre-episode — budget scarcity forces a portfolio that IS your read.
+Twist that restores differentiation: lonely bets pay full, crowded bets split.
+Right-and-alone is the jackpot. Architecture impact: near zero — board,
+declare flow, banners, cast, witness all unchanged; "drafted by" becomes
+"believed by". The choose-3 activation was already this mechanic in miniature.
