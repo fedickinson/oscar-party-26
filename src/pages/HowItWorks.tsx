@@ -81,25 +81,25 @@ const TONIGHT = {
    */
   schedule: [
     {
-      time: '8:30pm ET' as string | null,
+      time: '8:45pm ET' as string | null,
       title: 'The link lands',
       detail:
         'It goes into the group chat and the pregame starts the moment it does. Join and claim a house — that sigil is you all night.',
     },
     {
-      time: '8:40pm ET' as string | null,
+      time: '8:55pm ET' as string | null,
       title: 'The draft, then activation',
       detail:
         'Pick a dragon and four characters in turns, then choose the three moments each character scores on. The one part where everyone has to be in the app at once, and it does not wait.',
     },
     {
-      time: '9:05pm ET' as string | null,
+      time: '9:20pm ET' as string | null,
       title: 'Say where you are',
       detail:
         'Two taps: the place you are watching from, and whether you are the one holding the remote there.',
     },
     {
-      time: '9:10pm ET' as string | null,
+      time: '9:25pm ET' as string | null,
       title: 'Press play together',
       detail:
         'The episode is out at nine, but we start it when everyone is actually ready — not at nine sharp. Both screens count down and press play on the same beat.',
@@ -879,10 +879,10 @@ export default function HowItWorks() {
       {/* ── Timeline ─────────────────────────────────────────────────────── */}
       <Section eyebrow="Tonight" title="The shape of it">
         <P>
-          The episode drops at nine and we will start it a little after &mdash; that part is
-          deliberate. The half hour before nine belongs to the draft, and it is far better to
-          begin ten minutes late together than to rush the picks. Nine o&rsquo;clock is not
-          a deadline; the episode waits for us.
+          The episode drops at nine and we will start it around half past &mdash; that part
+          is deliberate. The draft and activation take a real half hour, and it is far better
+          to begin late together than to rush the picks. Nine o&rsquo;clock is a release time,
+          not a deadline; the episode waits for us.
         </P>
 
         <ol className="flex flex-col">
