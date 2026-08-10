@@ -49,9 +49,13 @@ export default function Results() {
 
   const scores = useScores(room?.id)
 
-  const [gateDismissed, setGateDismissed] = useState(
-    () => localStorage.getItem('ceremony_gate_v1') === 'passed',
-  )
+  const [gateDismissed, setGateDismissed] = useState(() => {
+    if (new URLSearchParams(window.location.search).get('gate') === 'reset') {
+      localStorage.removeItem('ceremony_gate_v1')
+      return false
+    }
+    return localStorage.getItem('ceremony_gate_v1') === 'passed'
+  })
   const gated = !gateDismissed
 
   const bingo = useBingo(room?.id, scores.categories, scores.nominees)
@@ -366,14 +370,7 @@ export default function Results() {
           </div>
         </a>
       </div>
-      <a
-        href="/ceremony.html"
-        className="fixed bottom-4 inset-x-4 z-40 mx-auto max-w-md flex items-center justify-center gap-2 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3.5 font-semibold text-oscar-gold shadow-lg"
-        style={{ paddingBottom: 'max(0.875rem, env(safe-area-inset-bottom))' }}
-      >
-        <Clapperboard size={18} />
-        The Ceremony — relive the night
-      </a>
+
       <PostCeremonyView
       leaderboard={scores.leaderboard}
       players={players}

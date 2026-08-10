@@ -567,7 +567,13 @@ export default function Live() {
   useEffect(() => {
     if (!room) return
     if (room.phase === 'finished') {
-      // Show the finale overlay for all clients before navigating
+      // The ceremony gates the ending: a device that has not witnessed it
+      // goes straight to the curtain — no standings leak on the way.
+      if (localStorage.getItem('ceremony_gate_v1') !== 'passed') {
+        navigate(`/room/${code}/results`)
+        return
+      }
+      // Witnessed devices get the finale overlay before the ledger.
       setShowFinale(true)
     }
   }, [room?.phase, code, navigate])
