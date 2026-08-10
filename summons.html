@@ -1,0 +1,1056 @@
+<title>Fire &amp; Blood — Party Night</title>
+
+<style>
+  /* ───────────────────────────────────────────────────────────────────────
+     Fire & Blood teaser.
+
+     COLOR is the shipped app contract, lifted from src/index.css: a castle
+     interior (ashlar, oak, iron) lit by one madder accent, with parchment as
+     the only bright material. Nothing here was invented for this page.
+
+     TYPE: the app sets Cinzel for identity, but the artifact CSP blocks font
+     CDNs and there is no local file to inline, so the display role goes to a
+     Roman serif stack — Palatino on Apple, Georgia elsewhere — set uppercase
+     with wide tracking to keep the inscriptional character rather than
+     silently degrading to a webfont fallback nobody chose.
+
+     SINGLE THEME ON PURPOSE. This is a candlelit room; a light variant would
+     be a different product. So there is no prefers-color-scheme block, and
+     every colour — including the body ground — is painted explicitly, so the
+     page holds whichever ground the host paints behind it.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  :root {
+    /* Ground and structure */
+    --ground: #1b191b;
+    --vignette: #17161a;
+    --ashlar: #a2988a;
+    --ashlar-deep: #6e665b;
+    --iron-dark: #24231f;
+
+    /* Accent — the one loud thing on the page */
+    --madder: #8e3b2e;
+    --madder-light: #c0614c;
+
+    /* Parchment */
+    --vellum: #e2d5b9;
+    --vellum-light: #f0e5cb;
+    --vellum-deep: #bca982;
+    --ink: #292219;
+
+    /* Text and ornament */
+    --text: #eee7d8;
+    --text-muted: #c8bead;
+    --text-dim: #aaa08f;
+    --ornament: #d6cdba;
+    --ornament-muted: #8e8678;
+    --line: rgba(214, 205, 186, .24);
+    --line-soft: rgba(214, 205, 186, .14);
+
+    /* Type roles */
+    --display: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    --manuscript: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    /* The artifact composites over a ground the viewer paints in its own
+       theme, so this must be explicit or the page borrows the host's. */
+    background: var(--ground);
+    overscroll-behavior: none;
+  }
+
+  body {
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* Ashlar coursing + vignette, exactly the app's environment recipe. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='360' viewBox='0 0 480 360'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.026 .043' numOctaves='4' seed='21' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .32'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cfilter id='weather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .012' numOctaves='3' seed='47' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 .22'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cg%3E%3Crect width='64' height='72' fill='black' opacity='.03'/%3E%3Crect x='64' width='112' height='72' fill='black' opacity='.12'/%3E%3Crect x='176' width='141' height='72' fill='black' opacity='.02'/%3E%3Crect x='317' width='94' height='72' fill='black' opacity='.2'/%3E%3Crect x='411' width='69' height='72' fill='black' opacity='.03'/%3E%3Crect y='72' width='103' height='84' fill='black' opacity='.26'/%3E%3Crect x='103' y='72' width='76' height='84' fill='black' opacity='.06'/%3E%3Crect x='179' y='72' width='126' height='84' fill='black' opacity='.08'/%3E%3Crect x='305' y='72' width='158' height='84' fill='black' opacity='.03'/%3E%3Crect x='463' y='72' width='17' height='84' fill='black' opacity='.26'/%3E%3Crect y='156' width='37' height='91' fill='black' opacity='.07'/%3E%3Crect x='37' y='156' width='146' height='91' fill='black' opacity='.22'/%3E%3Crect x='183' y='156' width='91' height='91' fill='black' opacity='.02'/%3E%3Crect x='274' y='156' width='129' height='91' fill='black' opacity='.13'/%3E%3Crect x='403' y='156' width='77' height='91' fill='black' opacity='.07'/%3E%3Crect y='247' width='122' height='113' fill='black' opacity='.1'/%3E%3Crect x='122' y='247' width='98' height='113' fill='black' opacity='.03'/%3E%3Crect x='220' y='247' width='167' height='113' fill='black' opacity='.25'/%3E%3Crect x='387' y='247' width='78' height='113' fill='black' opacity='.06'/%3E%3Crect x='465' y='247' width='15' height='113' fill='black' opacity='.1'/%3E%3C/g%3E%3Cg fill='none'%3E%3Cpath d='M0 1H480M0 73H480M0 157H480M0 248H480' stroke='white' stroke-opacity='.54' stroke-width='2'/%3E%3Cpath d='M0 71H480M0 155H480M0 246H480M0 359H480' stroke='black' stroke-opacity='.72' stroke-width='3'/%3E%3Cpath d='M65 1V71M177 1V71M318 1V71M412 1V71M104 73V155M180 73V155M306 73V155M464 73V155M38 157V246M184 157V246M275 157V246M404 157V246M123 248V359M221 248V359M388 248V359M466 248V359' stroke='white' stroke-opacity='.54' stroke-width='2'/%3E%3Cpath d='M63 1V71M175 1V71M316 1V71M410 1V71M102 73V155M178 73V155M304 73V155M462 73V155M36 157V246M182 157V246M273 157V246M402 157V246M121 248V359M219 248V359M386 248V359M464 248V359' stroke='black' stroke-opacity='.72' stroke-width='3'/%3E%3C/g%3E%3Crect width='480' height='360' filter='url(%23grain)'/%3E%3Crect y='0' width='480' height='72' fill='black' opacity='.07' filter='url(%23weather)'/%3E%3Crect y='288' width='480' height='72' fill='black' opacity='.07' filter='url(%23weather)'/%3E%3Cellipse cx='291' cy='196' rx='104' ry='121' fill='black' opacity='.1'/%3E%3Cellipse cx='69' cy='271' rx='58' ry='76' fill='white' opacity='.07'/%3E%3Cg fill='black' opacity='.42'%3E%3Ccircle cx='174' cy='72' r='4'/%3E%3Ccircle cx='356' cy='156' r='3'/%3E%3Ccircle cx='241' cy='247' r='5'/%3E%3Ccircle cx='98' cy='303' r='3'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 240px 180px;
+    opacity: .34;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse at 46% 34%, rgba(0, 0, 0, 0) 34%, var(--vignette) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='3' seed='83' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='96' height='96' filter='url(%23g)' opacity='.92'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, repeat;
+    background-size: cover, 96px 96px;
+    opacity: .92;
+    mix-blend-mode: multiply;
+  }
+
+  #defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* ── The deck ─────────────────────────────────────────────────────────
+     Horizontal scroll-snap rather than a JS carousel: it inherits native
+     momentum, native rubber-banding and native accessibility on a phone,
+     and it still works if the script never runs. */
+
+  .deck {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 100dvh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .deck::-webkit-scrollbar { display: none; }
+
+  .card {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+    /* Top-aligned, not centred. Vertical centring pushed the mark into the
+       middle of the screen and left the copy floating below it; anchoring the
+       stack near the top puts the mark where the eye lands first and gives the
+       larger body type room to run. */
+    justify-content: flex-start;
+    gap: clamp(8px, 1.9vh, 18px);
+    /* Bottom padding clears the ornament rule and the dot index. The measure
+       is capped with padding rather than max-width: a snap child narrower than
+       the deck breaks the scrollLeft ÷ clientWidth arithmetic the index and the
+       dot buttons both rely on, so the card must stay exactly one viewport. */
+    padding-block: clamp(12px, 5vh, 60px) calc(84px + env(safe-area-inset-bottom, 0px));
+    padding-inline: max(24px, calc((100% - 34rem) / 2));
+    overflow-y: auto;
+  }
+
+  /* Two exceptions to the top alignment. The cover earns the middle of the
+     screen, and the parchment card has no mark to anchor a top-aligned stack —
+     pushed up it just looks like it slid off the top of the page. */
+  .card.intro { justify-content: center; padding-top: 24px; }
+  .card.parchment { justify-content: center; }
+
+  /* ── Marks ────────────────────────────────────────────────────────────
+     The hallmark library paints from --hm-* with a currentColor fallback.
+     Binding the real facet palette here is what turns each mark from a flat
+     silhouette into the engraved relief it was drawn as. */
+
+  .mark {
+    display: block;
+    width: clamp(56px, 12vh, 104px);
+    height: clamp(56px, 12vh, 104px);
+    margin: 0 auto;
+    color: var(--ashlar);
+    --hm-base: #a2988a;
+    --hm-light: #e6dcc8;
+    --hm-shadow: #3f3a33;
+    --hm-cut: #2a2622;
+    --hm-device: #8e3b2e;
+    --hm-edge: #c0614c;
+    --hm-core: #f0e5cb;
+    --hm-egg-cut: #e6dcc8;
+    --hm-eye: #17161a;
+    --hm-impact: #f0e5cb;
+    --hm-impression: #451d18;
+    --hm-metal: #d6cdba;
+    --hm-metal-light: #f0e5cb;
+    --hm-metal-dark: #6e665b;
+    --hm-rivet: #8e8678;
+    --hm-roundel: #6e665b;
+    --hm-roundel-cut: #24231f;
+    --hm-team-a-device: #8e3b2e;
+    --hm-team-a-field: #101014;
+    --hm-team-b-device: #b9863f;
+    --hm-team-b-field: #2c4034;
+    --hm-wax: #743226;
+    --hm-wax-light: #a4513e;
+    --hm-wax-shadow: #451d18;
+  }
+  .mark.xl { width: clamp(72px, 15.5vh, 132px); height: clamp(72px, 15.5vh, 132px); }
+
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+
+  .eyebrow {
+    margin: 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: var(--ornament);
+  }
+
+  h1, h2 {
+    margin: 0;
+    text-align: center;
+    text-wrap: balance;
+    font-family: var(--display);
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.08;
+  }
+  h1 { font-size: clamp(36px, min(14.5vw, 7.6vh), 62px); letter-spacing: .07em; }
+  h2 { font-size: clamp(27px, min(11vw, 5.7vh), 46px); }
+
+  .lede {
+    margin: 0;
+    text-align: center;
+    font-size: clamp(16px, 2.3vh, 18px);
+    letter-spacing: .03em;
+    color: var(--text-muted);
+  }
+
+  /* 19px body on a phone is larger than an app would use, and correct here:
+     this gets read once, at arm's length, probably in a group chat, by people
+     who did not ask for homework. */
+  p.body {
+    margin: 0;
+    font-size: clamp(17px, 2.7vh, 22px);
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  p.body strong { color: var(--text); font-weight: 600; }
+
+  .copy { display: flex; flex-direction: column; gap: clamp(9px, 1.9vh, 16px); }
+
+  /* The address, cut into a stone plate. Live, but the room is not up yet —
+     it reads as the destination to expect rather than a button to press. */
+  .wait {
+    display: block;
+    margin: 4px 0 0;
+    padding: 15px 16px;
+    border: 1px solid var(--line);
+    background: rgba(36, 35, 31, .55);
+    color: var(--ornament);
+    font-family: var(--display);
+    font-size: 15px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--ornament-muted);
+  }
+  /* Deliberately not an anchor. The room is not up until 8:30 and the app
+     behind this domain is mid-build; a tappable address here would land a
+     guest on a half-finished lobby. */
+
+  /* A hairline rule with a single madder lozenge — the app's ornament band,
+     reduced to the one element that survives at this size. */
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+  }
+  .divider span {
+    height: 1px;
+    width: 34px;
+    background: var(--line);
+  }
+  .divider i {
+    width: 5px;
+    height: 5px;
+    background: var(--madder-light);
+    transform: rotate(45deg);
+  }
+
+  /* ── Parchment card ───────────────────────────────────────────────────── */
+
+  .vellum {
+    position: relative;
+    isolation: isolate;
+    padding: clamp(20px, 3.4vh, 30px) clamp(18px, 5vw, 26px) clamp(22px, 3.6vh, 32px);
+    background-color: var(--vellum);
+    color: var(--ink);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='white' d='M3 2 12 4 20 1 29 3 39 1 49 4 59 1 69 3 79 1 89 4 98 2 97 13 99 23 97 34 99 46 97 57 99 69 97 80 99 90 97 98 87 96 77 99 68 97 58 99 48 96 38 99 28 97 18 99 8 96 2 98 3 86 1 75 3 64 1 53 3 42 1 31 3 20Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='white' d='M3 2 12 4 20 1 29 3 39 1 49 4 59 1 69 3 79 1 89 4 98 2 97 13 99 23 97 34 99 46 97 57 99 69 97 80 99 90 97 98 87 96 77 99 68 97 58 99 48 96 38 99 28 97 18 99 8 96 2 98 3 86 1 75 3 64 1 53 3 42 1 31 3 20Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    filter: drop-shadow(4px 7px 7px rgba(5, 5, 4, .42));
+  }
+  .vellum::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.018 .08' numOctaves='5' seed='31' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='gamma' amplitude='.55' exponent='1.7' offset='0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    opacity: .22;
+  }
+  .vellum p {
+    margin: 0;
+    font-family: var(--manuscript);
+    font-size: clamp(19px, 3.05vh, 25px);
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .vellum p + p { margin-top: clamp(12px, 2.2vh, 18px); }
+
+  .vellum h3 {
+    margin: 0 0 clamp(12px, 2.2vh, 18px);
+    font-family: var(--display);
+    font-size: clamp(20px, 3.2vh, 26px);
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-align: center;
+  }
+
+  /* House rules read as a struck list, not app bullets: a madder lozenge in
+     the margin, the same mark the ornament rules use. */
+  .vellum ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(9px, 1.85vh, 15px);
+  }
+  .vellum li {
+    position: relative;
+    padding-left: 22px;
+    font-family: var(--manuscript);
+    font-size: clamp(17px, 2.75vh, 22px);
+    line-height: 1.32;
+    color: var(--ink);
+  }
+  .vellum li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: .58em;
+    width: 6px;
+    height: 6px;
+    background: var(--madder);
+    transform: rotate(45deg);
+  }
+
+  /* ── House sigils ─────────────────────────────────────────────────────
+     A rack of pressed devices. They stay one neutral metal rather than taking
+     the bright per-house colours from avatar-config: seven saturated hues in a
+     row would be the loudest thing in a page whose whole discipline is one
+     accent, and the shapes are distinct enough to carry it. */
+
+  .sigils {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(7px, 1.4vh, 11px);
+  }
+
+  .sigil {
+    display: grid;
+    place-items: center;
+    width: clamp(46px, 8vh, 60px);
+    height: clamp(46px, 8vh, 60px);
+    border: 1px solid var(--line);
+    background: rgba(36, 35, 31, .45);
+    color: var(--ornament);
+  }
+  .sigil svg { width: 62%; height: 62%; }
+
+  /* Blind stamp, the same device the companion chat parchment carries: a house
+     seal pressed into the paper rather than printed on it, so it reads as an
+     impression at low contrast instead of another badge. */
+  .press {
+    position: absolute;
+    right: 18px;
+    bottom: 16px;
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    color: var(--ink);
+    opacity: .26;
+    pointer-events: none;
+  }
+  .press svg { width: 17px; height: 17px; }
+
+  /* ── Swipe hint ───────────────────────────────────────────────────────── */
+
+  .hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-size: 13px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ornament-muted);
+    transition: opacity .4s var(--ease);
+  }
+  .hint svg { width: 15px; height: 15px; }
+  .hint.gone { opacity: 0; }
+  .hint .glide { animation: glide 2.4s var(--ease) infinite; }
+
+  @keyframes glide {
+    0%, 100% { transform: translateX(0); }
+    45%      { transform: translateX(6px); }
+  }
+
+  /* ── Index ────────────────────────────────────────────────────────────── */
+
+  /* The index floats over the deck, so it must not eat the swipe. A fixed bar
+     across the bottom of a phone sits exactly where thumbs start a gesture;
+     without pointer-events:none the lower band of every card is dead to
+     horizontal scrolling. Only the dots themselves take input. */
+  .index {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--vignette) 42%, rgba(23, 22, 26, 0));
+  }
+
+  .rule {
+    width: min(240px, 62%);
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--line), transparent);
+  }
+
+  .dots { display: flex; gap: 0; pointer-events: auto; }
+
+  /* 30 x 40 of transparent target around a 6px diamond. Nine of these fit
+     inside 375px with room to spare, and the height is what actually matters
+     for a thumb reaching the bottom of the screen. */
+  .dots button {
+    appearance: none;
+    width: 30px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    touch-action: manipulation;
+  }
+  .dots button::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--ashlar-deep);
+    transform: rotate(45deg);
+    transition: background-color .28s var(--ease), transform .28s var(--ease);
+  }
+  .dots button[aria-current="true"]::after {
+    background: var(--madder-light);
+    transform: rotate(45deg) scale(1.5);
+  }
+  .dots button:focus-visible {
+    outline: 2px solid var(--ornament);
+    outline-offset: -2px;
+  }
+
+  /* Card 1 settles in on load; nothing else animates on arrival, because a
+     deck that re-animates on every swipe reads as a slideshow. */
+  .intro > * {
+    animation: rise .62s var(--ease) backwards;
+  }
+  .intro > *:nth-child(1) { animation-delay: .04s; }
+  .intro > *:nth-child(2) { animation-delay: .12s; }
+  .intro > *:nth-child(3) { animation-delay: .18s; }
+  .intro > *:nth-child(4) { animation-delay: .24s; }
+  .intro > *:nth-child(5) { animation-delay: .30s; }
+  .intro > *:nth-child(6) { animation-delay: .38s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(9px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+    .deck { scroll-behavior: auto; }
+  }
+
+  /* Short phones: shrink the mark and tighten the gaps before touching the
+     body size. The copy staying legible matters more than the ornament. */
+  /* Height-fluid sizing replaces the short-phone breakpoint that used to live
+     here. The deck is 100dvh, so its height changes WHILE you scroll, as the
+     mobile toolbar collapses and expands. A stepped query means a card that
+     fits at one moment overflows a moment later, and the band between the
+     breakpoint and the tallest phone is a size nobody ever tested — which is
+     exactly where 740px was landing. Everything vertical is a clamp on vh now,
+     so the scale slides continuously instead of jumping. */
+</style>
+
+<div id="defs" aria-hidden="true"><?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <title>Fire &amp; Blood hallmark symbol library</title>
+  <desc>Production symbols use currentColor and inheritable --hm-* custom properties. All hero marks use a 120 square viewBox.</desc>
+  <defs>
+    <!-- 24–160px. Neutral iron only: do not bind these variables to allegiance. -->
+    <symbol id="hallmark-iron-throne" viewBox="0 0 120 120">
+      <path fill="var(--hm-base, currentColor)" d="M18 106 21 92l8-5-4-13 7-5-6-9 10-5-9-14 12 5-2-22 8 10L44 8l8 16 6-21 6 23 9-17-1 28 13-20-3 27 18-13-9 23 18-4-14 17 11 5-12 9 4 18-11-3-3 19H33l-3-14-12-3 7-8-5-12 10-3-5-13 12 6 1-18 7 13 1-22 9 18 8-25 4 27 14-21-3 25 16-13-9 23 14-4-11 14 7 6-10 7-2 21Z"/>
+      <path fill="var(--hm-shadow, currentColor)" d="m40 49 7 10-3 17-10-7 7-6-5-8Zm26-3 9-12-3 28-9 13Zm15 18 13-10-9 19 10 4-11 6-3 23H68l7-12-2-17ZM33 85h43l8 8-6 18H28l-4-9 8-6Z"/>
+      <path fill="var(--hm-light, currentColor)" d="m45 12 3 32-5 14-2-34Zm14-5 3 37-5 14-1-33Zm16 8-2 31-5 13 2-22ZM31 43l10 7-2 4-8-3Zm57-18-8 25-5 5 7-27ZM29 74l12 9h37l10-7-2 8-8 7H39l-10-6Z"/>
+      <path fill="var(--hm-edge, currentColor)" d="M34 90h44l-2 7H36Zm4 9h36l-2 8H40Z"/>
+      <g fill="none" stroke="var(--hm-cut, currentColor)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m35 60 12 6m-6-19 8 5m7-25 6 7m7 24 10-8m-4 19 14-7M42 82l-4 9m38-10 5 9"/>
+        <path d="M41 76h37v17H41zM34 108h50"/>
+      </g>
+      <g fill="var(--hm-rivet, currentColor)"><circle cx="38" cy="61" r="2"/><circle cx="48" cy="68" r="1.8"/><circle cx="70" cy="63" r="2"/><circle cx="82" cy="59" r="1.7"/><circle cx="42" cy="87" r="1.6"/><circle cx="75" cy="87" r="1.6"/></g>
+    </symbol>
+
+    <!-- 48–160px. Equal opposing dragons; heads, jaws, and wing fingers are hero-size landmarks. -->
+    <symbol id="hallmark-dance" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="53" fill="none" stroke="var(--hm-roundel, currentColor)" stroke-width="5"/>
+      <circle cx="60" cy="60" r="47" fill="none" stroke="var(--hm-roundel-cut, currentColor)" stroke-width="1.5"/>
+      <g aria-label="Team Black dragon">
+        <path fill="var(--hm-team-a-field, currentColor)" d="M66 17C45 11 25 21 16 39 8 56 12 77 26 89c11 10 28 12 39 3 9-7 10-20 3-28-6-8-18-9-26-3l-8 7 10 1-5 8 12-3c5 0 8 5 5 9-5 7-17 7-24 0-11-10-12-27-4-39 7-11 20-17 33-15l-8 7 15-2-5 11 16-8-2-9 10-3Z"/>
+        <path fill="var(--hm-team-a-field, currentColor)" d="M48 31C36 23 24 24 16 33l12 2-13 8 15 1-10 12 17-5-3 15 15-12 11-15Z"/>
+        <path fill="var(--hm-team-a-device, currentColor)" d="M56 31c9-6 19-3 23 6l11 2-7 6 9 6-12 3-5 9-5-10-13-2-10 5 4-10-8-6 11-1Z"/>
+        <path fill="var(--hm-light, currentColor)" d="M19 40c8-15 25-23 41-19l-6 4c-13 0-25 7-31 19-5 10-4 22 2 31-9-9-12-23-6-35Zm36-6c7-4 14-2 18 4l-5 1c-4-2-8-1-12 2Z"/>
+        <path fill="var(--hm-team-a-device, currentColor)" d="m26 35 19 6-12 5 12 4-10 8-1-9-11 5 7-10-10-3Z"/>
+        <g fill="none" stroke="var(--hm-team-a-device, currentColor)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M27 37 44 48 33 59m-2-19 1 15m8-10 1 10M54 35l8 13-11 7M26 78c8 9 20 12 30 7"/>
+          <path d="m62 43 10 2-8 5m3 5 7-2"/>
+        </g>
+        <circle cx="71" cy="43" r="2" fill="var(--hm-eye, currentColor)"/>
+      </g>
+      <g aria-label="Team Green dragon" transform="rotate(180 60 60)">
+        <path fill="var(--hm-team-b-field, currentColor)" d="M66 17C45 11 25 21 16 39 8 56 12 77 26 89c11 10 28 12 39 3 9-7 10-20 3-28-6-8-18-9-26-3l-8 7 10 1-5 8 12-3c5 0 8 5 5 9-5 7-17 7-24 0-11-10-12-27-4-39 7-11 20-17 33-15l-8 7 15-2-5 11 16-8-2-9 10-3Z"/>
+        <path fill="var(--hm-team-b-field, currentColor)" d="M48 31C36 23 24 24 16 33l12 2-13 8 15 1-10 12 17-5-3 15 15-12 11-15Z"/>
+        <path fill="var(--hm-team-b-device, currentColor)" d="M56 31c9-6 19-3 23 6l11 2-7 6 9 6-12 3-5 9-5-10-13-2-10 5 4-10-8-6 11-1Z"/>
+        <path fill="var(--hm-light, currentColor)" d="M19 40c8-15 25-23 41-19l-6 4c-13 0-25 7-31 19-5 10-4 22 2 31-9-9-12-23-6-35Zm36-6c7-4 14-2 18 4l-5 1c-4-2-8-1-12 2Z"/>
+        <path fill="var(--hm-team-b-device, currentColor)" d="m26 35 19 6-12 5 12 4-10 8-1-9-11 5 7-10-10-3Z"/>
+        <g fill="none" stroke="var(--hm-team-b-device, currentColor)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M27 37 44 48 33 59m-2-19 1 15m8-10 1 10M54 35l8 13-11 7M26 78c8 9 20 12 30 7"/><path d="m62 43 10 2-8 5m3 5 7-2"/></g>
+        <circle cx="71" cy="43" r="2" fill="var(--hm-eye, currentColor)"/>
+      </g>
+    </symbol>
+
+    <!-- 12–32px. Re-derived compact drawing: enlarged heads and wings, open center, no cuts. -->
+    <symbol id="hallmark-dance-small" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--hm-roundel, currentColor)" stroke-width="9"/>
+      <path fill="var(--hm-team-a-field, currentColor)" d="M66 16C42 10 19 27 15 51c-3 20 9 39 27 45 15 5 31-3 33-17 2-12-7-22-19-22-8 0-15 5-17 12l12-2-5 9 12-4c5 0 7 5 4 9-7 7-20 2-25-8-7-15 2-33 18-40l-6 11 16-7-3 13 21-11-4-9 11-4Z"/>
+      <path fill="var(--hm-team-a-device, currentColor)" d="M54 28c12-7 25-1 29 10l12 4-9 7 9 7-15 3-8 10-5-13-15-4-12 6 5-12-10-7 14-2Z"/>
+      <g transform="rotate(180 60 60)"><path fill="var(--hm-team-b-field, currentColor)" d="M66 16C42 10 19 27 15 51c-3 20 9 39 27 45 15 5 31-3 33-17 2-12-7-22-19-22-8 0-15 5-17 12l12-2-5 9 12-4c5 0 7 5 4 9-7 7-20 2-25-8-7-15 2-33 18-40l-6 11 16-7-3 13 21-11-4-9 11-4Z"/><path fill="var(--hm-team-b-device, currentColor)" d="M54 28c12-7 25-1 29 10l12 4-9 7 9 7-15 3-8 10-5-13-15-4-12 6 5-12-10-7 14-2Z"/></g>
+    </symbol>
+
+    <!-- 24–160px. Silhouette is a dragon talon visibly closing around an egg. -->
+    <symbol id="hallmark-claim" viewBox="0 0 120 120">
+      <path fill="var(--hm-device, currentColor)" d="M64 43c15 0 27 15 27 34 0 20-12 35-27 35S37 97 37 77c0-19 12-34 27-34Z"/>
+      <path fill="var(--hm-base, currentColor)" d="M18 5c15 4 31 13 42 24 7 7 10 17 6 25l-13 2c2-7-1-13-7-17L31 30l-9 7-9-9 9-5-12-7Zm37 24c15-3 31 5 38 18l-9 7c-5-9-14-14-25-13l-12 4-7-10Zm-10 9c13-4 25 0 33 9l-8 7c-5-5-12-6-19-3l-12 7-7-10Zm-8 13c10-4 20-2 28 5l-7 8c-5-3-10-3-16 0L31 74l-8-9Zm49-5c12 4 19 15 18 28-1 11-7 21-16 27l-7-9c7-5 11-12 11-20 0-7-4-13-10-16Z"/>
+      <path fill="var(--hm-shadow, currentColor)" d="M64 43c15 0 27 15 27 34 0 20-12 35-27 35 9-8 14-20 14-36 0-14-5-26-14-33ZM31 30l15 9c6 4 9 10 7 17l9-1c4-9 0-18-9-24L35 20Zm53 24c7 5 10 12 8 21-1 8-5 14-11 18l7 8c9-6 15-16 16-27 1-13-6-24-18-28Z"/>
+      <path fill="var(--hm-light, currentColor)" d="M48 57c-5 6-8 14-8 23 0 12 4 21 12 27-5-8-7-17-6-27 0-10 4-18 10-24ZM17 11c13 5 26 12 36 22l-5 3C39 28 28 21 17 18Zm23 25c12-2 22 1 30 9l-5 4c-7-5-14-7-22-4Z"/>
+      <path fill="var(--hm-egg-cut, currentColor)" d="M57 69c4-6 10-7 15-3l-3 7 7 5-8 4 1 9-8-4-7 6-2-9-8-3 7-6Z"/>
+      <g fill="none" stroke="var(--hm-cut, currentColor)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 19 15 2-7 9m14-2 13 3-7 9m-15 9 15-1-9 9m-11 8 13-4-6 10"/><path d="M84 58c8 9 8 21 1 30M53 101c7 4 14 4 21 0"/></g>
+    </symbol>
+
+    <!-- 32–160px. Compose a device over the registration slot at x=60 y=84, 20 square. -->
+    <symbol id="hallmark-signet" viewBox="0 0 120 120">
+      <path fill="var(--hm-wax, currentColor)" d="M25 83c1-8 8-13 15-15 4-7 13-10 21-7 7-4 17-1 21 6 9 1 15 7 15 15 5 6 2 14-5 18-5 8-14 10-22 7-6 6-16 6-23 1-9 2-17-3-19-11-6-3-7-10-3-14Z"/>
+      <path fill="var(--hm-wax-shadow, currentColor)" d="M29 92c8 5 17 7 27 6 12 5 25 1 31-8l8-3c2 5 0 10-5 14-5 7-13 9-21 6-6 6-16 6-23 1-8 2-15-2-18-9Z"/>
+      <path fill="var(--hm-wax-light, currentColor)" d="M28 82c5-7 13-10 21-9 7-7 19-8 27-2 7 0 13 3 17 8-8-3-15-2-21 1-11-4-23-2-31 5-5-1-9-1-13 1Z"/>
+      <ellipse cx="60" cy="84" rx="22" ry="16" fill="var(--hm-impression, currentColor)"/>
+      <path fill="var(--hm-metal-dark, currentColor)" fill-rule="evenodd" d="M78 9c12 2 19 12 17 24-1 9-8 16-17 18L68 66l-11-7 11-17c-5-5-7-12-5-19 2-10 7-16 15-14Zm1 8c-5-1-8 3-9 9-1 7 2 14 8 16 5 1 9-4 10-10 1-7-3-14-9-15Z"/>
+      <path fill="var(--hm-metal, currentColor)" d="m65 48 13 8-11 20-17-11Z"/>
+      <path fill="var(--hm-metal-light, currentColor)" d="M75 11c7-2 15 4 18 11-5-5-10-7-15-6-6 1-9 6-9 12-2-9 0-15 6-17Zm-7 39 5 3-12 18-6-4Z"/>
+      <path fill="var(--hm-metal-dark, currentColor)" d="m50 62 19 12-5 11-22-13Z"/>
+      <path fill="var(--hm-metal, currentColor)" d="m45 61 24 14-5 12-26-15Z"/>
+      <path fill="var(--hm-metal-light, currentColor)" d="m45 61 24 14-2 4-24-14Z"/>
+      <path fill="none" stroke="var(--hm-cut, currentColor)" stroke-width="2" stroke-linecap="round" d="M72 20c3-4 8-5 12-2m-30 48 13 8"/>
+    </symbol>
+
+    <!-- 24–160px. The broad tail is also a single animatable centerline path. -->
+    <symbol id="hallmark-comet" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="53" fill="none" stroke="var(--hm-roundel, currentColor)" stroke-width="5"/>
+      <path fill="none" stroke="var(--hm-base, currentColor)" stroke-width="17" stroke-linecap="round" d="M18 96C31 78 47 66 59 55S74 39 84 30"/>
+      <path fill="var(--hm-base, currentColor)" d="m84 17 6 10 12-2-7 10 8 9-12 1-4 12-6-11-13 2 7-11-8-8 12-1Z"/>
+      <path fill="var(--hm-shadow, currentColor)" d="M18 96c22-8 37-20 50-35 8-9 13-18 19-29l8 6c-7 13-14 23-22 32-14 15-31 27-53 34Zm69-51 4 12-6-10-13 1 9-5Z"/>
+      <path fill="none" stroke="var(--hm-light, currentColor)" stroke-width="4" stroke-linecap="round" d="M20 90c15-17 29-27 41-38 8-8 14-15 19-22"/>
+      <path fill="var(--hm-light, currentColor)" d="m83 19 3 12 10-3-7 8-9 2 2-8Z"/>
+      <path fill="var(--hm-core, currentColor)" d="m85 30 5 6-4 8-8-3-1-8Z"/>
+      <g fill="none" stroke="var(--hm-cut, currentColor)" stroke-width="2" stroke-linecap="round"><path d="M22 101c16-8 28-16 39-27"/><path d="m74 29 10 8 9-7m-8 7 10 7"/></g>
+    </symbol>
+
+    <!-- 24–160px. Dance-family dragons at the instant their jaws meet. -->
+    <symbol id="hallmark-collision" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="53" fill="none" stroke="var(--hm-roundel, currentColor)" stroke-width="5"/>
+      <g aria-label="Team A dragon">
+        <path fill="var(--hm-team-a-field, currentColor)" d="M14 81c3-18 12-33 27-43l-1 11 12-7-2 13 12-8-3 17-17 11-6 22-9-13-12 5Z"/>
+        <path fill="var(--hm-team-a-field, currentColor)" d="M87 106c-3-17-10-31-22-40l-12-7-12 3 8 12c11 8 19 19 23 34Z"/>
+        <path fill="var(--hm-team-a-device, currentColor)" d="m35 60-8-8 11-2-2-10 10 6 5-10 3 11c5 1 9 4 12 8l-8 1 7 4-8 3 6 5-10 1-5 8-4-9-10-2-9-7 10-3Z"/>
+        <path fill="var(--hm-light, currentColor)" d="M17 74c5-14 13-25 25-33l-2 7c-9 8-16 18-19 30Zm31-22c5-3 10-1 13 3l-5 1c-3-1-5 0-8 2Z"/>
+        <g fill="none" stroke="var(--hm-team-a-device, currentColor)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m20 69 24-19-9 24m4-19-2 16m10-19-5 15"/><path d="m50 56 9 3-7 4m5 5 5-2M56 72c11 8 19 19 23 33"/></g>
+        <circle cx="56" cy="55" r="2" fill="var(--hm-eye, currentColor)"/>
+      </g>
+      <g aria-label="Team B dragon" transform="translate(120 0) scale(-1 1)">
+        <path fill="var(--hm-team-b-field, currentColor)" d="M14 81c3-18 12-33 27-43l-1 11 12-7-2 13 12-8-3 17-17 11-6 22-9-13-12 5Z"/>
+        <path fill="var(--hm-team-b-field, currentColor)" d="M87 106c-3-17-10-31-22-40l-12-7-12 3 8 12c11 8 19 19 23 34Z"/>
+        <path fill="var(--hm-team-b-device, currentColor)" d="m35 60-8-8 11-2-2-10 10 6 5-10 3 11c5 1 9 4 12 8l-8 1 7 4-8 3 6 5-10 1-5 8-4-9-10-2-9-7 10-3Z"/>
+        <path fill="var(--hm-light, currentColor)" d="M17 74c5-14 13-25 25-33l-2 7c-9 8-16 18-19 30Zm31-22c5-3 10-1 13 3l-5 1c-3-1-5 0-8 2Z"/>
+        <g fill="none" stroke="var(--hm-team-b-device, currentColor)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m20 69 24-19-9 24m4-19-2 16m10-19-5 15"/><path d="m50 56 9 3-7 4m5 5 5-2M56 72c11 8 19 19 23 33"/></g>
+        <circle cx="56" cy="55" r="2" fill="var(--hm-eye, currentColor)"/>
+      </g>
+      <path fill="var(--hm-impact, currentColor)" d="m60 52 2 5 5 3-5 2-2 6-2-6-5-2 5-3Z"/>
+    </symbol>
+
+    <!-- 24–160px. Raised sounding angle, flared bell, banding, and a hanging baldric. -->
+    <symbol id="hallmark-horn" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="53" fill="none" stroke="var(--hm-roundel, currentColor)" stroke-width="5"/>
+      <path fill="var(--hm-base, currentColor)" d="M14 68 28 52l13 8c17-1 34-9 47-23l-4-7 16-10 8 13-16 10-5-3c-10 23-30 41-54 49l-7 13-14-9 9-13Z"/>
+      <path fill="var(--hm-base, currentColor)" d="M32 79c13 4 27 10 37 19l-7 12c-9-9-22-17-36-21Z"/>
+      <path fill="var(--hm-shadow, currentColor)" d="M17 79c28 9 56-7 70-39l5 3c-10 23-30 41-54 49l-7 13-8-6 7-13-16-10Zm48 18 4 4-7 9c-9-9-22-17-36-21l3-5c14 3 26 7 36 13Z"/>
+      <path fill="var(--hm-light, currentColor)" d="m18 66 10-11 10 6-7 7Zm23-1c17-2 32-9 44-22l-4 9C70 63 57 70 43 73Zm48-34 10-7 3 5-10 7Z"/>
+      <path fill="var(--hm-device, currentColor)" d="m14 68 7-8 19 12-7 9Zm74-37 12-8 8 12-13 8Z"/>
+      <g fill="none" stroke="var(--hm-cut, currentColor)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 61 17 11m-22 2 17 10m53-50 9 7m-5-12 9 7"/><path d="M38 77c19-5 34-16 44-32M29 88c13 3 25 8 36 16"/></g>
+    </symbol>
+
+    <!-- Devices are registered to a 100 square viewBox; scale into the Signet's 20 square slot. -->
+    <symbol id="hallmark-device-targaryen" viewBox="0 0 100 100"><path fill="currentColor" d="M50 48C39 33 25 29 10 37c9 3 14 8 18 15-9-3-16 0-20 6 13 1 19 10 28 17 6 4 12 5 18 3-8-7-11-14-8-23 3-8 6-13 4-24-1-10-7-20-17-25 4 8 4 14 1 19-5-7-11-9-18-4 9 4 12 11 13 19 8-2 14 1 21 8Zm0 0c11-15 25-19 40-11-9 3-14 8-18 15 9-3 16 0 20 6-13 1-19 10-28 17-6 4-12 5-18 3 8-7 11-14 8-23-3-8-6-13-4-24 1-10 7-20 17-25-4 8-4 14-1 19 5-7 11-9 18-4-9 4-12 11-13 19-8-2-14 1-21 8Zm0 8c-12 5-18 13-16 23 2 11 12 17 22 14 10-2 15-11 12-19-2-6-7-10-13-11 4 5 4 10 0 13-5 4-11 1-11-5 0-5 3-9 6-11Z"/></symbol>
+    <symbol id="hallmark-device-hightower" viewBox="0 0 100 100"><path fill="currentColor" d="M24 88h52v9H24zm6-14h40l4 14H26zm6-18h28l4 18H32zm5-19h18l3 19H38zM36 29h28v10H36zm7-9h14v9H43zM50 2c3 8 11 11 8 19-2 5-6 7-8 11-2-4-8-6-8-11 0-7 5-11 8-19Z"/></symbol>
+    <symbol id="hallmark-device-stark" viewBox="0 0 100 100"><path fill="currentColor" d="m15 15 24 14 18-10L84 8l-7 23 12 19-16 7-7 24-17 14-19-14-9-24-12-9 13-19Zm18 31 13 5 8-4 14 5-10 7-9 14-10-14-12-6Zm2-8 9-3-5 9Zm29-3 9 5-11 3Z"/></symbol>
+    <symbol id="hallmark-device-lannister" viewBox="0 0 100 100"><path fill="currentColor" d="M61 8c-11 0-20 8-19 19l-13-6 3 13-13 5 15 8-10 14 15-2-3 21 13-11 8 23 7-21 17 9-7-20 16 1-13-15 12-11-18-2 5-15-15 7C76 15 70 8 61 8Zm-3 15 9 6-9 8-9-8Zm-9 26 10-7 8 9-6 11-12-2Zm6 17 8 2-4 12-8-8Z"/></symbol>
+    <symbol id="hallmark-device-velaryon" viewBox="0 0 100 100"><path fill="currentColor" d="M58 7c-16 3-26 16-23 31 2 9 9 14 17 17-11 2-20 11-20 22 0 9 7 16 16 16 13 0 22-11 20-23-2-9-10-15-18-15 8-4 14-11 14-20 0-7-3-12-8-16l13-3-7-5 8-6ZM36 38c-12-8-22-6-29 2 8 0 13 4 16 10-7-1-12 2-14 7 13-1 19 7 29 9l8-13c-5-3-8-8-10-15Z"/></symbol>
+    <symbol id="hallmark-device-baratheon" viewBox="0 0 100 100"><path fill="currentColor" d="M47 24 35 8l-4 18-17-9 8 20-15 4 20 12-7 27 21-9 9 24 9-24 21 9-7-27 20-12-15-4 8-20-17 9-4-18-12 16ZM30 45c8-12 32-16 43-1-9 0-15 3-20 10v28H43V54c-4-7-8-9-13-9Z"/></symbol>
+    <symbol id="hallmark-device-blackwood" viewBox="0 0 100 100"><path fill="currentColor" d="M45 93V60L31 71l5-19-22 5 16-16-20-8 25-3-8-18 20 14L50 4l4 22 19-14-8 18 25 3-20 8 16 16-22-5 5 19-14-11v33ZM17 18c5-7 12-9 20-7-5 4-7 8-7 13-5-4-9-5-13-6Zm66 0c-5-7-12-9-20-7 5 4 7 8 7 13 5-4 9-5 13-6Z"/></symbol>
+  </defs>
+<symbol id="hallmark-dance-hero" viewBox="0 0 140 140">
+  <title>The Dance — two dragons circling head-to-tail</title>
+  <desc>A Black dragon edged in madder and a Green dragon edged in beacon gold, composed for a dark stone ground.</desc>
+
+  <!-- Black dragon: the madder edge carries the near-black body off the wall. -->
+  <g aria-label="Black dragon">
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-lowlight)"
+      stroke-width="15"
+      stroke-linecap="round"
+      transform="translate(2 2)"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-madder)"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-jet)"
+      stroke-width="7"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18 60C16 39 32 21 54 19c13-1 25 3 34 11"
+      fill="none"
+      stroke="var(--t-madder-light)"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      transform="translate(-1.2 -1.2)"
+    />
+
+    <!-- Broad wing membrane with five readable fingers. -->
+    <path
+      d="M51 30C39 22 27 24 20 34l14 2-14 9 17 1-12 13 18-6-2 16 16-13 16-15Z"
+      fill="var(--t-madder)"
+      stroke="var(--t-lowlight)"
+      stroke-width="2.5"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m51 33 4 20M50 34 34 36l19 17M47 38 35 46l18 7M45 43l-4 12 12-2"
+      fill="none"
+      stroke="var(--t-jet)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M22 33c8-8 19-9 29-3"
+      fill="none"
+      stroke="var(--t-mortar)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Enlarged horned head and visibly open jaw. -->
+    <path
+      d="M77 30c9-7 20-5 27 3l13 2-7 6 11 4-12 5-10-3-6 9-6-9-13-3-10 6 4-11-8-6 15 1Z"
+      fill="var(--t-jet)"
+      stroke="var(--t-madder-light)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m101 47 14 6-10 6-13-7Z"
+      fill="var(--t-madder)"
+      stroke="var(--t-madder-light)"
+      stroke-width="2.2"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m81 32-2-9 7 7m10 0 5-8 1 11m6 8 9 4-10 2"
+      fill="none"
+      stroke="var(--t-madder)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="99" cy="37" r="2.8" fill="var(--t-beacon-light)" stroke="var(--t-mortar)" stroke-width="1" />
+    <path d="m46 80-13 4 9 5-4 9 16-10Z" fill="var(--t-madder)" stroke="var(--t-madder-light)" stroke-width="1.8" stroke-linejoin="round" />
+  </g>
+
+  <!-- Green dragon: same visual weight, rotated into the opposing orbit. -->
+  <g aria-label="Green dragon" transform="rotate(180 70 70)">
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-lowlight)"
+      stroke-width="15"
+      stroke-linecap="round"
+      transform="translate(-2 -2)"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+    <path
+      d="M49 86C34 87 21 77 18 61 14 39 31 18 54 16c15-2 29 4 39 15"
+      fill="none"
+      stroke="var(--t-bottle)"
+      stroke-width="7"
+      stroke-linecap="round"
+    />
+    <path
+      d="M18 60C16 39 32 21 54 19c13-1 25 3 34 11"
+      fill="none"
+      stroke="var(--t-beacon-light)"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      transform="translate(1.2 1.2)"
+    />
+
+    <path
+      d="M51 30C39 22 27 24 20 34l14 2-14 9 17 1-12 13 18-6-2 16 16-13 16-15Z"
+      fill="var(--t-bottle)"
+      stroke="var(--t-beacon)"
+      stroke-width="2.8"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m51 33 4 20M50 34 34 36l19 17M47 38 35 46l18 7M45 43l-4 12 12-2"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M22 33c8-8 19-9 29-3"
+      fill="none"
+      stroke="var(--t-beacon-light)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M77 30c9-7 20-5 27 3l13 2-7 6 11 4-12 5-10-3-6 9-6-9-13-3-10 6 4-11-8-6 15 1Z"
+      fill="var(--t-bottle)"
+      stroke="var(--t-beacon-light)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m101 47 14 6-10 6-13-7Z"
+      fill="var(--t-beacon)"
+      stroke="var(--t-beacon-light)"
+      stroke-width="2.2"
+      stroke-linejoin="round"
+    />
+    <path
+      d="m81 32-2-9 7 7m10 0 5-8 1 11m6 8 9 4-10 2"
+      fill="none"
+      stroke="var(--t-beacon)"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="99" cy="37" r="2.8" fill="var(--t-vellum-light)" stroke="var(--t-beacon-light)" stroke-width="1" />
+    <path d="m46 80-13 4 9 5-4 9 16-10Z" fill="var(--t-beacon)" stroke="var(--t-beacon-light)" stroke-width="1.8" stroke-linejoin="round" />
+  </g>
+
+  <!-- Four restrained registration cuts imply a roundel without restoring a disc. -->
+  <g fill="none" stroke="var(--t-ornament-muted)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M68 5h4M68 135h4M5 68v4M135 68v4" />
+  </g>
+</symbol></div>
+
+<main class="deck" id="deck">
+
+  <!-- 1 ─ Cover ------------------------------------------------------- -->
+  <section class="card intro" aria-label="Fire and Blood, party night">
+    <svg class="mark xl" aria-hidden="true"><use href="#hallmark-dance"/></svg>
+    <p class="eyebrow">Party Night</p>
+    <h1>Fire &amp; Blood</h1>
+    <p class="lede">A summons &middot; House of the Dragon, the finale</p>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="hint" id="hint">
+      <span>Swipe</span>
+      <svg class="glide" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h13M13 6l6 6-6 6"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2 ─ What this is ----------------------------------------------- -->
+  <section class="card parchment" aria-label="What this is">
+    <div class="vellum">
+      <p>To the lords and ladies of the realm, and to you in particular:</p>
+      <p>You are summoned to the last hour of the Dance. We watch it together
+         tonight, though we sit in different halls.</p>
+      <p>A game runs beneath the episode, and it is built so that you need never
+         take your eyes off the TV to play it.</p>
+      <span class="press"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-targaryen"/></svg></span>
+    </div>
+  </section>
+
+  <!-- 3 ─ The draft ---------------------------------------------------- -->
+  <section class="card" aria-label="The draft">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-claim"/></svg>
+    <p class="eyebrow">Game One</p>
+    <h2>The Draft</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">You take your pick of the players in this war &mdash; but
+         not just their names. Each of them has several possible fates tonight,
+         and when you claim someone, <strong>you choose which of those you are
+         betting on</strong>.</p>
+      <p class="body">So your roster is not a list of people. It is a set of
+         predictions, and no one else at the table will build the same one.</p>
+    </div>
+  </section>
+
+  <!-- 4 ─ Bingo -------------------------------------------------------- -->
+  <section class="card" aria-label="The card">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-comet"/></svg>
+    <p class="eyebrow">Game Two</p>
+    <h2>The Card</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">Twenty-five things that might come to pass tonight, dealt
+         to you at random. You tap one the moment you see it.</p>
+      <p class="body">It is <strong>bingo</strong> &mdash; five in a row and all
+         that &mdash; except the squares are things like a dragon dying. Some
+         are near-certain. One or two would put you on your feet.</p>
+      <p class="body">No two cards are the same, and
+         <strong>nobody gets the easy one</strong>.</p>
+    </div>
+  </section>
+
+  <!-- 5 ─ Guests ------------------------------------------------------- -->
+  <section class="card" aria-label="Guests">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-horn"/></svg>
+    <p class="eyebrow">And</p>
+    <h2>Some Guests</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">Others will be watching with us.</p>
+      <p class="body">You will know them. That is all you are getting.</p>
+    </div>
+  </section>
+
+  <!-- 6 ─ Your house ------------------------------------------------------ -->
+  <section class="card" aria-label="Your house">
+    <div class="sigils">
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-targaryen"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-hightower"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-velaryon"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-stark"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-lannister"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-baratheon"/></svg></span>
+      <span class="sigil"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-blackwood"/></svg></span>
+    </div>
+    <p class="eyebrow">And you</p>
+    <h2>Your House</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">You do not play as a character &mdash; you draft those.
+         You come to this table as a <strong>house</strong>, and that sigil is
+         you for the rest of the night: beside your name on the board, on every pick you
+         make.</p>
+      <p class="body">Choose carefully. It gets pressed into the wax at the
+         end.</p>
+    </div>
+  </section>
+
+  <!-- 6 ─ The ask ------------------------------------------------------ -->
+  <section class="card" aria-label="What I need from you">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-signet"/></svg>
+    <p class="eyebrow">What I need from you</p>
+    <h2>Be In It</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">Two things I ask, and they pull against each other.</p>
+      <p class="body"><strong>One: actually watch it.</strong> The whole hour
+         &mdash; not half-watching with your phone face-up. The game runs
+         itself.</p>
+      <p class="body"><strong>Two: agree to stop.</strong> We watch each scene
+         through, then break together at the end of it. That is when we get to
+         react.</p>
+      <p class="body">The stops are not an interruption. They are the night, and
+         <strong>we decide how long each one runs.</strong></p>
+    </div>
+  </section>
+
+  <!-- 7 ─ The pause, as house rules --------------------------------------- -->
+  <section class="card parchment" aria-label="When we stop">
+    <div class="vellum">
+      <h3>House Rules</h3>
+      <ul>
+        <li>We watch each scene all the way through. Nothing stops
+            mid&#8209;scene.</li>
+        <li>At the break we stop together, every TV on the same second.</li>
+        <li>That is when the game catches up &mdash; squares claimed, the board
+            settled.</li>
+        <li>And when we react. Shout, argue, call what comes next. This is
+            the point of the whole thing.</li>
+        <li>We start again when we are ready. No timer: a minute, or ten if the
+            scene earned it.</li>
+      </ul>
+      <span class="press"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#hallmark-device-hightower"/></svg></span>
+    </div>
+  </section>
+
+  <!-- 7 ─ Staying together --------------------------------------------- -->
+  <section class="card" aria-label="Apart, in sync">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-collision"/></svg>
+    <p class="eyebrow">The hard part</p>
+    <h2>Apart, In Sync</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">We keep this vigil from different houses in different cities,
+         which normally means somebody reacts to a death the rest of us have not
+         reached yet.</p>
+      <p class="body">There is machinery in the app that holds all of our TVs to
+         the same second and stops and starts us together, so nobody gets
+         spoiled by their own group chat.
+         <strong>I am testing it on you.</strong></p>
+    </div>
+  </section>
+
+  <!-- 8 ─ Close -------------------------------------------------------- -->
+  <section class="card" aria-label="Tonight">
+    <svg class="mark" aria-hidden="true"><use href="#hallmark-iron-throne"/></svg>
+    <p class="eyebrow">Tonight</p>
+    <h2>8:30pm ET</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="copy">
+      <p class="body">The full link lands in the group chat at
+         <strong>half past eight</strong>, and the pregame begins the moment it
+         does. Be at your phone.</p>
+      <p class="body">Charged, and the episode queued but not started. We draft
+         first, then press play together.</p>
+      <p class="wait">Nothing to click yet &mdash; watch the chat</p>
+    </div>
+  </section>
+
+</main>
+
+<nav class="index" aria-label="Cards">
+  <div class="rule"></div>
+  <div class="dots" id="dots"></div>
+</nav>
+
+<script>
+  (function () {
+    var deck = document.getElementById('deck');
+    var dotWrap = document.getElementById('dots');
+    var hint = document.getElementById('hint');
+    var cards = Array.prototype.slice.call(deck.querySelectorAll('.card'));
+    var current = 0;
+
+    // Dots are built from the cards themselves so the index can never
+    // disagree with the deck.
+    cards.forEach(function (card, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Go to card ' + (i + 1) + ': ' +
+        (card.getAttribute('aria-label') || ''));
+      b.addEventListener('click', function () {
+        deck.scrollTo({ left: deck.clientWidth * i, behavior: 'smooth' });
+      });
+      dotWrap.appendChild(b);
+    });
+
+    var dots = Array.prototype.slice.call(dotWrap.children);
+
+    function paint(i) {
+      if (i === current) return;
+      current = i;
+      dots.forEach(function (d, n) {
+        d.setAttribute('aria-current', n === i ? 'true' : 'false');
+      });
+    }
+
+    dots[0].setAttribute('aria-current', 'true');
+    dots.slice(1).forEach(function (d) { d.setAttribute('aria-current', 'false'); });
+
+    // Derive the active card from scroll position rather than tracking swipe
+    // gestures: momentum scrolling, dot taps and keyboard all land here.
+    var ticking = false;
+    deck.addEventListener('scroll', function () {
+      if (hint && deck.scrollLeft > 12) hint.classList.add('gone');
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        var w = deck.clientWidth || 1;
+        paint(Math.max(0, Math.min(cards.length - 1, Math.round(deck.scrollLeft / w))));
+      });
+    }, { passive: true });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      var next = current + (e.key === 'ArrowRight' ? 1 : -1);
+      if (next < 0 || next >= cards.length) return;
+      e.preventDefault();
+      deck.scrollTo({ left: deck.clientWidth * next, behavior: 'smooth' });
+    });
+  })();
+</script>
