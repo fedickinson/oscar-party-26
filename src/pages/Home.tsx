@@ -105,7 +105,10 @@ export default function Home() {
 
       if (lookupError) throw new Error(`Could not look up that room: ${lookupError.message}`)
       if (!roomData) throw new Error('Room not found. Check the code.')
-      if (roomData.phase !== 'lobby') throw new Error('This game has already started.')
+      // Non-lobby rooms pass through: joinRoom() reclaims an existing seat on
+      // an exact name match (how a phone that lost its identity rejoins a
+      // running game). The started-game rejection for genuinely new names
+      // lives in joinRoom, where the reclaim check can run first.
 
       // Prefetch taken avatars so the picker greys them out immediately
       const { data: existingPlayers } = await supabase
