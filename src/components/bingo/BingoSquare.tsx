@@ -3,7 +3,7 @@
  *
  * Visual states:
  *   free     (index 12) — accent bg, Star icon, "FREE" text, always marked
- *   approved            — emerald bg, Check icon, slightly faded text
+ *   approved            — bone bg, Check icon, slightly faded text
  *   pending             — amber border pulse, Clock icon, dim text (not tappable)
  *   denied              — brief red flash, then visually reverts to unmarked
  *                         (handled via internal `visualDenied` state + timeout)
@@ -12,8 +12,8 @@
  *
  * Tap behavior:
  *   free     → no-op
- *   approved → no-op (immutable)
- *   pending  → no-op (cannot be undone by player)
+ *   approved → unmarks it (honor-system undo)
+ *   pending  → unmarks it (legacy rows; the same toggle clears them)
  *   selected → deselects (handled in BingoCard)
  *   denied   → selectable (treated like unmarked)
  *   unmarked → select (local only)
@@ -73,7 +73,11 @@ export default function BingoSquare({
   // In readOnly mode show denied as a static red state; interactive mode uses the flash
   const effectiveDenied = readOnly ? status === 'denied' : visualDenied
   const isUnmarked = !isFree && !isApproved && !isPending && !effectiveDenied && !isSelected
-  const canTap = !readOnly && !isFree && !isApproved && !isPending
+  // Every non-free square is tappable: unmarked to claim it, marked to take
+  // the claim back. Marked squares used to be inert because a mark was final
+  // once the host approved it; under the honor system the player is the one
+  // who corrects their own mistake, so the tap has to get through.
+  const canTap = !readOnly && !isFree
 
   function handleTap() {
     if (!canTap) return
@@ -98,9 +102,9 @@ export default function BingoSquare({
     textClass = 'text-accent'
   } else if (isApproved) {
     // Always green — bingo line coloring is handled by band overlays at the card level
-    bgClass = 'bg-emerald-500/20'
-    borderClass = 'border border-emerald-500/40'
-    textClass = 'text-emerald-300/70'
+    bgClass = 'bg-positive/20'
+    borderClass = 'border border-positive/40'
+    textClass = 'text-positive/70'
   } else if (isPending) {
     bgClass = 'bg-amber-500/10'
     borderClass = 'border border-amber-400/60'

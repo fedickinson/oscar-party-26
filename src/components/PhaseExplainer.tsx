@@ -44,7 +44,7 @@ const CONTENT: Record<Phase, {
     // Not "spells out what does not count" — six of the 75 squares qualify the
     // other way ("A refusal counts if it changes what happens"), and the app is
     // careful not to claim otherwise.
-    tip: "Read a square before you claim it — each one spells out exactly what counts, and what doesn't. Then shout, because the host has to confirm it before it counts.",
+    tip: "Read a square before you mark it — each one spells out exactly what counts, and what doesn't. Nobody approves these: it is on your honour, and tapping a marked square takes it back.",
   },
 }
 

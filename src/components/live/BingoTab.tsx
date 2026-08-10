@@ -162,7 +162,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
         <div className="flex flex-col items-center gap-1.5">
           <PipLegend />
           <p className="text-xs text-white/25 text-center px-4">
-            Tap a square to see what counts, then claim it for the host to confirm.
+            Tap a square to see what counts, then mark it. Tap it again to undo.
           </p>
         </div>
 

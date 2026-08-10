@@ -2,13 +2,19 @@
  * BingoCard — the 5×5 bingo grid with a two-step select-then-confirm flow.
  *
  * Square interaction:
- *   1. Tapping an unmarked/denied square selects it (local only, no DB write).
+ *   1. Tapping an unmarked square selects it (local only, no DB write).
  *   2. Tapping a selected square deselects it.
  *   3. Tapping a different unmarked square while one is selected switches selection.
- *   4. A slim confirmation bar slides up inside the card when a square is selected.
- *      - Confirm (Check): writes to DB as pending, clears selection.
- *      - Cancel (X): deselects, dismisses bar.
- *   5. Approved/pending/free squares are not tappable for selection.
+ *   4. A confirmation panel slides up inside the card when a square is selected.
+ *      - Confirm (Check): marks it, scoring immediately. Clears selection.
+ *      - Cancel (X): deselects, dismisses panel.
+ *   5. Tapping an already-marked square unmarks it, with no confirm step.
+ *   6. The free centre is inert.
+ *
+ * The two-step confirm survived the move to the honor system on purpose. With
+ * no host reviewing marks, the panel showing what a square actually requires is
+ * the only thing standing between a card and a wrong mark — so it matters more
+ * now, not less. Undo needs no such step and gets none.
  *
  * Card width targets ~320px on mobile with equal square sizing.
  * Each cell is square (aspect-ratio handled by min-h in BingoSquare).
@@ -92,7 +98,20 @@ export default function BingoCard({
   function handleTap(index: number) {
     if (disabled) return
     const status = getStatus(index)
-    if (status === 'free' || status === 'approved' || status === 'pending') return
+    if (status === 'free') return
+
+    // HONOR SYSTEM UNDO. Tapping an already-marked square unmarks it —
+    // markSquare toggles, and this is the only way to reach that toggle. It
+    // goes straight through with no confirm step: the confirm panel exists to
+    // show you what a square requires BEFORE you claim it, and taking a mark
+    // back needs no such warning. Covers legacy pending/denied rows too, which
+    // the same toggle deletes.
+    if (status !== 'unmarked') {
+      if (selectedIndex === index) onDeselect()
+      void onConfirm(index)
+      return
+    }
+
     // Toggle or switch selection
     if (selectedIndex === index) {
       onDeselect()
