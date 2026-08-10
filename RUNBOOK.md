@@ -157,3 +157,29 @@ findings attached, and (4) residual findings surfaced for human judgment,
 never silently passed. Implemented as scripts/grounded-line.mts — import it;
 do not hand-roll replay prompts again. The verifier caught both defects in
 the original failing line, including one the humans had missed.
+
+## The foundation: ontology & epistemology (8/10)
+
+ONTOLOGY — four kinds, two worlds. Events happen in W1 (the screen) or W2
+(the table); the record maps both and is neither. Claims are statements about
+events and carry content, author, time, and WARRANT. Labels (titles, names,
+angles) are pointers with zero warrant. Voices are stances: they color
+expression and assert nothing. The whole failure class was one category
+error: a label used as a claim.
+
+EPISTEMOLOGY — one law, three rules.
+LAW: no assertion without provenance; no provenance from association.
+Warrant sources, ranked: the screen (perception) > eyewitness > the table's
+own writes (W2 only) > published record > a voice's own canon (attitude
+only). Resonance is never a source.
+R1 Separation: utterance = assertion + expression; only assertions need
+warrant, only expression may use resonance.
+R2 Binding: claim and warrant co-present at the moment of authorship —
+prevention lives at the pen, not the review.
+R3 Degradation: every compression hop leaks warrant; re-attach the source or
+mark the hop; verdicts are true / false / UNVERIFIABLE, never two-valued.
+
+Everything built maps onto this: drawer = R2 for thumbs; grounded-line =
+R1+R2 for models; True Accounting = re-warranting claims, amendments as dated
+claims-about-claims; the AI witness = a new warrant source at rank 1, no new
+framework required. Closed under all planned extensions.
