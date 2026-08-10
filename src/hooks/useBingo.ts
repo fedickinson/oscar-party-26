@@ -10,7 +10,7 @@
  *   unmarked → pending  (player taps square; needs host approval unless objective)
  *   pending  → approved (host approves in Admin panel)
  *   pending  → denied   (host denies; brief red flash in BingoSquare, then visually reverts)
- *   denied   → pending  (player taps again; old denied mark deleted, new pending inserted)
+ *   any mark → gone     (player taps a marked square; honor-system undo)
  *   objective + condition met → approved directly (no host approval needed)
  *
  * OBJECTIVE AUTO-APPROVAL:
@@ -339,6 +339,16 @@ export function useBingo(
 
   // ── markSquare ───────────────────────────────────────────────────────────────
 
+  // HONOR SYSTEM. Marks used to go pending -> host approval, which made the
+  // host (already the GM, a remote-holder, and a player) the bottleneck for
+  // every square on a busy night. The trust split for this app: self-serve
+  // what only affects yourself, referee what moves the shared race. A bingo
+  // card is your own score among six friends — so a tap marks it approved
+  // immediately, and tapping a marked square UNMARKS it (that's the undo;
+  // mistakes are corrected by their maker, not adjudicated).
+  //
+  // The companion bingo reactions wait ~20s and re-check the mark still
+  // exists before speaking, so an instantly-undone misclick stays silent.
   const markSquare = useCallback(
     async (index: number) => {
       const currentCard = cardRef.current
@@ -346,30 +356,24 @@ export function useBingo(
       if (index === FREE_CENTER_INDEX) return
 
       const existing = marksRef.current.find((m) => m.square_index === index)
-      if (existing?.status === 'approved' || existing?.status === 'pending') return
 
-      // Delete denied mark before inserting fresh one
-      if (existing?.status === 'denied') {
+      // Toggle off — the undo. Covers old pending/denied rows too.
+      if (existing) {
         await supabase.from('bingo_marks').delete().eq('id', existing.id)
+        return
       }
 
       const square = squaresRef.current[index]
       if (!square) return
 
-      // Objective squares auto-approve when condition is met.
-      // Host marks always auto-approve — the host shouldn't have to review their own card.
-      const autoApprove =
-        player?.is_host === true ||
-        (square.is_objective && checkObjectiveCondition(square.text, categories, nominees))
-
       await supabase.from('bingo_marks').insert({
         card_id: currentCard.id,
         square_index: index,
-        status: autoApprove ? 'approved' : 'pending',
+        status: 'approved',
         marked_at: new Date().toISOString(),
       })
     },
-    [player, categories, nominees],
+    [player],
   )
 
   // ── selectSquare / deselectSquare (local-only, no DB) ────────────────────────

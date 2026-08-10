@@ -573,7 +573,8 @@ export default function HowItWorks() {
               <P>
                 Eight beats name two characters, and both drafters score. If a conscious
                 Aemond confronts Alicent about the poisoning, whoever holds Aemond and
-                whoever holds Alicent each take 35.
+                whoever holds Alicent each take 35 &mdash; which lands on the board as 53
+                apiece, once the character multiplier is applied.
               </P>
               <P>
                 These sit on top of your three activated beats &mdash; you do not spend a

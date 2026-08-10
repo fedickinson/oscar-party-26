@@ -94,6 +94,8 @@ export interface DraftInsight {
    */
   passedOn: {
     youTook: string
+    /** Who you could have had instead. Naming them is the whole point. */
+    theirName: string
     theirPoints: number
     yourPoints: number
     pickNumber: number
@@ -284,6 +286,7 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     if (passedOn && gap <= passedOn.theirPoints - passedOn.yourPoints) continue
     passedOn = {
       youTook: t.entity.name,
+      theirName: bestAlt.entity.name,
       theirPoints: bestAlt.points,
       yourPoints: t.points,
       pickNumber: (t.pickNumber ?? 0) + 1,

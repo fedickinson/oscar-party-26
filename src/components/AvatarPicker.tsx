@@ -10,6 +10,7 @@
 import { motion } from 'framer-motion'
 import { Lock } from 'lucide-react'
 import { PLAYER_AVATARS } from '../data/avatar-config'
+import { allegianceForAvatar, allegianceLabel } from '../lib/allegiance'
 
 interface Props {
   onSelect: (avatarId: string) => void

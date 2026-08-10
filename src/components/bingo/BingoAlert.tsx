@@ -13,6 +13,7 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
+import { Hallmark } from '../ui/Hallmarks'
 import confetti from 'canvas-confetti'
 import type { BingoSquareRow } from '../../types/database'
 import type { CelebrationData } from '../../hooks/useBingo'
@@ -40,7 +41,7 @@ export default function BingoAlert({
       spread: 60,
       ticks: 80,
       zIndex: 9999,
-      colors: ['#B9863F', '#FFD700', '#FFF8DC', '#ffffff', '#059669'],
+      colors: ['#B9863F', '#D6A961', '#E3D8BF', '#ffffff', '#A2988A'],
     }
 
     confetti({ ...defaults, origin: { x: 0.15, y: 1 }, angle: 60, particleCount: 60 })
@@ -87,6 +88,15 @@ export default function BingoAlert({
           <span className="text-white/70 text-sm font-medium">{playerName}</span>
         </div>
 
+        {/* The Horn — a line claimed, sounded across the room */}
+        <motion.div
+          initial={{ scale: 0.4, rotate: -12 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+        >
+          <Hallmark id="hallmark-horn" size={56} />
+        </motion.div>
+
         {/* BINGO! headline */}
         <motion.div
           initial={{ scale: 0.6 }}
@@ -96,7 +106,7 @@ export default function BingoAlert({
         >
           <p
             className="text-7xl font-black tracking-tight leading-none"
-            style={{ color: '#B9863F', textShadow: '0 0 40px rgba(185,134,63,0.6)' }}
+            style={{ fontFamily: 'Cinzel, Georgia, serif', color: '#B9863F', textShadow: '0 1px 0 rgba(240,229,203,0.25)' }}
           >
             {isBlackout ? 'BLACKOUT!' : 'BINGO!'}
           </p>
@@ -135,9 +145,11 @@ export default function BingoAlert({
               {lineSquares.map((sq, i) => (
                 <div
                   key={i}
-                  className="bg-emerald-500/20 border border-emerald-400/50 rounded-lg p-1.5 flex items-center justify-center min-h-[44px]"
+                  className="rounded-lg p-1.5 flex items-center justify-center min-h-[44px]"
+                  style={{ background: 'var(--t-positive-soft)', border: '1px solid var(--t-positive)' }}
                 >
-                  <p className="text-[9px] text-emerald-300 text-center leading-tight font-medium line-clamp-3">
+                  <p className="text-[9px] text-center leading-tight font-medium line-clamp-3"
+                    style={{ color: 'var(--t-positive)' }}>
                     {celebLine[i] === 12 ? 'FREE' : (sq?.short_text ?? '?')}
                   </p>
                 </div>

@@ -583,13 +583,24 @@ export function useAICompanions(
       const spoken = await spokenCompanionIds()
       if (!spoken.length) return
       const who = spoken[Math.floor(Math.random() * spoken.length)]
-      // A short human lag — the cast noticed, they did not autocomplete.
+      // ~20s human lag, then RE-VERIFY the mark still exists before speaking.
+      // Marks are honor-system now and tapping again is the undo — a companion
+      // reacting to a misclick that was already taken back would be worse than
+      // any delay. The lag doubles as the misclick grace window.
       const tid = setTimeout(() => {
-        void fireCompanionMessages(
-          buildBingoReactionPrompt(who, player.name, text, isNewLine ? 'line' : 'square'),
-          400,
-        )
-      }, 3_000 + Math.random() * 5_000)
+        void (async () => {
+          const { data: still } = await supabase
+            .from('bingo_marks')
+            .select('id')
+            .eq('id', mark.id)
+            .maybeSingle()
+          if (!still) return
+          await fireCompanionMessages(
+            buildBingoReactionPrompt(who, player.name, text, isNewLine ? 'line' : 'square'),
+            400,
+          )
+        })()
+      }, 16_000 + Math.random() * 8_000)
       pendingTimeoutsRef.current.push(tid)
     }
 

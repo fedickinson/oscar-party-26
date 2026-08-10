@@ -127,7 +127,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
       ${d.draft.passedOn
         ? `<p class="detail ds-passed"><span class="ds-label">Left on the board</span>
              At pick ${d.draft.passedOn.pickNumber} you took ${esc(d.draft.passedOn.youTook)} for ${d.draft.passedOn.yourPoints}.
-             Still available: someone who went on to score ${d.draft.passedOn.theirPoints}${d.draft.passedOn.takenBy ? `, and ${esc(d.draft.passedOn.takenBy)} took them` : ' — and nobody took them'}.</p>`
+             ${esc(d.draft.passedOn.theirName)} was still on the board and went on to score ${d.draft.passedOn.theirPoints}${d.draft.passedOn.takenBy ? ` &mdash; ${esc(d.draft.passedOn.takenBy)} took them` : ' &mdash; and nobody took them at all'}.</p>`
         : ''}
     </div>`
 
@@ -294,7 +294,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     color: rgba(255,255,255,.35); font-weight: 600; margin: 0 0 4px;
   }
   .section-note { font-size: 12px; color: rgba(255,255,255,.3); margin: 0 0 14px; }
-  h3 { font-size: 17px; font-weight: 700; margin: 2px 0 0; }
+  h3 { font-size: 17px; font-weight: 700; margin: 2px 0 0; text-wrap: balance; }
   .card {
     background: rgba(255,255,255,.05);
     border: 1px solid rgba(255,255,255,.1);
@@ -323,6 +323,8 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .title {
     font-size: 38px; font-weight: 800; color: ${C.accent};
     margin: 12px 0 0; line-height: 1.08; letter-spacing: -.01em;
+    /* Titles are model-written and vary in length; balance beats a widow. */
+    text-wrap: balance;
   }
   .blurb { color: rgba(255,255,255,.6); font-size: 14px; line-height: 1.55; margin: 12px auto 0; max-width: 420px; }
   .stat {

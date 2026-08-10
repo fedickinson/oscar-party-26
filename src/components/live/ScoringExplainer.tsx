@@ -21,15 +21,15 @@ interface ScoringSection {
 const SECTIONS: ScoringSection[] = [
   {
     icon: <Users size={14} className="text-accent flex-shrink-0" />,
-    label: 'Ensemble Draft',
-    description: 'Drafted a person who wins? Earn 1.5× that category\'s points.',
-    detail: 'Drafted a film? You earn face-value points for any technical category that film wins where no individual person was drafted (Makeup, Sound, Costume, etc.).',
+    label: 'Signature Beats',
+    description: 'Your characters score when their activated beats happen — at 1.5×.',
+    detail: 'You activated 3 beats per character before the episode; only those can score. Beats are priced by odds (20, 25, 35 or 45 base), so a 35-point long shot pays 53 on the board. Your dragon\'s beats are always live and pay face value. The host can also call classic events — deaths, betrayals, the throne — worth 10, 8, 6 or 4.',
   },
   {
     icon: <Target size={14} className="text-blue-400 flex-shrink-0" />,
-    label: 'Prestige Picks',
-    description: 'Correct pick = your confidence number as points (1–24).',
-    detail: 'Each confidence number is used exactly once. Higher confidence on a correct pick = higher reward. Wrong pick = zero points, no penalty.',
+    label: 'Collision Beats',
+    description: 'Eight two-character moments that pay BOTH drafters.',
+    detail: 'When a collision beat hits, each named character\'s drafter scores it — no activation needed, and it stacks on top of signature beats. Two people at the party cheering for the same shot, for different reasons.',
   },
   {
     icon: <Grid3x3 size={14} className="text-purple-400 flex-shrink-0" />,
@@ -40,8 +40,8 @@ const SECTIONS: ScoringSection[] = [
   {
     icon: <Trophy size={14} className="text-accent flex-shrink-0" />,
     label: 'Total Score',
-    description: 'Ensemble + Prestige + Bingo.',
-    detail: 'All three games contribute to one unified leaderboard. Every category matters — even if you didn\'t draft anyone, a correct Prestige Pick still scores.',
+    description: 'Beats + Bingo, one leaderboard.',
+    detail: 'Both games feed the same standings. A quiet draft can still win the night on a hot bingo card — and one wild beat can swing everything.',
   },
 ]
 
@@ -112,7 +112,7 @@ export default function ScoringExplainer() {
               {/* Divider + tagline */}
               <div className="pt-1 border-t border-white/6">
                 <p className="text-[11px] text-white/25 text-center leading-relaxed">
-                  Draft smart. Pick bold. Complete your card.
+                  Draft smart. Bet bold. Complete your card.
                 </p>
               </div>
             </div>

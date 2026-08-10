@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FastForward, Flag, Loader2, Plus, RotateCcw, Swords, Zap } from 'lucide-react'
 import { useGameMaster, GM_POINT_TIERS } from '../../hooks/useGameMaster'
+import { Hallmark } from '../ui/Hallmarks'
 import { useGame } from '../../context/GameContext'
 import { useWatchSync, formatEpisodeTime } from '../../hooks/useWatchSync'
 import { supabase } from '../../lib/supabase'
@@ -232,7 +233,10 @@ export default function GameMasterConsole({
             ? 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50 line-through'
             : 'border-[color:var(--t-line)] text-[color:var(--t-text)]'}`}
       >
-        <Swords className={`w-3.5 h-3.5 flex-shrink-0 ${used ? 'text-[color:var(--t-text-dim)]' : 'text-[color:var(--t-personal-text)]'}`} />
+        {/* The Collision — two drafters score on one shot */}
+        <span className={`flex-shrink-0 ${used ? 'opacity-40' : ''}`}>
+          <Hallmark id="hallmark-collision" size={16} />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-medium truncate">{beat.name}</span>
           <span className="block text-[10px] text-white/35 truncate">{sides.leftName} + {sides.rightName}</span>
@@ -357,7 +361,14 @@ export default function GameMasterConsole({
                               ? 'border-[color:var(--t-line-soft)] text-[color:var(--t-text-dim)] opacity-50'
                               : 'border-[color:var(--t-line)] text-[color:var(--t-text)]'}`}
                       >
-                        <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${used || !active ? 'text-white/20' : 'text-accent'}`} />
+                        {/* The Comet marks the long-shot and wild bands — the swings */}
+                        {b.points >= 35 ? (
+                          <span className={`flex-shrink-0 ${used || !active ? 'opacity-30' : ''}`}>
+                            <Hallmark id="hallmark-comet" size={15} />
+                          </span>
+                        ) : (
+                          <Zap className={`w-3.5 h-3.5 flex-shrink-0 ${used || !active ? 'text-white/20' : 'text-accent'}`} />
+                        )}
                         <span className="flex-1 min-w-0">
                           <span className="block text-xs font-medium truncate">{b.name}</span>
                           {active && !isDragon && activatingPlayer && (
