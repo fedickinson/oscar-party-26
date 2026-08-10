@@ -357,8 +357,11 @@ export function useBingo(
 
       const existing = marksRef.current.find((m) => m.square_index === index)
 
-      // Toggle off — the undo. Covers old pending/denied rows too.
+      // Toggle off — the undo. OPTIMISTIC: the marker's own screen updates
+      // this instant; the realtime echo (which phones can drop or delay)
+      // merely confirms. Both paths dedupe by id.
       if (existing) {
+        setMarks((prev) => prev.filter((m) => m.id !== existing.id))
         await supabase.from('bingo_marks').delete().eq('id', existing.id)
         return
       }
@@ -366,12 +369,21 @@ export function useBingo(
       const square = squaresRef.current[index]
       if (!square) return
 
-      await supabase.from('bingo_marks').insert({
-        card_id: currentCard.id,
-        square_index: index,
-        status: 'approved',
-        marked_at: new Date().toISOString(),
-      })
+      const { data: inserted } = await supabase
+        .from('bingo_marks')
+        .insert({
+          card_id: currentCard.id,
+          square_index: index,
+          status: 'approved',
+          marked_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+      // Optimistic apply from the insert's own return — no waiting on the
+      // realtime echo. The subscription handler dedupes by id when it arrives.
+      if (inserted) {
+        setMarks((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]))
+      }
     },
     [player],
   )
