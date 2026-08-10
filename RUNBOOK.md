@@ -62,3 +62,25 @@ The host phone runs the GM console and fires all AI companions — **keep that
 tab open**; if it must reload, the recovery guards re-derive everything from
 the DB. Deploys/rollbacks/snapshots run from the laptop, which is not part of
 the game and can churn freely.
+
+## The operator layer (discovered live, 8/9)
+
+The night proved the game has three layers, and we'd only built two:
+
+1. **The game** — what players see: declare, mark, chat, scores.
+2. **The narrative engine** — the cast reacting to declared facts
+   (now `scripts/companion-daemon.mts`, phone-independent).
+3. **The operator's lens** — the GM's out-of-band view: who is actually
+   playing, whether the engines are alive, what just happened as data, and
+   the power to repair the world (restore, undo, catch-up) without touching
+   the party. Tonight this layer was a dev session; its first product
+   primitives are:
+
+   - `scripts/gm-pulse.mts --room CODE` — one-shot room dashboard: per-player
+     last-seen / declares / marks, the last six facts, cast liveness
+   - the sentinel (anomaly alarms), snapshots (5-min undo for reality),
+     and the daemon logs
+
+   Long-term this becomes an operator UI: presence, activity feed, engine
+   health, referee actions (undo with a public banner), and restore — the
+   difference between hosting a game and merely being in one.
