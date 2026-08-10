@@ -112,7 +112,7 @@ export default function SpotlightView({
             onClick={onClose}
             className="mt-0.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-white/70 text-xs font-semibold flex-shrink-0"
           >
-            Next up
+            In the spotlight
           </motion.button>
         )}
       </div>

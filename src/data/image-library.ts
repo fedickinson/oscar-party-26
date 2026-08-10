@@ -164,6 +164,9 @@ const CHARACTER_IMAGES: LibraryImage[] = [
   { slug: 'character-alysanne', kind: 'character', label: 'Alysanne Blackwood',
     description: 'Black Aly, Blackwood, archer of the Riverlands',
     path: '/avatars/characters/alysanne.jpeg' },
+  { slug: 'character-torrhen', kind: 'character', label: 'Torrhen Manderly',
+    description: 'Manderly lord of White Harbor, Northern bannerman for the Blacks',
+    path: '/avatars/characters/torrhen.jpeg' },
 ]
 
 /** The eleven dragons of the Dance. Draftable, so they can carry a night too. */

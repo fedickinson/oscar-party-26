@@ -32,11 +32,9 @@ interface Props {
 }
 
 export default function TabBar({ activeTab, onSelect, badges, isHost = true }: Props) {
-  // The Events tab is the GM console — for everyone else it was a wall of
-  // admin controls disconnected from play, and mid-episode it read as noise.
-  // Players get events through the chat and the scoreboard; the tab is the
-  // host's tool only.
-  const tabs = TABS.filter((t) => t.id !== 3 || isHost)
+  // The Events tab is the declare console, open to every player — anyone who
+  // sees a beat happen can call it (honor system, same as bingo; undo exists).
+  const tabs = TABS.filter(() => true)
   return (
     <div
       className="flex-shrink-0 relief-glass"

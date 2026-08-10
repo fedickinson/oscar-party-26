@@ -522,16 +522,23 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   }
   .crest { display: flex; justify-content: center; margin: 16px 0 0; }
   .crest img { width: 78px; height: 78px; object-fit: cover; }
-  .hero { float: right; margin: 2px 0 12px 18px; }
+  /* A figure is a block element, so centring it needs the column, not margins:
+     "margin: 0 auto" on a full-width figure moves nothing and left-aligns the
+     plate while the caption drifts off beside it. */
+  .hero {
+    float: right; margin: 2px 0 12px 18px;
+    display: flex; flex-direction: column; align-items: center; width: 112px;
+  }
   .hero img { width: 112px; height: 112px; object-fit: cover; }
   .hero figcaption {
     font-family: ${DISPLAY}; font-size: 9px; letter-spacing: .13em;
     text-transform: uppercase; color: ${C.inkMuted};
-    text-align: center; margin-top: 9px; max-width: 112px;
+    text-align: center; margin-top: 10px; line-height: 1.35;
   }
-  @media (max-width: 420px) {
-    .hero { float: none; margin: 0 auto 14px; }
-    .hero figcaption { margin-left: auto; margin-right: auto; }
+  @media (max-width: 460px) {
+    /* Too narrow to wrap text around a 112px plate — centre it and let the
+       ledger start beneath, rather than squeezing the figures into a gutter. */
+    .hero { float: none; width: auto; margin: 0 0 16px; }
   }
   .portrait {
     width: 28px; height: 28px; border-radius: 50%; object-fit: cover;

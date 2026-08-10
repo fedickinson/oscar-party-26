@@ -490,20 +490,11 @@ export default function LiveHomeView({
 }: Props) {
   return (
     <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
-      {/* Fixed top: next category + score summary */}
+      {/* Fixed top: score summary. The Oscars build led with a "Next up"
+          category card — an episode has no running order, so presenting the
+          first unresolved seeded event as "next" was a fiction. Events arrive
+          when the episode provides them; the chat and feed carry that. */}
       <div className="px-4 pt-4 space-y-3 flex-shrink-0">
-        <NextUpCard
-          categories={categories}
-          nominees={nominees}
-          confidencePicks={confidencePicks}
-          draftPicks={draftPicks}
-          draftEntities={draftEntities}
-          isHost={isHost}
-          showStarted={showStarted}
-          openSpotlight={openSpotlight}
-          onEndCeremony={onEndCeremony}
-          isEndingCeremony={isEndingCeremony}
-        />
         <CollapsibleScores leaderboard={leaderboard} />
       </div>
 

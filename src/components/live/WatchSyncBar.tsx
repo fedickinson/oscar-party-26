@@ -13,7 +13,7 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Pause, Play, RefreshCw, Radio, TriangleAlert, X } from 'lucide-react'
+import { Check, Pause, Play, RefreshCw, Radio, TriangleAlert } from 'lucide-react'
 import {
   useWatchSync,
   formatEpisodeTime,
@@ -34,7 +34,6 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
   const s = useWatchSync(room, currentPlayerId, players)
   const [entry, setEntry] = useState('')
   const [showEntry, setShowEntry] = useState(false)
-  const [askOpen, setAskOpen] = useState(false)
 
   const me = players.find((p) => p.id === currentPlayerId)
   const isPointPerson = s.amPointPerson
@@ -83,14 +82,22 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
       (me?.watch_group ? p.watch_group === me.watch_group : p.id === currentPlayerId),
   )
 
+  // Optimistic: the tap must respond INSTANTLY. The authoritative flip rides
+  // the players-UPDATE realtime echo, but on a phone that echo can lag or (in
+  // the worst case, mid-suspend) be missed entirely — in the live dogfood the
+  // button appeared dead. Local state flips the UI now and starts the clock at
+  // 0:00; the DB row catches up and agrees.
+  const [startedLocal, setStartedLocal] = useState(false)
   async function startMyScreen() {
+    setStartedLocal(true)
+    s.setMyPosition(0)
     await supabase.rpc('start_episode_for_screen', {
       p_room_id: room.id,
       p_player_id: currentPlayerId,
     })
   }
 
-  if (!s.screenStarted) {
+  if (!s.screenStarted && !startedLocal) {
     return (
       <div className="material-iron relief-inset rounded-2xl overflow-hidden px-4 py-3">
         {isPointPerson ? (
@@ -407,47 +414,19 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
       </AnimatePresence>
 
       {/* ── Request pause ────────────────────────────────────────────────── */}
-      {/* A reason travels with the request because the two rooms cannot hear
-          each other. "Franky asked to pause — bathroom" reads instantly on a
-          phone across an ocean; a bare request invites a "why?" into the chat
-          at exactly the moment someone is walking away from their seat. */}
+      {/* ONE tap. An earlier version asked "why?" with reason chips — in the
+          live dogfood that read as a form blocking an urgent action. The reason
+          was decoration; the request is the point. */}
       {!s.isPaused && !s.pauseRequestedBy && (
-        askOpen ? (
-          <div className="border-t border-white/10 px-3 py-2.5">
-            <p className="text-[11px] text-white/40 mb-1.5">
-              Every screen pauses at the next scene break. Why?
-            </p>
-            <div className="flex gap-1.5">
-              {['Bathroom', 'Refill', 'Need a minute'].map((r) => (
-                <button
-                  key={r}
-                  onClick={() => { void s.requestPause(r); setAskOpen(false) }}
-                  className="relief-raised min-h-11 flex-1 py-2 rounded-lg bg-[var(--t-pending-soft)] border border-[color:var(--t-pending)]
-                             text-xs font-medium text-[color:var(--t-text)]"
-                >
-                  {r}
-                </button>
-              ))}
-              <button
-                onClick={() => setAskOpen(false)}
-                aria-label="Cancel"
-                className="material-iron relief-raised min-h-11 min-w-11 px-2.5 rounded-lg text-[color:var(--t-text-muted)]"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setAskOpen(true)}
-            className="min-h-11 w-full py-2.5 border-t border-white/10 text-xs font-medium
-                       text-white/45 hover:text-white/80 hover:bg-white/5
-                       transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Pause className="w-3.5 h-3.5" />
-            Ask everyone to pause
-          </button>
-        )
+        <button
+          onClick={() => void s.requestPause()}
+          className="w-full py-2.5 border-t border-white/10 text-xs font-medium
+                     text-white/45 hover:text-white/80 hover:bg-white/5
+                     transition-colors flex items-center justify-center gap-1.5"
+        >
+          <Pause className="w-3.5 h-3.5" />
+          Ask everyone to pause
+        </button>
       )}
     </div>
   )

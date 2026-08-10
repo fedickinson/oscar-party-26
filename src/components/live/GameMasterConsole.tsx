@@ -259,8 +259,11 @@ export default function GameMasterConsole({
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* ── Composer (host only) ─────────────────────────────────────────── */}
-      {isHost && (
+      {/* ── Composer — EVERYONE. The host-only gate came from the Oscars
+          griefing worry; the honor system that runs bingo runs this too now.
+          Six friends, undo exists, and the host cannot be the only person
+          watching for 189 beats. End-episode stays host-only below. */}
+      {(
         <div className="material-oak relief-carved rounded-2xl p-4 space-y-4">
           <div className="flex items-center gap-2">
             <Swords className="w-5 h-5 text-accent" />

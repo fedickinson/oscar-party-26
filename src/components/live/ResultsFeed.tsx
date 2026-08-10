@@ -150,7 +150,7 @@ export default function ResultsFeed({ results }: Props) {
                     )}
                     {result.winnerFilm && !result.tieWinnerName && (
                       <div className="flex items-center gap-1 mt-0.5">
-                        <FilmIcon filmName={result.winnerFilm} size={9} className="text-white/22 flex-shrink-0" />
+
                         <p className="text-[11px] text-white/38 truncate">{result.winnerFilm}</p>
                       </div>
                     )}
