@@ -5,6 +5,10 @@
       "destination": "/summons.html"
     },
     {
+      "source": "/ceremony.html",
+      "destination": "/ceremony.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
