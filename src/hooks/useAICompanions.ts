@@ -197,8 +197,24 @@ export function useAICompanions(
 
   async function fireCompanionMessages(prompt: { system: string; user: string }, maxTokens = 600) {
     if (!isHostRef.current) return
+    // The delay-0 message gates all perceived latency: during the pre-show the
+    // chat IS the show and generation takes seconds. Show the narrator typing
+    // the moment the call goes out — the wait reads as typing, not dead air.
+    addPendingCompanion(NARRATOR.id)
+    broadcastChannelRef.current?.send({
+      type: 'broadcast', event: 'companion_typing',
+      payload: { id: NARRATOR.id, typing: true },
+    })
+    const clearNarratorTyping = () => {
+      removePendingCompanion(NARRATOR.id)
+      broadcastChannelRef.current?.send({
+        type: 'broadcast', event: 'companion_typing',
+        payload: { id: NARRATOR.id, typing: false },
+      })
+    }
     try {
       const raw = await callClaude(prompt, maxTokens)
+      clearNarratorTyping()
       if (!raw) return
       const messages = parseCompanionResponse(raw)
       // Delays live in client setTimeouts on the host, and the host tonight is
@@ -244,6 +260,7 @@ export function useAICompanions(
         }
       }
     } catch {
+      clearNarratorTyping()
       // Companions are a nice-to-have — silently fail so the rest of the app works
     }
   }
