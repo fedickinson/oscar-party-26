@@ -416,7 +416,7 @@ export default function GameMasterConsole({
                 <div className="space-y-1.5">
                   {beats.map((b) => {
                     const used = loggedNames.has(b.name)
-                    const active = isDragon || activatedBeatIds.has(b.id)
+                    const active = true // activation gate removed mid-party
                     const activatingPlayer = activationPlayerByBeat.get(b.id)
                       ?? drafterByEntityId.get(b.entity_id)
                     return (

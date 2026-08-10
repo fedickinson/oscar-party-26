@@ -170,9 +170,11 @@ export function selectRotatingCast(
   isMajorEvent: boolean,
   rand: () => number = Math.random,
 ): CompanionConfig[] {
+  // Capped mid-party (user call): with real humans chatting, >2 AI voices per
+  // event drowned the room. Ned + one; a major beat occasionally earns two.
   const count = isMajorEvent
-    ? (rand() < 0.5 ? 3 : 2)   // major beats: usually a fuller table
-    : (rand() < 0.35 ? 2 : 1)  // routine beats: keep it light
+    ? (rand() < 0.3 ? 2 : 1)
+    : 1
 
   // Fisher-Yates over a copy, then take the first `count`.
   const pool = [...ROTATING_COMPANIONS]

@@ -598,6 +598,26 @@ export function useAICompanions(
       if (!text) return
 
       const isNewLine = lines > prevLines
+
+      // Every mark lands in chat as a divider — the room should SEE claims
+      // even when no companion comments. Delayed ~8s and re-verified so an
+      // instant undo stays silent.
+      {
+        const tid = setTimeout(() => {
+          void (async () => {
+            const { data: still } = await supabase
+              .from('bingo_marks').select('id').eq('id', mark.id).maybeSingle()
+            if (!still) return
+            await insertSystemDivider(
+              isNewLine
+                ? `BINGO — ${player.name} completes a line: "${text}"`
+                : `${player.name} marked: "${text}"`,
+            )
+          })()
+        }, 8_000)
+        pendingTimeoutsRef.current.push(tid)
+      }
+
       if (!isNewLine) {
         // Square-level throttle: at most one reaction per 2.5 minutes, and
         // even then only some squares get one. Silence is a valid reaction.
