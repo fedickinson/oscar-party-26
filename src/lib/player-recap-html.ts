@@ -708,7 +708,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     ${motifBand()}
 
     <header>
-      <p class="presents">Party Night Presents</p>
+      <p class="presents">Watch Party Presents</p>
       <p class="masthead">Fire <em>&amp;</em> Blood</p>
       <p class="episode">House of the Dragon &mdash; Season 3 Finale</p>
       ${d.imagery.crest ? `<div class="crest"><img class="plate" src="${d.imagery.crest.src}" alt="${esc(d.imagery.crest.alt)}"></div>` : ''}

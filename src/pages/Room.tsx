@@ -183,7 +183,7 @@ export default function Room() {
       >
         {/* Header */}
         <div className="text-center pt-2">
-          <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-[0.18em] mb-1">Party Night</p>
+          <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-[0.18em] mb-1">Watch Party</p>
           <h1 className="font-display text-2xl font-bold text-[var(--t-text)] tracking-wide">Lobby</h1>
         </div>
 

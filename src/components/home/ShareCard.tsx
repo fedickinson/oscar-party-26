@@ -190,7 +190,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             textTransform: 'uppercase',
           }}
         >
-          Party Night Presents
+          Watch Party Presents
         </div>
         <div
           style={{

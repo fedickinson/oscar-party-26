@@ -199,7 +199,7 @@ export function PlayerShareCard({
             marginBottom: 7,
           }}
         >
-          Party Night Presents
+          Watch Party Presents
         </div>
         <div
           style={{

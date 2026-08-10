@@ -412,7 +412,7 @@ export default function HowItWorks() {
           className="text-[12px] font-semibold uppercase tracking-[0.3em]"
           style={{ color: 'var(--t-ornament-muted)' }}
         >
-          Party Night
+          Watch Party
         </span>
         <h1
           className="text-[42px] leading-none"

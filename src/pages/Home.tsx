@@ -217,7 +217,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          Party Night presents
+          Watch Party presents
         </motion.p>
         <motion.h1
           className="text-[27px] font-bold tracking-[0.04em] uppercase mt-2"
@@ -306,7 +306,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 }}
                 >
-                  Party Night presents
+                  Watch Party presents
                 </motion.p>
                 <motion.h1
                   id="party-title"
