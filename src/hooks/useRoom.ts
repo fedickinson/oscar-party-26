@@ -140,13 +140,35 @@ export function useRoom() {
       .single()
 
     if (roomError || !roomData) throw new Error('Room not found. Check the code and try again.')
-    if (roomData.phase !== 'lobby') throw new Error('This game has already started.')
 
-    // Fetch current players to pick an unused color
     const { data: existingPlayers } = await supabase
       .from('players')
       .select()
       .eq('room_id', roomData.id)
+
+    // SEAT RECLAIM: a player whose exact name already exists in this room IS
+    // that player — adopt the existing row instead of inserting a duplicate.
+    // This is how a phone that lost its stored identity (cleared storage,
+    // borrowed device, mid-game hiccup) gets back into a running game with
+    // their draft picks, bingo card and team intact: rejoin with the same
+    // name. Names are unique among six friends; a griefer would need both the
+    // room code and a victim's exact name.
+    const reclaim = (existingPlayers ?? []).find(
+      (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase(),
+    )
+    if (reclaim) {
+      localStorage.setItem(PLAYER_ID_KEY, reclaim.id)
+      setRoom(roomData)
+      setPlayer(reclaim)
+      setPlayers(existingPlayers ?? [])
+      return
+    }
+
+    if (roomData.phase !== 'lobby') {
+      throw new Error(
+        'This game has already started. To reclaim your seat, join with the exact name you used before.',
+      )
+    }
 
     const usedColors = (existingPlayers ?? []).map((p) => p.color)
     const color = PLAYER_COLORS.find((c) => !usedColors.includes(c)) ?? PLAYER_COLORS[0]
