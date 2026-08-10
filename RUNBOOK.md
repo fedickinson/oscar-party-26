@@ -158,6 +158,35 @@ never silently passed. Implemented as scripts/grounded-line.mts — import it;
 do not hand-roll replay prompts again. The verifier caught both defects in
 the original failing line, including one the humans had missed.
 
+## The two-canons rule (from the Maelor incident, 8/10)
+
+Second failure class, caught by a human on read-through: CANON CONTAMINATION.
+The record said Helaena was "told of Maelor's death" — that is the book. In
+the show the boy was never born; she carried him still. The claim entered the
+record through recap mining: published recaps are written by book-readers, and
+source-canon bleeds into their accounts of the screen silently, with full
+confidence, in the same sentences as true screen facts. No refutation pass
+catches it, because the fact block itself was already contaminated upstream.
+
+The rule: **the adaptation and its source are different worlds.** Wb (book
+canon) is not a warrant source for W1 (screen) claims — not even partially,
+not even for "surely unchanged" details; the adaptation's whole craft is
+changing exactly such details. Operationally:
+
+- A recap-sourced claim carries a RECAP tag until cross-checked against table
+  testimony (eyewitnesses who watched the screen, not the discourse).
+- Where screen and book diverge, the screen wins. Where the screen is silent,
+  the verdict is UNVERIFIABLE — write around the gap and say so, never fill
+  it from the source material.
+- Character names, family trees, and fates are the HIGHEST-risk claims, not
+  the safest: they are precisely what book-readers assume and adaptations cut.
+
+This slots into the existing framework without new machinery: it is R3
+(degradation — recaps are a compression hop that leaks which-world warrant)
+plus a new entry in the warrant ranking: source-material canon ranks BELOW
+published record for screen events, at "attitude only" — the same rank as a
+voice's own canon, and for the same reason.
+
 ## The foundation: ontology & epistemology (8/10)
 
 ONTOLOGY — four kinds, two worlds. Events happen in W1 (the screen) or W2
