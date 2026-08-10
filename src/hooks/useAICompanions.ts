@@ -861,7 +861,9 @@ export function useAICompanions(
 
     const leaderId = leaderboard[0].player.id
 
-    if (previousLeaderIdRef.current && previousLeaderIdRef.current !== leaderId) {
+    // Lead-change commentary DISABLED (user call, mid-party): the cast was
+    // narrating every scoreboard flip. The story is on screen, not the board.
+    if (false && previousLeaderIdRef.current && previousLeaderIdRef.current !== leaderId) {
       const key = `lead_change:${leaderId}`
       if (!milestoneFiredRef.current.has(key)) {
         milestoneFiredRef.current.add(key)
