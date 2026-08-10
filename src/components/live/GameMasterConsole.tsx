@@ -72,6 +72,7 @@ export default function GameMasterConsole({
   // something that moves the whole leaderboard and summons the cast.
   const [armedBeatId, setArmedBeatId] = useState<number | null>(null)
   const [expandedFighter, setExpandedFighter] = useState<string | null>(null)
+  const [boardQuery, setBoardQuery] = useState('')
   useEffect(() => {
     if (armedBeatId == null) return
     const t = setTimeout(() => setArmedBeatId(null), 15000)
@@ -273,6 +274,109 @@ export default function GameMasterConsole({
 
   return (
     <div className="px-4 py-6 space-y-6">
+      {/* ── THE BOARD — moment-first lookup ──────────────────────────────
+          The fun loop of the night: something happens on screen and the table
+          asks "was that on the board?" The fighters accordion answers it
+          character-first; this answers it MOMENT-first — type anything from
+          the scene ("trap", "Aemond", "fleet") and see every matching beat,
+          whose fighter it pays or unclaimed, already-hit or still in play,
+          declarable right from the result. One input, silent until used. */}
+      {(() => {
+        const q = boardQuery.trim().toLowerCase()
+        const results: { nom: (typeof characters)[number]; beat: { id: number; name: string; points: number; trigger_text: string; pitch?: string } }[] = []
+        if (q.length >= 2) {
+          for (const c of characters) {
+            for (const b of beatsByName.get(c.name) ?? []) {
+              if (c.name.toLowerCase().includes(q) || b.name.toLowerCase().includes(q) || b.trigger_text.toLowerCase().includes(q)) {
+                results.push({ nom: c, beat: b })
+              }
+            }
+          }
+          results.sort((a, b) => {
+            const af = loggedNames.has(a.beat.name) ? 1 : 0
+            const bf = loggedNames.has(b.beat.name) ? 1 : 0
+            if (af !== bf) return af - bf // in-play first, hits last
+            return b.beat.points - a.beat.points
+          })
+        }
+        return (
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={boardQuery}
+              onChange={(e) => setBoardQuery(e.target.value)}
+              placeholder="Did that just happen? Search the board"
+              className="w-full material-iron relief-inset rounded-xl px-4 py-3 text-[16px]
+                         text-[color:var(--t-text)] placeholder:text-[color:var(--t-text-dim)]
+                         focus:outline-none border border-[color:var(--t-line)]"
+            />
+            {q.length >= 2 && (
+              <div className="space-y-1.5">
+                {results.length === 0 && (
+                  <p className="text-xs text-[color:var(--t-text-dim)] px-1">
+                    Nothing on the board matches — if it mattered, log it as a free event below.
+                  </p>
+                )}
+                {results.slice(0, 10).map(({ nom, beat }) => {
+                  const hit = loggedNames.has(beat.name)
+                  const ent = entityByName.get(nom.name)
+                  const owner = ent ? drafterByEntityId.get(ent.id) : undefined
+                  const armed = armedBeatId === beat.id
+                  return (
+                    <div key={beat.id}>
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        disabled={hit || isLogging}
+                        onClick={() => setArmedBeatId(armed ? null : beat.id)}
+                        className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
+                          ${hit ? 'border-[color:var(--t-line-soft)] opacity-50' : armed ? 'border-[color:var(--t-personal-text)] rounded-b-none' : 'border-[color:var(--t-line)]'}`}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className={`block text-xs truncate ${hit ? 'line-through text-[color:var(--t-text-dim)]' : 'font-medium text-[color:var(--t-text)]'}`}>
+                            {beat.name}
+                          </span>
+                          <span className="block text-[10px] text-[color:var(--t-text-dim)] truncate">
+                            {nom.name} · {hit ? 'HIT' : owner ? `${owner.name}'s fighter` : 'unclaimed'}
+                          </span>
+                        </span>
+                        <span className={`text-sm font-bold flex-shrink-0 ${hit ? 'text-[color:var(--t-text-dim)]' : 'text-[color:var(--t-personal-text)]'}`}>
+                          {beat.points}
+                        </span>
+                      </motion.button>
+                      {armed && !hit && (
+                        <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-black/25">
+                          <p className="text-xs text-[color:var(--t-text)] leading-relaxed">{beat.trigger_text}</p>
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileTap={{ scale: 0.97 }}
+                              disabled={isLogging}
+                              onClick={() => {
+                                setArmedBeatId(null)
+                                setBoardQuery('')
+                                void logEvent(beat.name, beat.points, nom.id)
+                              }}
+                              className="flex-1 min-h-10 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-vellum-light,#f0e5cb)] text-xs font-bold"
+                            >
+                              It happened — declare +{beat.points}
+                            </motion.button>
+                            <button
+                              onClick={() => setArmedBeatId(null)}
+                              className="px-3 min-h-10 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
+                            >
+                              Not yet
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
       {/* ── YOUR FIGHTERS — the draft picks, first-class ─────────────────
           Each of the current player's fighters is a bold row with a count of
           moments still in play; tapping a fighter opens their full option
