@@ -1,27 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/((?!summons|assets/|avatars/|favicon).*)",
-      "missing": [
-        {
-          "type": "query",
-          "key": "open",
-          "value": "dracarys"
-        },
-        {
-          "type": "query",
-          "key": "dracarys"
-        },
-        {
-          "type": "cookie",
-          "key": "open",
-          "value": "dracarys"
-        }
-      ],
-      "destination": "/summons",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/summons",
