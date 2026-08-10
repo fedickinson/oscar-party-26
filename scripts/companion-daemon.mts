@@ -97,3 +97,97 @@ for (;;) {
     }
   } catch (e) { log(`transient: ${String(e).slice(0, 80)}`) }
 }
+
+// ─── Bingo watch — announcements + reactions, also freed from the phone ──────
+// Marks were announced by the host tab's listener; locked phone = silent
+// bingo. Same pattern as events: poll, verify the mark survived its undo
+// window, insert the divider for everyone, occasionally let one companion
+// comment; a completed line always gets its moment.
+import { buildBingoReactionPrompt } from '../src/lib/companion-prompts'
+import { checkBingo } from '../src/lib/bingo-utils'
+
+async function watchBingo() {
+  const seenMarks = new Set<string>(
+    (await get(`bingo_marks?select=id`)).map((m: { id: string }) => m.id),
+  )
+  const cardLines = new Map<string, number>()
+  let lastSquareReaction = 0
+  let squaresCache: Map<number, string> | null = null
+
+  const squareText = async (id: number) => {
+    if (!squaresCache) {
+      squaresCache = new Map(
+        (await get('bingo_squares?select=id,text')).map((s: {id:number;text:string}) => [s.id, s.text]),
+      )
+    }
+    return squaresCache.get(id) ?? null
+  }
+
+  log(`bingo watch live — ${seenMarks.size} existing marks baselined`)
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 12_000))
+    try {
+      const marks = await get(`bingo_marks?select=id,card_id,square_index,status&order=marked_at.desc&limit=30`)
+      for (const mark of marks) {
+        if (seenMarks.has(mark.id) || mark.status !== 'approved') continue
+        seenMarks.add(mark.id)
+        setTimeout(() => void handleMark(mark), 10_000) // undo grace
+      }
+    } catch (e) { log(`bingo transient: ${String(e).slice(0, 60)}`) }
+  }
+
+  async function handleMark(mark: { id: string; card_id: string; square_index: number }) {
+    const [still] = await get(`bingo_marks?id=eq.${mark.id}&select=id`)
+    if (!still) return // undone during grace
+    const [card] = await get(`bingo_cards?id=eq.${mark.card_id}&select=id,room_id,player_id,squares`)
+    if (!card || card.room_id !== RID) return
+    const [player] = await get(`players?id=eq.${card.player_id}&select=name`)
+    const squareId = (card.squares as number[])[mark.square_index]
+    const text = squareId ? await squareText(squareId) : null
+    if (!player || !text) return
+
+    const approved = await get(`bingo_marks?card_id=eq.${card.id}&status=eq.approved&select=square_index`)
+    const marked = new Set<number>([12, ...approved.map((m: {square_index:number}) => m.square_index)])
+    const lines = checkBingo(marked, []).lines.length
+    let prev = cardLines.get(card.id)
+    if (prev === undefined) {
+      const before = new Set(marked); before.delete(mark.square_index)
+      prev = checkBingo(before, []).lines.length
+    }
+    cardLines.set(card.id, lines)
+    const isLine = lines > (prev ?? 0)
+
+    await ins('messages', {
+      room_id: RID, player_id: 'system',
+      text: isLine
+        ? `BINGO — ${player.name} completes a line: "${text}"`
+        : `${player.name} marked: "${text}"`,
+    })
+
+    if (!isLine) {
+      if (Date.now() - lastSquareReaction < 150_000) return
+      if (Math.random() > 0.45) return
+    }
+    lastSquareReaction = Date.now()
+    const who = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)]
+    const prompt = buildBingoReactionPrompt(who, player.name, text, isLine ? 'line' : 'square')
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': AKEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-5', max_tokens: 400,
+        thinking: { type: 'disabled' }, output_config: { effort: 'low' },
+        system: [{ type: 'text', text: prompt.system, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+        messages: [{ role: 'user', content: prompt.user }],
+      }),
+    })
+    const d = await r.json()
+    if (!r.ok) return
+    const raw = (d.content ?? []).find((b: {type?:string}) => b.type === 'text')?.text ?? ''
+    for (const m of parseCompanionResponse(raw)) {
+      await ins('messages', { room_id: RID, player_id: m.companion_id, text: m.text })
+    }
+    log(`bingo ${isLine ? 'LINE' : 'square'} for ${player.name}: "${text.slice(0, 40)}" ${isLine ? '(celebrated)' : '(commented)'}`)
+  }
+}
+void watchBingo()
