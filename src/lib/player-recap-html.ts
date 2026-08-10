@@ -263,9 +263,13 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
             .join('')}
         </div>
         <div class="squares">
-          ${d.bingo.cells
-            .filter((c) => !c.isFree)
-            .map((c) => {
+          ${(() => {
+            // TWO LEVELS OF DISCLOSURE, because 24 squares is a wall.
+            // The grid above answers "how did I do" at a glance. Struck and
+            // missed then collapse to two lines, and only the square you are
+            // actually curious about opens to its rule. One flat list of 24
+            // disclosures buried every other section under it.
+            const detail = (c: PlayerRecapData['bingo'] extends null ? never : NonNullable<PlayerRecapData['bingo']>['cells'][number]) => {
               const tier = TIER_LABELS[c.tier] ?? ''
               const odds = c.probabilityPct > 0 ? `${c.probabilityPct}% likely` : ''
               const meta = [tier, odds].filter(Boolean).join(' &middot; ')
@@ -286,16 +290,28 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
               ].filter(Boolean).join('\n              ')
 
               return `
-          <details class="square${c.approved ? ' hit' : ''}">
-            <summary>
-              <span class="dot" aria-hidden="true"></span>
-              <span class="sq-label">${esc(c.label)}</span>
-              <span class="sq-state">${c.inLine ? 'In a line' : c.approved ? 'Struck' : 'Missed'}</span>
-            </summary>
-            <div class="square-body">${body}</div>
+            <details class="square${c.approved ? ' hit' : ''}">
+              <summary>
+                <span class="dot" aria-hidden="true"></span>
+                <span class="sq-label">${esc(c.label)}</span>
+                <span class="sq-state">${c.inLine ? 'In a line' : c.approved ? 'Struck' : 'Missed'}</span>
+              </summary>
+              <div class="square-body">${body}</div>
+            </details>`
+            }
+
+            const playable = d.bingo!.cells.filter((c) => !c.isFree)
+            const struck = playable.filter((c) => c.approved)
+            const missed = playable.filter((c) => !c.approved)
+            const group = (label: string, rows: typeof playable) =>
+              rows.length
+                ? `<details class="group">
+            <summary><span class="g-title">${label}</span><span class="g-count">${rows.length}</span></summary>
+            <div class="square-list">${rows.map(detail).join('')}</div>
           </details>`
-            })
-            .join('')}
+                : ''
+            return group('Struck', struck) + group('Missed', missed)
+          })()}
         </div>
       </section>`
     : ''
@@ -579,8 +595,11 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .cell.inline { background: ${C.madder}; border-color: ${C.waxDark}; color: ${C.vellumLight}; font-weight: 700; }
   .cell.free { font-family: ${DISPLAY}; letter-spacing: .1em; color: ${C.inkMuted}; }
 
-  .squares { margin-top: 12px; }
+  .squares { margin-top: 14px; }
+  .square-list { padding-bottom: 8px; }
   .square { border-top: 1px solid rgba(41,34,25,.14); }
+  /* Nested one level in, so the inner rows read as belonging to the group. */
+  .square-list .square { margin-left: 2px; }
   .square summary {
     display: flex; align-items: center; gap: 10px; padding: 10px 0;
     cursor: pointer; list-style: none; min-height: 44px;

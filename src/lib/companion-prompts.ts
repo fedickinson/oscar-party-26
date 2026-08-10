@@ -27,6 +27,7 @@ import {
   ROTATING_COMPANIONS,
   selectRotatingCast,
 } from '../data/ai-companions'
+import { describeLibraryForPrompt } from '../data/image-library'
 export type { MessageRow }
 
 // ─── JSON output types ────────────────────────────────────────────────────────
@@ -1099,6 +1100,8 @@ export interface CompanionVerdict {
   title: string
   /** Message ids the model chose for this player's keepsake, with its reason. */
   highlights: Array<{ messageId: string; note: string }>
+  /** Artwork chosen per slot. Slugs are validated against the library on write. */
+  imagery: Array<{ slot: string; slug: string; note: string }>
 }
 
 /** A chat line offered to the model as a candidate highlight. */
@@ -1167,6 +1170,15 @@ export function parseVerdictResponse(raw: string): CompanionVerdict[] {
                 note: typeof h.note === 'string' ? h.note.trim() : '',
               }))
           : [],
+        imagery: Array.isArray(v.imagery)
+          ? (v.imagery as Array<Record<string, unknown>>)
+              .filter((im) => typeof im?.slot === 'string' && typeof im?.slug === 'string')
+              .map((im) => ({
+                slot: (im.slot as string).trim(),
+                slug: (im.slug as string).trim(),
+                note: typeof im.note === 'string' ? im.note.trim() : '',
+              }))
+          : [],
       }))
   } catch {
     return []
@@ -1221,11 +1233,24 @@ YOU PRODUCE THREE THINGS PER PLAYER:
      words. It is printed under the line. Leave it empty rather than padding.
    - Returning fewer is correct when the chat was thin. Do not pad to four.
 
+4. IMAGERY — which artwork belongs on their keepsake.
+   - You are given a CATALOGUE of available images and two placements:
+       crest — beside the masthead, setting the tone of the whole sheet
+       hero  — beside their draft ledger, for whoever carried their night
+   - Copy the slug exactly as written in the catalogue, in square brackets.
+     Never invent a slug and never guess at a filename.
+   - Choose at most one image per placement, and only when it genuinely fits.
+     A house sigil that has nothing to do with their night is worse than no
+     picture at all. Returning [] is a correct answer.
+   - Prefer the character who actually carried them for "hero", and something
+     that speaks to the shape of their night for "crest".
+   - "note" is one short line on why, under 12 words.
+
 GENERAL:
 - No spoilers beyond what happened on screen tonight. Never predict next season.
 
 FORMAT — exactly this shape, one entry per slot you are given:
-{"verdicts":[{"slot":1,"title":"...","text":"...","highlights":[{"message_id":"...","note":"..."}]},{"slot":2,"title":"...","text":"...","highlights":[]}]}`
+{"verdicts":[{"slot":1,"title":"...","text":"...","highlights":[{"message_id":"...","note":"..."}],"imagery":[{"slot":"crest","slug":"...","note":"..."}]},{"slot":2,"title":"...","text":"...","highlights":[],"imagery":[]}]}`
 
 export function buildVerdictsPrompt(
   awards: Array<{
@@ -1270,9 +1295,14 @@ Predictions called right: ${entry?.correctPickCount ?? 0}
 A working title (yours must be DIFFERENT and better): ${award.title}${candidateBlock}`
   })
 
-  const user = `THE RECKONING. The episode is over and the standings are final. For each slot below, in the voice of the companion named for that slot, write a bespoke title, a verdict passage, and pick that player's best chat lines.
+  const catalogue = describeLibraryForPrompt()
+  const catalogueBlock = catalogue
+    ? `\n\nCATALOGUE OF AVAILABLE ARTWORK — choose slugs only from this list:\n${catalogue}`
+    : '\n\nCATALOGUE OF AVAILABLE ARTWORK: none available. Return imagery: [] for every slot.'
 
-${blocks.join('\n\n')}
+  const user = `THE RECKONING. The episode is over and the standings are final. For each slot below, in the voice of the companion named for that slot, write a bespoke title, a verdict passage, pick that player's best chat lines, and choose their artwork.
+
+${blocks.join('\n\n')}${catalogueBlock}
 
 Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'}, one per slot, in the JSON format specified. Check before you answer: no two titles may be the same.`
 

@@ -2,13 +2,30 @@
   "redirects": [
     {
       "source": "/((?!summons|assets/|avatars/|favicon).*)",
-      "missing": [{ "type": "query", "key": "open", "value": "dracarys" }],
+      "missing": [
+        {
+          "type": "query",
+          "key": "open",
+          "value": "dracarys"
+        },
+        {
+          "type": "cookie",
+          "key": "open",
+          "value": "dracarys"
+        }
+      ],
       "destination": "/summons",
       "permanent": false
     }
   ],
   "rewrites": [
-    { "source": "/summons", "destination": "/summons.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/summons",
+      "destination": "/summons.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

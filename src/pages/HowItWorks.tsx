@@ -43,13 +43,11 @@ import {
   ArrowRight,
   ChevronDown,
   Clock,
-  Grid3X3,
   Hand,
   MessageCircle,
   Pause,
   Play,
   Tv,
-  Users,
 } from 'lucide-react'
 import { Hallmark } from '../components/ui/Hallmarks'
 
@@ -371,7 +369,7 @@ function GameCard({
   return (
     <div className="relief-glass p-4 flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
-        <span style={{ color: 'var(--t-accent-light)' }}>{icon}</span>
+        {icon}
         <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
           {title}
         </h3>
@@ -513,7 +511,7 @@ export default function HowItWorks() {
           {/* Draft — Signature Beats. The system is locked; the beat lists are
               still being loaded, hence the draftBeatsLive note at the bottom. */}
           <GameCard
-            icon={<Users size={18} />}
+            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>}
             title="Before — you draft"
             summary={
               <>
@@ -623,7 +621,7 @@ export default function HowItWorks() {
 
           {/* Bingo — current as of the rebalanced 75-square researched pool. */}
           <GameCard
-            icon={<Grid3X3 size={18} />}
+            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-comet" size={28} /></span>}
             title="During — you watch"
             summary={
               <>
@@ -681,7 +679,7 @@ export default function HowItWorks() {
           </GameCard>
 
           <GameCard
-            icon={<MessageCircle size={18} />}
+            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>}
             title="Underneath — the chat"
             summary={
               <>
