@@ -8,8 +8,11 @@ import App from './App.tsx'
 // so without persistence ANY mid-game refresh would strand a player on the
 // teaser. Entering through the gate once therefore sets a cookie, and the
 // redirect rule honors either. One knock, then the door stays open.
-if (new URLSearchParams(window.location.search).get('open') === 'dracarys') {
-  document.cookie = 'open=dracarys; path=/; max-age=172800; SameSite=Lax'
+{
+  const q = new URLSearchParams(window.location.search)
+  if (q.get('open') === 'dracarys' || q.has('dracarys')) {
+    document.cookie = 'open=dracarys; path=/; max-age=172800; SameSite=Lax'
+  }
 }
 
 // Escape hatch: visiting ?fresh wipes this app's stored identity (player id,

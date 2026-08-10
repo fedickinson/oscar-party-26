@@ -21,6 +21,7 @@ import { tallyEntityPoints } from './night-awards'
 import type { PlayerAward } from './night-awards'
 import { checkBingo, countBingos, FREE_CENTER_INDEX } from './bingo-utils'
 import { getCompanionById, isCompanionId } from '../data/ai-companions'
+import { companionImage, getLibraryImage } from '../data/image-library'
 import type { VerdictLineCandidate } from './companion-prompts'
 import type { ScoredPlayer } from './scoring'
 import type { TimelinePoint } from '../types/timeline'
@@ -149,6 +150,15 @@ export interface PlayerRecapData {
   bingo: { cells: BingoCell[]; lineCount: number; approvedCount: number } | null
   lines: RecapLine[]
 
+  /**
+   * Artwork for this keepsake, keyed by slot.
+   *
+   * `src` is resolved by the caller: the in-app page passes the public path,
+   * the downloadable file passes a base64 data URI. The builder stays pure and
+   * never fetches, so both consumers get the same structure.
+   */
+  imagery: Partial<Record<'crest' | 'hero' | 'verdict', { src: string; alt: string }>>
+
   /** Printed in the footer so a downloaded file can find its way home. */
   recapUrl: string
 }
@@ -239,6 +249,11 @@ export interface BuildPlayerRecapArgs {
   roomCode: string
   recapUrl: string
   avatarColors: { primary: string; secondary: string }
+  /**
+   * slug → renderable src. Populated by the caller for whichever images it
+   * resolved; a slug missing from here simply renders no picture.
+   */
+  imageSources?: Map<string, string>
 }
 
 export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
@@ -246,6 +261,7 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     player, players, leaderboard, award, verdict, categories, nominees,
     draftEntities, draftPicks, confidencePicks, timeline, bingoCards,
     bingoMarks, bingoSquaresById, messages, roomCode, recapUrl, avatarColors,
+    imageSources,
   } = args
 
   const entry = leaderboard.find((e) => e.player.id === player.id)
@@ -477,6 +493,32 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
       .map((c) => describe(messageById.get(c.messageId)!))
   }
 
+  // ── Artwork ───────────────────────────────────────────────────────────────
+  //
+  // Two sources, deliberately different in kind. The crest and hero slots are a
+  // judgement call the companion made, stored on the verdict row. The verdict
+  // portrait is not a choice at all — the author is already known — so it is
+  // resolved here rather than spending a model decision on it.
+  const imagery: PlayerRecapData['imagery'] = {}
+  const resolve = (slug: string | undefined, alt: string) => {
+    if (!slug) return undefined
+    const src = imageSources?.get(slug)
+    return src ? { src, alt } : undefined
+  }
+
+  for (const chosen of (verdict?.imagery ?? []) as Array<{ slot?: string; slug?: string }>) {
+    if (!chosen.slug || (chosen.slot !== 'crest' && chosen.slot !== 'hero')) continue
+    const entry = getLibraryImage(chosen.slug)
+    const resolved = resolve(chosen.slug, entry?.label ?? '')
+    if (resolved) imagery[chosen.slot] = resolved
+  }
+
+  if (verdict?.companion_id) {
+    const portrait = companionImage(verdict.companion_id)
+    const resolved = resolve(portrait?.slug, portrait?.label ?? '')
+    if (resolved) imagery.verdict = resolved
+  }
+
   return {
     roomCode,
     playerName: player.name,
@@ -508,6 +550,24 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     moments,
     bingo,
     lines,
+    imagery,
     recapUrl,
   }
+}
+
+/**
+ * Every image slug this player's keepsake could use.
+ *
+ * Callers fetch only these rather than the whole catalogue — the standalone
+ * file inlines each one as base64, so pulling artwork nobody chose would bloat
+ * a document that gets emailed around.
+ */
+export function requiredImageSlugs(verdict: PlayerVerdictRow | undefined): string[] {
+  if (!verdict) return []
+  const slugs = ((verdict.imagery ?? []) as Array<{ slug?: string }>)
+    .map((i) => i.slug)
+    .filter((s): s is string => typeof s === 'string')
+  const portrait = companionImage(verdict.companion_id)
+  if (portrait) slugs.push(portrait.slug)
+  return [...new Set(slugs)]
 }

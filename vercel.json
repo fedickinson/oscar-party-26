@@ -9,6 +9,10 @@
           "value": "dracarys"
         },
         {
+          "type": "query",
+          "key": "dracarys"
+        },
+        {
           "type": "cookie",
           "key": "open",
           "value": "dracarys"

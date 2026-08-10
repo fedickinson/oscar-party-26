@@ -29,16 +29,61 @@ import { computeLeaderboard } from '../lib/scoring'
 import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { computeNightAwards } from '../lib/night-awards'
 import { computeScoreTimeline } from '../lib/timeline-utils'
-import { buildPlayerRecap } from '../lib/player-recap'
+import { buildPlayerRecap, requiredImageSlugs } from '../lib/player-recap'
+import { getLibraryImage } from '../data/image-library'
 import { renderPlayerRecapHtml, playerRecapFileName } from '../lib/player-recap-html'
 import { recapUrlFor } from '../hooks/useShareResults'
 import { AVATAR_CONFIGS } from '../data/avatars'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function PlayerRecap() {
   const { code, playerId } = useParams<{ code: string; playerId: string }>()
   const { snapshot, notFound } = useRoomSnapshot(code)
   const [saved, setSaved] = useState(false)
+  /**
+   * slug → base64 data URI.
+   *
+   * The keepsake has to survive being opened offline, so chosen artwork is
+   * inlined rather than linked. Only the images this player's verdict actually
+   * picked are fetched — the catalogue is small but a document that gets emailed
+   * around should not carry pictures nobody chose.
+   */
+  const [imageSources, setImageSources] = useState<Map<string, string>>(new Map())
+
+  const verdict = snapshot && playerId ? snapshot.verdicts.get(playerId) : undefined
+
+  useEffect(() => {
+    const slugs = requiredImageSlugs(verdict)
+    if (slugs.length === 0) return
+    let cancelled = false
+
+    Promise.all(
+      slugs.map(async (slug) => {
+        const entry = getLibraryImage(slug)
+        if (!entry) return null
+        try {
+          const res = await fetch(entry.path)
+          if (!res.ok) return null
+          const blob = await res.blob()
+          const dataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result))
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+          })
+          return [slug, dataUri] as const
+        } catch {
+          // Artwork is an enhancement; the sheet renders without it.
+          return null
+        }
+      }),
+    ).then((pairs) => {
+      if (cancelled) return
+      setImageSources(new Map(pairs.filter((p): p is readonly [string, string] => p !== null)))
+    })
+
+    return () => { cancelled = true }
+  }, [verdict])
 
   const html = useMemo(() => {
     if (!snapshot || !playerId) return null
@@ -87,6 +132,7 @@ export default function PlayerRecap() {
         leaderboard,
         award: awards.playerAwards.find((a) => a.playerId === player.id),
         verdict: snapshot.verdicts.get(player.id),
+        imageSources,
         categories: snapshot.categories,
         nominees: snapshot.nominees,
         draftEntities: snapshot.draftEntities,
@@ -105,7 +151,7 @@ export default function PlayerRecap() {
         },
       }),
     )
-  }, [snapshot, playerId])
+  }, [snapshot, playerId, imageSources])
 
   const playerName = snapshot?.players.find((p) => p.id === playerId)?.name ?? ''
 

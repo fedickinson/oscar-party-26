@@ -626,6 +626,8 @@ export interface PlayerVerdictRow {
   verdict: string
   /** Chat lines the companion chose for this player, with its reason for each. */
   highlights: Array<{ message_id: string; note: string }>
+  /** Artwork chosen per slot. Slugs resolve against src/data/image-library.ts. */
+  imagery: Array<{ slot: string; slug: string; note: string }>
   created_at: string
 }
 
@@ -636,6 +638,7 @@ export interface PlayerVerdictInsert {
   title: string
   verdict: string
   highlights?: Array<{ message_id: string; note: string }>
+  imagery?: Array<{ slot: string; slug: string; note: string }>
   created_at?: string
 }
 

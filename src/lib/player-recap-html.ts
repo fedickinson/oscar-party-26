@@ -340,7 +340,10 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
         <h2>The verdict</h2>
         <blockquote class="verdict">
           <p>${esc(d.verdict.text)}</p>
-          <cite>${esc(d.verdict.companionName)}</cite>
+          <footer class="verdict-by">
+            ${d.imagery.verdict ? `<img class="portrait" src="${d.imagery.verdict.src}" alt="${esc(d.imagery.verdict.alt)}">` : ''}
+            <cite>${esc(d.verdict.companionName)}</cite>
+          </footer>
         </blockquote>
       </section>`
     : ''
@@ -500,14 +503,42 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     text-transform: uppercase; color: ${C.inkMuted}; margin-top: 3px;
   }
 
+  /* ── Artwork ─────────────────────────────────────────────────────────── */
+  /* Prints as an inked plate rather than a photograph: desaturated toward the
+     ink, blended into the vellum so it sits IN the paper. A full-colour crop
+     dropped on parchment reads as a sticker. */
+  .crest { display: flex; justify-content: center; margin: 0 0 12px; }
+  .crest img {
+    width: 92px; height: 92px; object-fit: contain;
+    filter: sepia(.35) saturate(.6) contrast(1.05);
+    mix-blend-mode: multiply;
+  }
+  .hero { float: right; margin: 0 0 10px 16px; }
+  .hero img {
+    width: 104px; height: 104px; object-fit: cover;
+    border: 1px solid ${C.ink};
+    box-shadow: 0 0 0 4px rgba(102,86,66,.14);
+    filter: sepia(.4) saturate(.55) contrast(1.04);
+    mix-blend-mode: multiply;
+  }
+  @media (max-width: 420px) {
+    .hero { float: none; margin: 0 0 12px; display: flex; justify-content: center; }
+  }
+  .portrait {
+    width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
+    filter: sepia(.4) saturate(.55); mix-blend-mode: multiply;
+    border: 1px solid rgba(41,34,25,.35);
+  }
+
   /* ── Verdict ─────────────────────────────────────────────────────────── */
   .verdict { margin: 0; padding: 2px 0 2px 16px; border-left: 2px solid ${C.madder}; }
   .verdict p {
     font-family: ${MANUSCRIPT}; font-size: 19px; line-height: 1.55;
     font-style: italic; color: ${C.ink}; margin: 0;
   }
+  .verdict-by { display: flex; align-items: center; gap: 9px; margin-top: 10px; }
   .verdict cite {
-    display: block; margin-top: 9px; font-style: normal; font-family: ${DISPLAY};
+    font-style: normal; font-family: ${DISPLAY};
     font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: ${C.inkMuted};
   }
 
@@ -522,7 +553,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   }
   .ledger-head .right { text-align: right; }
   .ledger-head h3 { font-variant-numeric: tabular-nums lining-nums; }
-  .entry { padding: 12px 0; border-top: 1px solid rgba(41,34,25,.16); }
+  .entry { padding: 12px 0; border-top: 1px solid rgba(41,34,25,.16); clear: both; }
   .entry-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .pts {
     font-family: ${DISPLAY}; font-size: 25px; font-weight: 800; color: ${C.ink};
@@ -660,6 +691,7 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     ${motifBand()}
 
     <header>
+      ${d.imagery.crest ? `<div class="crest"><img src="${d.imagery.crest.src}" alt="${esc(d.imagery.crest.alt)}"></div>` : ''}
       <p class="presents">Party Night Presents</p>
       <p class="masthead">Fire <em>&amp;</em> Blood</p>
       <p class="episode">House of the Dragon &mdash; Season 3 Finale</p>
@@ -686,6 +718,7 @@ ${verdictHtml}${momentsHtml}
       <section>
         <h2>Your draft</h2>
         <p class="section-note">${d.roster.length} claimed &middot; biggest earner first</p>
+        ${d.imagery.hero ? `<div class="hero"><img src="${d.imagery.hero.src}" alt="${esc(d.imagery.hero.alt)}"></div>` : ''}
         ${draftSummaryHtml}
         ${rosterHtml}
       </section>

@@ -33,6 +33,7 @@ import {
   parseVerdictResponse,
 } from '../lib/companion-prompts'
 import { collectLineCandidates } from '../lib/player-recap'
+import { getLibraryImage, IMAGE_SLOTS } from '../data/image-library'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { PlayerAward } from '../lib/night-awards'
 import type { MessageRow, PlayerRow, PlayerVerdictRow } from '../types/database'
@@ -226,6 +227,21 @@ export function usePlayerVerdicts({
                 .filter((h) => validMessageIds.has(h.messageId))
                 .slice(0, 4)
                 .map((h) => ({ message_id: h.messageId, note: h.note })),
+              // Drop unknown slugs and unknown slots, and keep at most one
+              // image per slot. A hallucinated slug would otherwise be stored
+              // and render as a missing picture in a file somebody keeps.
+              imagery: (() => {
+                const claimed = new Set<string>()
+                return v.imagery
+                  .filter((im) => {
+                    if (!IMAGE_SLOTS.includes(im.slot as (typeof IMAGE_SLOTS)[number])) return false
+                    if (!getLibraryImage(im.slug)) return false
+                    if (claimed.has(im.slot)) return false
+                    claimed.add(im.slot)
+                    return true
+                  })
+                  .map((im) => ({ slot: im.slot, slug: im.slug, note: im.note }))
+              })(),
             }
           })
           .filter((r): r is NonNullable<typeof r> => r !== null)
