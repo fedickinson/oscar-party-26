@@ -413,7 +413,10 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
     font-family: ${DISPLAY}; font-size: 10px; letter-spacing: .16em;
     text-transform: uppercase; color: ${C.inkMuted}; margin: 0; font-weight: 700;
   }
-  .section-note { font-family: ${MANUSCRIPT}; font-size: 15px; color: ${C.inkMuted}; margin: 0 0 12px; }
+  .section-note {
+    font-family: ${MANUSCRIPT}; font-size: 15px; color: ${C.inkMuted};
+    margin: 0 0 12px; text-wrap: pretty;
+  }
   .fine { font-size: 13px; line-height: 1.55; color: ${C.inkMuted}; margin: 6px 0 0; }
   .quiet { font-family: ${MANUSCRIPT}; font-size: 15px; color: ${C.inkMuted}; margin: 8px 0 0; font-style: italic; }
   .marginal {

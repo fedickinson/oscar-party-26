@@ -184,13 +184,13 @@ function Section({
     >
       <div className="flex flex-col gap-2">
         <span
-          className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+          className="text-[12px] font-semibold uppercase tracking-[0.22em]"
           style={{ color: 'var(--t-ornament-muted)' }}
         >
           {eyebrow}
         </span>
         <h2
-          className="text-[24px] leading-tight"
+          className="text-[28px] leading-tight"
           style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
         >
           {title}
@@ -245,7 +245,7 @@ const HALLMARK_RELIEF: React.CSSProperties = {
 /** Body copy. One place, so the reading colour and measure stay consistent. */
 function P({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[14px] leading-[1.65]" style={{ color: 'var(--t-text-muted)' }}>
+    <p className="text-[16px] leading-[1.65]" style={{ color: 'var(--t-text-muted)' }}>
       {children}
     </p>
   )
@@ -255,7 +255,7 @@ function P({ children }: { children: React.ReactNode }) {
 function KeyLine({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="border-l-2 pl-4 py-1 text-[18px] leading-snug"
+      className="border-l-2 pl-4 py-1 text-[24px] leading-snug"
       style={{
         fontFamily: 'var(--font-family-display)',
         color: 'var(--t-text)',
@@ -290,7 +290,7 @@ function Disclosure({
         aria-expanded={open}
         className="w-full min-h-[44px] flex items-center justify-between gap-3 text-left"
       >
-        <span className="text-[14px] font-semibold" style={{ color: 'var(--t-text-muted)' }}>
+        <span className="text-[16px] font-semibold" style={{ color: 'var(--t-text-muted)' }}>
           {label}
         </span>
         <ChevronDown
@@ -335,13 +335,13 @@ function Ladder({
       {rows.map((row) => (
         <li
           key={row.label}
-          className="flex items-baseline gap-2 text-[14px]"
+          className="flex items-baseline gap-2 text-[16px]"
           style={{ color: 'var(--t-text-muted)' }}
         >
           <span className="font-semibold" style={{ color: 'var(--t-text)' }}>
             {row.label}
           </span>
-          <span className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
+          <span className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
             {row.note}
           </span>
           <span
@@ -372,11 +372,11 @@ function GameCard({
     <div className="relief-glass p-4 flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
         <span style={{ color: 'var(--t-accent-light)' }}>{icon}</span>
-        <h3 className="text-[16px] font-semibold" style={{ color: 'var(--t-text)' }}>
+        <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
           {title}
         </h3>
       </div>
-      <div className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+      <div className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
         {summary}
       </div>
       {children}
@@ -411,22 +411,22 @@ export default function HowItWorks() {
           <Hallmark id="hallmark-dance" size={88} />
         </span>
         <span
-          className="text-[10px] font-semibold uppercase tracking-[0.3em]"
+          className="text-[12px] font-semibold uppercase tracking-[0.3em]"
           style={{ color: 'var(--t-ornament-muted)' }}
         >
           Party Night
         </span>
         <h1
-          className="text-[36px] leading-none"
+          className="text-[42px] leading-none"
           style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
         >
           Fire &amp; Blood
         </h1>
         <div className="flex flex-col gap-0.5">
-          <p className="text-[12px]" style={{ color: 'var(--t-text-muted)' }}>
+          <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
             {TONIGHT.event} &middot; {TONIGHT.episode}
           </p>
-          <p className="text-[12px]" style={{ color: 'var(--t-text-dim)' }}>
+          <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
             {TONIGHT.date}
           </p>
         </div>
@@ -440,19 +440,20 @@ export default function HowItWorks() {
         className="material-vellum deckled px-6 py-7"
       >
         <p
-          className="text-[16px] leading-[1.5] font-semibold"
+          className="text-[18px] leading-[1.5] font-semibold"
           style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
         >
-          We are watching the finale together, from more than one couch. There is a game
-          running underneath it &mdash; a draft, a scoreboard, a bingo card, and a group
-          chat with some very opinionated dead nobles in it.
+          To the lords and ladies of the realm, and to you in particular: you are
+          summoned to the last hour of the Dance. We watch it together tonight, though we
+          sit in different halls, and a game runs beneath the episode.
         </p>
         <p
-          className="text-[16px] leading-[1.5] font-semibold mt-4"
+          className="text-[18px] leading-[1.5] font-semibold mt-4"
           style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
         >
-          The whole thing is built so you never have to take your eyes off the TV to play
-          it. Read the bold parts before you arrive; open the rest if you want the numbers.
+          This is the whole of how it works, and it is built so you never have to take
+          your eyes off the TV to play it. Read the plain parts before you arrive; open the
+          rest only if you want the numbers.
         </p>
       </motion.div>
 
@@ -470,7 +471,7 @@ export default function HowItWorks() {
           {PACT.map((item, i) => (
             <li key={item.title} className="relief-glass p-4 flex gap-3.5">
               <span
-                className="flex-shrink-0 grid place-items-center w-7 h-7 border text-[14px]"
+                className="flex-shrink-0 grid place-items-center w-7 h-7 border text-[16px]"
                 style={{
                   fontFamily: 'var(--font-family-display)',
                   color: 'var(--t-accent-light)',
@@ -482,13 +483,13 @@ export default function HowItWorks() {
               </span>
               <div className="flex flex-col gap-1.5 min-w-0">
                 <h3
-                  className="text-[16px] leading-snug font-semibold"
+                  className="text-[18px] leading-snug font-semibold"
                   style={{ color: 'var(--t-text)' }}
                 >
                   {item.title}
                 </h3>
                 <p
-                  className="text-[14px] leading-[1.6]"
+                  className="text-[16px] leading-[1.6]"
                   style={{ color: 'var(--t-text-muted)' }}
                 >
                   {item.body}
@@ -609,7 +610,7 @@ export default function HowItWorks() {
               </P>
               {!TONIGHT.draftBeatsLive && (
                 <p
-                  className="text-[12px] leading-relaxed border-l-2 pl-3"
+                  className="text-[14px] leading-relaxed border-l-2 pl-3"
                   style={{ color: 'var(--t-pending)', borderColor: 'var(--t-pending)' }}
                 >
                   The beat lists are still being loaded into the app. Everything above is
@@ -726,7 +727,7 @@ export default function HowItWorks() {
         <div className="relief-glass p-4 flex flex-col gap-3">
           <div className="flex gap-3">
             <Tv size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--t-text-dim)' }} />
-            <p className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
               Watching on your own? You are your own remote-holder by definition. Skip the
               place name, control your own playback, pause whenever you like.
             </p>
@@ -771,7 +772,7 @@ export default function HowItWorks() {
               className="flex-shrink-0 mt-0.5"
               style={{ color: 'var(--t-text-dim)' }}
             />
-            <p className="text-[14px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
               Nobody types a timestamp. Nobody reads a clock out loud. Nobody has to ask
               &ldquo;where are you?&rdquo; in the group chat.
             </p>
@@ -841,14 +842,14 @@ export default function HowItWorks() {
                 </span>
                 <div className="min-w-0">
                   <h3
-                    className="text-[14px] leading-snug font-semibold"
+                    className="text-[16px] leading-snug font-semibold"
                     style={{ color: 'var(--t-text)' }}
                   >
                     <span style={{ color: 'var(--t-text-dim)' }}>{i + 1}. </span>
                     {step.title}
                   </h3>
                   <p
-                    className="text-[14px] leading-[1.55]"
+                    className="text-[16px] leading-[1.55]"
                     style={{ color: 'var(--t-text-muted)' }}
                   >
                     {step.body}
@@ -900,16 +901,16 @@ export default function HowItWorks() {
               </div>
               <div className="flex flex-col gap-1 pb-6 min-w-0">
                 <span
-                  className="text-[12px] font-semibold uppercase tracking-[0.14em] tabular-nums"
+                  className="text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums"
                   style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
                 >
                   {slot.time ?? 'time to come'}
                 </span>
-                <h3 className="text-[16px] font-semibold" style={{ color: 'var(--t-text)' }}>
+                <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
                   {slot.title}
                 </h3>
                 <p
-                  className="text-[14px] leading-[1.6]"
+                  className="text-[16px] leading-[1.6]"
                   style={{ color: 'var(--t-text-muted)' }}
                 >
                   {slot.detail}
@@ -930,13 +931,13 @@ export default function HowItWorks() {
         {TONIGHT.roomCode && (
           <div className="relief-glass p-5 flex flex-col items-center gap-1.5">
             <span
-              className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+              className="text-[12px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: 'var(--t-ornament-muted)' }}
             >
               Room code
             </span>
             <span
-              className="text-[36px] leading-none tabular-nums tracking-[0.14em]"
+              className="text-[42px] leading-none tabular-nums tracking-[0.14em]"
               style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
             >
               {TONIGHT.roomCode}
@@ -949,14 +950,14 @@ export default function HowItWorks() {
             has no allegiance, and the default (jet) is near-black on near-black. */}
         <Link
           to="/"
-          className="w-full min-h-[52px] flex items-center justify-center gap-2 px-4 text-[16px] font-semibold relief-raised material-enamel"
+          className="w-full min-h-[52px] flex items-center justify-center gap-2 px-4 text-[18px] font-semibold relief-raised material-enamel"
           style={{ backgroundColor: 'var(--t-accent)', color: 'var(--t-vellum-light)' }}
         >
           Join the room
           <ArrowRight size={18} />
         </Link>
 
-        <p className="text-[12px] text-center leading-relaxed" style={{ color: 'var(--t-text-dim)' }}>
+        <p className="text-[14px] text-center leading-relaxed" style={{ color: 'var(--t-text-dim)' }}>
           Join any time before the draft &mdash; the room holds your spot even if you close
           the tab.
         </p>
