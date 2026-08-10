@@ -234,6 +234,38 @@ kills the settlement phase, because part of what settlement knows (what the
 audience felt, what the discourse decided) cannot be seen by any camera
 watcher.
 
+## The mobile grammar (8/10 — from the phone-frame pass)
+
+A full screenshot pass of the ceremony at 375×812 (headless Chromium walking
+every slide and stage; shots read and reviewed one by one) surfaced a set of
+rules that are not artifact-specific — they are the platform's mobile grammar:
+
+1. **The reserved-chrome contract.** Every fixed overlay (commentary desk,
+   race strip, nav) must publish its height, and every content layer pads to
+   the sum of what's below it. Every overlap bug found was a violation of
+   this one contract. When chrome can grow (long quotes), cap it (max-height)
+   and fade the boundary — a soft shadow reads as intentional; a mid-glyph
+   slice reads as broken.
+2. **Scroll-safety.** Any screen can exceed a phone. Every screen scrolls,
+   scroll position resets on entry, and an overflowing column is NEVER
+   flex-centered — `justify-content:center` + overflow makes the top of the
+   content unreachable (the muster bug, twice).
+3. **Auto-zoom analytics.** A live time-series scales to the max SO FAR, not
+   the final value — early game must be as readable as the finale. Labels get
+   collision handling (sort by value, enforce a minimum gap). This is the
+   shared leaderboard-graph primitive.
+4. **One gesture, then quiet.** Hints teach once and retire on first use.
+   Navigation affordances live at the screen edges (bottom corners, 44px),
+   never mid-content where they fight the ledger.
+5. **Cascade discipline (single-file artifacts).** Iterative patches append
+   CSS out of order; keep one FINAL-OVERRIDE block at the end of the sheet
+   and put corrective rules only there. (A rule above the base rule silently
+   loses — that was the muster fix that "didn't apply.")
+6. **The walker is the QA primitive.** A ~40-line playwright script that
+   arrows through every state at phone size and screenshots each is the
+   difference between believing a screen works and seeing it. Run it after
+   every visual change; read the images, not the code.
+
 ## The foundation: ontology & epistemology (8/10)
 
 ONTOLOGY — four kinds, two worlds. Events happen in W1 (the screen) or W2
