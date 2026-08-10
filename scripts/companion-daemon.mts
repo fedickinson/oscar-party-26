@@ -194,3 +194,76 @@ async function watchBingo() {
   }
 }
 void watchBingo()
+
+// ─── Chat watch — the cast answers when spoken to, phone-independent ─────────
+// useChatReactivity (mentions, ambient) is host-tab-only: with the phone
+// locked, a player asking Tyrion a question got silence — the most personal
+// feature dead at the moment it matters. Haiku on this path (the human is
+// actively waiting); same cooldowns as the hook.
+import { buildChatReactivePrompt } from '../src/lib/companion-prompts'
+import { detectMentions, detectAmbientTrigger, shouldFireAmbient } from '../src/lib/chat-reactivity-utils'
+
+async function watchChat() {
+  const seenMsgs = new Set<string>(
+    (await get(`messages?room_id=eq.${RID}&select=id`)).map((m: { id: string }) => m.id),
+  )
+  const players: { id: string; name: string }[] = await get(`players?room_id=eq.${RID}&select=id,name`)
+  const playerIds = new Set(players.map((p) => p.id))
+  const lastReply = new Map<string, number>()
+  let lastAmbient = 0
+  const recent: { player_id: string; text: string }[] = []
+
+  log(`chat watch live — ${seenMsgs.size} messages baselined, answering as of now`)
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 5_000))
+    try {
+      const msgs = await get(`messages?room_id=eq.${RID}&select=id,player_id,text,created_at&order=created_at.desc&limit=12`)
+      for (const m of [...msgs].reverse()) {
+        if (seenMsgs.has(m.id)) continue
+        seenMsgs.add(m.id)
+        recent.push({ player_id: m.player_id, text: m.text })
+        if (recent.length > 10) recent.shift()
+        if (!playerIds.has(m.player_id)) continue // humans only
+        const sender = players.find((p) => p.id === m.player_id)!
+
+        const mentioned = detectMentions(m.text)
+        let target: string | null = null
+        let kind: 'mention' | 'ambient' = 'mention'
+        if (mentioned.length) {
+          target = mentioned.find((id) => Date.now() - (lastReply.get(id) ?? 0) > 20_000) ?? null
+        } else {
+          const trig = detectAmbientTrigger(m.text)
+          if (trig && Date.now() - lastAmbient > 60_000 && shouldFireAmbient(trig)) {
+            target = trig.companions[Math.floor(Math.random() * trig.companions.length)]
+            kind = 'ambient'
+            lastAmbient = Date.now()
+          }
+        }
+        if (!target) continue
+        lastReply.set(target, Date.now())
+
+        const prompt = buildChatReactivePrompt(
+          target, { playerName: sender.name, text: m.text },
+          recent as never, { leaderboard: [], announcedCount: seen.size }, kind,
+        )
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': AKEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5', max_tokens: 200,
+            system: [{ type: 'text', text: prompt.system, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+            messages: [{ role: 'user', content: prompt.user }],
+          }),
+        })
+        const d = await r.json()
+        if (!r.ok) continue
+        const raw = (d.content ?? []).find((b: { type?: string }) => b.type === 'text')?.text ?? ''
+        for (const out of parseCompanionResponse(raw)) {
+          await ins('messages', { room_id: RID, player_id: out.companion_id, text: out.text })
+        }
+        log(`${kind}: ${sender.name} -> ${target} answered`)
+      }
+    } catch (e) { log(`chat transient: ${String(e).slice(0, 60)}`) }
+  }
+}
+void watchChat()
