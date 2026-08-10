@@ -211,7 +211,25 @@ export function useScores(roomId: string | undefined): ScoresState {
 
     function handleWinnerSet(rw: RoomWinnerRow) {
       const cat = categoriesRef.current.find((c) => c.id === rw.category_id)
-      if (!cat) return
+      if (!cat) {
+        // GM-declared events INSERT brand-new category rows; this hook only
+        // fetched categories at mount, so a winner for an unseen category was
+        // silently dropped — no announcement overlay, no live leaderboard
+        // movement, until someone reloaded. Recover: fetch the row, add it,
+        // and re-run with the ref now populated.
+        void (async () => {
+          const { data } = await supabase
+            .from('categories').select().eq('id', rw.category_id).maybeSingle()
+          if (!data) return
+          if (!categoriesRef.current.some((c) => c.id === data.id)) {
+            const merged = { ...data, winner_id: null, tie_winner_id: null }
+            categoriesRef.current = [...categoriesRef.current, merged]
+            setCategories((prev) => (prev.some((c) => c.id === data.id) ? prev : [...prev, merged]))
+          }
+          handleWinnerSet(rw)
+        })()
+        return
+      }
 
       const prevWinnerId = prevCategoriesRef.current.get(rw.category_id) ?? null
 
@@ -355,6 +373,25 @@ export function useScores(roomId: string | undefined): ScoresState {
 
     const channel = supabase
       .channel(`scores-room-winners:${roomId}`)
+      // GM-declared events are brand-new category rows (the Oscars only ever
+      // UPDATEd seeded ones). Without this, phones already on Live never learn
+      // a declaration exists: no overlay, no leaderboard movement. Cannot be
+      // room-filtered (categories has no room_id) — dedupe by id instead.
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'categories' },
+        (payload) => {
+          const cat = payload.new as CategoryRow
+          if (categoriesRef.current.some((c) => c.id === cat.id)) return
+          const merged = { ...cat, winner_id: null, tie_winner_id: null }
+          categoriesRef.current = [...categoriesRef.current, merged]
+          setCategories((prev) => (prev.some((c) => c.id === cat.id) ? prev : [...prev, merged]))
+          // Its winner may have landed first and been dropped — check.
+          void supabase
+            .from('room_winners').select().eq('room_id', roomId!).eq('category_id', cat.id).maybeSingle()
+            .then(({ data }) => { if (data) handleWinnerSet(data as RoomWinnerRow) })
+        },
+      )
       .on(
         'postgres_changes',
         {
