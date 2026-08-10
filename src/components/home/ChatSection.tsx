@@ -9,7 +9,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Send } from 'lucide-react'
+import { BookOpen, Send, MessageSquare, ChevronDown } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
@@ -151,6 +151,9 @@ interface Props {
 }
 
 export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
+  // Collapsed state survives tab switches within the session but not reloads —
+  // a fresh open should always show the room talking.
+  const [collapsed, setCollapsed] = useState(false)
   const { room, player, players } = useGame()
   const { messages, sendMessage, isLoading } = useChat(room?.id)
   const [input, setInput] = useState('')
@@ -238,10 +241,24 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   }
 
   return (
-    <div className={['relief-glass overflow-hidden flex flex-col', fill ? 'flex-1 min-h-0' : ''].join(' ')}>
+    <div className={['relief-glass overflow-hidden flex flex-col', fill && !collapsed ? 'flex-1 min-h-0' : 'flex-shrink-0'].join(' ')}>
+      {/* Header — always visible; tap to collapse/expand the panel */}
+      <button
+        onClick={() => setCollapsed((c) => !c)}
+        className="flex items-center gap-2 px-3.5 min-h-[44px] w-full text-left border-b border-white/8 flex-shrink-0"
+      >
+        <MessageSquare size={14} className="text-white/40" />
+        <span className="text-xs uppercase tracking-wider text-white/50 font-medium">Chat</span>
+        <span className="text-[11px] text-white/30 font-mono">{messages.length}</span>
+        <ChevronDown
+          size={16}
+          className={['ml-auto text-white/40 transition-transform', collapsed ? '-rotate-90' : ''].join(' ')}
+        />
+      </button>
       {/* Message list */}
+      {!collapsed && (
       <div
-        className={['overflow-y-auto px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
+        className={['overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
         <AnimatePresence initial={false}>
@@ -422,8 +439,10 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
 
         <div ref={bottomRef} />
       </div>
+      )}
 
       {/* Input bar */}
+      {!collapsed && (
       <div className="border-t border-white/10 px-3 py-2 flex gap-2 items-center">
         <input
           ref={inputRef}
@@ -445,6 +464,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
           <Send size={16} className="text-accent" />
         </motion.button>
       </div>
+      )}
 
       {/* Companion profile modal */}
       <AnimatePresence>

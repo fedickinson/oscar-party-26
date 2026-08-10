@@ -500,7 +500,6 @@ export default function LiveHomeView({
 
       {/* Chat fills remaining vertical space — min-h-0 prevents flex overflow */}
       <div className="flex-1 flex flex-col min-h-0 px-4 pt-3" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-        <p className="text-xs uppercase tracking-wider text-white/35 mb-2 px-1 flex-shrink-0">Chat</p>
         <ChatSection fill onFilmLinkTap={onFilmLinkTap} />
       </div>
     </div>

@@ -42,6 +42,7 @@ import ScoresTab from '../components/live/ScoresTab'
 import GameMasterConsole from '../components/live/GameMasterConsole'
 import MyPicksTab from '../components/live/MyPicksTab'
 import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
+import { Clapperboard } from 'lucide-react'
 import FinaleOverlay from '../components/live/FinaleOverlay'
 import SpotlightNotification from '../components/spotlight/SpotlightNotification'
 import PhaseExplainer from '../components/PhaseExplainer'
@@ -770,6 +771,19 @@ export default function Live() {
           />
         )}
       </AnimatePresence>
+
+      {/* Persistent settled banner — a reopened phone gets a standing door to
+          the results, since the finale overlay only plays once. */}
+      {room?.phase === 'finished' && (
+        <button
+          onClick={() => navigate(`/room/${code}/results`)}
+          className="fixed top-2 inset-x-4 z-40 mx-auto max-w-md flex items-center justify-center gap-2 rounded-2xl border border-oscar-gold/50 bg-white/5 backdrop-blur-lg px-4 py-3 font-semibold text-oscar-gold shadow-lg"
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        >
+          <Clapperboard size={16} />
+          The night is settled — final results
+        </button>
+      )}
 
       {/* Finale overlay — shown for ALL clients when ceremony ends */}
       <AnimatePresence>
