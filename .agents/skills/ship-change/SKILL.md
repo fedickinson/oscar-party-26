@@ -15,9 +15,9 @@ for: "commit" is not "push", "push" is not "deploy", and nothing here implies a 
    supersedes yours.
 2. **Review the exact payload.** `git status` and `git diff` — confirm every file that will land is
    one you meant to change, and that unrelated in-progress work stays out of the commit.
-3. **Run the gate.** `npx tsc -p tsconfig.app.json --noEmit` and `npm run build`. Nothing ships
-   red. If the change touched backend writes, `npx tsx scripts/dogfood-e2e.mts` too. Report the
-   exact scope you ran; there is no linter and no test suite to claim.
+3. **Run the gate.** `npm run build` and `npm test`. Nothing ships red. If the change touched
+   backend writes, `npx tsx scripts/dogfood-e2e.mts` too. Report the exact scope you ran — the
+   suite is pure-function only, so a green run is not evidence about a screen.
 4. **Security pass.** This repository is public and the database is production. Before staging,
    confirm no key, password, connection string, `.env` value, snapshot, or private-doc content is
    in the diff. Auth, RLS policy, credential, destructive-migration, and personal-data changes get

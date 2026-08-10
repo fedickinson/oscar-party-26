@@ -56,8 +56,10 @@ Verified in this repository on the current checkout:
 | --- | --- | --- |
 | Install | `npm install` | Node 20+. |
 | Dev server | `npm run dev` | Vite, on `localhost:5173`. |
-| Type check | `npx tsc -p tsconfig.app.json --noEmit` | Fast inner-loop check. Currently green. |
-| **Build gate** | `npm run build` | `tsc -b && vite build`. Green build is the ship gate; nothing ships red. |
+| Type check | `npx tsc -p tsconfig.app.json --noEmit` | Fast inner-loop check on `src` only. |
+| **Build gate** | `npm run build` | `tsc -b && vite build`, covering `src`, `api` and the configs. Green build is the ship gate; nothing ships red. |
+| **Unit tests** | `npm test` | Vitest over the pure layer — `src/lib` and the proxy guards. 102 tests, no network, no database. |
+| Tests, watching | `npm run test:watch` | Inner loop while changing `src/lib`. |
 | Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | ~50 assertions, real write shapes, **against the live database**; cleans up after itself. Required when a change touches backend writes. |
 | Second player | `npx tsx scripts/ghost-screen.mts` | Joins your room as a real counterparty. |
 | Room dashboard | `npx tsx scripts/gm-pulse.mts --room CODE` | Presence, declares, marks, cast liveness. |
@@ -67,11 +69,16 @@ Verified in this repository on the current checkout:
 | Deploy | `npx vercel --prod` | |
 | Rollback | `npx vercel ls` then `npx vercel alias set <url> <domain>` | Seconds, no redeploy. |
 
-**There is no test runner and no linter.** `package.json` declares `npm run lint`, but eslint is
-not installed and the script fails — do not run it, and never cite it as evidence. There is no
-vitest/jest/playwright. The verification surface is: type check, build, `dogfood-e2e.mts`, the
-operator scripts, and a human or headless browser actually using the app. Say so plainly instead
-of implying coverage that does not exist.
+**There is no linter and no browser-level test tooling.** The `lint` script was removed because
+eslint was never installed and it only ever failed; if you want linting, wire it up deliberately.
+There is no playwright and no component testing.
+
+So the verification surface is: `npm test` for pure logic, the build for types, `dogfood-e2e.mts`
+for real write shapes against the live database, the operator scripts, and a human or a headless
+browser actually using the app. Unit tests cover `src/lib` and the proxy guards — **not** hooks,
+components, Realtime delivery, or layout. Say which layer you verified instead of implying the
+rest. CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the build and the tests on
+every push and pull request.
 
 ## Invariants
 
@@ -126,8 +133,11 @@ leak into real rooms forever).
 
 ## Verification expectations
 
-- Name the scope of every check you ran: type-check only, build, backend e2e, or real app usage.
-  A type check is not a build, a build is not behavior, and a passing script is not a screen.
+- Name the scope of every check you ran: type-check, unit tests, build, backend e2e, or real app
+  usage. A type check is not a build, a unit test is not a screen, and a passing script is not a
+  phone in someone's hand.
+- A new test that passes before your change proves nothing. Watch it fail first, or mutate the
+  source to confirm the test can fail at all.
 - Re-run the **originally reported scenario** through the real entry point, not just the component
   you edited.
 - Check every exit path a change touches: zero, empty, missing, error, cached, fallback.
@@ -137,9 +147,9 @@ leak into real rooms forever).
 ## Definition of done
 
 1. The requested behavior works end to end, not a scaffold for it.
-2. `npx tsc -p tsconfig.app.json --noEmit` and `npm run build` are green.
-3. Backend-write changes pass `npx tsx scripts/dogfood-e2e.mts`, or you state that it was not run
-   and why.
+2. `npm run build` and `npm test` are green.
+3. Changed logic in `src/lib` has a test that fails without the change. Backend-write changes pass
+   `npx tsx scripts/dogfood-e2e.mts`, or you state that it was not run and why.
 4. The original report or acceptance criteria are each individually verified or explicitly deferred.
 5. The invariants above are intact — especially tokens, no-emoji, additive migrations, grounding.
 6. Unrelated working-tree changes are untouched.

@@ -41,8 +41,9 @@ The request, plus whatever the user has already observed or decided. Read `AGENT
    leaving, a phone reloading, a tie, an unclaimed outcome, a mixed-version room during a deploy.
 7. **Slice it.** Smallest coherent increments, each one shippable and observable on a phone. A
    slice that lands a no-op scaffold is not a slice — merge it into the one that makes it real.
-8. **State the verification plan per slice**: which of type-check / build / `dogfood-e2e.mts` /
-   real two-client usage proves it, and what none of them can prove.
+8. **State the verification plan per slice**: which of `npm test` / build / `dogfood-e2e.mts` /
+   real two-client usage proves it, and what none of them can prove. Logic that lands in `src/lib`
+   is testable and should say so; logic that lands in a hook or a component is not.
 
 ## Stopping conditions
 

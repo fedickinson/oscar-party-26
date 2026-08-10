@@ -29,8 +29,8 @@ the project's doctrine — grounding, two-canons, the settlement layer, the oper
 - **Subagents:** use them for read-only fan-out — sweeping `src/` for every consumer of a changed
   function, or reading a long doc — not for edits to shared files. Only when the user asks.
 - **Plan mode** is the right default for anything touching scoring, migrations, or a live room.
-- **Do not run `npm run lint`.** It is declared but eslint is not installed; it fails. There is no
-  test runner either. Say what you actually ran.
+- **`npm test` covers pure functions only** — `src/lib` and the proxy guards. It says nothing about
+  hooks, Realtime, or what a phone renders. There is no linter. Say what you actually ran.
 - **Ask before** applying a migration, deploying, aliasing production, or writing to a room with
   real people in it. See the protected list in `AGENTS.md`.
 - **Memory:** persistent notes belong in the project memory directory, not in tracked repo files.

@@ -51,20 +51,24 @@ working on a phone.
 
 ## Coverage
 
-There is no test runner in this repository — do not pretend otherwise and do not add one as a side
-effect of another task. Where a change is verifiable headlessly, add assertions to
-`scripts/dogfood-e2e.mts`, which imports the real `src/lib/` functions and writes real rows (and
-cleans up after itself). Where it is not, say plainly which part has no automated coverage.
+Vitest covers the pure layer: `src/lib/*.test.ts` and `api/_guards.test.ts`. Anything you change
+in `src/lib` gets a test, and the test must **fail before your change** — write it first, or
+mutate the source afterward to prove it can fail. A test that never failed is decoration.
+
+Hooks, components, Realtime delivery and layout have no automated coverage. For those, add
+assertions to `scripts/dogfood-e2e.mts` where the change is headlessly verifiable, and otherwise
+say plainly which part is only human-verified.
 
 Never edit an assertion to make broken behavior pass. If the contract genuinely changed, change
 the assertion deliberately and say so in the summary.
 
 ## Verification before you call it done
 
-`npx tsc -p tsconfig.app.json --noEmit` while iterating; `npm run build` as the gate — nothing
-ships red. Backend-write changes also run `npx tsx scripts/dogfood-e2e.mts` (it hits the live
-database; do not run it while real people are in a room). For anything users will see, hand off to
-`verify-change` rather than declaring victory from a green build.
+`npm run test:watch` and `npx tsc -p tsconfig.app.json --noEmit` while iterating; `npm run build`
+and `npm test` as the gate — nothing ships red. Backend-write changes also run
+`npx tsx scripts/dogfood-e2e.mts` (it hits the live database; do not run it while real people are
+in a room). For anything users will see, hand off to `verify-change` rather than declaring victory
+from a green build.
 
 ## Output
 

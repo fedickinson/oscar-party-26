@@ -1,0 +1,28 @@
+name: CI
+
+# The build gate stops being a thing people remember and becomes a thing that
+# runs. Type check, build and unit tests only — nothing here touches Supabase,
+# Anthropic or a deployment, so it needs no secrets and cannot affect a live game.
+on:
+  push:
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # tsc -b covers src, vite.config/vitest.config and api — the proxy included.
+      - name: Type check and build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test

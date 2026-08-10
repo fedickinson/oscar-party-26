@@ -52,5 +52,5 @@ step requires an action inside the protected list in `AGENTS.md`. Ask before tou
 
 Root cause with `file:line` · the mechanism, end to end · which reported symptoms it explains and
 which it does not · the exact scenario that must pass after the fix · the regression check to add
-(usually an assertion in `scripts/dogfood-e2e.mts`, since there is no test runner) · what remains
-unverified. Hand off to `implement-change`.
+(a vitest case in `src/lib/*.test.ts` when the defect is in pure logic, an assertion in
+`scripts/dogfood-e2e.mts` when it is in a write shape) · what remains unverified. Hand off to `implement-change`.

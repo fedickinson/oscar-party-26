@@ -24,15 +24,16 @@ people in it? Verification against the wrong branch, server, or database is not 
 
 | Check | Command | What it proves | What it does not |
 | --- | --- | --- | --- |
-| Type check | `npx tsc -p tsconfig.app.json --noEmit` | Types line up | Nothing about behavior |
-| Build gate | `npm run build` | It compiles and bundles | Nothing about behavior |
+| Type check | `npx tsc -p tsconfig.app.json --noEmit` | Types line up in `src` | Nothing about behavior |
+| Build gate | `npm run build` | `src`, `api` and configs compile and bundle | Nothing about behavior |
+| Unit tests | `npm test` | Pure logic in `src/lib` and the proxy guards | Nothing about hooks, components, Realtime or layout |
 | Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | Real write shapes and real scoring against the live DB | Nothing about React state, Realtime delivery, or layout |
 | Second client | `npx tsx scripts/ghost-screen.mts` | A real counterparty's writes arrive | Nothing about what a phone renders |
 | Room state | `npx tsx scripts/gm-pulse.mts --room CODE` | What the database actually holds | Nothing about the client |
 | Real usage | Two browsers, or a headless walker at 375×812 | What a player actually sees | Only the states you visited |
 
-There is no linter and no test runner: `npm run lint` is declared in `package.json` but eslint is
-not installed and the command fails. Never cite it.
+There is no linter and no browser-level test tooling, so never imply either. And a green `npm test`
+says nothing about a screen: the suite deliberately covers only pure functions.
 
 ## Re-run the original scenario
 

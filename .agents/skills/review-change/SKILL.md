@@ -46,8 +46,9 @@ against any new migration, and the scripts that import changed `src/lib/` code.
 
 - No style-only comments — there is no linter here, so do not act as one.
 - Do not restate what the diff plainly does.
-- Do not demand tests that cannot exist; there is no test runner. Do ask whether a headless
-  assertion in `scripts/dogfood-e2e.mts` was possible and skipped.
+- Changed logic in `src/lib` without a test is a finding; so is a test that would pass against the
+  unchanged source. Do not demand tests for hooks, components or layout — there is no tooling for
+  them. Do ask whether a headless assertion in `scripts/dogfood-e2e.mts` was possible and skipped.
 
 ## Output
 
