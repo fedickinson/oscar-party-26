@@ -164,13 +164,15 @@ export function useChatReactivity(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-5',
+        // Haiku, deliberately — THIS is the path where latency is felt: a
+        // human just addressed a companion and is watching for the reply.
+        // Benchmarked ~2x faster than Sonnet (~2s vs ~4s to last token) with
+        // voice holding up on one-liner replies. Event reactions stay on
+        // Sonnet in useAICompanions: multi-voice batches, the Daenerys drift
+        // and the spoiler rules are where the model quality actually shows,
+        // and their latency hides inside theatrical delays.
+        model: 'claude-haiku-4-5',
         max_tokens: 200,
-        // Same reasoning as useAICompanions: on Sonnet 5 an omitted `thinking`
-        // runs adaptive, and max_tokens caps thinking + text together — at 200
-        // that would return an empty reply every time.
-        thinking: { type: 'disabled' },
-        output_config: { effort: 'low' },
         // This is the busiest caller of the night — one call per player message
         // that earns a reply. CHAT_REACTIVE_SYSTEM is identical every time.
         system: [

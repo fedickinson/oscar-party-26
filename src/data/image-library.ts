@@ -14,10 +14,9 @@
  * somebody keeps for a year.
  *
  * ADDING ARTWORK IS A DATA CHANGE
- * Drop files into public/avatars/<kind>/<slug>.webp and add a row here. Nothing
+ * Drop a file into public/avatars/<kind>/<slug> and add a row here. Nothing
  * downstream needs touching: the prompt renders this list, the renderer inlines
- * whatever was chosen. CHARACTER_IMAGES is deliberately empty until the House of
- * the Dragon portraits land.
+ * whatever was chosen.
  *
  * KEEP THEM SMALL
  * Every chosen image is inlined into the standalone keepsake as a base64 data
@@ -76,14 +75,13 @@ const SIGIL_IMAGES: LibraryImage[] = PLAYER_AVATARS.filter((a) => a.image).map((
 }))
 
 /**
- * House of the Dragon character portraits.
+ * The 27 draftable characters of the finale.
  *
- * Empty until the artwork exists. Add rows as:
- *   { slug: 'character-rhaenyra', kind: 'character', label: 'Rhaenyra Targaryen',
- *     description: '...', path: '/avatars/characters/rhaenyra.webp' }
- *
- * Slugs should match the draft entity name closely enough that
- * findCharacterImage below can resolve them without a second mapping table.
+ * Slugs are chosen so findCharacterImage can resolve a draft entity name by
+ * substring without a second mapping table, and are deliberately disambiguated
+ * where names overlap: `alysrivers` (not `alys`) because "Alysanne Blackwood"
+ * contains "alys", and `oscartully` for the same reason. Every entity is
+ * covered — see the resolver check in the notes for this change.
  */
 const CHARACTER_IMAGES: LibraryImage[] = [
   { slug: 'character-rhaenyra', kind: 'character', label: 'Rhaenyra Targaryen',
