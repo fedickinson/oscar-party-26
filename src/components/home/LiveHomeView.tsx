@@ -501,19 +501,11 @@ export default function LiveHomeView({
         {finished && (
           <a
             href="/ceremony.html"
-            className="block rounded-2xl border-2 border-oscar-gold/60 bg-gradient-to-b from-oscar-gold/12 to-white/5 backdrop-blur-lg p-4 shadow-lg"
+            className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"
           >
-            <div className="font-mono text-[10px] tracking-[0.3em] uppercase text-oscar-gold/70">
-              The ending
-            </div>
-            <div className="mt-0.5 text-lg font-bold text-white">The Night of the Dance</div>
-            <p className="mt-1 text-[13px] text-white/60 leading-snug">
-              The ceremony of the record — every beat, the cast, your card at the end.
-            </p>
-            <div className="mt-2.5 inline-flex items-center gap-2 rounded-xl border border-oscar-gold/60 px-3.5 py-2 text-sm font-semibold text-oscar-gold">
-              <Clapperboard size={15} />
-              Watch the Ceremony
-            </div>
+            <Clapperboard size={16} className="text-oscar-gold flex-shrink-0" />
+            <span className="font-semibold text-oscar-gold text-sm">The Night of the Dance</span>
+            <span className="ml-auto text-xs text-white/40">rewatch &rsaquo;</span>
           </a>
         )}
         <CollapsibleScores leaderboard={leaderboard} />
