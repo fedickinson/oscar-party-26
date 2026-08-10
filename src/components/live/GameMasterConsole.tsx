@@ -31,6 +31,9 @@ const FREE_CENTER_INDEX = 12
 interface Props {
   roomId: string
   isHost: boolean
+  /** Names of draft entities the CURRENT player drafted — their roster leads
+   *  the character picker, because you call events for your own fighters. */
+  myRosterNames?: string[]
   /** Ends the episode and moves the room to 'finished'. Carried over from
    *  WinnersTab, which this console replaces for episode-based properties. */
   onEndCeremony: () => void
@@ -40,6 +43,7 @@ interface Props {
 export default function GameMasterConsole({
   roomId,
   isHost,
+  myRosterNames = [],
   onEndCeremony,
   isEndingCeremony,
 }: Props) {
@@ -304,29 +308,49 @@ export default function GameMasterConsole({
             </div>
           )}
 
-          {/* Character picker */}
-          <div>
-            <p className="text-xs text-white/40 mb-2">Who?</p>
-            <div className="flex flex-wrap gap-2">
-              {characters.map((c) => {
-                const active = selectedCharacter === c.id
-                return (
-                  <motion.button
-                    key={c.id}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelectedCharacter(active ? null : c.id)}
-                    className={`material-iron relief-raised min-h-11 px-3 py-2 rounded-xl text-xs font-medium border transition-colors
-                      ${active
-                        ? 'border-[color:var(--t-personal-text)] text-[color:var(--t-personal-text)]'
-                        : 'border-[color:var(--t-line)] text-[color:var(--t-text-muted)]'}`}
-                    style={active ? { backgroundColor: 'var(--t-iron)' } : undefined}
-                  >
-                    {c.name}
-                  </motion.button>
-                )
-              })}
-            </div>
-          </div>
+          {/* Character picker — YOUR fighters lead. You watch the episode for
+              your own roster; their names come first, bright and bordered in
+              your team color. Everyone else is reachable below, dimmer. */}
+          {(() => {
+            const mine = new Set(myRosterNames.map((n) => n.toLowerCase()))
+            const yours = characters.filter((c) => mine.has(c.name.toLowerCase()))
+            const rest = characters.filter((c) => !mine.has(c.name.toLowerCase()))
+            const chip = (c: (typeof characters)[number], isMine: boolean) => {
+              const active = selectedCharacter === c.id
+              return (
+                <motion.button
+                  key={c.id}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setSelectedCharacter(active ? null : c.id)}
+                  className={`material-iron relief-raised min-h-11 px-3 py-2 rounded-xl text-xs border transition-colors
+                    ${active
+                      ? 'border-[color:var(--t-personal-text)] text-[color:var(--t-personal-text)] font-bold'
+                      : isMine
+                        ? 'border-[color:var(--t-personal-device)] text-[color:var(--t-text)] font-semibold'
+                        : 'border-[color:var(--t-line)] text-[color:var(--t-text-muted)] font-medium opacity-75'}`}
+                  style={active ? { backgroundColor: 'var(--t-iron)' } : undefined}
+                >
+                  {c.name}
+                </motion.button>
+              )
+            }
+            return (
+              <div className="space-y-3">
+                {yours.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-[color:var(--t-personal-text)] mb-2 uppercase tracking-wider">
+                      Your fighters
+                    </p>
+                    <div className="flex flex-wrap gap-2">{yours.map((c) => chip(c, true))}</div>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-white/40 mb-2">{yours.length ? 'Everyone else' : 'Who?'}</p>
+                  <div className="flex flex-wrap gap-2">{rest.map((c) => chip(c, false))}</div>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Signature beats for the selected entity. Character beats must
               have been activated before the show; dragon beats are always live. */}

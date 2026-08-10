@@ -710,6 +710,10 @@ export default function Live() {
                   <GameMasterConsole
                     roomId={roomId}
                     isHost={isHost}
+                    myRosterNames={scores.draftPicks
+                      .filter((dp) => dp.player_id === currentPlayerId)
+                      .map((dp) => scores.draftEntities.find((e) => e.id === dp.entity_id)?.name)
+                      .filter((n): n is string => !!n)}
                     onEndCeremony={handleEndCeremony}
                     isEndingCeremony={isEndingCeremony}
                   />

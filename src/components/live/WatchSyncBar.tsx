@@ -97,37 +97,9 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
     })
   }
 
-  if (!s.screenStarted && !startedLocal) {
-    return (
-      <div className="material-iron relief-inset rounded-2xl overflow-hidden px-4 py-3">
-        {isPointPerson ? (
-          <>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => void startMyScreen()}
-              className="relief-raised min-h-11 w-full py-3.5 rounded-xl bg-[var(--t-personal-device)] font-bold text-[color:var(--t-text)]
-                         text-base flex items-center justify-center gap-2"
-            >
-              <Play className="w-5 h-5" fill="currentColor" />
-              Start my screen
-            </motion.button>
-            <p className="text-[11px] text-white/40 text-center mt-2 leading-relaxed">
-              Tap the moment the episode starts playing on your TV. That sets your
-              clock — you never have to type a timestamp.
-            </p>
-          </>
-        ) : (
-          <div className="flex items-center gap-2.5">
-            <Radio className="w-4 h-4 text-white/30 flex-shrink-0" />
-            <p className="text-xs text-white/45">
-              Waiting for {myHolder ? myHolder.name : 'whoever has the remote'} to
-              start your screen.
-            </p>
-          </div>
-        )}
-      </div>
-    )
-  }
+  // Start-my-screen gate DISABLED mid-party (user call): the room isn't using
+  // episode-clock sync tonight and the big button sat over everything. The bar
+  // renders its quiet status row and keeps the ask-everyone-to-pause flow.
 
   return (
     <div className="material-iron relief-inset rounded-2xl overflow-hidden border border-[color:var(--t-line)]">
