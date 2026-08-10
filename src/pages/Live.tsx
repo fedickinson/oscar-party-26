@@ -591,7 +591,10 @@ export default function Live() {
             in New York, one remote) drift apart over 75 minutes, and the room
             reacting to something the remote viewer has not seen is the failure
             mode this whole thing exists to prevent. */}
-        {room && currentPlayerId && (
+        {/* Hidden on the Bingo tab: the card needs every vertical pixel, and
+            the big pre-show start button was sitting on top of it. Sync
+            controls stay one tab-tap away. */}
+        {room && currentPlayerId && tab !== 1 && (
           <div className="flex-shrink-0 px-4 pt-3 pb-1 space-y-2">
             <WatchSyncBar room={room} players={players} currentPlayerId={currentPlayerId} />
             {/* Dev-only; renders nothing in a production build. */}

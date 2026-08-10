@@ -47,6 +47,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
   const [peekingPlayerId, setPeekingPlayerId] = useState<string | null>(null)
 
   const {
+    card,
     squares,
     marks,
     markedIndices,
@@ -76,6 +77,23 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     return (
       <div className="flex items-center justify-center py-16">
         <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  // No card after loading finished — the deal failed (transient network, or
+  // the room state shifted under the app). A silent blank looked exactly like
+  // this during the dogfood reset; a reload re-runs the deal and self-heals.
+  if (!card) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16 px-6 text-center">
+        <p className="text-sm text-white/60">Your bingo card didn't deal.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2.5 rounded-xl bg-accent/20 border border-accent/50 text-sm font-semibold text-accent"
+        >
+          Deal my card
+        </button>
       </div>
     )
   }
