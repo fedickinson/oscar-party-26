@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FastForward, Flag, Loader2, Plus, RotateCcw, Swords, Zap } from 'lucide-react'
+import { ChevronDown, FastForward, Flag, Loader2, Plus, RotateCcw, Swords, Zap } from 'lucide-react'
 import { useGameMaster, GM_POINT_TIERS } from '../../hooks/useGameMaster'
 import { Hallmark } from '../ui/Hallmarks'
 import { useGame } from '../../context/GameContext'
@@ -71,6 +71,7 @@ export default function GameMasterConsole({
   // fires. Disarms itself after 4s. One-tap was too easy to fat-finger for
   // something that moves the whole leaderboard and summons the cast.
   const [armedBeatId, setArmedBeatId] = useState<number | null>(null)
+  const [expandedFighter, setExpandedFighter] = useState<string | null>(null)
   useEffect(() => {
     if (armedBeatId == null) return
     const t = setTimeout(() => setArmedBeatId(null), 4000)
@@ -272,58 +273,83 @@ export default function GameMasterConsole({
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* ── YOUR FIGHTERS' MOMENTS — the whole game in one panel ─────────
-          Every live, un-fired beat for the CURRENT player's roster, flat,
-          one tap to declare. No character-select step, no scrolling a
-          38-name wall: watch the show, see your moment happen, tap it.
-          Fired beats disappear (space is precious mid-episode). ──────── */}
+      {/* ── YOUR FIGHTERS — the draft picks, first-class ─────────────────
+          Each of the current player's fighters is a bold row with a count of
+          moments still in play; tapping a fighter opens their full option
+          list. Beats fire with the two-tap arm/confirm. Compact when closed,
+          so it never gets in the way of watching. ─────────────────────────── */}
       {(() => {
         const mine = new Set(myRosterNames.map((n) => n.toLowerCase()))
-        const rows: { nom: (typeof characters)[number]; beat: { id: number; name: string; points: number; trigger_text: string } }[] = []
-        for (const c of characters) {
-          if (!mine.has(c.name.toLowerCase())) continue
-          const ent = entityByName.get(c.name)
-          const isDragon = ent?.type === 'film'
-          for (const b of beatsByName.get(c.name) ?? []) {
-            if (loggedNames.has(b.name)) continue
-            // Activation gate removed mid-party — all beats declarable.
-            rows.push({ nom: c, beat: b })
-          }
-        }
-        if (!rows.length) return null
+        const fighters = characters.filter((c) => mine.has(c.name.toLowerCase()))
+        if (!fighters.length) return null
         return (
           <div className="material-iron relief-inset rounded-2xl p-4 space-y-2">
             <p className="text-xs font-semibold text-[color:var(--t-personal-text)] uppercase tracking-wider">
-              Your fighters' moments — tap when it happens
+              Your fighters — tap one to see their moments
             </p>
-            {rows.map(({ nom, beat }) => (
-              <motion.button
-                key={beat.id}
-                whileTap={{ scale: 0.98 }}
-                disabled={isLogging}
-                title={beat.trigger_text}
-                onClick={() => {
-                  if (armedBeatId === beat.id) {
-                    setArmedBeatId(null)
-                    void logEvent(beat.name, beat.points, nom.id)
-                  } else {
-                    setArmedBeatId(beat.id)
-                  }
-                }}
-                className="material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl
-                           border border-[color:var(--t-personal-device)] text-left"
-              >
-                <span className="text-[11px] font-bold text-[color:var(--t-personal-text)] flex-shrink-0 w-20 truncate">
-                  {nom.name.split(' ')[0]}
-                </span>
-                <span className={`text-xs flex-1 min-w-0 truncate ${armedBeatId === beat.id ? 'font-bold text-[color:var(--t-personal-text)]' : 'font-medium text-[color:var(--t-text)]'}`}>
-                  {armedBeatId === beat.id ? 'Tap again to confirm' : beat.name}
-                </span>
-                <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
-                  {beat.points}
-                </span>
-              </motion.button>
-            ))}
+            {fighters.map((nom) => {
+              const beats = (beatsByName.get(nom.name) ?? [])
+              const live = beats.filter((b) => !loggedNames.has(b.name))
+              const fired = beats.length - live.length
+              const open = expandedFighter === nom.id
+              return (
+                <div key={nom.id} className="rounded-xl border border-[color:var(--t-personal-device)] overflow-hidden">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setExpandedFighter(open ? null : nom.id)}
+                    className="material-iron min-h-11 w-full flex items-center gap-2 px-3 py-2.5 text-left"
+                  >
+                    <span className="text-sm font-bold text-[color:var(--t-text)] flex-1 min-w-0 truncate">
+                      {nom.name}
+                    </span>
+                    {fired > 0 && (
+                      <span className="text-[10px] text-[color:var(--t-text-dim)] flex-shrink-0">{fired} hit</span>
+                    )}
+                    <span className="text-[11px] font-semibold text-[color:var(--t-personal-text)] flex-shrink-0">
+                      {live.length} in play
+                    </span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-[color:var(--t-text-dim)] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+                  </motion.button>
+                  {open && (
+                    <div className="px-2 pb-2 space-y-1.5">
+                      {beats.map((beat) => {
+                        const used = loggedNames.has(beat.name)
+                        const armed = armedBeatId === beat.id
+                        return (
+                          <motion.button
+                            key={beat.id}
+                            whileTap={{ scale: 0.98 }}
+                            disabled={used || isLogging}
+                            title={beat.trigger_text}
+                            onClick={() => {
+                              if (armed) {
+                                setArmedBeatId(null)
+                                void logEvent(beat.name, beat.points, nom.id)
+                              } else {
+                                setArmedBeatId(beat.id)
+                              }
+                            }}
+                            className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
+                              ${used
+                                ? 'border-[color:var(--t-line-soft)] opacity-45 line-through'
+                                : armed
+                                  ? 'border-[color:var(--t-personal-text)]'
+                                  : 'border-[color:var(--t-line)]'}`}
+                          >
+                            <span className={`text-xs flex-1 min-w-0 truncate ${armed ? 'font-bold text-[color:var(--t-personal-text)]' : 'font-medium text-[color:var(--t-text)]'}`}>
+                              {armed ? 'Tap again to confirm' : beat.name}
+                            </span>
+                            <span className="text-sm font-bold text-[color:var(--t-personal-text)] flex-shrink-0">
+                              {beat.points}
+                            </span>
+                          </motion.button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )
       })()}

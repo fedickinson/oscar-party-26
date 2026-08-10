@@ -321,6 +321,8 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
                   const { data: pl } = await supabase
                     .from('players').select('name').eq('id', dp.player_id).maybeSingle()
                   if (pl?.name) toClause = ` to ${pl.name}`
+                } else {
+                  toClause = ' · unclaimed'
                 }
               }
             }
