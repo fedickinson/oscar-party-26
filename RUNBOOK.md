@@ -138,3 +138,22 @@ as record, the operator's lens. What flipped between them is only WHO/WHAT
 feeds the spine: broadcast schedule vs honor-system humans (vs, next, the AI
 witness). That's the primitive set for "any show, any live event" — each new
 show type is a new fact-source plugged into the same spine.
+
+## The grounding doctrine (from the Cersei incident, 8/10)
+
+Failure mode, observed three times in one night by three different authors:
+SALIENCE BEATS SPECIFICITY. A player declared a beat from its title against
+its trigger; the maester wrote a chronicle entry from a beat's name against
+his own record; the model wrote commentary from a casting angle against the
+scene's facts. Same mode every time: the vivid label outweighed the ground
+truth because the two were never bound together at the point of authorship.
+
+The live pipeline always had the contract ("FACTS COME FROM THE PROVIDED
+CONTEXT") — the incident happened because a NEW generation surface (replay
+commentary) did not inherit it. Rule going forward: no generated line ships
+from any surface without (1) an exhaustive numbered fact block in the prompt,
+(2) a refutation pass listing implied-but-absent events, (3) retries with the
+findings attached, and (4) residual findings surfaced for human judgment,
+never silently passed. Implemented as scripts/grounded-line.mts — import it;
+do not hand-roll replay prompts again. The verifier caught both defects in
+the original failing line, including one the humans had missed.
