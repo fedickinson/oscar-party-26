@@ -15,9 +15,11 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              const apiKey = env.VITE_ANTHROPIC_API_KEY
+              // ANTHROPIC_API_KEY is the correct name; the VITE_-prefixed one is
+              // accepted so an existing .env.local keeps working through the rename.
+              const apiKey = env.ANTHROPIC_API_KEY || env.VITE_ANTHROPIC_API_KEY
               if (!apiKey) {
-                console.error('[proxy] VITE_ANTHROPIC_API_KEY is not set!')
+                console.error('[proxy] ANTHROPIC_API_KEY is not set!')
                 return
               }
               proxyReq.setHeader('x-api-key', apiKey)
