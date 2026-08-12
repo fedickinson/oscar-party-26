@@ -28,15 +28,34 @@
  * next step is a proposal queue — players suggest, host one-taps to accept —
  * reusing the pending/approved/denied mechanism that bingo marks already have.
  *
- * SCOPING CAVEAT
- * `categories` is a global table with no room_id, so GM-authored events are
- * visible to every room in the project. That is fine for a single party and is
- * the thing an `event_id` column would fix when this becomes multi-property.
+ * SCOPING
+ * Authored predictions belong to the room's immutable show pack. GM-authored
+ * declarations belong to this room. The database rejects a winner, pick, card
+ * or beat that crosses that boundary.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { CategoryRow, NomineeRow, RoomWinnerRow } from '../types/database'
+import { useGame } from '../context/GameContext'
+import { categoryScopeFilter, isCategoryInRoomCatalog } from '../lib/catalog-scope'
+import { deriveRefereeAuthority } from '../lib/referee-authority'
+import type {
+  CategoryRow,
+  NomineeRow,
+  RoomWinnerRow,
+  TriggerContractRow,
+} from '../types/database'
+
+export interface GameMasterEventSource {
+  sourceSignatureBeatId: number
+  triggerContract: TriggerContractRow
+}
+
+interface DeclareRoomEventResult {
+  category: CategoryRow
+  winner: RoomWinnerRow
+  announcement: string
+}
 
 /** A logged event: the category row plus who it resolved to. */
 export interface GameMasterEvent {
@@ -74,8 +93,15 @@ export interface GameMasterState {
   unresolvedPredictionEvents: CategoryRow[]
   isLoading: boolean
   isLogging: boolean
+  canReferee: boolean
+  authorityMessage: string | null
   error: string | null
-  logEvent: (name: string, points: number, nomineeId: string) => Promise<void>
+  logEvent: (
+    name: string,
+    points: number,
+    nomineeId: string,
+    source?: GameMasterEventSource,
+  ) => Promise<void>
   undoEvent: (categoryId: number) => Promise<void>
 }
 
@@ -86,7 +112,17 @@ export const GM_POINT_TIERS = [
   { points: 4, label: 'Flavor', hint: 'A line, a look, a small moment' },
 ] as const
 
-export function useGameMaster(roomId: string | undefined): GameMasterState {
+export function useGameMaster(
+  roomId: string | undefined,
+  operatorCapability: string | null,
+  operatorCapabilityLoading: boolean,
+): GameMasterState {
+  const { room, player } = useGame()
+  const refereeAuthority = deriveRefereeAuthority({
+    isHost: player?.is_host ?? false,
+    capability: operatorCapability,
+    capabilityLoading: operatorCapabilityLoading,
+  })
   const [categories, setCategories] = useState<CategoryRow[]>([])
   const [characters, setCharacters] = useState<NomineeRow[]>([])
   const [winners, setWinners] = useState<RoomWinnerRow[]>([])
@@ -95,73 +131,58 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
   const [isLoading, setIsLoading] = useState(true)
   const [isLogging, setIsLogging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [realtimeReadyRoomId, setRealtimeReadyRoomId] = useState<string | null>(null)
 
   // Serialises writes so two fast taps can't claim the same category id.
   const writeLock = useRef(false)
   // Wall-clock stamps keyed by category id, for GM-list ordering.
   const stampsRef = useRef<Map<number, number>>(new Map())
+  // Any mutable-row event overlapping hydration invalidates that snapshot.
+  const liveRevisionRef = useRef(0)
 
-  // ── Initial fetch ──────────────────────────────────────────────────────────
+  // ── Realtime ───────────────────────────────────────────────────────────────
+  //
+  // Categories and room winners form one live declaration ledger. Keep them on
+  // one channel so a single readiness barrier proves both subscriptions are
+  // active before hydration starts. Realtime cannot express the pack-or-room
+  // category filter, so callbacks apply the canonical catalog predicate.
 
   useEffect(() => {
-    if (!roomId) return
-    let cancelled = false
+    if (!roomId || !room) return
+    const currentRoom = room
+    let disposed = false
+    setRealtimeReadyRoomId(null)
+    setIsLoading(true)
+    setError(null)
+    setCategories([])
+    setCharacters([])
+    setWinners([])
+    setStakedCategoryIds(new Set())
+    stampsRef.current = new Map()
 
-    async function load() {
-      const [catRes, nomRes, rwRes, cpRes] = await Promise.all([
-        supabase.from('categories').select().order('display_order'),
-        supabase.from('nominees').select().order('name'),
-        supabase.from('room_winners').select().eq('room_id', roomId!),
-        // Which events this room's players bet on. Read from the picks
-        // themselves rather than assuming "the seeded 20" — it stays correct if
-        // the slate is ever re-seeded, trimmed by a prestige mode, or replaced
-        // for a different property.
-        supabase.from('confidence_picks').select('category_id').eq('room_id', roomId!),
-      ])
-      if (cancelled) return
-
-      const cats = (catRes.data ?? []) as CategoryRow[]
-      const rws = (rwRes.data ?? []) as RoomWinnerRow[]
-      setStakedCategoryIds(
-        new Set(((cpRes.data ?? []) as Array<{ category_id: number }>).map((p) => p.category_id)),
-      )
-
-      // Seed stamps so events logged before this client mounted still order
-      // sensibly — fall back to category id, which is monotonic by construction.
-      rws.forEach((rw) => {
-        if (!stampsRef.current.has(rw.category_id)) {
-          stampsRef.current.set(rw.category_id, rw.category_id)
-        }
+    const upsertLocalWinner = (rw: RoomWinnerRow) => {
+      if (!stampsRef.current.has(rw.category_id)) {
+        stampsRef.current.set(rw.category_id, Date.now())
+      }
+      setWinners((prev) => {
+        const idx = prev.findIndex((winner) => winner.category_id === rw.category_id)
+        if (idx === -1) return [...prev, rw]
+        const next = [...prev]
+        next[idx] = rw
+        return next
       })
-
-      setCategories(cats)
-      setCharacters((nomRes.data ?? []) as NomineeRow[])
-      setWinners(rws)
-      setIsLoading(false)
     }
 
-    load()
-    return () => { cancelled = true }
-  }, [roomId])
-
-  // ── Realtime: categories ───────────────────────────────────────────────────
-  //
-  // The Oscars build never subscribed here because the slate was static. With a
-  // GM writing new rows mid-episode, every client needs the inserts or they see
-  // a resolved winner attached to an event name they don't have yet.
-  //
-  // No room filter is possible — categories has no room_id (see scoping caveat).
-
-  useEffect(() => {
-    if (!roomId) return
-
     const channel = supabase
-      .channel(`gm-categories:${roomId}`)
+      .channel(`gm-ledger:${roomId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'categories' },
         (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
           const cat = payload.new as CategoryRow
+          if (!isCategoryInRoomCatalog(cat, currentRoom)) return
           setCategories((prev) =>
             prev.some((c) => c.id === cat.id) ? prev : [...prev, cat],
           )
@@ -171,179 +192,183 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'categories' },
         (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
           const cat = payload.new as CategoryRow
-          setCategories((prev) => prev.map((c) => (c.id === cat.id ? cat : c)))
+          setCategories((prev) => {
+            if (!isCategoryInRoomCatalog(cat, currentRoom)) {
+              return prev.filter((candidate) => candidate.id !== cat.id)
+            }
+            return prev.some((candidate) => candidate.id === cat.id)
+              ? prev.map((candidate) => (candidate.id === cat.id ? cat : candidate))
+              : [...prev, cat]
+          })
         },
       )
       .on(
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'categories' },
         (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
           const old = payload.old as Partial<CategoryRow>
           if (old.id == null) return
           setCategories((prev) => prev.filter((c) => c.id !== old.id))
         },
       )
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [roomId])
-
-  // ── Realtime: room_winners ─────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!roomId) return
-
-    const upsertLocal = (rw: RoomWinnerRow) => {
-      if (!stampsRef.current.has(rw.category_id)) {
-        stampsRef.current.set(rw.category_id, Date.now())
-      }
-      setWinners((prev) => {
-        const idx = prev.findIndex((w) => w.category_id === rw.category_id)
-        if (idx === -1) return [...prev, rw]
-        const next = [...prev]
-        next[idx] = rw
-        return next
-      })
-    }
-
-    const channel = supabase
-      .channel(`gm-room-winners:${roomId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'room_winners', filter: `room_id=eq.${roomId}` },
-        (payload) => upsertLocal(payload.new as RoomWinnerRow),
+        (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
+          upsertLocalWinner(payload.new as RoomWinnerRow)
+        },
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'room_winners', filter: `room_id=eq.${roomId}` },
-        (payload) => upsertLocal(payload.new as RoomWinnerRow),
+        (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
+          upsertLocalWinner(payload.new as RoomWinnerRow)
+        },
       )
       .on(
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'room_winners', filter: `room_id=eq.${roomId}` },
         (payload) => {
+          if (disposed) return
+          liveRevisionRef.current += 1
           const old = payload.old as Partial<RoomWinnerRow>
           if (old.category_id == null) return
           stampsRef.current.delete(old.category_id)
           setWinners((prev) => prev.filter((w) => w.category_id !== old.category_id))
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          setRealtimeReadyRoomId(roomId)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setRealtimeReadyRoomId(null)
+          setError('The declaration feed could not connect to Realtime.')
+          setIsLoading(false)
+        }
+      })
 
-    return () => { supabase.removeChannel(channel) }
-  }, [roomId])
+    return () => {
+      disposed = true
+      supabase.removeChannel(channel)
+    }
+  }, [roomId, room?.show_pack_id])
+
+  // ── Initial hydration ──────────────────────────────────────────────────────
+  //
+  // Fetch only after the complete declaration feed is live. If a callback or
+  // optimistic host write overlaps the fetch, its revision changes and this
+  // snapshot is discarded; the next pass reads the new canonical ledger.
+
+  useEffect(() => {
+    if (!roomId || !room || realtimeReadyRoomId !== roomId) return
+    const currentRoom = room
+    let cancelled = false
+
+    setIsLoading(true)
+    setError(null)
+
+    void (async () => {
+      while (!cancelled) {
+        const revisionAtStart = liveRevisionRef.current
+        const [catRes, nomRes, rwRes, cpRes] = await Promise.all([
+          supabase.from('categories').select().or(categoryScopeFilter(currentRoom)).order('display_order'),
+          supabase.from('nominees').select().eq('show_pack_id', currentRoom.show_pack_id).order('name'),
+          supabase.from('room_winners').select().eq('room_id', roomId),
+          // Read the actual picks rather than assuming a fixed authored slate.
+          supabase.from('confidence_picks').select('category_id').eq('room_id', roomId),
+        ])
+        const firstError = [catRes, nomRes, rwRes, cpRes].find((result) => result.error)?.error
+        if (firstError) throw firstError
+        if (cancelled) return
+        if (liveRevisionRef.current !== revisionAtStart) continue
+
+        const cats = (catRes.data ?? []) as CategoryRow[]
+        const rws = (rwRes.data ?? []) as RoomWinnerRow[]
+
+        // Preserve real wall-clock stamps from callbacks and optimistic writes;
+        // rows only seen in the snapshot fall back to their monotonic id.
+        rws.forEach((rw) => {
+          if (!stampsRef.current.has(rw.category_id)) {
+            stampsRef.current.set(rw.category_id, rw.category_id)
+          }
+        })
+
+        setCategories(cats)
+        setCharacters((nomRes.data ?? []) as NomineeRow[])
+        setWinners(rws)
+        setStakedCategoryIds(
+          new Set(((cpRes.data ?? []) as Array<{ category_id: number }>).map((pick) => pick.category_id)),
+        )
+        setIsLoading(false)
+        return
+      }
+    })().catch((loadError) => {
+      if (cancelled) return
+      console.error('useGameMaster initial load failed:', loadError)
+      setError(loadError instanceof Error ? loadError.message : 'The declaration ledger could not be loaded.')
+      setIsLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [roomId, room?.show_pack_id, realtimeReadyRoomId])
 
   // ── logEvent ───────────────────────────────────────────────────────────────
   //
-  // Two writes, in this order:
-  //   1. INSERT categories  — the event itself (name + point value)
-  //   2. UPSERT room_winners — which character it resolved to
-  //
-  // Order matters. room_winners.category_id references categories, and every
-  // client merges winners onto categories; a winner arriving first would point
-  // at a row nobody has.
+  // One capability-gated database transaction owns the room declaration,
+  // nominee link, winner and public announcement. The current host seat and
+  // current private room bearer are both checked under the room lock.
 
   const logEvent = useCallback(
-    async (name: string, points: number, nomineeId: string) => {
+    async (
+      name: string,
+      points: number,
+      nomineeId: string,
+      source?: GameMasterEventSource,
+    ) => {
       const trimmed = name.trim()
-      if (!roomId || !trimmed || !nomineeId) return
+      if (!roomId || !player || !trimmed || !nomineeId) return
       if (writeLock.current) return
+      if (!refereeAuthority.enabled || !operatorCapability) {
+        setError(refereeAuthority.message ?? 'Current host authority is required.')
+        return
+      }
 
       writeLock.current = true
       setIsLogging(true)
       setError(null)
 
       try {
-        // Claim the next id. categories.id is a plain int with no sequence in
-        // the Oscars schema (rows were seeded with explicit ids), so we derive
-        // it. Single-GM by design, and the write lock covers double-taps.
-        const { data: maxRow, error: maxErr } = await supabase
-          .from('categories')
-          .select('id')
-          .order('id', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-        if (maxErr) throw maxErr
-
-        const nextId = ((maxRow?.id as number | undefined) ?? 0) + 1
-
-        const { data: inserted, error: catErr } = await supabase
-          .from('categories')
-          .insert({
-            id: nextId,
-            name: trimmed,
-            tier: points >= 10 ? 1 : points >= 6 ? 2 : 3,
-            points,
-            display_order: nextId,
-          })
-          .select()
-          .single()
-        if (catErr) throw catErr
-
-        // Attach the resolved character to the event so any UI that renders a
-        // category's nominee slate has something to show.
-        const { error: cnErr } = await supabase
-          .from('category_nominees')
-          .insert({ category_id: nextId, nominee_id: nomineeId })
-        if (cnErr) throw cnErr
-
-        // No explicit onConflict — matches useAdmin.setWinner and
-        // useSpotlight.confirmSpotlightWinner, which rely on the table's
-        // primary key as the conflict target.
-        const { error: rwErr } = await supabase
-          .from('room_winners')
-          .upsert({ room_id: roomId, category_id: nextId, winner_id: nomineeId, tie_winner_id: null })
-        if (rwErr) throw rwErr
-
-        // Announce in the shared chat so every phone SEES the declaration as
-        // a fact of the night, not just a score change. winner-divider rows
-        // render with the announcement styling; messages INSERT is open to
-        // all, so this works from whichever player declared.
-        {
-          // The banner is the STORY BEING WRITTEN: the moment, whose fighter
-          // it pays, and who called it. "Springs a Trap — Ormund (+20 to Tom
-          // and Betty) · called by Alec" tells the whole room what happened,
-          // who benefits, and who witnessed it — the three things a
-          // declaration-driven night runs on.
-          const who = nomineeId
-          void (async () => {
-            const { data: nom } = await supabase
-              .from('nominees').select('name').eq('id', who).maybeSingle()
-            let toClause = ''
-            if (nom?.name) {
-              const { data: ent } = await supabase
-                .from('draft_entities').select('id').eq('name', nom.name).maybeSingle()
-              if (ent) {
-                const { data: dp } = await supabase
-                  .from('draft_picks').select('player_id').eq('room_id', roomId).eq('entity_id', ent.id).maybeSingle()
-                if (dp) {
-                  const { data: pl } = await supabase
-                    .from('players').select('name').eq('id', dp.player_id).maybeSingle()
-                  if (pl?.name) toClause = ` to ${pl.name}`
-                } else {
-                  toClause = ' · unclaimed'
-                }
-              }
-            }
-            const callerId = localStorage.getItem('oscar_player_id')
-            let caller = ''
-            if (callerId) {
-              const { data: cp } = await supabase
-                .from('players').select('name').eq('id', callerId).maybeSingle()
-              if (cp?.name) caller = ` · called by ${cp.name}`
-            }
-            await supabase.from('messages').insert({
-              room_id: roomId,
-              player_id: 'winner-divider',
-              text: nom?.name
-                ? `${trimmed} — ${nom.name} (+${points}${toClause})${caller}`
-                : `${trimmed} (+${points})${caller}`,
-            })
-          })()
+        const { data, error: declarationError } = await supabase.rpc('declare_room_event_authorized', {
+          p_room_id: roomId,
+          p_name: trimmed,
+          p_points: points,
+          p_nominee_id: nomineeId,
+          p_actor_player_id: player.id,
+          p_operator_capability: operatorCapability,
+          p_source_signature_beat_id: source?.sourceSignatureBeatId ?? null,
+          p_source_trigger_contract: source?.triggerContract ?? null,
+        })
+        if (declarationError) throw new Error(declarationError.message)
+        const result = data as DeclareRoomEventResult | null
+        if (!result?.category || !result.winner) {
+          throw new Error('Atomic declaration returned an incomplete result')
         }
+        const inserted = result.category
+        const winner = result.winner
+        const nextId = inserted.id
 
         // Optimistic local apply — realtime will echo, and both paths dedupe.
+        liveRevisionRef.current += 1
         stampsRef.current.set(nextId, Date.now())
         setCategories((prev) =>
           prev.some((c) => c.id === nextId) ? prev : [...prev, inserted as CategoryRow],
@@ -351,7 +376,7 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
         setWinners((prev) =>
           prev.some((w) => w.category_id === nextId)
             ? prev
-            : [...prev, { room_id: roomId, category_id: nextId, winner_id: nomineeId, tie_winner_id: null }],
+            : [...prev, winner],
         )
       } catch (e) {
         console.error('logEvent failed:', e)
@@ -361,38 +386,47 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
         setIsLogging(false)
       }
     },
-    [roomId],
+    [roomId, player, refereeAuthority.enabled, refereeAuthority.message, operatorCapability],
   )
 
   // ── undoEvent ──────────────────────────────────────────────────────────────
   //
-  // Removes the resolution and the event row. Deleting the category is what
-  // makes this a true undo rather than an unresolved event lingering in every
-  // client's list.
+  // One database command removes the resolution and room declaration, then
+  // appends a public correction. The transaction owns both outcomes: the room
+  // can never see a correction for a fact that failed to leave the ledger.
 
   const undoEvent = useCallback(
     async (categoryId: number) => {
-      if (!roomId) return
+      if (!roomId || !player || writeLock.current) return
+      if (!refereeAuthority.enabled || !operatorCapability) {
+        setError(refereeAuthority.message ?? 'Current host authority is required.')
+        return
+      }
+      writeLock.current = true
+      setIsLogging(true)
       setError(null)
       try {
-        await supabase
-          .from('room_winners')
-          .delete()
-          .eq('room_id', roomId)
-          .eq('category_id', categoryId)
+        const { error: undoError } = await supabase.rpc('undo_room_declaration_authorized', {
+          p_room_id: roomId,
+          p_category_id: categoryId,
+          p_actor_player_id: player.id,
+          p_operator_capability: operatorCapability,
+        })
+        if (undoError) throw new Error(undoError.message)
 
-        await supabase.from('category_nominees').delete().eq('category_id', categoryId)
-        await supabase.from('categories').delete().eq('id', categoryId)
-
+        liveRevisionRef.current += 1
         stampsRef.current.delete(categoryId)
         setWinners((prev) => prev.filter((w) => w.category_id !== categoryId))
         setCategories((prev) => prev.filter((c) => c.id !== categoryId))
       } catch (e) {
         console.error('undoEvent failed:', e)
         setError(e instanceof Error ? e.message : 'Could not undo that event.')
+      } finally {
+        writeLock.current = false
+        setIsLogging(false)
       }
     },
-    [roomId],
+    [roomId, player, refereeAuthority.enabled, refereeAuthority.message, operatorCapability],
   )
 
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -430,6 +464,8 @@ export function useGameMaster(roomId: string | undefined): GameMasterState {
     unresolvedPredictionEvents,
     isLoading,
     isLogging,
+    canReferee: refereeAuthority.enabled,
+    authorityMessage: refereeAuthority.message,
     error,
     logEvent,
     undoEvent,

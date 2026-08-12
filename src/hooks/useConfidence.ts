@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { filterPrestigeCategories, getConfidenceRange } from '../lib/mode-utils'
 import type { CategoryWithNominees } from '../types/game'
 import type { ConfidencePickRow, ConfidencePickInsert } from '../types/database'
@@ -42,28 +43,55 @@ export interface ConfidenceState {
   myHasSubmitted: boolean
   availableConfidenceNumbers: number[]
   isLoading: boolean
+  syncError: string | null
   assignNominee: (categoryId: number, nomineeId: string) => void
   assignConfidence: (categoryId: number, confidence: number) => void
   setLocalPicksDirectly: (picks: LocalPicksMap) => void
   submitPicks: () => Promise<void>
   lockPicks: () => Promise<void>
+  retrySync: () => void
 }
 
 export function useConfidence(roomId: string | undefined): ConfidenceState {
   const { room, player, players } = useGame()
+  const { capability: operatorCapability, authority: operatorAuthority } = useOperatorAuthority()
   const [categories, setCategories] = useState<CategoryWithNominees[]>([])
   const [localPicks, setLocalPicks] = useState<LocalPicksMap>({})
   const [allSubmittedPicks, setAllSubmittedPicks] = useState<ConfidencePickRow[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [submittedPicksLoading, setSubmittedPicksLoading] = useState(true)
+  const [categoriesError, setCategoriesError] = useState<string | null>(null)
+  const [submittedPicksError, setSubmittedPicksError] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
   const submittingRef = useRef(false)
+  const catalogScopeRef = useRef<string | null>(null)
+
+  const isLoading = categoriesLoading || submittedPicksLoading
+  const syncError = categoriesError ?? submittedPicksError
 
   // ── Fetch categories + nominees ─────────────────────────────────────────────
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId || !room) {
+      setCategories([])
+      setLocalPicks({})
+      setCategoriesError(null)
+      setCategoriesLoading(false)
+      return
+    }
+    let cancelled = false
+    const catalogScope = `${roomId}:${room.show_pack_id}:${room.prestige_mode}`
+    const catalogScopeChanged = catalogScopeRef.current !== catalogScope
+    catalogScopeRef.current = catalogScope
+    if (catalogScopeChanged) {
+      setCategories([])
+      setLocalPicks({})
+    }
+    setCategoriesLoading(true)
+    setCategoriesError(null)
 
     async function fetchCategories() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('categories')
         .select(`
           *,
@@ -71,59 +99,102 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
             nominees (*)
           )
         `)
+        .eq('show_pack_id', room!.show_pack_id)
         .order('display_order')
+      if (error) throw error
+      if (cancelled) return
 
-      if (data) {
-        // Flatten nested join result into CategoryWithNominees shape
-        const hydrated: CategoryWithNominees[] = (data as any[]).map((cat) => ({
-          ...cat,
-          nominees: (cat.category_nominees as any[])
-            .map((cn: any) => cn.nominees)
-            .filter(Boolean),
-        }))
-        const prestigeMode = room?.prestige_mode ?? 'full'
+      // Flatten nested join result into CategoryWithNominees shape
+      const hydrated: CategoryWithNominees[] = ((data ?? []) as any[]).map((cat) => ({
+        ...cat,
+        nominees: (cat.category_nominees as any[])
+          .map((cn: any) => cn.nominees)
+          .filter(Boolean),
+      }))
+      const prestigeMode = room?.prestige_mode ?? 'full'
 
-        // Only events with a real slate belong on the prediction sheet.
-        //
-        // `categories` is no longer a fixed seed — the Game Master appends a row
-        // per live event (see useGameMaster), and that table has no room_id, so
-        // events logged by ANY room in the project are visible here. A single
-        // dry run of the GM console would otherwise plant its ad-hoc events
-        // ("Aemond smirks") into the next party's prediction sheet, where they
-        // would burn confidence-budget slots on moments that already happened.
-        //
-        // A GM event carries exactly one nominee (the character it resolved to),
-        // because logEvent writes one category_nominees row. A genuine
-        // prediction event carries the field you choose between — the HotD seed
-        // ranges from 2 to 21 characters per event. So "has something to choose
-        // between" is the honest test, and it needs no seed-id allowlist to
-        // maintain.
-        const predictable = (hydrated as CategoryWithNominees[]).filter(
-          (cat) => cat.nominees.length >= 2,
-        )
-        const filtered = filterPrestigeCategories(predictable as any, prestigeMode) as CategoryWithNominees[]
-        setCategories(filtered)
+      // Only events with a real slate belong on the prediction sheet.
+      //
+      // Authored predictions are selected by show_pack_id. Game Master
+      // declarations carry room_id instead, so they cannot enter this query.
+      //
+      // Keep the slate-shape check as a second safety boundary: a prediction
+      // must still offer an actual choice rather than one pre-resolved entity.
+      const predictable = hydrated.filter((cat) => cat.nominees.length >= 2)
+      const filtered = filterPrestigeCategories(predictable as any, prestigeMode) as CategoryWithNominees[]
+      setCategories(filtered)
 
-        // Pre-allocate empty local pick slots for each category
+      // Pre-allocate empty local pick slots for each category
+      setLocalPicks((current) => {
         const initial: LocalPicksMap = {}
         filtered.forEach((cat) => {
-          initial[cat.id] = { nominee_id: null, confidence: null }
+          initial[cat.id] = catalogScopeChanged
+            ? { nominee_id: null, confidence: null }
+            : (current[cat.id] ?? { nominee_id: null, confidence: null })
         })
-        setLocalPicks(initial)
-      }
+        return initial
+      })
 
-      setIsLoading(false)
+      setCategoriesLoading(false)
     }
 
-    fetchCategories()
-  }, [roomId])
+    void fetchCategories().catch((loadError) => {
+      if (cancelled) return
+      console.error('Confidence catalog load failed:', loadError)
+      setCategoriesError('The prediction catalog could not be loaded.')
+      setCategoriesLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [roomId, room?.show_pack_id, room?.prestige_mode, retryVersion])
 
   // ── Fetch + subscribe to submitted picks ────────────────────────────────────
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId) {
+      setAllSubmittedPicks([])
+      setSubmittedPicksError(null)
+      setSubmittedPicksLoading(false)
+      return
+    }
 
-    // Subscribe before initial fetch to avoid missing events during the gap
+    let disposed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    setAllSubmittedPicks([])
+    setSubmittedPicksLoading(true)
+    setSubmittedPicksError(null)
+
+    const hydrateSubmittedPicks = async () => {
+      const run = ++hydrationRun
+      setSubmittedPicksLoading(true)
+      setSubmittedPicksError(null)
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const { data, error } = await supabase
+            .from('confidence_picks')
+            .select()
+            .eq('room_id', roomId)
+          if (error) throw error
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          setAllSubmittedPicks((data ?? []) as ConfidencePickRow[])
+          setSubmittedPicksLoading(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Confidence submission load failed:', loadError)
+        setSubmittedPicksError('Submitted picks could not be synchronized.')
+        setSubmittedPicksLoading(false)
+      }
+    }
+
     const channel = supabase
       .channel(`confidence_picks:${roomId}`)
       .on(
@@ -135,26 +206,31 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           setAllSubmittedPicks((prev) => {
             if (prev.some((p) => p.id === payload.new.id)) return prev
             return [...prev, payload.new as ConfidencePickRow]
           })
         },
       )
-      .subscribe()
-
-    supabase
-      .from('confidence_picks')
-      .select()
-      .eq('room_id', roomId)
-      .then(({ data }) => {
-        if (data) setAllSubmittedPicks(data)
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          void hydrateSubmittedPicks()
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          hydrationRun += 1
+          setSubmittedPicksError('The submission feed could not connect to Realtime.')
+          setSubmittedPicksLoading(false)
+        }
       })
 
     return () => {
+      disposed = true
+      hydrationRun += 1
       supabase.removeChannel(channel)
     }
-  }, [roomId])
+  }, [roomId, retryVersion])
 
   // ── Derived values ──────────────────────────────────────────────────────────
 
@@ -240,13 +316,28 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
         confidence: localPicks[cat.id]?.confidence ?? i + 1,
       }))
 
-    const { error } = await supabase.from('confidence_picks').insert(rows)
-    submittingRef.current = false
-    if (error) throw new Error(error.message)
+    try {
+      const { data, error } = await supabase.from('confidence_picks').insert(rows).select()
+      if (error) throw new Error(error.message)
+
+      // The submitting phone should become read-only immediately; Realtime
+      // echoes are confirmation and dedupe by row id on every client.
+      const inserted = (data ?? []) as ConfidencePickRow[]
+      setAllSubmittedPicks((current) => {
+        const byId = new Map(current.map((pick) => [pick.id, pick]))
+        inserted.forEach((pick) => byId.set(pick.id, pick))
+        return [...byId.values()]
+      })
+    } finally {
+      submittingRef.current = false
+    }
   }
 
   async function lockPicks() {
     if (!roomId || !room || !player?.is_host) return
+    if (!operatorAuthority.enabled || !operatorCapability) {
+      throw new Error(operatorAuthority.message ?? 'Current operator authority is required.')
+    }
 
     const unsubmittedPlayers = players.filter((p) => !submittedPlayerIds.has(p.id))
 
@@ -275,11 +366,24 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
       }
     }
 
-    await supabase.from('rooms').update({ phase: 'live' }).eq('id', roomId)
+    const { error } = await supabase.rpc('open_room_live_authorized', {
+      p_room_id: roomId,
+      p_actor_player_id: player.id,
+      p_operator_capability: operatorCapability,
+    })
+    if (error) throw new Error(`Could not start the show: ${error.message}`)
   }
 
   function setLocalPicksDirectly(picks: LocalPicksMap) {
     setLocalPicks(picks)
+  }
+
+  function retrySync() {
+    setCategoriesLoading(true)
+    setSubmittedPicksLoading(true)
+    setCategoriesError(null)
+    setSubmittedPicksError(null)
+    setRetryVersion((current) => current + 1)
   }
 
   return {
@@ -291,10 +395,12 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     myHasSubmitted,
     availableConfidenceNumbers,
     isLoading,
+    syncError,
     assignNominee,
     assignConfidence,
     setLocalPicksDirectly,
     submitPicks,
     lockPicks,
+    retrySync,
   }
 }

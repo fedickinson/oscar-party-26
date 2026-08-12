@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Check, Loader2, LockKeyhole } from 'lucide-react'
+import { Check, Loader2, LockKeyhole, RotateCcw } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Avatar from '../components/Avatar'
 import { Hallmark } from '../components/ui/Hallmarks'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useBeatActivation } from '../hooks/useBeatActivation'
 import type { SignatureBeatRow } from '../types/database'
 
@@ -98,6 +99,7 @@ export default function Activate() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, loading } = useGame()
+  const { authority: operatorAuthority } = useOperatorAuthority()
   const activation = useBeatActivation(room?.id)
   const [confirmAnyway, setConfirmAnyway] = useState(false)
 
@@ -119,6 +121,33 @@ export default function Activate() {
     )
   }
   if (!room || !player) return null
+
+  if (activation.syncError) {
+    return (
+      <div className="mx-auto flex min-h-[80vh] max-w-md items-start px-4 py-6">
+        <section
+          className="material-stone relief-inset w-full rounded-2xl p-4"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p className="font-display text-xs uppercase tracking-widest text-[var(--t-pending)]">
+            Wager ledger unavailable
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+            {activation.syncError} Choosing bets and starting the show stay disabled until the room record is current.
+          </p>
+          <button
+            type="button"
+            onClick={activation.retrySync}
+            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            Try again
+          </button>
+        </section>
+      </div>
+    )
+  }
 
   const missingCount = activation.progress.reduce(
     (sum, entry) => sum + Math.max(0, entry.requiredCount - entry.activatedCount),
@@ -221,15 +250,25 @@ export default function Activate() {
             ))}
         </div>
 
-        {activation.error && <p className="text-xs text-negative mb-2">{activation.error}</p>}
+        {activation.actionError && (
+          <p className="mb-2 text-xs text-negative" role="status">
+            {activation.actionError}
+          </p>
+        )}
+        {player.is_host && !operatorAuthority.enabled && operatorAuthority.message && (
+          <p className="mb-2 text-xs text-[var(--t-pending)]" role="status">
+            {operatorAuthority.message}
+          </p>
+        )}
         {player.is_host ? (
           activation.allComplete ? (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => void activation.hostAdvance()}
+              disabled={activation.isAdvancing || !operatorAuthority.enabled}
               className="relief-raised w-full min-h-11 rounded-xl border border-[var(--t-personal-device)] bg-[var(--t-personal-field)] text-[var(--t-personal-text)] font-bold"
             >
-              Start the show
+              {activation.isAdvancing ? 'Starting the show' : 'Start the show'}
             </motion.button>
           ) : confirmAnyway ? (
             <div className="grid grid-cols-[1fr_2fr] gap-2">
@@ -239,9 +278,10 @@ export default function Activate() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => void activation.hostAdvance()}
+                disabled={activation.isAdvancing || !operatorAuthority.enabled}
                 className="relief-raised min-h-11 rounded-xl border border-[var(--t-personal-device)] bg-[var(--t-personal-field)] text-sm font-bold text-[var(--t-personal-text)]"
               >
-                Confirm start anyway
+                {activation.isAdvancing ? 'Starting the show' : 'Confirm start anyway'}
               </motion.button>
             </div>
           ) : (

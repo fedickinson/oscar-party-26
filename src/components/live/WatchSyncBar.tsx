@@ -23,6 +23,7 @@ import {
 } from '../../hooks/useWatchSync'
 import type { RoomRow, PlayerRow } from '../../types/database'
 import { supabase } from '../../lib/supabase'
+import { useOperatorAuthority } from '../../context/OperatorAuthorityContext'
 
 interface Props {
   room: RoomRow
@@ -31,9 +32,20 @@ interface Props {
 }
 
 export default function WatchSyncBar({ room, players, currentPlayerId }: Props) {
+  const { capability: operatorCapability } = useOperatorAuthority()
   const s = useWatchSync(room, currentPlayerId, players)
   const [entry, setEntry] = useState('')
   const [showEntry, setShowEntry] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+
+  async function runAction(action: () => Promise<void>) {
+    setActionError(null)
+    try {
+      await action()
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'The shared playback command was rejected.')
+    }
+  }
 
   const me = players.find((p) => p.id === currentPlayerId)
   const isPointPerson = s.amPointPerson
@@ -62,7 +74,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
     s.setMyPosition(ms)
     setEntry('')
     setShowEntry(false)
-    void s.postBeacon()
+    void runAction(s.postBeacon)
   }
 
   // Ready-up counts SCREENS, not people. Five friends on one sofa are not going
@@ -91,10 +103,12 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
   async function startMyScreen() {
     setStartedLocal(true)
     s.setMyPosition(0)
-    await supabase.rpc('start_episode_for_screen', {
+    const { error } = await supabase.rpc('start_episode_for_screen_authorized', {
       p_room_id: room.id,
-      p_player_id: currentPlayerId,
+      p_actor_player_id: currentPlayerId,
+      p_operator_capability: operatorCapability,
     })
+    if (error) throw new Error(error.message)
   }
 
   // Start-my-screen gate DISABLED mid-party (user call): the room isn't using
@@ -150,6 +164,12 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
         </button>
       </div>
 
+      {actionError && (
+        <p className="border-t border-[color:var(--t-line)] px-4 py-2 text-xs text-[var(--t-negative)]" role="alert">
+          Playback did not change: {actionError}
+        </p>
+      )}
+
       {/* ── Drift advice ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {advice && !s.isPaused && (
@@ -169,7 +189,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                   I skipped — realign
                 </button>
                 <button
-                  onClick={() => void s.postBeacon()}
+                  onClick={() => void runAction(s.postBeacon)}
                   className="material-iron relief-raised min-h-11 text-[11px] px-2.5 py-1.5 rounded-lg border border-[color:var(--t-line)] text-[color:var(--t-text-muted)]"
                 >
                   Re-send mine
@@ -238,7 +258,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                     first screen to pause sets the spot everyone parks at.
                   </p>
                   <button
-                    onClick={() => void s.confirmPause(s.myPositionMs)}
+                    onClick={() => void runAction(() => s.confirmPause(s.myPositionMs))}
                     className="relief-raised min-h-11 mt-2 w-full py-2.5 rounded-xl bg-[var(--t-pending-soft)]
                                border border-[color:var(--t-pending)] text-sm font-semibold text-[color:var(--t-text)]"
                   >
@@ -254,7 +274,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               )}
               {s.pauseRequestedBy === currentPlayerId && (
                 <button
-                  onClick={() => void s.cancelPauseRequest()}
+                  onClick={() => void runAction(s.cancelPauseRequest)}
                   className="min-h-11 mt-1.5 text-[11px] text-[color:var(--t-text-muted)] underline"
                 >
                   never mind — keep playing
@@ -315,7 +335,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
 
               {isPointPerson && !iAmReady ? (
                 <button
-                  onClick={() => void s.markReady()}
+                  onClick={() => void runAction(s.markReady)}
                   className="relief-raised min-h-11 w-full py-2.5 rounded-xl bg-[var(--t-positive-soft)] border
                              border-[color:var(--t-positive)] text-sm font-semibold text-[color:var(--t-positive)]
                              flex items-center justify-center gap-2"
@@ -325,7 +345,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
                 </button>
               ) : isPointPerson ? (
                 <button
-                  onClick={() => void s.startResumeCountdown(5)}
+                  onClick={() => void runAction(() => s.startResumeCountdown(5))}
                   className={`relief-raised min-h-11 w-full py-2.5 rounded-xl text-sm font-semibold
                               flex items-center justify-center gap-2 ${
                     everyoneReady
@@ -374,7 +394,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
               </motion.p>
               {isPointPerson && s.resumeCountdown > 0 && (
                 <button
-                  onClick={() => void s.cancelResume()}
+                  onClick={() => void runAction(s.cancelResume)}
                   className="min-h-11 text-[11px] text-[color:var(--t-text-muted)] underline mt-1"
                 >
                   cancel
@@ -391,7 +411,7 @@ export default function WatchSyncBar({ room, players, currentPlayerId }: Props) 
           was decoration; the request is the point. */}
       {!s.isPaused && !s.pauseRequestedBy && (
         <button
-          onClick={() => void s.requestPause()}
+          onClick={() => void runAction(s.requestPause)}
           className="w-full py-2.5 border-t border-white/10 text-xs font-medium
                      text-white/45 hover:text-white/80 hover:bg-white/5
                      transition-colors flex items-center justify-center gap-1.5"

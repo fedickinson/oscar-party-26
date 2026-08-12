@@ -2,7 +2,7 @@
  * TeamPicker — declare for Team Black or Team Green, and defect whenever.
  *
  * Self-contained on purpose: reads the current player from GameContext and
- * writes players.team directly, so it can be dropped into any page (pre-show
+ * invokes the player-owned allegiance command, so it can be dropped into any page (pre-show
  * Home, My Picks) as a one-line mount with zero prop threading.
  *
  * Changing teams IS the feature. There is deliberately no confirm step and no
@@ -44,10 +44,20 @@ export default function TeamPicker({ compact = false }: { compact?: boolean }) {
   const current = players.find((p) => p.id === player.id)?.team ?? null
 
   async function declare(team: 'black' | 'green') {
-    if (!player || team === current) return
-    // Optimistic local flip — Realtime echoes to everyone else (and back).
-    setPlayers((prev) => prev.map((p) => (p.id === player.id ? { ...p, team } : p)))
-    await supabase.from('players').update({ team }).eq('id', player.id)
+    if (!player || !player.room_id || team === current) return
+    // Read back the trigger-owned transition revision before publishing local
+    // state. Guessing it optimistically would let this host narrate a key that
+    // no other phone can derive under a concurrent change.
+    const { data, error } = await supabase.rpc('set_player_allegiance', {
+      p_room_id: player.room_id,
+      p_actor_player_id: player.id,
+      p_team: team,
+    })
+    if (error || !data) {
+      if (error) console.error('Could not change allegiance:', error)
+      return
+    }
+    setPlayers((prev) => prev.map((p) => (p.id === player.id ? data : p)))
   }
 
   return (

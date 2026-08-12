@@ -1,0 +1,48 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "visible-dragon-actions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "visible-dragon-actions",
+      "beat_ids": [19, 161, 163, 166, 167, 171, 172, 173, 175, 176, 180, 181],
+      "conditions_by_beat_id": {
+        "19": "Helaena physically approaches, touches, mounts, or otherwise interacts with the real Dreamfyre in the present timeline.",
+        "161": "Caraxes deliberately bites or grapples another dragon during an active fight.",
+        "163": "Vermithor burns an organized troop formation, fortification, or major battlefield target.",
+        "166": "Vhagar personally causes another dragon's unmistakable on-screen death.",
+        "167": "Daeron mounts Tessarion and the two become airborne on an active mission or in battle.",
+        "171": "Addam summons or mounts Seasmoke for an active mission and Seasmoke visibly responds to his command.",
+        "172": "Seasmoke deliberately attacks another dragon.",
+        "173": "Ulf directs Silverwing to attack a Black-aligned person, force, dragon, or position.",
+        "175": "Helaena physically rides Dreamfyre and both become airborne in the present timeline; visions do not count.",
+        "176": "Sheepstealer physically reappears alive in the present timeline after the episode-7 separation.",
+        "180": "Rhaenyra mounts Syrax and flies on an active mission, pursuit, or battle movement.",
+        "181": "Syrax deliberately attacks another dragon."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "19": ["df62fafa-0055-c917-50e8-aa130ed43ef4", "d91781d9-64cf-c666-ddb8-4ddd85956404"],
+        "161": ["c421be7b-b9eb-3f23-231c-d95f0f918d57"],
+        "163": ["7b5d8800-d5d1-7ecf-1020-d36705de618b"],
+        "166": ["5555bd93-92e7-8e8b-aefa-1543692307d1"],
+        "167": ["cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e", "510ec8cb-f91f-cfd3-3339-ddc0aba04ddc"],
+        "171": ["4f607aac-7a70-ccd6-164b-e763bc70e47d", "ccd5ac8c-2e2a-55b5-840f-30e816e0a0fd"],
+        "172": ["ccd5ac8c-2e2a-55b5-840f-30e816e0a0fd"],
+        "173": ["5267a749-ae90-a398-5677-74efd428a85d", "13da33f8-5825-ad92-054a-5f2215c0bb2b"],
+        "175": ["d91781d9-64cf-c666-ddb8-4ddd85956404", "df62fafa-0055-c917-50e8-aa130ed43ef4"],
+        "176": ["6fa86c27-9af6-9c83-c8d8-59ee0b6a842d"],
+        "180": ["6d724684-247a-472e-4277-155f6b9b8430", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+        "181": ["6d724684-247a-472e-4277-155f6b9b8430"]
+      },
+      "exclusions": [
+        "A mention, roar, distant unconfirmed silhouette, ordinary presence, inactive mounting, transport-only flight, or preparation without the preserved physical action does not count.",
+        "A proxy dragon, rider, ally, or subordinate performing the action does not count for the named owner unless the audited condition explicitly names that command relationship.",
+        "An off-screen report, recap, dream, vision, memory, prediction, promotional image, or hypothetical version of the action does not count."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each listed title honestly names a visible present-timeline dragon interaction, attack, flight, command response, battlefield action, death or reappearance whose full boundary remains the preserved audited condition."
+    }
+  ]
+}

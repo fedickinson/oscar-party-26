@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "source": "synthetic-proof",
+  "room_code": "PROOF",
+  "room_id": "22222222-2222-4222-8222-222222222222",
+  "settlement_id": "11111111-1111-4111-8111-111111111111",
+  "settlement_version": 1,
+  "manifest_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "revision": {
+    "settled_at": "2026-08-11T01:30:00.000Z",
+    "supersedes_id": null
+  },
+  "show_pack": {
+    "registry_id": "33333333-3333-4333-8333-333333333333",
+    "pack_id": "proof-show",
+    "version": 1
+  },
+  "settled_facts": [
+    {
+      "id": "fox-lights-path",
+      "sequence": 1,
+      "title": "The Copper Fox lights the path",
+      "outcome": "resolved",
+      "board_status": "authored",
+      "occurred_at": "2026-08-11T00:41:00.000Z",
+      "winner": { "id": "fox", "name": "The Copper Fox" }
+    },
+    {
+      "id": "lantern-before-midnight",
+      "sequence": 2,
+      "title": "The lantern appears before midnight",
+      "outcome": "resolved",
+      "board_status": "authored",
+      "occurred_at": "2026-08-11T00:43:00.000Z",
+      "winner": { "id": "gate", "name": "The Old Gate" }
+    },
+    {
+      "id": "owl-speaks-midnight",
+      "sequence": 3,
+      "title": "The Violet Owl speaks at midnight",
+      "outcome": "resolved",
+      "board_status": "authored",
+      "occurred_at": "2026-08-11T00:59:00.000Z",
+      "winner": { "id": "owl", "name": "The Violet Owl" }
+    },
+    {
+      "id": "shadow-crosses-tower",
+      "sequence": 4,
+      "title": "The shadow crosses the tower",
+      "outcome": "resolved",
+      "board_status": "unscored",
+      "occurred_at": "2026-08-11T01:03:00.000Z",
+      "winner": { "id": "wanderer", "name": "The Wanderer" }
+    },
+    {
+      "id": "fox-breaks-bargain",
+      "sequence": 5,
+      "title": "The Copper Fox breaks the bargain",
+      "outcome": "resolved",
+      "board_status": "authored",
+      "occurred_at": "2026-08-11T01:17:00.000Z",
+      "winner": { "id": "fox", "name": "The Copper Fox" }
+    }
+  ],
+  "players": [
+    { "id": "mira", "name": "Mira" },
+    { "id": "rowan", "name": "Rowan" }
+  ],
+  "characters": [
+    { "id": "bell", "name": "The Bell Keeper", "player_id": "rowan" },
+    { "id": "fox", "name": "The Copper Fox", "player_id": "rowan" },
+    { "id": "gate", "name": "The Old Gate", "player_id": "mira" },
+    { "id": "owl", "name": "The Violet Owl", "player_id": "mira" },
+    { "id": "wanderer", "name": "The Wanderer" }
+  ],
+  "score_events": [
+    {
+      "id": "bingo-square:rowan-card:0",
+      "kind": "bingo",
+      "player_id": "rowan",
+      "label": "A promise is broken",
+      "points": 3
+    },
+    {
+      "id": "bingo-square:rowan-card:1",
+      "kind": "bingo",
+      "player_id": "rowan",
+      "label": "A witness returns",
+      "points": 3
+    },
+    {
+      "id": "mira-lantern-prediction",
+      "kind": "prediction",
+      "player_id": "mira",
+      "label": "The lantern appears before midnight",
+      "points": 5
+    },
+    {
+      "id": "mira-owl-midnight",
+      "kind": "draft",
+      "player_id": "mira",
+      "character_id": "owl",
+      "label": "The Violet Owl speaks at midnight",
+      "points": 3,
+      "trigger": {
+        "source_signature_beat_id": 42,
+        "contract": {
+          "title": "The Violet Owl speaks at midnight",
+          "condition": "The Violet Owl must visibly speak after the midnight bell begins.",
+          "exclusions": [
+            "A remembered or reported speech does not count."
+          ],
+          "adjudication": {
+            "proxies": "do_not_count",
+            "offscreen": "do_not_count",
+            "mentions": "do_not_count"
+          },
+          "title_review": {
+            "status": "approved",
+            "note": "The title promises the same visible, timed action as the condition."
+          },
+          "basis_claim_ids": [
+            "proof-screen-42"
+          ]
+        }
+      }
+    },
+    {
+      "id": "rowan-fox-bargain",
+      "kind": "draft",
+      "player_id": "rowan",
+      "character_id": "fox",
+      "label": "The Copper Fox breaks the bargain",
+      "points": 6
+    },
+    {
+      "id": "rowan-fox-correction",
+      "kind": "adjustment",
+      "player_id": "rowan",
+      "character_id": "fox",
+      "label": "A duplicate call is removed",
+      "points": -2
+    },
+    {
+      "id": "rowan-fox-light",
+      "kind": "draft",
+      "player_id": "rowan",
+      "character_id": "fox",
+      "label": "The Copper Fox lights the path",
+      "points": 5
+    }
+  ],
+  "personal_cards": [
+    {
+      "player_id": "mira",
+      "bingo": [
+        { "label": "Lantern Lit", "marked": true, "free": false },
+        { "label": "Gate Opens", "marked": true, "free": false },
+        { "label": "Owl Calls", "marked": true, "free": false },
+        { "label": "Rain Falls", "marked": false, "free": false },
+        { "label": "Map Found", "marked": false, "free": false },
+        { "label": "Old Debt", "marked": true, "free": false },
+        { "label": "Bell Rings", "marked": false, "free": false },
+        { "label": "Key Turns", "marked": true, "free": false },
+        { "label": "Fox Returns", "marked": false, "free": false },
+        { "label": "Tower Seen", "marked": true, "free": false },
+        { "label": "Road Ends", "marked": true, "free": false },
+        { "label": "Promise Made", "marked": false, "free": false },
+        { "label": "FREE", "marked": true, "free": true },
+        { "label": "Promise Broken", "marked": false, "free": false },
+        { "label": "Door Sealed", "marked": true, "free": false },
+        { "label": "Dawn Waits", "marked": false, "free": false },
+        { "label": "Letter Burns", "marked": false, "free": false },
+        { "label": "Name Spoken", "marked": true, "free": false },
+        { "label": "Bridge Held", "marked": false, "free": false },
+        { "label": "Mask Falls", "marked": true, "free": false },
+        { "label": "Cup Empties", "marked": false, "free": false },
+        { "label": "Truth Lands", "marked": true, "free": false },
+        { "label": "Path Narrows", "marked": true, "free": false },
+        { "label": "Witness Stays", "marked": false, "free": false },
+        { "label": "Night Closes", "marked": true, "free": false }
+      ]
+    },
+    {
+      "player_id": "rowan",
+      "bingo": [
+        { "label": "Lantern Lit", "marked": true, "free": false },
+        { "label": "Gate Opens", "marked": false, "free": false },
+        { "label": "Owl Calls", "marked": true, "free": false },
+        { "label": "Rain Falls", "marked": false, "free": false },
+        { "label": "Map Found", "marked": true, "free": false },
+        { "label": "Old Debt", "marked": false, "free": false },
+        { "label": "Bell Rings", "marked": true, "free": false },
+        { "label": "Key Turns", "marked": false, "free": false },
+        { "label": "Fox Returns", "marked": false, "free": false },
+        { "label": "Tower Seen", "marked": true, "free": false },
+        { "label": "Road Ends", "marked": false, "free": false },
+        { "label": "Promise Made", "marked": true, "free": false },
+        { "label": "FREE", "marked": true, "free": true },
+        { "label": "Promise Broken", "marked": true, "free": false },
+        { "label": "Door Sealed", "marked": false, "free": false },
+        { "label": "Dawn Waits", "marked": false, "free": false },
+        { "label": "Letter Burns", "marked": true, "free": false },
+        { "label": "Name Spoken", "marked": false, "free": false },
+        { "label": "Bridge Held", "marked": true, "free": false },
+        { "label": "Mask Falls", "marked": false, "free": false },
+        { "label": "Cup Empties", "marked": false, "free": false },
+        { "label": "Truth Lands", "marked": true, "free": false },
+        { "label": "Path Narrows", "marked": false, "free": false },
+        { "label": "Witness Stays", "marked": true, "free": false },
+        { "label": "Night Closes", "marked": true, "free": false }
+      ]
+    }
+  ]
+}

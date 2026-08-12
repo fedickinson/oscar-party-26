@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronUp } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
 import { Hallmark } from '../ui/Hallmarks'
+import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -144,6 +145,12 @@ function RosterSection({
               className="relief-glass flex min-h-11 items-center justify-between gap-3 px-3 py-2.5"
             >
               <div className="flex min-w-0 items-start gap-2">
+                <StoryPortrait
+                  name={entity.name}
+                  src={entity.portraitUrl}
+                  className="h-10 w-10"
+                  fallback={<FilmIcon filmName={entity.type === 'film' ? entity.name : entity.film_name} size={16} className="text-[var(--t-text-muted)]" />}
+                />
                 {entity.type === 'film' && (
                   <span className="mt-0.5 flex-shrink-0 text-[var(--t-personal-text)]" aria-label="Claimed dragon">
                     <Hallmark id="hallmark-claim" size={14} />

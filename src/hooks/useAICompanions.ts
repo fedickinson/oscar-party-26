@@ -10,7 +10,6 @@
  *   1. Pre-ceremony: intro messages when no winners exist yet (mount once)
  *   2. Event reactions: Ned at 0s, then the rotating cast staggered behind him
  *   3. Milestones: 6 events logged, 12 events logged
- *   4. Lead change: when the leaderboard #1 changes
  *
  * Rate limiter: isGeneratingRef prevents overlapping API calls.
  * All data is read from refs at fire time to avoid stale closure issues.
@@ -23,29 +22,50 @@ import {
   buildBingoReactionPrompt,
   buildPlayerWelcomePrompt,
   buildPreCeremonyPrompt,
+  buildPreShowArrivalSchedule,
   buildShowStartedPrompt,
   buildTeamChangePrompt,
   buildWinnerReactionPrompt,
   buildPreCategoryPrompt,
   buildMilestonePrompt,
   parseCompanionResponse,
+  type CompanionMessage,
   type PlayerPrediction,
 } from '../lib/companion-prompts'
+import {
+  groundedCompanionBatch,
+  type GroundingModelRequest,
+} from '../../api/_grounding'
 import type {
   CategoryRow,
   NomineeRow,
   ConfidencePickRow,
   DraftPickRow,
   DraftEntityRow,
+  BingoMarkRow,
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
 import { COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, pickGreeterForHouse } from '../data/ai-companions'
 import { getAvatarById } from '../data/avatar-config'
-import { buildCategoryContext, buildCeremonyPreamble } from '../lib/ceremony-context'
-import { checkBingo } from '../lib/bingo-utils'
+import { buildCategoryContext } from '../lib/ceremony-context'
+import {
+  buildBingoReactionKey,
+  buildMilestoneReactionKey,
+  buildPreShowArrivalReactionKey,
+  buildShowStartedReactionKey,
+  buildSpotlightReactionKey,
+  buildTeamChangeReactionKey,
+  buildWelcomeReactionKey,
+  isMilestoneScoreboardReady,
+  selectSpokenCompanionIds,
+} from '../lib/companion-reaction'
+import { didBingoMarkCompleteLine } from '../lib/bingo-utils'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import {
+  acquireCompanionTypingChannel,
+  type CompanionTypingChannelHandle,
+} from './companionTypingChannel'
 
 export function useAICompanions(
   categories: CategoryRow[],
@@ -55,39 +75,57 @@ export function useAICompanions(
   draftEntities: DraftEntityRow[],
   leaderboard: ScoredPlayer[],
   isHost: boolean,
+  operatorCapability: string | null,
   predictionsRef?: React.MutableRefObject<StoredPrediction[]>,
   showStarted?: boolean,
+  narrativeDataReady = false,
 ): { isGenerating: boolean } {
   const { room, players } = useGame()
   const roomIdForBingo = room?.id
   const isHostRef = useRef(isHost)
   isHostRef.current = isHost
+  const operatorCapabilityRef = useRef(operatorCapability)
+  operatorCapabilityRef.current = operatorCapability
+  const narrativeDataReadyRef = useRef(narrativeDataReady)
+  narrativeDataReadyRef.current = narrativeDataReady
+  const reactionInstanceRef = useRef(crypto.randomUUID())
 
   // Tracks delayed companion message timeouts so they can be cancelled on unmount
   const pendingTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // Broadcast channel — host sends typing events; all clients subscribe in ChatSection
-  const broadcastChannelRef = useRef<RealtimeChannel | null>(null)
+  const broadcastChannelRef = useRef<CompanionTypingChannelHandle | null>(null)
   useEffect(() => {
     if (!room?.id) return
-    const ch = supabase.channel(`room-${room.id}-companion-typing`)
-    ch.subscribe()
-    broadcastChannelRef.current = ch
+    const channel = acquireCompanionTypingChannel(room.id)
+    broadcastChannelRef.current = channel
     return () => {
-      supabase.removeChannel(ch)
+      channel.release()
       broadcastChannelRef.current = null
     }
   }, [room?.id])
 
+  // Staggered event lines live in a private due-time queue. Exact timers give
+  // an awake host the intended cadence; this poll is the reload/background
+  // recovery path. The daemon runs the same flush, and the RPC is idempotent.
+  useEffect(() => {
+    if (!isHost || !room?.id) return
+    const roomId = room.id
+    const flush = () => {
+      void supabase.rpc('deliver_due_companion_reactions', {
+        p_room_id: roomId,
+        p_limit: 20,
+      })
+    }
+    flush()
+    const timer = setInterval(flush, 3_000)
+    return () => clearInterval(timer)
+  }, [isHost, room?.id])
+
   // ── State in refs to avoid stale closures and unnecessary re-renders ─────────
   const previousWinnersRef = useRef<Set<number>>(new Set())
-  const preCategoryFiredRef = useRef<Set<number>>(new Set())
   const milestoneFiredRef = useRef<Set<string>>(new Set())
-  const preCeremonyFiredRef = useRef(false)
-  const showStartedFiredRef = useRef(false)
-  const previousLeaderIdRef = useRef<string | null>(null)
   const dataInitializedRef = useRef(false)
-  const prevSpotlightCategoryIdRef = useRef<number | null>(null)
 
   // Data refs — always current regardless of when async callbacks execute
   const categoriesRef = useRef(categories)
@@ -111,7 +149,11 @@ export function useAICompanions(
 
   // ── Core helpers ──────────────────────────────────────────────────────────────
 
-  async function callClaude(prompt: { system: string; user: string }, maxTokens = 600): Promise<string> {
+  async function callClaude(
+    prompt: { system: string; user: string },
+    maxTokens = 600,
+    model: GroundingModelRequest['model'] = 'claude-sonnet-5',
+  ): Promise<string> {
     const response = await fetch('/api/anthropic/v1/messages', {
       method: 'POST',
       headers: {
@@ -119,7 +161,7 @@ export function useAICompanions(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-5',
+        model,
         max_tokens: maxTokens,
         // Thinking is OFF deliberately. On Sonnet 5 an omitted `thinking` field
         // runs adaptive thinking, and max_tokens caps thinking + response text
@@ -155,6 +197,130 @@ export function useAICompanions(
     return (blocks.find((b) => b.type === 'text')?.text ?? '') as string
   }
 
+  async function callGroundedClaude(
+    prompt: {
+      system: string
+      user: string
+      groundingFacts: string[]
+      expectedCompanionIds: string[]
+      expectedDelaySeconds?: number[]
+    },
+    maxTokens: number,
+    reactionKey: string,
+    surface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'show_start' | 'pre_show' | 'spotlight',
+    legacyPlayerId?: string,
+    stillValid?: () => boolean,
+  ): Promise<CompanionMessage[] | null> {
+    const currentRoom = roomRef.current
+    if (!currentRoom?.host_id) return null
+    const roomId = currentRoom.id
+    let claimed = false
+    let completed = false
+    try {
+      const { data: claimData, error: claimError } = await supabase.rpc(
+        'claim_browser_companion_reaction_authorized',
+        {
+          p_room_id: roomId,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_lease_seconds: 300,
+          p_operator_capability: operatorCapabilityRef.current,
+        },
+      )
+      if (claimError) throw claimError
+      claimed = (claimData as Array<{ claimed?: boolean }> | null)?.[0]?.claimed === true
+      if (!claimed || roomRef.current?.id !== roomId) return null
+      if (stillValid && !stillValid()) return null
+
+      const grounded = await groundedCompanionBatch({
+        system: prompt.system,
+        user: prompt.user,
+        facts: prompt.groundingFacts,
+        model: 'claude-sonnet-5',
+        maxTokens,
+        maxRetries: 2,
+        expectedCompanionIds: prompt.expectedCompanionIds,
+        expectedDelaySeconds: prompt.expectedDelaySeconds,
+        allowEmptyBatch: surface === 'bingo',
+        caller: (request) => callClaude(
+          { system: request.system, user: request.user },
+          request.maxTokens,
+          request.model,
+        ),
+      })
+      if (roomRef.current?.id !== roomId) return null
+      if (grounded.findings.length > 0) {
+        const { error } = await supabase.rpc('record_companion_grounding_review_authorized', {
+          p_room_id: roomId,
+          p_actor_player_id: currentRoom.host_id,
+          p_reaction_key: reactionKey,
+          p_surface: surface,
+          p_engine: 'browser',
+          p_facts: prompt.groundingFacts,
+          p_attempted_messages: grounded.messages,
+          p_findings: grounded.findings,
+          p_attempts: grounded.attempts,
+          p_model: 'claude-sonnet-5',
+          p_operator_capability: operatorCapabilityRef.current,
+        })
+        if (error) console.error('Could not preserve blocked companion prose:', error)
+        return null
+      }
+      if (grounded.messages.length === 0) return null
+      if (stillValid && !stillValid()) return null
+      if (surface === 'pre_show' && (
+        !isHostRef.current ||
+        !narrativeDataReadyRef.current ||
+        showStartedRef.current ||
+        categoriesRef.current.some((category) => category.winner_id != null)
+      )) return null
+      if (legacyPlayerId) {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('room_id', roomId)
+          .eq('player_id', legacyPlayerId)
+        if (error) throw error
+        if (count != null && count > 0) return null
+      }
+
+      const { data: scheduleData, error: scheduleError } = await supabase.rpc(
+        'schedule_browser_companion_reaction_authorized',
+        {
+          p_room_id: roomId,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_messages: grounded.messages.map((message) => ({
+            player_id: message.companion_id,
+            text: message.text,
+            delay_seconds: message.delay_seconds,
+          })),
+          p_operator_capability: operatorCapabilityRef.current,
+        },
+      )
+      if (scheduleError) throw scheduleError
+      completed = (scheduleData as Array<{ completed?: boolean }> | null)?.[0]?.completed === true
+      return completed ? grounded.messages : null
+    } finally {
+      if (claimed && !completed) {
+        await supabase.rpc('release_browser_companion_reaction_authorized', {
+          p_room_id: roomId,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_operator_capability: operatorCapabilityRef.current,
+        })
+      }
+    }
+  }
+
+  async function deliverDueCompanionReactions(roomId: string): Promise<void> {
+    const { error } = await supabase.rpc('deliver_due_companion_reactions', {
+      p_room_id: roomId,
+      p_limit: 20,
+    })
+    if (error) throw error
+  }
+
   async function insertCompanionMessage(companionId: string, text: string) {
     const currentRoom = roomRef.current
     if (!currentRoom) return
@@ -165,14 +331,76 @@ export function useAICompanions(
     })
   }
 
-  async function insertSystemDivider(text: string) {
+  async function insertClaimedSystemDivider(
+    reactionKey: string,
+    text: string,
+    legacyTextSentinel?: string,
+    legacySince?: string,
+    stillValid?: () => boolean,
+  ): Promise<boolean> {
     const currentRoom = roomRef.current
-    if (!currentRoom || !isHostRef.current) return
-    await supabase.from('messages').insert({
-      room_id: currentRoom.id,
-      player_id: 'system',
-      text,
-    })
+    if (!currentRoom || !isHostRef.current) return false
+    let claimed = false
+    let completed = false
+    try {
+      let legacyRowExists = false
+      if (legacyTextSentinel) {
+        let legacyQuery = supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('room_id', currentRoom.id)
+          .eq('player_id', 'system')
+          .eq('text', legacyTextSentinel)
+        if (legacySince) legacyQuery = legacyQuery.gte('created_at', legacySince)
+        const { count, error } = await legacyQuery
+        if (error) throw error
+        legacyRowExists = count != null && count > 0
+      }
+      const { data: claimData, error: claimError } = await supabase.rpc(
+        'claim_browser_companion_reaction_authorized',
+        {
+          p_room_id: currentRoom.id,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_lease_seconds: 60,
+          p_operator_capability: operatorCapabilityRef.current,
+        },
+      )
+      if (claimError) throw claimError
+      const claim = (claimData as Array<{
+        claimed?: boolean
+        active_completed_at?: string | null
+      }> | null)?.[0]
+      claimed = claim?.claimed === true
+      if (!claimed) return claim?.active_completed_at != null
+      if (roomRef.current?.id !== currentRoom.id) return false
+      // A divider written by the unkeyed legacy bundle is the old ceremony's
+      // completion sentinel. Do not backfill a second announcement or reaction.
+      if (legacyRowExists) return false
+      if (stillValid && !stillValid()) return false
+      const { data: completeData, error: completeError } = await supabase.rpc(
+        'complete_browser_companion_reaction_authorized',
+        {
+          p_room_id: currentRoom.id,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_messages: [{ player_id: 'system', text }],
+          p_operator_capability: operatorCapabilityRef.current,
+        },
+      )
+      if (completeError) throw completeError
+      completed = (completeData as Array<{ completed?: boolean }> | null)?.[0]?.completed === true
+      return completed
+    } finally {
+      if (claimed && !completed) {
+        await supabase.rpc('release_browser_companion_reaction_authorized', {
+          p_room_id: currentRoom.id,
+          p_reaction_key: reactionKey,
+          p_instance_id: reactionInstanceRef.current,
+          p_operator_capability: operatorCapabilityRef.current,
+        })
+      }
+    }
   }
 
   async function insertWinnerDivider(text: string) {
@@ -195,40 +423,78 @@ export function useAICompanions(
     })
   }
 
-  async function fireCompanionMessages(prompt: { system: string; user: string }, maxTokens = 600) {
+  async function fireCompanionMessages(
+    prompt: {
+      system: string
+      user: string
+      groundingFacts?: string[]
+      expectedCompanionIds?: string[]
+      expectedDelaySeconds?: number[]
+    },
+    maxTokens = 600,
+    reactionKey?: string,
+    groundingSurface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'show_start' | 'pre_show' | 'spotlight' = 'event',
+    legacyPlayerId?: string,
+    stillValid?: () => boolean,
+  ) {
     if (!isHostRef.current) return
     // The delay-0 message gates all perceived latency: during the pre-show the
     // chat IS the show and generation takes seconds. Show the narrator typing
     // the moment the call goes out — the wait reads as typing, not dead air.
     addPendingCompanion(NARRATOR.id)
-    broadcastChannelRef.current?.send({
-      type: 'broadcast', event: 'companion_typing',
-      payload: { id: NARRATOR.id, typing: true },
-    })
+    void broadcastChannelRef.current?.send({ id: NARRATOR.id, typing: true })
     const clearNarratorTyping = () => {
       removePendingCompanion(NARRATOR.id)
-      broadcastChannelRef.current?.send({
-        type: 'broadcast', event: 'companion_typing',
-        payload: { id: NARRATOR.id, typing: false },
-      })
+      void broadcastChannelRef.current?.send({ id: NARRATOR.id, typing: false })
     }
     try {
-      const raw = await callClaude(prompt, maxTokens)
+      let messages: CompanionMessage[]
+      let firstMessageAlreadyPersisted = false
+      const scheduledRoomId = roomRef.current?.id
+      if (prompt.groundingFacts && prompt.expectedCompanionIds && reactionKey) {
+        const groundedMessages = await callGroundedClaude(
+          {
+            ...prompt,
+            groundingFacts: prompt.groundingFacts,
+            expectedCompanionIds: prompt.expectedCompanionIds,
+            expectedDelaySeconds: prompt.expectedDelaySeconds,
+          },
+          maxTokens,
+          reactionKey,
+          groundingSurface,
+          legacyPlayerId,
+          stillValid,
+        )
+        if (!groundedMessages) {
+          clearNarratorTyping()
+          return
+        }
+        messages = groundedMessages
+        firstMessageAlreadyPersisted = true
+      } else if (prompt.groundingFacts || prompt.expectedCompanionIds) {
+        clearNarratorTyping()
+        return
+      } else {
+        const raw = await callClaude(prompt, maxTokens)
+        if (!raw) {
+          clearNarratorTyping()
+          return
+        }
+        messages = parseCompanionResponse(raw)
+      }
       clearNarratorTyping()
-      if (!raw) return
-      const messages = parseCompanionResponse(raw)
-      // Delays live in client setTimeouts on the host, and the host tonight is
-      // a PHONE — locks, reloads, suspensions all wipe in-flight timers. The
-      // 8-minute entrance arc was designed for an always-awake tab; under real
-      // phone conditions long delays mostly died and re-fired from zero on the
-      // next reload, which is why the chat crawled. Cap the tail: intros still
-      // stagger, but everything lands within a plausible awake-window.
+      // Ungrounded decoration still uses client timers, so cap its tail inside
+      // a plausible awake-window. Grounded event batches are different: their
+      // complete delay plan is already durable, and these timers merely wake
+      // the idempotent database delivery RPC at the intended cadence.
       for (const msg of messages) {
         msg.delay_seconds = Math.min(msg.delay_seconds, 90)
       }
-      for (const msg of messages) {
+      for (const [messageIndex, msg] of messages.entries()) {
         if (msg.delay_seconds === 0) {
-          await insertCompanionMessage(msg.companion_id, msg.text)
+          if (!firstMessageAlreadyPersisted || messageIndex > 0) {
+            await insertCompanionMessage(msg.companion_id, msg.text)
+          }
         } else {
           // Typing indicator appears shortly BEFORE the message, not the instant
           // the batch is scheduled. Intros are now minutes apart, and lighting up
@@ -238,23 +504,19 @@ export function useAICompanions(
           const startTypingIn = msg.delay_seconds * 1000 - typingLeadMs
           const startTyping = () => {
             addPendingCompanion(msg.companion_id)
-            broadcastChannelRef.current?.send({
-              type: 'broadcast',
-              event: 'companion_typing',
-              payload: { id: msg.companion_id, typing: true },
-            })
+            void broadcastChannelRef.current?.send({ id: msg.companion_id, typing: true })
           }
           if (startTypingIn <= 0) startTyping()
           else pendingTimeoutsRef.current.push(setTimeout(startTyping, startTypingIn))
 
           const tid = setTimeout(() => {
             removePendingCompanion(msg.companion_id)
-            broadcastChannelRef.current?.send({
-              type: 'broadcast',
-              event: 'companion_typing',
-              payload: { id: msg.companion_id, typing: false },
-            })
-            insertCompanionMessage(msg.companion_id, msg.text)
+            void broadcastChannelRef.current?.send({ id: msg.companion_id, typing: false })
+            if (firstMessageAlreadyPersisted && scheduledRoomId) {
+              void deliverDueCompanionReactions(scheduledRoomId).catch(() => undefined)
+            } else {
+              void insertCompanionMessage(msg.companion_id, msg.text)
+            }
           }, msg.delay_seconds * 1000)
           pendingTimeoutsRef.current.push(tid)
         }
@@ -274,97 +536,114 @@ export function useAICompanions(
     }
   }, [])
 
-  // ── Effect 1: Pre-ceremony intro (fires once per room, ever) ────────────────
-  // Waits for room to be non-null (session restore complete), then delays 2s
-  // so useScores initial fetch completes before checking winners.
-  // Checks the DB for existing companion messages before firing — prevents
-  // duplicate welcome messages when the host reloads the page.
+  // ── Effect 1: Grounded pre-ceremony arrivals ─────────────────────────────────
+  // Each authored arrival owns its own durable key. Missing rows are re-based
+  // after reload so the long entrance arc survives without replaying anyone who
+  // already spoke, including companions inserted by a still-running old bundle.
 
   useEffect(() => {
-    if (!room) return
+    if (!room?.id || !isHost || !narrativeDataReady) return
+    const scheduledRoomId = room.id
+    let disposed = false
+    const timers: ReturnType<typeof setTimeout>[] = []
 
-    const timer = setTimeout(async () => {
-      if (preCeremonyFiredRef.current) return
-      preCeremonyFiredRef.current = true
+    const fireArrival = async (companionId: string) => {
+      if (disposed || !isHostRef.current || showStartedRef.current ||
+          roomRef.current?.id !== scheduledRoomId ||
+          categoriesRef.current.some((category) => category.winner_id != null)) return
 
-      // If the show already started while the 2s timer was pending, skip the
-      // pre-ceremony intro — Effect 1b handles that moment via buildShowStartedPrompt.
-      if (showStartedRef.current) return
-
-      const hasWinners = categoriesRef.current.some((c) => c.winner_id != null)
-      if (hasWinners) return
-
-      // The introductions are spread over ~8 minutes, and the schedule lives
-      // in setTimeouts in THIS browser. A host reload at minute two used to
-      // lose the four who had not arrived yet, permanently: the old guard saw
-      // Ned's message, concluded the intros had run, and skipped.
-      //
-      // So instead of "have any companions spoken", ask WHICH have spoken and
-      // top up the rest. On a clean first run that is all six; after a reload
-      // it is whoever is missing; once everyone has arrived it is nobody and
-      // we return.
-      const { data: existing } = await supabase
+      // Fast legacy sentinel before spending model tokens. The grounded helper
+      // repeats this check after audit to close the longer generation window.
+      const { count: existingCount, error: existingError } = await supabase
         .from('messages')
-        .select('player_id')
-        .eq('room_id', roomRef.current?.id ?? '')
-        .in('player_id', [...COMPANION_IDS])
+        .select('*', { count: 'exact', head: true })
+        .eq('room_id', scheduledRoomId)
+        .eq('player_id', companionId)
+      if (existingError || (existingCount != null && existingCount > 0)) return
 
-      const spoken = new Set((existing ?? []).map((m) => m.player_id))
-      const missing = PRE_SHOW_COMPANIONS.map((c) => c.id).filter((id) => !spoken.has(id))
-      if (missing.length === 0) return
+      const { data: recent, error: recentError } = await supabase
+        .from('messages')
+        .select('player_id,text,created_at')
+        .eq('room_id', scheduledRoomId)
+        .in('player_id', PRE_SHOW_COMPANIONS.map((companion) => companion.id))
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(6)
+      if (recentError || disposed) return
 
-      fireCompanionMessages(
+      await fireCompanionMessages(
         buildPreCeremonyPrompt(
+          companionId,
           playersRef.current,
           draftPicksRef.current,
           draftEntitiesRef.current,
-          confidencePicksRef.current,
-          categoriesRef.current,
-          nomineesRef.current,
-          buildCeremonyPreamble(),
-          spoken.size > 0 ? missing : undefined,
+          [...(recent ?? [])].reverse(),
         ),
-        // Six full-length entrances need real room. At 1400 the last two
-        // arrivals came back truncated mid-sentence.
-        2200,
+        700,
+        buildPreShowArrivalReactionKey(companionId),
+        'pre_show',
+        companionId,
       )
-    }, 300)
+    }
 
-    return () => clearTimeout(timer)
+    const bootstrap = setTimeout(async () => {
+      if (disposed || showStartedRef.current ||
+          categoriesRef.current.some((category) => category.winner_id != null)) return
+      const { data: existing, error } = await supabase
+        .from('messages')
+        .select('player_id')
+        .eq('room_id', scheduledRoomId)
+        .in('player_id', PRE_SHOW_COMPANIONS.map((companion) => companion.id))
+      if (error || disposed) return
+
+      const schedule = buildPreShowArrivalSchedule(
+        (existing ?? []).map((message) => message.player_id),
+      )
+      for (const arrival of schedule) {
+        const timer = setTimeout(
+          () => void fireArrival(arrival.companionId).catch(() => undefined),
+          arrival.delaySeconds * 1000,
+        )
+        timers.push(timer)
+      }
+    }, 300)
+    timers.push(bootstrap)
+
+    return () => {
+      disposed = true
+      timers.forEach(clearTimeout)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room])
+  }, [room?.id, isHost, narrativeDataReady])
 
   // ── Effect 1b: "Show Started" — divider + companion reaction ────────────────
-  // Fires once when show_started flips true. DB check guards against re-firing
-  // on page reload when show_started is already true.
+  // The room phase is canonical. Stable database claims make competing host
+  // tabs and reload recovery safe; the legacy divider remains a deploy-window
+  // sentinel for rooms whose old bundle already performed this ceremony.
 
   useEffect(() => {
-    if (!showStarted) return
-    if (showStartedFiredRef.current) return
-    showStartedFiredRef.current = true
-
-    // Only the host inserts dividers and fires AI messages; non-hosts get them via Realtime
-    if (!isHostRef.current) return
-
-    // Guard against re-firing on reload: check before inserting the divider
-    supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('room_id', roomRef.current?.id ?? '')
-      .eq('player_id', 'system')
-      .eq('text', 'Show Started')
-      .then(({ count }) => {
-        if (count != null && count > 0) return
-        insertSystemDivider('Show Started')
-        fireCompanionMessages(buildShowStartedPrompt(playersRef.current), 1000)
-      })
+    if (!showStarted || !isHost || !room?.id) return
+    void (async () => {
+      const shouldReact = await insertClaimedSystemDivider(
+        buildShowStartedReactionKey('announcement'),
+        'Show Started',
+        'Show Started',
+      )
+      if (!shouldReact) return
+      await fireCompanionMessages(
+        buildShowStartedPrompt(playersRef.current),
+        1000,
+        buildShowStartedReactionKey('reaction'),
+        'show_start',
+      )
+    })().catch(() => undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showStarted])
+  }, [showStarted, isHost, room?.id])
 
   // ── Effect 1c: Player welcomes ──────────────────────────────────────────────
   //
-  // Each player gets ONE first-acknowledgement from the cast: their name, their
-  // allegiance, a verdict on somebody they drafted. Spaced ~85s apart so they
+  // Each player gets ONE scheduled arrival welcome from the cast: their name,
+  // their allegiance, a verdict on somebody they drafted. Spaced ~85s apart so they
   // thread BETWEEN the companion entrances instead of landing as a roll call,
   // and the greeter is drawn only from companions who have already introduced
   // themselves — a welcome from someone who has not arrived yet would both read
@@ -383,7 +662,7 @@ export function useAICompanions(
       .select('player_id')
       .eq('room_id', roomRef.current?.id ?? '')
       .in('player_id', [...COMPANION_IDS])
-    return [...new Set((data ?? []).map((m) => m.player_id as string))]
+    return selectSpokenCompanionIds((data ?? []).map((message) => message.player_id as string))
   }
 
   useEffect(() => {
@@ -413,13 +692,17 @@ export function useAICompanions(
             return
           }
           // Claim before calling the API — this is the reload guard.
-          const { data: claimed } = await supabase
-            .from('players')
-            .update({ welcomed_at: new Date().toISOString() })
-            .eq('id', p.id)
-            .is('welcomed_at', null)
-            .select('id')
-          if (!claimed?.length) return
+          const actorPlayerId = roomRef.current?.host_id
+          if (!actorPlayerId || !operatorCapabilityRef.current) return
+          const { data: claimed, error: claimError } = await supabase.rpc(
+            'claim_player_welcome_authorized_v2', {
+              p_room_id: roomRef.current?.id,
+              p_actor_player_id: actorPlayerId,
+              p_target_player_id: p.id,
+              p_operator_capability: operatorCapabilityRef.current,
+            },
+          )
+          if (claimError || !claimed) return
 
           // Freshest state at fire time, not schedule time — the player may
           // have picked a team in the minutes since this was queued.
@@ -436,15 +719,15 @@ export function useAICompanions(
           // judges anyone wearing her own dragon. Random fallback only when
           // the house is unknown or nobody with an angle is on stage yet.
           const houseId = current.avatar_id
+          const banner = getAvatarById(houseId)
           const angle = pickGreeterForHouse(houseId, spoken, lastGreeterRef.current)
           let greeter: string
-          let house: { name: string; hook: string } | undefined
+          let house: { name: string; hook?: string } | undefined = banner
+            ? { name: banner.name }
+            : undefined
           if (angle) {
             greeter = angle.companionId
-            house = {
-              name: getAvatarById(houseId)?.name ?? houseId,
-              hook: angle.hook,
-            }
+            if (house) house.hook = angle.hook
           } else {
             const pool = spoken.filter((id) => id !== lastGreeterRef.current)
             greeter = (pool.length ? pool : spoken)[
@@ -456,6 +739,8 @@ export function useAICompanions(
           await fireCompanionMessages(
             buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster, house),
             400,
+            buildWelcomeReactionKey(p.id),
+            'welcome',
           )
         } catch {
           // Welcomes are decoration — never let one break the host client.
@@ -475,27 +760,31 @@ export function useAICompanions(
 
   // ── Effect 1d: Team declarations and defections ─────────────────────────────
   //
-  // Watches player UPDATEs for team transitions. A switch mid-episode is a
-  // little ceremony: a system divider states the fact, then one companion
-  // passes judgement a few seconds later. Baseline is seeded silently so a
-  // page load never announces existing allegiances, and per-player cooldown
-  // stops a rapid toggler from flooding the chat.
-  const prevTeamsRef = useRef<Map<string, 'black' | 'green' | null> | null>(null)
+  // Database-owned revisions distinguish repeated transitions and let a host
+  // reload recover the latest uncompleted ceremony. Revision zero is inherited
+  // baseline state and remains silent.
+  const processedTeamRevisionsRef = useRef<Map<string, number>>(new Map())
   const lastTeamEventRef = useRef<Map<string, number>>(new Map())
 
   useEffect(() => {
+    // These are observation/cooldown cursors, not durable ownership. Reset them
+    // at the room boundary so a long-lived provider cannot carry narrative
+    // state into a later session; the database reaction keys remain the source
+    // of truth for whether the new room still needs its latest revision.
+    processedTeamRevisionsRef.current.clear()
+    lastTeamEventRef.current.clear()
+  }, [room?.id])
+
+  useEffect(() => {
     if (!isHost || !players.length) return
-    if (prevTeamsRef.current === null) {
-      prevTeamsRef.current = new Map(players.map((p) => [p.id, p.team ?? null]))
-      return
-    }
-    const prev = prevTeamsRef.current
     for (const p of players) {
-      if (!prev.has(p.id)) { prev.set(p.id, p.team ?? null); continue }
-      const was = prev.get(p.id) ?? null
+      const revision = p.team_revision ?? 0
+      const processedRevision = processedTeamRevisionsRef.current.get(p.id) ?? 0
+      if (revision <= processedRevision) continue
+      processedTeamRevisionsRef.current.set(p.id, revision)
+
+      const was = p.previous_team ?? null
       const now = p.team ?? null
-      if (was === now) continue
-      prev.set(p.id, now)
       if (!now) continue // clearing a team is not an event
       // A declaration BEFORE the welcome is folded into the welcome itself.
       if (!was && !p.welcomed_at) continue
@@ -504,20 +793,27 @@ export function useAICompanions(
       lastTeamEventRef.current.set(p.id, Date.now())
 
       const label = now === 'black' ? 'Team Black' : 'Team Green'
-      void insertSystemDivider(`${p.name} ${was ? 'defects to' : 'declares for'} ${label}`)
+      void insertClaimedSystemDivider(
+        buildTeamChangeReactionKey(p.id, revision, 'announcement'),
+        `${p.name} ${was ? 'defects to' : 'declares for'} ${label}`,
+      ).catch(() => undefined)
 
-      const roster = draftPicksRef.current
-        .filter((dp) => dp.player_id === p.id)
-        .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
-        .filter((n): n is string => !!n)
       const tid = setTimeout(async () => {
         try {
+          const current = playersRef.current.find((player) => player.id === p.id)
+          if ((current?.team_revision ?? 0) !== revision) return
           const spoken = await spokenCompanionIds()
           if (!spoken.length) return
           const greeter = spoken[Math.floor(Math.random() * spoken.length)]
+          const roster = draftPicksRef.current
+            .filter((dp) => dp.player_id === p.id)
+            .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
+            .filter((n): n is string => !!n)
           await fireCompanionMessages(
-            buildTeamChangePrompt(greeter, p.name, was, now, roster),
+            buildTeamChangePrompt(greeter, p.name, was, now, revision, roster),
             400,
+            buildTeamChangeReactionKey(p.id, revision, 'reaction'),
+            'team_change',
           )
         } catch { /* decoration */ }
       }, 6_000 + Math.random() * 6_000)
@@ -530,7 +826,7 @@ export function useAICompanions(
   //
   // The design principle for the whole night: nobody narrates the episode.
   // The GAME's declarations are the event stream — a GM-logged beat is one
-  // kind, and a host-approved bingo square is the other. "Someone says
+  // kind, and an approved honor-system bingo mark is the other. "Someone says
   // 'Dracarys' — confirmed" tells the cast what happened on screen without
   // anyone typing a play-by-play.
   //
@@ -540,15 +836,17 @@ export function useAICompanions(
   // player's name on it.
   const processedMarkIdsRef = useRef<Set<string>>(new Set())
   const lastSquareReactionAtRef = useRef(0)
-  const cardLineCountRef = useRef<Map<string, number>>(new Map())
   const bingoSquaresCacheRef = useRef<Map<number, string> | null>(null)
 
   useEffect(() => {
-    if (!roomIdForBingo) return
+    if (!roomIdForBingo || !isHost) return
 
     async function squareText(id: number): Promise<string | null> {
       if (!bingoSquaresCacheRef.current) {
-        const { data } = await supabase.from('bingo_squares').select('id, text')
+        if (!roomRef.current) return null
+        const { data } = await supabase
+          .from('bingo_squares').select('id, text')
+          .eq('show_pack_id', roomRef.current.show_pack_id)
         bingoSquaresCacheRef.current = new Map(
           (data ?? []).map((sq) => [sq.id as number, sq.text as string]),
         )
@@ -556,7 +854,7 @@ export function useAICompanions(
       return bingoSquaresCacheRef.current.get(id) ?? null
     }
 
-    async function onMark(mark: { id: string; card_id: string; square_index: number; status: string }) {
+    async function onMark(mark: BingoMarkRow) {
       if (!isHostRef.current) return
       if (mark.status !== 'approved') return
       if (processedMarkIdsRef.current.has(mark.id)) return
@@ -575,29 +873,18 @@ export function useAICompanions(
       if (!player) return
 
       // Line detection first — a new completed line outranks the square gate.
-      const { data: approved } = await supabase
+      const { data: approved, error: approvedError } = await supabase
         .from('bingo_marks')
-        .select('square_index')
+        .select('id, card_id, square_index, status, marked_at')
         .eq('card_id', card.id)
         .eq('status', 'approved')
-      const marked = new Set<number>([12, ...(approved ?? []).map((m) => m.square_index as number)])
-      const lines = checkBingo(marked, []).lines.length
-      // First sight of this card (host reload mid-game): baseline is the card
-      // WITHOUT the mark that just arrived, so a line completed an hour ago
-      // does not get re-celebrated now.
-      let prevLines = cardLineCountRef.current.get(card.id)
-      if (prevLines === undefined) {
-        const before = new Set(marked)
-        before.delete(mark.square_index)
-        prevLines = checkBingo(before, []).lines.length
-      }
-      cardLineCountRef.current.set(card.id, lines)
+      if (approvedError) return
 
       const squareId = (card.squares as number[])[mark.square_index]
       const text = squareId ? await squareText(squareId) : null
       if (!text) return
 
-      const isNewLine = lines > prevLines
+      const isNewLine = didBingoMarkCompleteLine(mark, approved ?? [])
 
       // Every mark lands in chat as a divider — the room should SEE claims
       // even when no companion comments. Delayed ~8s and re-verified so an
@@ -606,9 +893,10 @@ export function useAICompanions(
         const tid = setTimeout(() => {
           void (async () => {
             const { data: still } = await supabase
-              .from('bingo_marks').select('id').eq('id', mark.id).maybeSingle()
-            if (!still) return
-            await insertSystemDivider(
+              .from('bingo_marks').select('id, status').eq('id', mark.id).maybeSingle()
+            if (!still || still.status !== 'approved') return
+            await insertClaimedSystemDivider(
+              buildBingoReactionKey(mark.id, 'announcement'),
               isNewLine
                 ? `BINGO — ${player.name} completes a line: "${text}"`
                 : `${player.name} marked: "${text}"`,
@@ -638,13 +926,15 @@ export function useAICompanions(
         void (async () => {
           const { data: still } = await supabase
             .from('bingo_marks')
-            .select('id')
+            .select('id, status')
             .eq('id', mark.id)
             .maybeSingle()
-          if (!still) return
+          if (!still || still.status !== 'approved') return
           await fireCompanionMessages(
             buildBingoReactionPrompt(who, player.name, text, isNewLine ? 'line' : 'square'),
             400,
+            buildBingoReactionKey(mark.id, 'reaction'),
+            'bingo',
           )
         })()
       }, 8_000 + Math.random() * 4_000)
@@ -660,14 +950,14 @@ export function useAICompanions(
       .subscribe()
     return () => { supabase.removeChannel(channel) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomIdForBingo])
+  }, [roomIdForBingo, isHost])
 
   // ── Effect 2: Winner reactions ────────────────────────────────────────────────
   // First meaningful data load: initialize seen set without firing reactions.
   // Subsequent updates: fire for genuinely new winners only.
 
   useEffect(() => {
-    if (!categories.length) return
+    if (!isHost || !categories.length) return
 
     if (!dataInitializedRef.current) {
       // Mark all currently-announced categories as already seen
@@ -676,8 +966,8 @@ export function useAICompanions(
       // Pre-populate milestoneFiredRef for any thresholds already passed so
       // Effect 5 (milestone reactions) doesn't re-fire them on page reload.
       const count = categories.filter((c) => c.winner_id != null).length
-      if (count >= 12) milestoneFiredRef.current.add('halfway')
-      if (count >= 18) milestoneFiredRef.current.add('final_stretch')
+      if (count >= 6) milestoneFiredRef.current.add('halfway')
+      if (count >= 12) milestoneFiredRef.current.add('final_stretch')
       const total = categories.length
       if (total > 0 && count >= total - 1) milestoneFiredRef.current.add('final_category')
       if (total > 0 && count >= total) milestoneFiredRef.current.add('ceremony_end')
@@ -764,6 +1054,8 @@ export function useAICompanions(
           // count is the only thing that tells the prompt where she's got to.
           categoriesRef.current.filter((c) => c.winner_id != null).length,
         ),
+        700,
+        `event:${cat.id}:winner`,
       )
       // Film-link cards used to open the film encyclopedia on the Films tab.
       // That tab is gone, so inserting one now puts a gold, tappable, dead card
@@ -771,59 +1063,86 @@ export function useAICompanions(
       // render branch in ChatSection stays for any rows already in the table.
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories])
+  }, [categories, isHost])
 
-  // ── Effect 3: Spotlight pre-category prompt ───────────────────────────────────
-  // Fires immediately when host opens a spotlight for a category.
-  // Replaces the old 45s-delayed pre-category scheduling.
+  // ── Effect 3: Grounded spotlight opening ─────────────────────────────────────
+  // The database revision distinguishes close/reopen cycles. A short grace lets
+  // an old bundle publish its immediate divider first; that current-opening row
+  // becomes the legacy completion sentinel instead of causing a replay.
 
   useEffect(() => {
     const spotlightId = room?.active_spotlight_category_id ?? null
+    const spotlightRevision = room?.spotlight_revision ?? 0
+    const spotlightOpenedAt = room?.spotlight_opened_at ?? null
+    if (!isHost || !narrativeDataReady || spotlightId == null ||
+        spotlightRevision < 1 || !spotlightOpenedAt || !room?.id) return
 
-    if (spotlightId === prevSpotlightCategoryIdRef.current) return
-    prevSpotlightCategoryIdRef.current = spotlightId
+    const roomId = room.id
+    const timer = setTimeout(() => {
+      void (async () => {
+        const spotlightStillCurrent = () => {
+          const currentRoom = roomRef.current
+          return isHostRef.current && narrativeDataReadyRef.current &&
+            currentRoom?.id === roomId &&
+            currentRoom.active_spotlight_category_id === spotlightId &&
+            (currentRoom.spotlight_revision ?? 0) === spotlightRevision
+        }
+        if (!spotlightStillCurrent()) return
 
-    if (spotlightId == null) return
+        const category = categoriesRef.current.find((candidate) => candidate.id === spotlightId)
+        if (!category) return
+        const { data: candidateRows, error: candidateError } = await supabase
+          .from('category_nominees')
+          .select('nominee_id')
+          .eq('category_id', spotlightId)
+          .order('nominee_id')
+        if (candidateError) return
+        const candidateIds = (candidateRows ?? []).map((row) => row.nominee_id)
+        const categoryNominees = candidateIds
+          .map((id) => nomineesRef.current.find((nominee) => nominee.id === id))
+          .filter((nominee): nominee is NomineeRow => !!nominee)
+        if (categoryNominees.length !== candidateIds.length) return
 
-    const cat = categoriesRef.current.find((c) => c.id === spotlightId)
-    if (!cat) return
+        const shouldReact = await insertClaimedSystemDivider(
+          buildSpotlightReactionKey(spotlightRevision, 'announcement'),
+          category.name,
+          category.name,
+          spotlightOpenedAt,
+          spotlightStillCurrent,
+        )
+        if (!shouldReact) return
+        await fireCompanionMessages(
+          buildPreCategoryPrompt(
+            category,
+            spotlightRevision,
+            categoryNominees,
+            confidencePicksRef.current,
+            playersRef.current,
+          ),
+          700,
+          buildSpotlightReactionKey(spotlightRevision, 'reaction'),
+          'spotlight',
+          undefined,
+          spotlightStillCurrent,
+        )
+      })().catch(() => undefined)
+    }, 300)
 
-    // Insert category divider for every spotlight open (even if pre-category prompt already fired)
-    insertSystemDivider(cat.name)
-
-    // The Academy announces the category immediately after the divider (varied phrasing)
-    if (isHostRef.current) {
-      callClaude(
-        {
-          system:
-            'You are the Academy Awards host. Announce the next category in one short, casual sentence. Vary your phrasing every time — never repeat the same opener twice. Examples: "Okay, next up — Best Picture.", "Alright, we\'re moving on to Best Director.", "Next category: Best Actress." Keep it under 12 words. Plain text only, no quotes.',
-          user: `Announce: ${cat.name}`,
-        },
-        80,
-      ).then((text) => {
-        const cleaned = text.trim().replace(/^["']|["']$/g, '')
-        insertCompanionMessage(NARRATOR.id, cleaned || `Okay, next up — ${cat.name}.`)
-      })
-    }
-
-    if (preCategoryFiredRef.current.has(cat.id)) return
-
-    preCategoryFiredRef.current.add(cat.id)
-    fireCompanionMessages(
-      buildPreCategoryPrompt(
-        cat,
-        nomineesRef.current,
-        confidencePicksRef.current,
-        playersRef.current,
-        buildCategoryContext(cat.name),
-      ),
-    )
+    return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room?.active_spotlight_category_id])
+  }, [
+    room?.id,
+    room?.active_spotlight_category_id,
+    room?.spotlight_revision,
+    room?.spotlight_opened_at,
+    isHost,
+    narrativeDataReady,
+  ])
 
   // ── Effect 5: Milestone reactions (halfway / final stretch) ───────────────────
 
   useEffect(() => {
+    if (!isHost) return
     const count = categories.filter((c) => c.winner_id != null).length
 
     // Milestones fire on absolute event counts, NOT on progress toward a total.
@@ -838,56 +1157,33 @@ export function useAICompanions(
     // The end of the night is now an explicit host action — "End episode" sets
     // room.phase = 'finished', which drives the post-show reactions.
 
-    if (count === 6 && !milestoneFiredRef.current.has('halfway')) {
+    // Awards-style declarations update the winner before their confidence rows.
+    // Wait for that cascade so the grounded fact block cannot freeze a
+    // half-scored leaderboard. Room-authored events have no attached picks and
+    // pass immediately.
+    if (!isMilestoneScoreboardReady(categories, confidencePicks)) return
+
+    if (count >= 6 && !milestoneFiredRef.current.has('halfway')) {
       milestoneFiredRef.current.add('halfway')
       fireCompanionMessages(
-        buildMilestonePrompt('halfway', leaderboardRef.current, playersRef.current),
+        buildMilestonePrompt('halfway', count, leaderboardRef.current),
+        700,
+        buildMilestoneReactionKey('halfway'),
+        'milestone',
       )
     }
 
-    if (count === 12 && !milestoneFiredRef.current.has('final_stretch')) {
+    if (count >= 12 && !milestoneFiredRef.current.has('final_stretch')) {
       milestoneFiredRef.current.add('final_stretch')
       fireCompanionMessages(
-        buildMilestonePrompt('final_stretch', leaderboardRef.current, playersRef.current),
+        buildMilestonePrompt('final_stretch', count, leaderboardRef.current),
+        700,
+        buildMilestoneReactionKey('final_stretch'),
+        'milestone',
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories])
-
-  // ── Effect 6: Lead change reaction ────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!leaderboard.length) return
-
-    const leaderId = leaderboard[0].player.id
-
-    // Lead-change commentary DISABLED (user call, mid-party): the cast was
-    // narrating every scoreboard flip. The story is on screen, not the board.
-    if (false && previousLeaderIdRef.current && previousLeaderIdRef.current !== leaderId) {
-      const key = `lead_change:${leaderId}`
-      if (!milestoneFiredRef.current.has(key)) {
-        milestoneFiredRef.current.add(key)
-        const newLeader = leaderboard[0]
-        const oldLeader = leaderboard.find((e) => e.player.id === previousLeaderIdRef.current)
-        const announcedCount = categoriesRef.current.filter((c) => c.winner_id != null).length
-        fireCompanionMessages(
-          buildMilestonePrompt(
-            'lead_change',
-            leaderboard,
-            playersRef.current,
-            newLeader,
-            oldLeader,
-            undefined,
-            announcedCount,
-            categoriesRef.current,
-          ),
-        )
-      }
-    }
-
-    previousLeaderIdRef.current = leaderId
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leaderboard])
+  }, [categories, confidencePicks, isHost])
 
   return { isGenerating: false }
 }

@@ -24,6 +24,7 @@ import { ChevronDown, FlaskConical } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useWatchSync, formatEpisodeTime, describeDrift } from '../../hooks/useWatchSync'
 import type { PlayerRow, RoomRow } from '../../types/database'
+import { remoteHolderIds } from '../../lib/watch-groups'
 
 interface Props {
   room: RoomRow
@@ -41,45 +42,27 @@ export default function SyncDevPanel({ room, players, currentPlayerId }: Props) 
 
   /** Post a beacon AS someone else, at my position plus an offset. */
   async function fakeTheirBeacon(offsetMs: number) {
-    const asPlayer = others[0]?.id ?? 'ghost'
-    await supabase
-      .from('rooms')
-      .update({
-        sync_position_ms: Math.round(s.myPositionMs + offsetMs),
-        sync_posted_at: new Date().toISOString(),
-        sync_posted_by: asPlayer,
-      })
-      .eq('id', room.id)
+    const holderIds = remoteHolderIds(players)
+    const asPlayer = others.find((player) =>
+      holderIds.includes(player.id) && player.episode_started_at != null
+    )?.id
+    if (!asPlayer) throw new Error('Start another holder screen before faking its beacon.')
+    const { error } = await supabase.rpc('post_room_playback_beacon', {
+      p_room_id: room.id,
+      p_actor_player_id: asPlayer,
+      p_position_ms: Math.round(s.myPositionMs + offsetMs),
+    })
+    if (error) throw new Error(error.message)
   }
 
   /** Someone else asks to pause, so this tab sees the request side. */
   async function fakePauseRequest() {
-    await supabase
-      .from('rooms')
-      .update({
-        pause_requested_by: others[0]?.id ?? 'ghost',
-        pause_reason: 'dogfood — someone needs the bathroom',
-      })
-      .eq('id', room.id)
-  }
-
-  /** Back to before anyone pressed play, on every screen. */
-  async function resetSync() {
-    await Promise.all([
-      supabase
-        .from('rooms')
-        .update({
-          sync_position_ms: null, sync_posted_at: null, sync_posted_by: null,
-          is_paused: false, pause_requested_by: null, pause_reason: null,
-          paused_at_ms: null, resume_ready: [], resume_at: null,
-          show_started: false,
-        })
-        .eq('id', room.id),
-      supabase
-        .from('players')
-        .update({ episode_started_at: null })
-        .eq('room_id', room.id),
-    ])
+    const { error } = await supabase.rpc('request_room_playback_pause', {
+      p_room_id: room.id,
+      p_actor_player_id: others[0]?.id ?? 'ghost',
+      p_reason: 'dogfood — someone needs the bathroom',
+    })
+    if (error) throw new Error(error.message)
   }
 
   const Btn = ({ onClick, children }: { onClick: () => void; children: React.ReactNode }) => (
@@ -142,15 +125,6 @@ export default function SyncDevPanel({ room, players, currentPlayerId }: Props) 
               <Btn onClick={() => void fakeTheirBeacon(-45_000)}>them 45s behind</Btn>
               <Btn onClick={() => void fakeTheirBeacon(0)}>them in sync</Btn>
               <Btn onClick={() => void fakePauseRequest()}>they ask to pause</Btn>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-fuchsia-200/45 mb-1">
-              Reset
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              <Btn onClick={() => void resetSync()}>back to before play</Btn>
             </div>
           </div>
 

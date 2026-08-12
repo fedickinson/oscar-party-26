@@ -1,0 +1,48 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "directly-visible-actions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "directly-visible-actions",
+      "beat_ids": [34, 40, 45, 55, 59, 62, 98, 101, 102, 107, 144, 151],
+      "conditions_by_beat_id": {
+        "34": "Rhaena visibly cries or breaks down emotionally on screen.",
+        "40": "Orwyle personally examines, treats, or prescribes medicine for Helaena, Jaehaera, Rhaenyra, or another named royal.",
+        "45": "Aemond clearly regains consciousness and becomes mentally responsive after Alicent's poisoning.",
+        "55": "Alicent voluntarily returns to Rhaenyra's custody or presence to report what happened with Aemond.",
+        "59": "Alys performs or causes something the episode presents as supernatural, prophetic, impossible, or overtly magical.",
+        "62": "Alys physically moves, reveals, gives away, hides elsewhere, or invokes the hidden dragon eggs as part of a concrete plan.",
+        "98": "Gwayne leaves a defensive position to personally join an organized attack or sortie.",
+        "101": "Jon is visibly assigned to, escorting, or personally guarding Corlys as a captive.",
+        "102": "Jon personally wounds, mutilates, or tortures Corlys on screen.",
+        "107": "Corlys personally attempts to escape his captivity, whether or not the attempt succeeds.",
+        "144": "Roddy is visibly alive and on screen after the major battle or attack he participates in has ended.",
+        "151": "Black Aly fires an arrow that visibly hits a named character."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "34": ["b57c8ba1-7151-f57b-dfeb-6881ca6e65be"],
+        "40": ["68b299e8-92c2-6391-2d4f-629c6a2a85ad", "df62fafa-0055-c917-50e8-aa130ed43ef4", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+        "45": ["cd978df7-2733-99cf-c9f7-c56c8dde42a5", "188d91ee-63ee-9d0e-1779-3ce613d3f4c9"],
+        "55": ["188d91ee-63ee-9d0e-1779-3ce613d3f4c9", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "cd978df7-2733-99cf-c9f7-c56c8dde42a5"],
+        "59": ["23358073-19dd-7d87-de02-91d217a63c77"],
+        "62": ["23358073-19dd-7d87-de02-91d217a63c77"],
+        "98": ["32f57c47-f49c-4003-3748-c120aae7c45a"],
+        "101": ["6d5fc989-7205-b24a-2231-ff3297c0749e", "b3b10757-625e-0013-92ab-7a083d26ce7d"],
+        "102": ["6d5fc989-7205-b24a-2231-ff3297c0749e", "b3b10757-625e-0013-92ab-7a083d26ce7d"],
+        "107": ["b3b10757-625e-0013-92ab-7a083d26ce7d"],
+        "144": ["2395ce7b-d731-6554-93c8-4f2359968ae7"],
+        "151": ["ff493811-9199-ddd5-71f1-0ba7cbede994"]
+      },
+      "exclusions": [
+        "A stated plan, threat, inference, emotional interpretation, ordinary presence, preparation, or incomplete attempt does not count unless the preserved condition explicitly makes it the event.",
+        "A proxy, ally, subordinate, aftermath, or outcome without the named owner's preserved personal or visible action does not count.",
+        "An off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or hypothetical version of the action does not count."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each listed title honestly names a directly observable present-timeline action or state whose complete boundary remains the preserved audited condition."
+    }
+  ]
+}

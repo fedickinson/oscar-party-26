@@ -30,6 +30,7 @@ import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { computeNightAwards } from '../lib/night-awards'
 import { computeScoreTimeline } from '../lib/timeline-utils'
 import { buildPlayerRecap, requiredImageSlugs } from '../lib/player-recap'
+import { collectPlayerDraftPortraitPaths } from '../lib/draft-portrait'
 import { getLibraryImage } from '../data/image-library'
 import { renderPlayerRecapHtml, playerRecapFileName } from '../lib/player-recap-html'
 import { recapUrlFor } from '../hooks/useShareResults'
@@ -38,31 +39,55 @@ import { useEffect, useState } from 'react'
 
 export default function PlayerRecap() {
   const { code, playerId } = useParams<{ code: string; playerId: string }>()
-  const { snapshot, notFound } = useRoomSnapshot(code)
+  const { snapshot, notFound, recordError } = useRoomSnapshot(code)
   const [saved, setSaved] = useState(false)
   /**
-   * slug → base64 data URI.
+   * Library slug or pack-owned portrait path → base64 data URI.
    *
-   * The keepsake has to survive being opened offline, so chosen artwork is
-   * inlined rather than linked. Only the images this player's verdict actually
-   * picked are fetched — the catalogue is small but a document that gets emailed
-   * around should not carry pictures nobody chose.
+   * The keepsake has to survive being opened offline, so chosen artwork and
+   * this player's roster portraits are inlined rather than linked. A document
+   * that gets emailed around should not carry pictures it never renders.
    */
   const [imageSources, setImageSources] = useState<Map<string, string>>(new Map())
+  const [loadedArtworkKey, setLoadedArtworkKey] = useState<string | null>(null)
 
   const verdict = snapshot && playerId ? snapshot.verdicts.get(playerId) : undefined
+  const artworkSources = useMemo(() => {
+    const slugs = requiredImageSlugs(verdict)
+    const portraitPaths = snapshot && playerId
+      ? collectPlayerDraftPortraitPaths(
+          snapshot.draftEntities,
+          snapshot.draftPicks,
+          playerId,
+          snapshot.nominees,
+        )
+      : []
+    return [
+      ...slugs.flatMap((slug) => {
+        const entry = getLibraryImage(slug)
+        return entry ? [{ key: slug, path: entry.path }] : []
+      }),
+      ...portraitPaths.map((path) => ({ key: path, path })),
+    ]
+  }, [verdict, snapshot, playerId])
+  const artworkKey = useMemo(
+    () => JSON.stringify(artworkSources.map((source) => [source.key, source.path])),
+    [artworkSources],
+  )
+  const artworkReady = loadedArtworkKey === artworkKey
 
   useEffect(() => {
-    const slugs = requiredImageSlugs(verdict)
-    if (slugs.length === 0) return
+    if (artworkSources.length === 0) {
+      setImageSources(new Map())
+      setLoadedArtworkKey(artworkKey)
+      return
+    }
     let cancelled = false
 
     Promise.all(
-      slugs.map(async (slug) => {
-        const entry = getLibraryImage(slug)
-        if (!entry) return null
+      artworkSources.map(async (source) => {
         try {
-          const res = await fetch(entry.path)
+          const res = await fetch(source.path)
           if (!res.ok) return null
           const blob = await res.blob()
           const dataUri = await new Promise<string>((resolve, reject) => {
@@ -71,7 +96,7 @@ export default function PlayerRecap() {
             reader.onerror = reject
             reader.readAsDataURL(blob)
           })
-          return [slug, dataUri] as const
+          return [source.key, dataUri] as const
         } catch {
           // Artwork is an enhancement; the sheet renders without it.
           return null
@@ -80,13 +105,14 @@ export default function PlayerRecap() {
     ).then((pairs) => {
       if (cancelled) return
       setImageSources(new Map(pairs.filter((p): p is readonly [string, string] => p !== null)))
+      setLoadedArtworkKey(artworkKey)
     })
 
     return () => { cancelled = true }
-  }, [verdict])
+  }, [artworkKey, artworkSources])
 
   const html = useMemo(() => {
-    if (!snapshot || !playerId) return null
+    if (!snapshot || !playerId || snapshot.recordSource !== 'settled') return null
     const player = snapshot.players.find((p) => p.id === playerId)
     if (!player) return null
 
@@ -104,6 +130,8 @@ export default function PlayerRecap() {
       snapshot.categories,
       snapshot.nominees,
       scores,
+      snapshot.convictionPicks,
+      snapshot.gameModel,
     )
     const timeline = computeScoreTimeline(
       snapshot.categories,
@@ -112,6 +140,8 @@ export default function PlayerRecap() {
       snapshot.draftEntities,
       snapshot.nominees,
       snapshot.players,
+      snapshot.convictionPicks,
+      snapshot.gameModel,
     )
     const awards = computeNightAwards(
       leaderboard,
@@ -122,6 +152,7 @@ export default function PlayerRecap() {
       snapshot.draftPicks,
       snapshot.confidencePicks,
       timeline,
+      snapshot.gameModel,
     )
     const avatar = AVATAR_CONFIGS.find((a) => a.id === player.avatar_id)
 
@@ -156,7 +187,7 @@ export default function PlayerRecap() {
   const playerName = snapshot?.players.find((p) => p.id === playerId)?.name ?? ''
 
   function download() {
-    if (!html || !snapshot) return
+    if (!html || !snapshot || !artworkReady) return
     // A Blob rather than a data: URL — a full recap can exceed the length some
     // browsers accept in an href, and Blob downloads keep the filename.
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
@@ -172,12 +203,36 @@ export default function PlayerRecap() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  if (notFound || (snapshot && !html)) {
+  if (snapshot?.recordSource === 'live') {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-8 text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-[color:var(--t-pending)]">
+          Live record · provisional
+        </p>
+        <p className="mt-2 text-base font-semibold text-[color:var(--t-text)]">
+          This keepsake is waiting for settlement
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-[color:var(--t-text-muted)]">
+          Research can still amend the standings, awards, and personal ledger.
+          The saveable page opens after the researched record is closed.
+        </p>
+        {code && (
+          <Link to={`/recap/${code}`} className="mt-5 text-sm text-accent">
+            See the provisional standings
+          </Link>
+        )}
+      </div>
+    )
+  }
+
+  if (notFound || recordError || (snapshot && !html)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
-        <p className="text-base font-semibold text-white">Nothing here</p>
+        <p className="text-base font-semibold text-white">
+          {recordError ? 'The record could not be opened' : 'Nothing here'}
+        </p>
         <p className="text-sm text-white/45 mt-2">
-          This link points at a player or a party that does not exist.
+          {recordError ?? 'This link points at a player or a party that does not exist.'}
         </p>
         {code && (
           <Link to={`/recap/${code}`} className="mt-5 text-sm text-accent">
@@ -213,12 +268,13 @@ export default function PlayerRecap() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={download}
+          disabled={!artworkReady}
           className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent/15
                      border border-accent/40 text-[13px] font-semibold text-accent
-                     min-h-[44px]"
+                     min-h-[44px] disabled:opacity-50"
         >
           {saved ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-          {saved ? 'Saved' : 'Save my page'}
+          {saved ? 'Saved' : artworkReady ? 'Save my page' : 'Preparing page'}
         </motion.button>
       </div>
 

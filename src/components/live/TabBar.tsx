@@ -50,11 +50,13 @@ export default function TabBar({ activeTab, onSelect, badges, isHost = true }: P
       <div className="flex h-[60px]">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = activeTab === id
-          const hasBadge = !isActive && badges?.has(id)
+          const needsAttention = badges?.has(id) === true
+          const hasBadge = !isActive && needsAttention
           return (
             <motion.button
               key={id}
               onClick={() => onSelect(id)}
+              aria-label={needsAttention ? `${label}, needs attention` : label}
               whileTap={{ scale: 0.92 }}
               className="flex-1 flex flex-col items-center justify-center gap-0.5"
               // Active tab takes the viewer's allegiance color (personal layer),

@@ -8,11 +8,10 @@
  *  1. Player A taps an EntityCard on their device
  *  2. ConfirmPickModal appears, showing entity details
  *  3. Player A taps "Draft [Name]" — makePick(entityId) is called
- *  4. makePick() does two Supabase writes in sequence:
- *       a. INSERT into draft_picks: { room_id, player_id, entity_id, round, pick_number }
- *       b. UPDATE rooms SET current_pick = N+1 WHERE id = room.id AND current_pick = N
- *          ↑ The WHERE current_pick = N is an optimistic lock (see "RACE CONDITION" below)
- *  5. Supabase WAL emits events for both writes and broadcasts over WebSocket
+ *  4. makePick() inserts into draft_picks. Database triggers lock the room,
+ *     validate the exact turn and eligible pool, then advance current_pick in
+ *     the same transaction.
+ *  5. Supabase WAL emits both committed rows and broadcasts over WebSocket
  *  6. Every client's subscription callbacks fire:
  *       - draft_picks INSERT → setPicks(prev => [...prev, newPick])
  *       - rooms UPDATE → setRoom(payload.new) — this is handled by useRoomSubscription
@@ -33,15 +32,10 @@
  *    (isMyTurn gate in EntityCard). In normal operation, only one client
  *    can even reach the confirm modal.
  *
- *  Defense 2 — Optimistic lock: The current_pick increment uses:
- *    UPDATE rooms SET current_pick = N+1
- *    WHERE id = roomId AND current_pick = N   ← this is the lock
- *
- *    If two clients somehow both call makePick with the same N, the first
- *    UPDATE matches and succeeds (current_pick was N). The second UPDATE
- *    finds current_pick is now N+1, the WHERE clause doesn't match, and
- *    zero rows are updated. The second client's pick insert also ends up
- *    orphaned. Both subscriptions fire, UI corrects itself on the next render.
+ *  Defense 2 — Database transaction: The INSERT trigger locks the room row and
+ *    validates current_pick, player, entity type and availability. If two
+ *    clients submit the same turn, only one transaction can commit. The loser
+ *    leaves neither an orphan pick nor a second turn advance.
  *
  *  For the host auto-skip (timer expiry), the same lock pattern applies —
  *  the skip only fires if current_pick still matches what we expected.
@@ -65,19 +59,29 @@
  *  write, which fires a Realtime event and resets everyone's timer.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import {
   generateSnakeOrder,
   getCurrentDrafter,
   getRoundAndPick,
 } from '../lib/draft-utils'
+import { resolveDraftEntityPortrait } from '../lib/draft-portrait'
 import { filterEnsembleEntities } from '../lib/mode-utils'
-import type { DraftPickRow, SignatureBeatRow } from '../types/database'
+import { fetchAllRows } from './fetch-all-rows'
+import type {
+  DraftEntityRow,
+  DraftPickRow,
+  NomineeRow,
+  RoomRow,
+  SignatureBeatRow,
+} from '../types/database'
 import type { DraftEntityWithDetails } from '../types/game'
 
 const TURN_DURATION = 45 // seconds per pick
+const REALTIME_STABILIZATION_MS = 5_000
 
 // ─── Entity parsing ───────────────────────────────────────────────────────────
 
@@ -86,16 +90,14 @@ const TURN_DURATION = 45 // seconds per pick
  * field empty here so no Oscars-era category data leaks into this flow.
  */
 function parseEntity(
-  raw: {
-    id: string
-    name: string
-    type: 'person' | 'film'
-    nominations: unknown
-    film_name: string
-    nom_count: number
-  },
+  raw: DraftEntityRow,
+  nominees: readonly NomineeRow[],
 ): DraftEntityWithDetails {
-  return { ...raw, nominations: [] }
+  return {
+    ...raw,
+    nominations: [],
+    portraitUrl: resolveDraftEntityPortrait(raw, nominees),
+  }
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -116,52 +118,174 @@ export interface DraftState {
   /** Seconds remaining this turn (0–45), resets when current_pick advances */
   timeRemaining: number
   isLoading: boolean
+  syncError: string | null
   snakeOrder: string[]
   /** Total pick slots this player will have in the draft */
   myTotalPickSlots: number
   /** Which sub-draft we are currently in */
   draftSubPhase: 'films' | 'people' | 'complete'
   makePick: (entityId: string) => Promise<void>
+  retrySync: () => void
   /** DEV ONLY — auto-picks randomly for all remaining turns */
   devAutoPickAll?: () => Promise<void>
 }
 
 export function useDraft(roomId: string | undefined): DraftState {
-  const { room, player, players } = useGame()
+  const { room, player, players, setRoom } = useGame()
+  const { capability: operatorCapability, authority: operatorAuthority } = useOperatorAuthority()
 
   const [entities, setEntities] = useState<DraftEntityWithDetails[]>([])
   const [picks, setPicks] = useState<DraftPickRow[]>([])
   const [beatsByEntityId, setBeatsByEntityId] = useState<Map<string, SignatureBeatRow[]>>(new Map())
   const [timeRemaining, setTimeRemaining] = useState(TURN_DURATION)
-  const [isLoading, setIsLoading] = useState(true)
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
 
   // Refs that don't trigger re-renders but are readable in callbacks/intervals
   const pickStartTimeRef = useRef(Date.now())
   const isPickingRef = useRef(false) // double-tap guard
   const roomRef = useRef(room)
   const totalDraftPicksRef = useRef(0)
+  const skippingPickRef = useRef<number | null>(null)
+  const activeScopeRef = useRef<string | null>(null)
   useEffect(() => {
     roomRef.current = room
   })
 
+  const requestedScope = roomId && room?.id === roomId
+    ? `${roomId}:${room.show_pack_id}`
+    : null
+  const isLoading = loadingState || (
+    requestedScope != null && requestedScope !== activeScopeRef.current
+  )
+  const syncError = requestedScope != null && requestedScope === activeScopeRef.current
+    ? syncErrorState
+    : null
+
   // ─── Subscribe + initial data load ─────────────────────────────────────────
   //
-  // IMPORTANT: The subscription is set up BEFORE the initial fetch so that any
-  // INSERT that fires during the network round-trip is caught by the channel.
-  // The dedup guard in the callback handles the case where both the subscription
-  // and the fetch deliver the same row.
-  //
-  // Previously the load and subscription were in two separate useEffects.
-  // React runs effects in order, so the subscription was registered AFTER
-  // load() had already started — creating a window where an INSERT could be
-  // missed. Merging them into one effect closes that race window.
+  // Hydration starts only after Realtime reports SUBSCRIBED. Every live event
+  // advances a revision; a fetch overlapping one retries before publishing.
+  // One bounded reconciliation covers a cold worker that acknowledges the
+  // channel before its Postgres Changes stream is fully ready.
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId || !room || room.id !== roomId) {
+      activeScopeRef.current = null
+      setEntities([])
+      setPicks([])
+      setBeatsByEntityId(new Map())
+      setLoadingState(false)
+      setSyncErrorState(null)
+      return
+    }
 
-    // Register the real-time subscription first
+    const currentRoom = room
+    activeScopeRef.current = `${roomId}:${currentRoom.show_pack_id}`
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+
+    setEntities([])
+    setPicks([])
+    setBeatsByEntityId(new Map())
+    setLoadingState(true)
+    setSyncErrorState(null)
+
+    const upsertPick = (newPick: DraftPickRow) => {
+      setPicks((current) => {
+        const existingIndex = current.findIndex((pick) => pick.id === newPick.id)
+        const next = existingIndex === -1
+          ? [...current, newPick]
+          : current.map((pick, index) => index === existingIndex ? newPick : pick)
+        return next.sort((left, right) => left.pick_number - right.pick_number)
+      })
+    }
+
+    const hydrateDraftLedger = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const [entityResult, pickResult, beatResult, nomineeResult, roomResult] = await Promise.all([
+            fetchAllRows<DraftEntityRow>((from, to) => supabase
+              .from('draft_entities')
+              .select()
+              .eq('show_pack_id', currentRoom.show_pack_id)
+              .order('nom_count', { ascending: false })
+              .order('id')
+              .range(from, to)),
+            fetchAllRows<DraftPickRow>((from, to) => supabase
+              .from('draft_picks')
+              .select()
+              .eq('room_id', roomId)
+              .order('pick_number')
+              .order('id')
+              .range(from, to)),
+            fetchAllRows<SignatureBeatRow>((from, to) => supabase
+              .from('signature_beats')
+              .select()
+              .eq('show_pack_id', currentRoom.show_pack_id)
+              .order('points', { ascending: false })
+              .order('id')
+              .range(from, to)),
+            fetchAllRows<NomineeRow>((from, to) => supabase
+              .from('nominees')
+              .select()
+              .eq('show_pack_id', currentRoom.show_pack_id)
+              .order('id')
+              .range(from, to)),
+            supabase.from('rooms').select().eq('id', roomId).maybeSingle(),
+          ])
+          const firstError = [
+            entityResult.error,
+            pickResult.error,
+            beatResult.error,
+            nomineeResult.error,
+            roomResult.error,
+          ].find(Boolean)
+          if (firstError) throw firstError
+          if (!roomResult.data) throw new Error('The room no longer exists.')
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          const filteredEntities = filterEnsembleEntities(
+            entityResult.data ?? [],
+            roomResult.data.ensemble_mode,
+          )
+          const nominees = nomineeResult.data ?? []
+          const nextBeats = new Map<string, SignatureBeatRow[]>()
+          for (const beat of beatResult.data ?? []) {
+            if (beat.partner_entity_id != null) continue
+            nextBeats.set(beat.entity_id, [...(nextBeats.get(beat.entity_id) ?? []), beat])
+          }
+
+          setEntities(filteredEntities.map((row) => parseEntity(row, nominees)))
+          setPicks(pickResult.data ?? [])
+          setBeatsByEntityId(nextBeats)
+          setRoom(roomResult.data as RoomRow)
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Draft ledger load failed:', loadError)
+        setSyncErrorState('The draft ledger could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
+
     const channel = supabase
-      .channel(`draft-picks:${roomId}`)
+      .channel(`draft-ledger:${roomId}`)
       .on(
         'postgres_changes',
         {
@@ -171,43 +295,56 @@ export function useDraft(roomId: string | undefined): DraftState {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
-          const newPick = payload.new as DraftPickRow
-          setPicks((prev) => {
-            // Dedup guard: subscription and initial fetch could both deliver
-            // the same row if they race
-            if (prev.some((p) => p.id === newPick.id)) return prev
-            return [...prev, newPick]
-          })
+          if (disposed) return
+          liveRevision += 1
+          upsertPick(payload.new as DraftPickRow)
         },
       )
-      .subscribe()
-
-    // Initial fetch runs after subscription is live to close the race window
-    async function load() {
-      const [{ data: entityRows }, { data: pickRows }, { data: beatRows }] = await Promise.all([
-        supabase.from('draft_entities').select().order('nom_count', { ascending: false }),
-        supabase.from('draft_picks').select().eq('room_id', roomId!),
-        supabase.from('signature_beats').select().order('points', { ascending: false }),
-      ])
-      const ensembleMode = roomRef.current?.ensemble_mode ?? 'full'
-      const filteredEntities = filterEnsembleEntities(entityRows ?? [], ensembleMode)
-      setEntities(filteredEntities.map((row) => parseEntity(row)))
-      const nextBeats = new Map<string, SignatureBeatRow[]>()
-      for (const beat of (beatRows ?? []) as SignatureBeatRow[]) {
-        if (beat.partner_entity_id != null) continue
-        nextBeats.set(beat.entity_id, [...(nextBeats.get(beat.entity_id) ?? []), beat])
-      }
-      setBeatsByEntityId(nextBeats)
-      setPicks(pickRows ?? [])
-      setIsLoading(false)
-    }
-
-    load()
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${roomId}`,
+        },
+        (payload) => {
+          if (disposed) return
+          liveRevision += 1
+          setRoom(payload.new as RoomRow)
+        },
+      )
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateDraftLedger()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateDraftLedger(false)
+          }, REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          setSyncErrorState('The draft feed could not connect to Realtime.')
+          setLoadingState(false)
+        }
+      })
 
     return () => {
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId])
+  }, [roomId, room?.id, room?.show_pack_id, retryVersion, setRoom])
+
+  const retrySync = useCallback(() => {
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
 
   // ─── Derived state ──────────────────────────────────────────────────────────
 
@@ -230,7 +367,7 @@ export function useDraft(roomId: string | undefined): DraftState {
   // — somebody is not getting Vhagar — and it opens the draft with the most
   // enjoyable decision rather than burying dragons in the late rounds.
   const MAX_ROUNDS_DRAGONS = 1
-  const MAX_ROUNDS_CHARACTERS = 4
+  const MAX_ROUNDS_CHARACTERS = room?.game_model === 'conviction_portfolio' ? 0 : 4
 
   // Split entities into two typed pools
   const filmEntities = entities.filter((e) => e.type === 'film')
@@ -244,7 +381,7 @@ export function useDraft(roomId: string | undefined): DraftState {
       ? generateSnakeOrder(playerOrder, Math.min(MAX_ROUNDS_DRAGONS, Math.ceil(Math.max(filmEntities.length, 1) / N)))
       : []
   const peopleSnakeOrder =
-    playerOrder.length > 0
+    playerOrder.length > 0 && MAX_ROUNDS_CHARACTERS > 0
       ? generateSnakeOrder(playerOrder, Math.min(MAX_ROUNDS_CHARACTERS, Math.ceil(Math.max(personEntities.length, 1) / N)))
       : []
 
@@ -281,7 +418,7 @@ export function useDraft(roomId: string | undefined): DraftState {
 
   const currentDrafterId = getCurrentDrafter(snakeOrder, currentPick)
   const currentDrafter = players.find((p) => p.id === currentDrafterId) ?? null
-  const isMyTurn = !isDraftComplete && currentDrafterId === player?.id
+  const isMyTurn = !isLoading && syncError == null && !isDraftComplete && currentDrafterId === player?.id
 
   // Round/pick numbers are relative to the current sub-draft, not the full pick counter
   const subPhaseOffset = draftSubPhase === 'people' ? totalFilmPicks : 0
@@ -302,6 +439,7 @@ export function useDraft(roomId: string | undefined): DraftState {
     if (room == null) return
     if (room.current_pick !== prevPickRef.current) {
       prevPickRef.current = room.current_pick
+      skippingPickRef.current = null
       pickStartTimeRef.current = Date.now()
       setTimeRemaining(TURN_DURATION)
     }
@@ -314,35 +452,50 @@ export function useDraft(roomId: string | undefined): DraftState {
   // ensures only one write succeeds even if somehow multiple clients fire.
 
   useEffect(() => {
-    if (isDraftComplete) return
+    if (isDraftComplete || isLoading || syncError != null) return
 
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - pickStartTimeRef.current) / 1000)
       const remaining = Math.max(0, TURN_DURATION - elapsed)
       setTimeRemaining(remaining)
 
-      if (remaining === 0 && player?.is_host && roomRef.current) {
+      if (remaining === 0 && player?.is_host && operatorAuthority.enabled
+          && operatorCapability && roomRef.current) {
         const currentRoom = roomRef.current
         const pick = currentRoom.current_pick
 
         // Never auto-skip the last pick — let the player claim it themselves.
         const isLastPick = pick >= totalDraftPicksRef.current - 1
         if (isLastPick) return
+        if (skippingPickRef.current === pick) return
+        skippingPickRef.current = pick
 
         // Advance current_pick — only succeeds if nobody else already did
-        supabase
-          .from('rooms')
-          .update({ current_pick: pick + 1 })
-          .eq('id', currentRoom.id)
-          .eq('current_pick', pick)
+        supabase.rpc('skip_room_draft_turn_authorized', {
+          p_room_id: currentRoom.id,
+          p_actor_player_id: player.id,
+          p_operator_capability: operatorCapability,
+          p_expected_pick: pick,
+        })
           .then(({ error }) => {
-            if (error) console.error('Auto-skip failed:', error)
+            if (error) {
+              skippingPickRef.current = null
+              console.error('Auto-skip failed:', error)
+            }
           })
       }
     }, 250) // 4Hz for smooth visual countdown
 
     return () => clearInterval(interval)
-  }, [isDraftComplete, player?.is_host])
+  }, [
+    isDraftComplete,
+    isLoading,
+    syncError,
+    player?.id,
+    player?.is_host,
+    operatorAuthority.enabled,
+    operatorCapability,
+  ])
 
   // ─── Draft complete → trigger beat activation phase ────────────────────────
   //
@@ -356,35 +509,52 @@ export function useDraft(roomId: string | undefined): DraftState {
   // every client to the activation route.
 
   useEffect(() => {
+    if (isLoading || syncError != null) return
     if (!isDraftComplete) return
     if (!player?.is_host) return
     if (!room || room.phase !== 'draft') return
+    if (!operatorAuthority.enabled || !operatorCapability) return
 
-    supabase
-      .from('rooms')
-      .update({ phase: 'confidence' })
-      .eq('id', room.id)
+    supabase.rpc('complete_room_draft_authorized', {
+      p_room_id: room.id,
+      p_actor_player_id: player.id,
+      p_operator_capability: operatorCapability,
+    })
       .then(({ error }) => {
         if (error) console.error('Draft phase transition failed:', error)
       })
-  }, [isDraftComplete, player?.is_host, room?.phase, room?.id])
+  }, [
+    isDraftComplete,
+    isLoading,
+    syncError,
+    player?.id,
+    player?.is_host,
+    room?.phase,
+    room?.id,
+    operatorAuthority.enabled,
+    operatorCapability,
+  ])
 
   // ─── makePick ────────────────────────────────────────────────────────────────
 
   async function makePick(entityId: string): Promise<void> {
+    if (isLoading) throw new Error('The draft ledger is still synchronizing.')
+    if (syncError != null) throw new Error('The draft ledger is unavailable. Retry synchronization.')
     // Guards: must be our turn, room must exist, no double-tap in flight
     if (!isMyTurn || !room || !player || isPickingRef.current) return
     isPickingRef.current = true
 
     try {
       const pick = room.current_pick
-      const { round, pickInRound: _p } = getRoundAndPick(
+      const subOffset = pick < totalFilmPicks ? 0 : totalFilmPicks
+      const { round } = getRoundAndPick(
         snakeOrder,
-        pick,
+        pick - subOffset,
         playerOrder.length,
       )
 
-      // Step 1: Insert the pick row
+      // The database owns the atomic claim + turn advance. Older clients still
+      // issue a second conditional room update; it harmlessly matches no row.
       const { error: pickError } = await supabase.from('draft_picks').insert({
         room_id: room.id,
         player_id: player.id,
@@ -394,19 +564,6 @@ export function useDraft(roomId: string | undefined): DraftState {
       })
 
       if (pickError) throw new Error(pickError.message)
-
-      // Step 2: Advance current_pick — with optimistic lock.
-      // If two clients somehow both reach this line with the same `pick` value,
-      // only the first UPDATE matches (current_pick is still N). The second
-      // UPDATE sees current_pick = N+1, doesn't match, zero rows updated.
-      // The Realtime event from the successful write resets everyone's UI.
-      const { error: advanceError } = await supabase
-        .from('rooms')
-        .update({ current_pick: pick + 1 })
-        .eq('id', room.id)
-        .eq('current_pick', pick)
-
-      if (advanceError) throw new Error(advanceError.message)
     } finally {
       isPickingRef.current = false
     }
@@ -419,7 +576,7 @@ export function useDraft(roomId: string | undefined): DraftState {
   // sequential Supabase writes.
 
   async function devAutoPickAll(): Promise<void> {
-    if (!room || !roomId) return
+    if (!room || !roomId || isLoading || syncError != null) return
 
     const localPickedIds = new Set(picks.map((p) => p.entity_id))
     let pickNum = room.current_pick
@@ -447,12 +604,6 @@ export function useDraft(roomId: string | undefined): DraftState {
       })
       if (error) break
 
-      await supabase
-        .from('rooms')
-        .update({ current_pick: pickNum + 1 })
-        .eq('id', roomId)
-        .eq('current_pick', pickNum)
-
       localPickedIds.add(entity.id)
       pickNum++
 
@@ -474,10 +625,12 @@ export function useDraft(roomId: string | undefined): DraftState {
     roundInfo,
     timeRemaining,
     isLoading,
+    syncError,
     snakeOrder,
     myTotalPickSlots,
     draftSubPhase,
     makePick,
+    retrySync,
     ...(import.meta.env.DEV ? { devAutoPickAll } : {}),
   }
 }

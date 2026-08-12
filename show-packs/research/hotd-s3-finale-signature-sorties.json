@@ -1,0 +1,57 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-batch-decisions",
+  "batch_id": "dragon-sorties",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "decisions": [
+    {
+      "legacy_signature_beat_id": 1,
+      "basis_legacy_entity_ids": ["aa56f006-abe3-5047-4893-40d08cac7dda", "c421be7b-b9eb-3f23-231c-d95f0f918d57"],
+      "condition": "Daemon mounts Caraxes and deliberately enters an active combat, pursuit, or interception scene.",
+      "exclusions": ["Mounting, approaching or flying Caraxes for transport, escape, ceremony or an inactive patrol does not count without an active combat, pursuit or interception purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Caraxes Sortie accurately requires Daemon and Caraxes to enter an active combat, pursuit or interception together." }
+    },
+    {
+      "legacy_signature_beat_id": 22,
+      "basis_legacy_entity_ids": ["7856aa97-db30-7245-784d-984f33d04b4d", "f0b703a0-c333-b1fb-2cdd-aced8451e3aa"],
+      "condition": "Baela mounts Moondancer and flies on an active mission, pursuit, reconnaissance, or battle sortie.",
+      "exclusions": ["Mounting, approaching or flying Moondancer for transport, escape, ceremony or an inactive patrol does not count without an active mission, pursuit, reconnaissance or battle purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Moondancer Sortie accurately requires Baela and Moondancer to fly an active mission, pursuit, reconnaissance or battle together." }
+    },
+    {
+      "legacy_signature_beat_id": 83,
+      "basis_legacy_entity_ids": ["cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e", "510ec8cb-f91f-cfd3-3339-ddc0aba04ddc"],
+      "condition": "Daeron mounts Tessarion and flies into an active mission, interception, or battle.",
+      "exclusions": ["Mounting, approaching or flying Tessarion for transport, escape, ceremony or an inactive patrol does not count without an active mission, interception or battle purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Tessarion Sortie accurately requires Daeron and Tessarion to fly an active mission, interception or battle together." }
+    },
+    {
+      "legacy_signature_beat_id": 112,
+      "basis_legacy_entity_ids": ["4f607aac-7a70-ccd6-164b-e763bc70e47d", "ccd5ac8c-2e2a-55b5-840f-30e816e0a0fd"],
+      "condition": "Addam mounts Seasmoke and flies into an active mission, pursuit, or battle.",
+      "exclusions": ["Mounting, approaching or flying Seasmoke for transport, escape, ceremony or an inactive patrol does not count without an active mission, pursuit or battle purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Seasmoke Sortie accurately requires Addam and Seasmoke to fly an active mission, pursuit or battle together." }
+    },
+    {
+      "legacy_signature_beat_id": 124,
+      "basis_legacy_entity_ids": ["1e7ae85e-158a-a679-e8fb-883f08a8b21f", "7b5d8800-d5d1-7ecf-1020-d36705de618b"],
+      "condition": "Hugh mounts Vermithor and enters an active mission or battle.",
+      "exclusions": ["Mounting, approaching or flying Vermithor for transport, escape, ceremony or an inactive patrol does not count without an active mission or battle purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Vermithor Sortie accurately requires Hugh and Vermithor to enter an active mission or battle together." }
+    },
+    {
+      "legacy_signature_beat_id": 178,
+      "basis_legacy_entity_ids": ["f0b703a0-c333-b1fb-2cdd-aced8451e3aa", "7856aa97-db30-7245-784d-984f33d04b4d"],
+      "condition": "Baela mounts Moondancer and the two become airborne on an active mission or in battle.",
+      "exclusions": ["Mounting, approaching or flying Moondancer for transport, escape, ceremony or an inactive patrol does not count without an active mission or battle purpose."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Baela Sortie accurately requires Baela and Moondancer to become airborne on an active mission or in battle." }
+    }
+  ]
+}

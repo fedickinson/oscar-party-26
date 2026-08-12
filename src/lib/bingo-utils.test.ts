@@ -10,6 +10,7 @@ import {
   computePlayerBingoScores,
   computeSquarePoints,
   countBingos,
+  didBingoMarkCompleteLine,
   generateBingoCard,
   isBlackout,
   splitWinCondition,
@@ -120,6 +121,44 @@ describe('checkBingo', () => {
   it('treats an unchanged board as producing no new lines', () => {
     const first = checkBingo(new Set([0, 1, 2, 3, 4]))
     expect(checkBingo(new Set([0, 1, 2, 3, 4]), first.lines).newLines).toEqual([])
+  })
+})
+
+describe('didBingoMarkCompleteLine', () => {
+  const mark = (
+    id: string,
+    square_index: number,
+    marked_at: string,
+    status: BingoMarkRow['status'] = 'approved',
+  ): BingoMarkRow => ({ id, card_id: 'card-1', square_index, marked_at, status })
+
+  it('uses canonical mark chronology instead of callback order', () => {
+    const marks = [
+      mark('m1', 0, '2026-08-11T00:00:01Z'),
+      mark('m2', 1, '2026-08-11T00:00:02Z'),
+      mark('m3', 2, '2026-08-11T00:00:03Z'),
+      mark('m4', 3, '2026-08-11T00:00:04Z'),
+      mark('m5', 4, '2026-08-11T00:00:05Z'),
+      mark('m6', 5, '2026-08-11T00:00:06Z'),
+      mark('m7', 6, '2026-08-11T00:00:07Z'),
+      mark('m8', 7, '2026-08-11T00:00:08Z'),
+      mark('m9', 8, '2026-08-11T00:00:09Z'),
+      mark('m10', 9, '2026-08-11T00:00:10Z'),
+    ]
+
+    expect(didBingoMarkCompleteLine(marks[4], [...marks].reverse())).toBe(true)
+    expect(didBingoMarkCompleteLine(marks[3], marks)).toBe(false)
+  })
+
+  it('fails closed for a mark that is missing or no longer approved', () => {
+    const target = mark('m5', 4, '2026-08-11T00:00:05Z')
+    const earlier = [0, 1, 2, 3].map((index) => (
+      mark(`m${index + 1}`, index, `2026-08-11T00:00:0${index + 1}Z`)
+    ))
+
+    expect(didBingoMarkCompleteLine(target, earlier)).toBe(false)
+    expect(didBingoMarkCompleteLine({ ...target, status: 'denied' }, [...earlier, target]))
+      .toBe(false)
   })
 })
 

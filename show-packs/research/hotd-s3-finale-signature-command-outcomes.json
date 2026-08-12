@@ -1,0 +1,46 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "consequential-command-outcomes",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "consequential-command-outcomes",
+      "beat_ids": [70, 75, 85, 90, 92, 104, 113, 118, 126, 142, 146],
+      "conditions_by_beat_id": {
+        "70": "Aegon accepts and follows a consequential plan proposed by Tyland after Tyland explains the plan to him.",
+        "75": "Larys gives Aegon specific intelligence about an immediate threat and Aegon acts on the warning.",
+        "85": "Daeron reluctantly carries out a clearly stated order from Ormund that he initially resists or dislikes.",
+        "90": "Ulf follows a consequential order from Ormund that directly harms or obstructs the Blacks.",
+        "92": "Daeron carries out a consequential political or military action after Ormund explicitly pressures or orders him to do it.",
+        "104": "Jon carries out a consequential direct order from Ormund in the finale.",
+        "113": "Addam follows a consequential direct order from Rhaenyra even though it conflicts with Alyn, Corlys, or Baela's wishes.",
+        "118": "Alyn gives a military or naval order that is visibly obeyed by Velaryon soldiers, sailors, or ships.",
+        "126": "Hugh follows a consequential Black military order despite Kat objecting or being endangered by the choice.",
+        "142": "Oscar gives Roddy a direct battlefield instruction and Roddy visibly follows it.",
+        "146": "Oscar gives a battlefield order that is visibly obeyed by a substantial group of Riverland or allied soldiers."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "70": ["b6e1eddd-1c9f-23f7-5ba6-50942783d735", "2de4bab9-cb97-2069-98ec-df7c5088d457"],
+        "75": ["05df4715-65bd-2f1c-fe99-2e0a9653fba9", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+        "85": ["cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e", "9fa107b0-d130-0e04-8dbe-6a465931b0fd"],
+        "90": ["9fa107b0-d130-0e04-8dbe-6a465931b0fd", "13da33f8-5825-ad92-054a-5f2215c0bb2b"],
+        "92": ["9fa107b0-d130-0e04-8dbe-6a465931b0fd", "cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e"],
+        "104": ["6d5fc989-7205-b24a-2231-ff3297c0749e", "9fa107b0-d130-0e04-8dbe-6a465931b0fd"],
+        "113": ["4f607aac-7a70-ccd6-164b-e763bc70e47d", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4", "b3b10757-625e-0013-92ab-7a083d26ce7d", "7856aa97-db30-7245-784d-984f33d04b4d"],
+        "118": ["efe00b8c-9fe1-0136-54f3-e152d78a8ec4"],
+        "126": ["1e7ae85e-158a-a679-e8fb-883f08a8b21f", "604d8ab9-48d8-7859-4362-fc92cd46fc05"],
+        "142": ["2395ce7b-d731-6554-93c8-4f2359968ae7", "878797cd-55be-8f5f-d465-12d191a4541c"],
+        "146": ["878797cd-55be-8f5f-d465-12d191a4541c"]
+      },
+      "exclusions": [
+        "Giving, hearing, acknowledging, discussing, or agreeing with an order, plan, pressure, warning, or objection does not count unless the preserved consequential response or obedience also occurs.",
+        "Coincidental action, pre-existing intent, independent action, or a proxy acting without the preserved command relationship does not count.",
+        "An off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or hypothetical version of the order or outcome does not count."
+      ],
+      "adjudication": { "proxies": "explicit_only", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each title honestly names a consequential command, plan, warning, pressure, or battlefield-order outcome; settlement requires the preserved instruction relationship and its required completed response."
+    }
+  ]
+}

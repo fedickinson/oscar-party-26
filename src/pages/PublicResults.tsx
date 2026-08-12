@@ -37,7 +37,7 @@ import PostCeremonyView from '../components/home/PostCeremonyView'
 
 export default function PublicResults() {
   const { code } = useParams<{ code: string }>()
-  const { snapshot, notFound } = useRoomSnapshot(code)
+  const { snapshot, notFound, recordError } = useRoomSnapshot(code)
 
   const leaderboard = useMemo(() => {
     if (!snapshot) return []
@@ -55,6 +55,8 @@ export default function PublicResults() {
       snapshot.categories,
       snapshot.nominees,
       scores,
+      snapshot.convictionPicks,
+      snapshot.gameModel,
     )
   }, [snapshot])
 
@@ -68,6 +70,8 @@ export default function PublicResults() {
             snapshot.draftEntities,
             snapshot.nominees,
             snapshot.players,
+            snapshot.convictionPicks,
+            snapshot.gameModel,
           )
         : [],
     [snapshot],
@@ -85,6 +89,7 @@ export default function PublicResults() {
             snapshot.draftPicks,
             snapshot.confidencePicks,
             timeline,
+            snapshot.gameModel,
           )
         : { playerAwards: [], characterAwards: [] },
     [snapshot, leaderboard, timeline],
@@ -101,17 +106,21 @@ export default function PublicResults() {
             snapshot.draftPicks,
             snapshot.draftEntities,
             snapshot.nominees,
+            snapshot.convictionPicks,
+            snapshot.gameModel,
           )
         : { confidence: [], draft: [] },
     [snapshot, timeline],
   )
 
-  if (notFound) {
+  if (notFound || recordError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
-        <p className="text-base font-semibold text-white">No such room</p>
+        <p className="text-base font-semibold text-white">
+          {recordError ? 'The record could not be opened' : 'No such room'}
+        </p>
         <p className="text-sm text-white/45 mt-2">
-          This link points at a party that does not exist, or one whose room code has changed.
+          {recordError ?? 'This link points at a party that does not exist, or one whose room code has changed.'}
         </p>
       </div>
     )
@@ -127,6 +136,7 @@ export default function PublicResults() {
 
   return (
     <PostCeremonyView
+      recordSource={snapshot.recordSource}
       leaderboard={leaderboard}
       players={snapshot.players}
       timeline={timeline}
@@ -135,10 +145,11 @@ export default function PublicResults() {
       finalStretchNarrative={describeFinalStretch(timeline, snapshot.players)}
       confidenceData={breakdowns.confidence}
       draftData={breakdowns.draft}
+      gameModel={snapshot.gameModel}
       playerAwards={awards.playerAwards}
       characterAwards={awards.characterAwards}
       verdicts={snapshot.verdicts}
-      roomCode={snapshot.roomCode}
+      roomCode={snapshot.recordSource === 'settled' ? snapshot.roomCode : undefined}
       /* No onShareResults / onDownloadRecap and no currentPlayerId: this viewer
          has no card of their own to highlight and no session to generate from. */
     />

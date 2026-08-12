@@ -1,0 +1,26 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-death-decisions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "person_beat_ids": [190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 219, 220, 221, 222, 223, 224, 225, 226],
+  "creature_beat_ids": [208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218],
+  "person": {
+    "exclusions": [
+      "An ambiguous disappearance, apparently fatal wound, coma, collapse, or unresolved fall does not count.",
+      "A death that occurred before this episode does not count.",
+      "A prediction, vision, dream, threat, or hypothetical statement about death does not count."
+    ],
+    "adjudication": { "proxies": "do_not_count", "offscreen": "explicit_only", "mentions": "explicit_only" },
+    "title_review": { "status": "approved", "note": "Dies requires an unambiguous death during the episode, shown directly or explicitly confirmed." }
+  },
+  "creature": {
+    "exclusions": [
+      "An off-screen report, disappearance, apparently fatal wound, grounding, retreat, or incapacitation does not count.",
+      "A death that occurred before this episode does not count.",
+      "A prediction, vision, dream, threat, or hypothetical statement about death does not count."
+    ],
+    "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+    "title_review": { "status": "approved", "note": "Dies requires the dragon's death to be shown on screen during the episode." }
+  }
+}

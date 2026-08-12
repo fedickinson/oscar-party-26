@@ -37,6 +37,8 @@ export interface DraftNomination {
 
 export interface DraftEntityWithDetails extends Omit<DraftEntityRow, 'nominations'> {
   nominations: DraftNomination[]
+  /** Derived from the one same-pack nominee with this entity's stable key. */
+  portraitUrl: string | null
 }
 
 // ─── Player with their chosen avatar ─────────────────────────────────────────

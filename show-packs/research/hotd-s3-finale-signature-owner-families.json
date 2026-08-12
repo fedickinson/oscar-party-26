@@ -1,0 +1,84 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "owner-kills-and-clashes",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "owner-kills",
+      "beat_ids": [227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251],
+      "conditions_by_beat_id": {
+        "227": "Rhaenyra Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "228": "Daemon Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "229": "Baela Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "230": "Rhaena Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "231": "Mysaria personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "232": "Kat personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "233": "Aegon II Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "234": "Larys Strong personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "235": "Tyland Lannister personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "236": "Ormund Hightower personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "237": "Daeron Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "238": "Gwayne Hightower personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "239": "Bold Jon Roxton personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "240": "Aemond Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "241": "Alicent Hightower personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "242": "Alys Rivers personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "243": "Roderick Dustin personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "244": "Oscar Tully personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "245": "Helaena Targaryen personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "246": "Torrhen Manderly personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "247": "Grand Maester Orwyle personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "248": "Hugh Hammer personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "249": "Corlys Velaryon personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "250": "Addam of Hull personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others).",
+        "251": "Alyn of Hull personally kills a named character or combatants on screen this episode (by blade, command of their own dragon, or their own hand — not merely ordering others)."
+      },
+      "exclusions": [
+        "Merely ordering soldiers, allies, or another rider to kill does not count.",
+        "An off-screen death, uncertain casualty, nonfatal injury, capture, or incapacitation does not count.",
+        "A dream, vision, recap, hypothetical account, or death before this episode does not count."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Kills accurately requires the named owner to personally cause a visible death during the episode, including through direct command of their own dragon but not merely ordering others."
+    },
+    {
+      "family_id": "owner-clashes",
+      "beat_ids": [252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275],
+      "conditions_by_beat_id": {
+        "252": "Rhaenyra Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "253": "Daemon Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "254": "Baela Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "255": "Rhaena Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "256": "Mysaria has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "257": "Kat has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "258": "Aegon II Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "259": "Larys Strong has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "260": "Tyland Lannister has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "261": "Ormund Hightower has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "262": "Daeron Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "263": "Gwayne Hightower has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "264": "Bold Jon Roxton has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "265": "Aemond Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "266": "Alicent Hightower has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "267": "Alys Rivers has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "268": "Oscar Tully has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "269": "Alysanne Blackwood has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "270": "Helaena Targaryen has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "271": "Torrhen Manderly has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "272": "Grand Maester Orwyle has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "273": "Hugh Hammer has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "274": "Addam of Hull has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many.",
+        "275": "Alyn of Hull has a direct, heated confrontation with another named character on screen — an argument, threat, slap, grab, or personal duel. Fires once per episode regardless of how many."
+      },
+      "exclusions": [
+        "A calm disagreement, indirect criticism, strategic opposition without direct contact, or another character reporting a conflict does not count.",
+        "A dream, vision, recap, imagined exchange, or confrontation with an unnamed background person does not count.",
+        "Multiple qualifying confrontations still settle this beat only once for the episode."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Clashes accurately requires the named owner to take part in a direct, heated on-screen confrontation with another named character and fires only once per episode."
+    }
+  ]
+}

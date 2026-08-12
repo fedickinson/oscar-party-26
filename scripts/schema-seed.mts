@@ -9,9 +9,8 @@
  * WHAT IT DELIBERATELY LEAVES OUT
  * Everything the party produced. rooms, players, messages, marks, picks and
  * verdicts are real people's evening — names and 176 chat lines — and this
- * repository is public. `categories` is the awkward one: ids up to
- * SEEDED_CATEGORY_MAX are authored content, and everything above was created by
- * a Game Master live, so the cut runs through the middle of the table.
+ * repository is public. Catalog rows are selected by the fixed legacy pack;
+ * room-scoped Game Master declarations and every other show pack stay out.
  *
  *   npx tsx scripts/schema-seed.mts > supabase/seed.sql
  */
@@ -19,18 +18,24 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
-/** Matches the constant scripts/dogfood-e2e.mts uses for the same distinction. */
-const SEEDED_CATEGORY_MAX = 20
+const LEGACY_SHOW_PACK_ID = '8f27e9a4-9f6b-4f3a-9c91-a6b862c98101'
 
 /** In dependency order — category_nominees points at both of the tables above it. */
 const CONTENT_TABLES: Array<{ table: string; where?: string }> = [
   { table: 'avatars' },
-  { table: 'categories', where: `id <= ${SEEDED_CATEGORY_MAX}` },
-  { table: 'nominees' },
-  { table: 'category_nominees', where: `category_id <= ${SEEDED_CATEGORY_MAX}` },
-  { table: 'draft_entities' },
-  { table: 'bingo_squares' },
-  { table: 'signature_beats' },
+  { table: 'show_packs', where: `id = '${LEGACY_SHOW_PACK_ID}'` },
+  { table: 'categories', where: `show_pack_id = '${LEGACY_SHOW_PACK_ID}'` },
+  { table: 'nominees', where: `show_pack_id = '${LEGACY_SHOW_PACK_ID}'` },
+  {
+    table: 'category_nominees',
+    where: `exists (
+      select 1 from public.categories category
+      where category.id = t.category_id and category.show_pack_id = '${LEGACY_SHOW_PACK_ID}'
+    )`,
+  },
+  { table: 'draft_entities', where: `show_pack_id = '${LEGACY_SHOW_PACK_ID}'` },
+  { table: 'bingo_squares', where: `show_pack_id = '${LEGACY_SHOW_PACK_ID}'` },
+  { table: 'signature_beats', where: `show_pack_id = '${LEGACY_SHOW_PACK_ID}'` },
 ]
 
 const ref = readFileSync(new URL('../supabase/.temp/project-ref', import.meta.url), 'utf8').trim()
@@ -74,6 +79,13 @@ const out: string[] = [
   '-- Contains no rooms, players, messages, marks, picks or verdicts: that data is',
   '-- a real evening with real names, and this repository is public.',
   '',
+  '-- The baseline migration creates the fixed legacy registry as published so',
+  '-- historical room defaults remain valid. Local seeding must briefly reopen',
+  '-- only that pack before immutable catalog triggers permit authored inserts.',
+  `update public.show_packs`,
+  `set status = 'draft', published_at = null`,
+  `where id = '${LEGACY_SHOW_PACK_ID}';`,
+  '',
 ]
 
 for (const { table, where } of CONTENT_TABLES) {
@@ -105,5 +117,20 @@ for (const { table, where } of CONTENT_TABLES) {
   out.push('on conflict do nothing;')
   out.push('')
 }
+
+out.push(
+  '-- Fail closed rather than publishing a partial local catalog.',
+  'do $$',
+  'begin',
+  `  if not public.show_pack_is_playable('${LEGACY_SHOW_PACK_ID}'::uuid) then`,
+  "    raise exception 'seeded legacy show pack is not playable' using errcode = '23514';",
+  '  end if;',
+  '  update public.show_packs',
+  "  set status = 'published', published_at = clock_timestamp()",
+  `  where id = '${LEGACY_SHOW_PACK_ID}';`,
+  'end;',
+  '$$;',
+  '',
+)
 
 process.stdout.write(out.join('\n'))

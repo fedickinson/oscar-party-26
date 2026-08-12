@@ -1,0 +1,108 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-commentary-decisions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "voices": [
+    {
+      "id": "ned",
+      "name": "Ned",
+      "instruction": "State the record plainly, with grave restraint and no ornamental judgment.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "cersei",
+      "name": "Cersei",
+      "instruction": "Judge power with clipped contempt, political precision, and no self-doubt.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "tyrion",
+      "name": "Tyrion",
+      "instruction": "Use dry intelligence to expose the strategic contradiction without trivializing its human cost.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "joffrey",
+      "name": "Joffrey",
+      "instruction": "Mistake cruelty for strength with loud certainty and revealingly poor judgment.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "daenerys",
+      "name": "Daenerys",
+      "instruction": "Speak with sincere conviction, direct moral stakes, and no ironic retreat.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "olenna",
+      "name": "Olenna",
+      "instruction": "Deliver one economical, amused verdict whose final clause carries the blade.",
+      "attitude_claim_ids": []
+    },
+    {
+      "id": "arya",
+      "name": "Arya",
+      "instruction": "Use few words, attend to cowardice and earned consequence, and land the judgment cleanly.",
+      "attitude_claim_ids": []
+    }
+  ],
+  "requests": [
+    {
+      "id": "ned-sheepstealer-record",
+      "speaker": "ned",
+      "fact_claim_ids": ["sheepstealer-screen-state"],
+      "angle_claim_ids": ["sheepstealer-audience-reaction"],
+      "angle": "Acknowledge why the audience protects Sheepstealer while keeping the witnessed wound and isolation central.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "cersei-rhaenyra-rule",
+      "speaker": "cersei",
+      "fact_claim_ids": ["rhaenyra-screen-state"],
+      "angle_claim_ids": ["rhaenyra-audience-reaction"],
+      "angle": "Treat the audience's deteriorating confidence as a judgment on how power is being used, not proof of an unwitnessed downfall.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "tyrion-ulf-price",
+      "speaker": "tyrion",
+      "fact_claim_ids": ["ulf-screen-state"],
+      "angle_claim_ids": ["ulf-audience-reaction"],
+      "angle": "Complicate the betrayal by recognizing that viewers understand Ulf's grievance without excusing what he has done.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "joffrey-ormund-control",
+      "speaker": "joffrey",
+      "fact_claim_ids": ["ormund-screen-state"],
+      "angle_claim_ids": ["ormund-audience-reaction"],
+      "angle": "Admire Ormund's control for the wrong reasons while staying inside the witnessed prisoner, alliance, and approaching-army facts.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "daenerys-sunfyre-return",
+      "speaker": "daenerys",
+      "fact_claim_ids": ["sunfyre-screen-state"],
+      "angle_claim_ids": ["sunfyre-audience-reaction"],
+      "angle": "Play the scarred king and dragon reunion sincerely, without inventing how Sunfyre survived or what happens next.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "olenna-alicent-poisoning",
+      "speaker": "olenna",
+      "fact_claim_ids": ["alicent-screen-state"],
+      "angle_claim_ids": ["alicent-audience-reaction"],
+      "angle": "Separate criticism of Alicent's written choice from respect for the performance, then end on the political cost of her bargain.",
+      "publication": { "status": "pending" }
+    },
+    {
+      "id": "arya-black-aly-arrow",
+      "speaker": "arya",
+      "fact_claim_ids": ["alysanne-screen-state"],
+      "angle_claim_ids": ["alysanne-audience-reaction"],
+      "angle": "Recognize the audience's interest in Black Aly through the one witnessed fact they are responding to, without adding another kill.",
+      "publication": { "status": "pending" }
+    }
+  ]
+}

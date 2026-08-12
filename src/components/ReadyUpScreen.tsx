@@ -20,7 +20,7 @@ interface ReadyUpScreenProps {
   onCountdownComplete: () => void
   /** Unix ms timestamp recorded when all players first became ready. Used to
    *  derive the correct countdown position for clients that mount late. */
-  countdownStartedAt: number
+  countdownStartedAt: number | null
 }
 
 type Stage = 'waiting' | 'countdown' | 'go'
@@ -50,15 +50,16 @@ export default function ReadyUpScreen({
   // 100ms. Missing a tick is harmless: the next one derives the correct state
   // from the clock rather than from the previous tick. There is no chain to
   // break.
+  const countdownActive = allReady && countdownStartedAt !== null
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    if (!allReady) return
+    if (!countdownActive) return
     const id = setInterval(() => setNow(Date.now()), 100)
     return () => clearInterval(id)
-  }, [allReady])
+  }, [countdownActive])
 
-  const elapsed = allReady ? now - countdownStartedAt : 0
-  const stage: Stage = !allReady ? 'waiting' : elapsed >= 3000 ? 'go' : 'countdown'
+  const elapsed = countdownActive ? now - countdownStartedAt : 0
+  const stage: Stage = !countdownActive ? 'waiting' : elapsed >= 3000 ? 'go' : 'countdown'
   const count = elapsed >= 2000 ? 1 : elapsed >= 1000 ? 2 : 3
 
   // Fire the phase change once the countdown is spent. Host-only, and guarded
@@ -68,11 +69,11 @@ export default function ReadyUpScreen({
   useEffect(() => { onCountdownCompleteRef.current = onCountdownComplete })
 
   useEffect(() => {
-    if (!allReady || !isHost || completedRef.current) return
+    if (!countdownActive || !isHost || completedRef.current) return
     if (elapsed < 3600) return
     completedRef.current = true
     onCountdownCompleteRef.current()
-  }, [allReady, isHost, elapsed])
+  }, [countdownActive, isHost, elapsed])
 
   // Confetti on the "go" beat, once.
   const celebratedRef = useRef(false)
@@ -214,7 +215,7 @@ export default function ReadyUpScreen({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              Everyone's ready — starting…
+              {countdownActive ? 'Everyone’s ready — starting…' : 'Everyone’s ready — synchronizing…'}
             </motion.p>
           )}
         </AnimatePresence>

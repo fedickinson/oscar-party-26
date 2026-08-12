@@ -22,13 +22,15 @@ import TurningPoints from './TurningPoints'
 import MiniTimelines from './MiniTimelines'
 import BingoCard from '../bingo/BingoCard'
 import TheReckoning from './TheReckoning'
-import type { BingoMarkRow, BingoSquareRow, PlayerRow, PlayerVerdictRow } from '../../types/database'
+import type { BingoMarkRow, BingoSquareRow, GameModel, PlayerRow, PlayerVerdictRow } from '../../types/database'
 import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 
 interface Props {
+  /** The live floor is provisional; only settlement may name a final record. */
+  recordSource: 'live' | 'settled'
   leaderboard: ScoredPlayer[]
   players: PlayerRow[]
   timeline: TimelinePoint[]
@@ -53,6 +55,7 @@ interface Props {
   onSharePlayerCard?: (playerId: string) => void
   /** Enables per-player keepsake links inside The Reckoning. */
   roomCode?: string
+  gameModel?: GameModel
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -61,6 +64,7 @@ function getPlayerColor(avatarId: string): string {
 }
 
 export default function PostCeremonyView({
+  recordSource,
   leaderboard,
   players,
   timeline,
@@ -82,7 +86,9 @@ export default function PostCeremonyView({
   currentPlayerId,
   onSharePlayerCard,
   roomCode,
+  gameModel = 'legacy_ensemble',
 }: Props) {
+  const settled = recordSource === 'settled'
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
   const [inspectedSquare, setInspectedSquare] = useState<number | null>(null)
@@ -229,7 +235,7 @@ export default function PostCeremonyView({
           transition={{ duration: 0.4, delay: 0.1 }}
           className="text-3xl font-extrabold text-white leading-tight"
         >
-          Final Standings
+          {settled ? 'Settled Standings' : 'Provisional Standings'}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -237,7 +243,7 @@ export default function PostCeremonyView({
           transition={{ duration: 0.4, delay: 0.18 }}
           className="text-xs text-white/30 mt-1.5 tracking-wide"
         >
-          The night is over
+          {settled ? 'The researched record is closed' : 'The live floor is closed · settlement pending'}
         </motion.p>
       </div>
 
@@ -375,7 +381,7 @@ export default function PostCeremonyView({
                 >
                   <Trophy size={11} className="text-accent flex-shrink-0" />
                   <span className="text-[11px] font-extrabold text-accent uppercase tracking-[0.24em]">
-                    Co-Champions
+                    {settled ? 'Co-Champions' : 'Provisional Co-Leaders'}
                   </span>
                   <Trophy size={11} className="text-accent flex-shrink-0" />
                 </motion.div>
@@ -390,7 +396,7 @@ export default function PostCeremonyView({
                 >
                   <Trophy size={10} className="text-accent" />
                   <span className="text-[10px] font-extrabold text-accent uppercase tracking-[0.22em]">
-                    Tonight's Champion
+                    {settled ? "Tonight's Champion" : 'Provisional Leader'}
                   </span>
                 </div>
               )}
@@ -531,11 +537,16 @@ export default function PostCeremonyView({
               transition={{ duration: 0.3, delay: 0.68 }}
               className="flex justify-center gap-2.5"
             >
-              {[
-                { label: 'Draft', value: winners[0].ensembleScore },
-                { label: 'Picks', value: winners[0].confidenceScore },
-                { label: 'Bingo', value: winners[0].bingoScore },
-              ].map(({ label, value }) => (
+              {(gameModel === 'conviction_portfolio'
+                ? [
+                    { label: 'Conviction', value: winners[0].confidenceScore },
+                    { label: 'Bingo', value: winners[0].bingoScore },
+                  ]
+                : [
+                    { label: 'Draft', value: winners[0].ensembleScore },
+                    { label: 'Picks', value: winners[0].confidenceScore },
+                    { label: 'Bingo', value: winners[0].bingoScore },
+                  ]).map(({ label, value }) => (
                 <div
                   key={label}
                   className="flex flex-col items-center gap-1 rounded-xl px-3.5 py-2"
@@ -647,9 +658,11 @@ export default function PostCeremonyView({
                 {/* Breakdown + total */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex flex-col items-end gap-0.5">
-                    <p className="text-[9px] text-white/18 leading-none tracking-wide">D · C · B</p>
+                    <p className="text-[9px] text-white/18 leading-none tracking-wide">{gameModel === 'conviction_portfolio' ? 'C · B' : 'D · C · B'}</p>
                     <p className="text-[10px] text-white/35 tabular-nums leading-none">
-                      {entry.ensembleScore} · {entry.confidenceScore} · {entry.bingoScore}
+                      {gameModel === 'conviction_portfolio'
+                        ? `${entry.confidenceScore} · ${entry.bingoScore}`
+                        : `${entry.ensembleScore} · ${entry.confidenceScore} · ${entry.bingoScore}`}
                     </p>
                   </div>
                   <p className="text-base font-extrabold tabular-nums leading-none">

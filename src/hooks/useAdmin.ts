@@ -2,14 +2,11 @@
  * useAdmin — host-only actions for the live scoring phase.
  *
  * setWinner CASCADE (the full scoring chain):
- *   1. UPSERT room_winners (room_id, category_id, winner_id, tie_winner_id)
- *      -> Every client's room_winners subscription fires (filtered by room_id)
- *      -> categories state updated with per-room winner_id -> scores update
- *
- *   2. UPDATE confidence_picks SET is_correct = true
- *      WHERE category_id = categoryId AND nominee_id IN (winnerId, tieWinnerId) AND room_id = roomId
- *      UPDATE confidence_picks SET is_correct = false
- *      WHERE category_id = categoryId AND nominee_id NOT IN (...) AND room_id = roomId
+ *   1. Call the capability-gated, room-locked scheduled-winner command.
+ *   2. The command inserts room_winners; its database trigger derives every
+ *      confidence outcome in the same transaction.
+ *   3. Every client's room_winners subscription fires (filtered by room_id),
+ *      categories state receives the result, and scores recompute.
  *
  * TIE HANDLING:
  *   setTieWinner(categoryId, nomineeId1, nomineeId2) stores both winner_id and
@@ -17,16 +14,19 @@
  *
  * UNDO WINDOW:
  *   30 seconds from the setWinner call. Tracked as a timestamp per category.
- *   undoWinner() deletes from room_winners and resets is_correct = null.
+ *   undoWinner() calls a compare-and-delete command; the same trigger resets
+ *   confidence outcomes to null in that transaction.
  *
- * BINGO APPROVALS:
- *   Moved to useBingoApprovals.ts — now handled in the Bingo tab.
+ * Bingo is a separate self-serve, player-owned command path; this hook never
+ * adjudicates marks.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useGame } from '../context/GameContext'
+import { fetchAllRows } from './fetch-all-rows'
 import type { CategoryWithNominees } from '../types/game'
-import type { RoomWinnerRow } from '../types/database'
+import type { CategoryRow, NomineeRow, RoomWinnerRow } from '../types/database'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,6 +35,8 @@ export interface AdminState {
   /** categoryId -> unix ms when winner was set. Used to compute undo eligibility. */
   winnerSetAt: Record<number, number>
   isLoading: boolean
+  syncError: string | null
+  retrySync: () => void
   setWinner: (categoryId: number, nomineeId: string) => Promise<void>
   setTieWinner: (categoryId: number, nomineeId1: string, nomineeId2: string) => Promise<void>
   undoWinner: (categoryId: number) => Promise<void>
@@ -42,58 +44,147 @@ export interface AdminState {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useAdmin(roomId: string | undefined): AdminState {
+export function useAdmin(
+  roomId: string | undefined,
+  operatorCapability: string | null,
+): AdminState {
+  const { room, player } = useGame()
   const [categories, setCategories] = useState<CategoryWithNominees[]>([])
   const [winnerSetAt, setWinnerSetAt] = useState<Record<number, number>>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
+  const activeScopeRef = useRef<string | null>(null)
+  const canWriteRef = useRef(false)
 
   // Guard against double-tapping winner selection
   const settingRef = useRef(false)
 
-  // ── Initial fetch ────────────────────────────────────────────────────────────
+  const showPackId = room?.show_pack_id
+  const requestedScope = roomId && showPackId ? `${roomId}:${showPackId}` : null
+  const isLoading = roomId != null && (
+    requestedScope == null ||
+    loadingState ||
+    activeScopeRef.current !== requestedScope
+  )
+  const syncError = requestedScope != null && activeScopeRef.current === requestedScope
+    ? syncErrorState
+    : null
 
+  // ── Subscribe, then hydrate one revision-clean snapshot ─────────────────────
+
+  const REALTIME_STABILIZATION_MS = 5_000
   useEffect(() => {
-    if (!roomId) return
-
-    async function load() {
-      const [catRes, rwRes] = await Promise.all([
-        supabase
-          .from('categories')
-          .select(`*, category_nominees(nominees(*))`)
-          .order('display_order'),
-        supabase
-          .from('room_winners')
-          .select()
-          .eq('room_id', roomId!),
-      ])
-
-      if (catRes.data) {
-        const winnerMap = new Map<number, { winner_id: string; tie_winner_id: string | null }>(
-          (rwRes.data ?? []).map((rw: RoomWinnerRow) => [
-            rw.category_id,
-            { winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id },
-          ]),
-        )
-        const hydrated: CategoryWithNominees[] = (catRes.data as any[]).map((cat) => ({
-          ...cat,
-          winner_id: winnerMap.get(cat.id)?.winner_id ?? null,
-          tie_winner_id: winnerMap.get(cat.id)?.tie_winner_id ?? null,
-          nominees: (cat.category_nominees as any[])
-            .map((cn: any) => cn.nominees)
-            .filter(Boolean),
-        }))
-        setCategories(hydrated)
-      }
-      setIsLoading(false)
+    if (!roomId || !showPackId || !requestedScope) {
+      activeScopeRef.current = null
+      canWriteRef.current = false
+      setCategories([])
+      setWinnerSetAt({})
+      setLoadingState(roomId != null)
+      setSyncErrorState(null)
+      return
     }
 
-    load()
-  }, [roomId])
+    activeScopeRef.current = requestedScope
+    canWriteRef.current = false
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+    setCategories([])
+    setWinnerSetAt({})
+    setLoadingState(true)
+    setSyncErrorState(null)
 
-  // ── Subscribe to room_winners (winner changes scoped to this room) ───────────
+    type CategoryWithJoin = CategoryRow & {
+      category_nominees: Array<{ nominees: NomineeRow | null }>
+    }
 
-  useEffect(() => {
-    if (!roomId) return
+    const applyWinner = (winner: RoomWinnerRow) => {
+      setCategories((current) => current.map((category) => (
+        category.id === winner.category_id
+          ? {
+              ...category,
+              winner_id: winner.winner_id,
+              tie_winner_id: winner.tie_winner_id,
+            }
+          : category
+      )))
+    }
+
+    const clearWinner = (categoryId: number) => {
+      setCategories((current) => current.map((category) => (
+        category.id === categoryId
+          ? { ...category, winner_id: null, tie_winner_id: null }
+          : category
+      )))
+    }
+
+    const hydrateAdmin = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        canWriteRef.current = false
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const [categoryResult, winnerResult] = await Promise.all([
+            fetchAllRows<CategoryWithJoin>((from, to) => supabase
+              .from('categories')
+              .select('*, category_nominees(nominees(*))')
+              .eq('show_pack_id', showPackId)
+              .order('display_order')
+              .order('id')
+              .range(from, to)),
+            fetchAllRows<RoomWinnerRow>((from, to) => supabase
+              .from('room_winners')
+              .select()
+              .eq('room_id', roomId)
+              .order('category_id')
+              .range(from, to)),
+          ])
+          if (categoryResult.error) throw categoryResult.error
+          if (winnerResult.error) throw winnerResult.error
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          const winnerMap = new Map<number, RoomWinnerRow>(
+            (winnerResult.data ?? []).map((winner) => [
+              winner.category_id,
+              winner,
+            ]),
+          )
+          const hydrated = (categoryResult.data ?? []).map((category) => {
+            const winner = winnerMap.get(category.id)
+            const { category_nominees: categoryNominees, ...row } = category
+            return {
+              ...row,
+              winner_id: winner?.winner_id ?? null,
+              tie_winner_id: winner?.tie_winner_id ?? null,
+              nominees: categoryNominees
+                .map((link) => link.nominees)
+                .filter((nominee): nominee is NomineeRow => nominee != null),
+            }
+          })
+
+          setCategories(hydrated)
+          canWriteRef.current = true
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Winner slate synchronization failed:', loadError)
+        canWriteRef.current = false
+        setSyncErrorState('The winner slate could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
 
     const channel = supabase
       .channel(`admin-room-winners:${roomId}`)
@@ -106,10 +197,10 @@ export function useAdmin(roomId: string | undefined): AdminState {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const rw = payload.new as RoomWinnerRow
-          setCategories((prev) =>
-            prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id } : c)),
-          )
+          applyWinner(rw)
         },
       )
       .on(
@@ -121,10 +212,10 @@ export function useAdmin(roomId: string | undefined): AdminState {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const rw = payload.new as RoomWinnerRow
-          setCategories((prev) =>
-            prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id } : c)),
-          )
+          applyWinner(rw)
         },
       )
       .on(
@@ -136,52 +227,70 @@ export function useAdmin(roomId: string | undefined): AdminState {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const rw = payload.old as Partial<RoomWinnerRow>
           if (rw.category_id == null) return
-          setCategories((prev) =>
-            prev.map((c) => (c.id === rw.category_id ? { ...c, winner_id: null, tie_winner_id: null } : c)),
-          )
+          clearWinner(rw.category_id)
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateAdmin()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateAdmin(false)
+          }, REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          canWriteRef.current = false
+          setSyncErrorState('The winner feed could not connect to Realtime.')
+          setLoadingState(false)
+        }
+      })
 
-    return () => { supabase.removeChannel(channel) }
-  }, [roomId])
+    return () => {
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      canWriteRef.current = false
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
+      void supabase.removeChannel(channel)
+    }
+  }, [roomId, showPackId, requestedScope, retryVersion])
+
+  const retrySync = useCallback(() => {
+    canWriteRef.current = false
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
 
   // ── setWinner ────────────────────────────────────────────────────────────────
 
   async function setWinner(categoryId: number, nomineeId: string): Promise<void> {
-    if (!roomId || settingRef.current) return
+    if (!roomId) throw new Error('The room must be restored before a result can be declared.')
+    if (settingRef.current) return
+    if (!player) throw new Error('The host seat must be restored before a result can be declared.')
+    if (!operatorCapability) throw new Error('Current operator authority is required before a result can be declared.')
+    if (!canWriteRef.current) {
+      throw new Error('The winner slate must finish synchronizing before a result can be declared.')
+    }
     settingRef.current = true
 
     try {
-      // 1. Upsert the per-room winner record (single winner, clear any tie)
-      const { error: rwError } = await supabase
-        .from('room_winners')
-        .upsert({ room_id: roomId, category_id: categoryId, winner_id: nomineeId, tie_winner_id: null })
-
-      if (rwError) throw new Error(rwError.message)
-
-      // 2a. Mark correct picks
-      const { error: correctError } = await supabase
-        .from('confidence_picks')
-        .update({ is_correct: true })
-        .eq('category_id', categoryId)
-        .eq('nominee_id', nomineeId)
-        .eq('room_id', roomId)
-
-      if (correctError) throw new Error(correctError.message)
-
-      // 2b. Mark incorrect picks
-      const { error: wrongError } = await supabase
-        .from('confidence_picks')
-        .update({ is_correct: false })
-        .eq('category_id', categoryId)
-        .neq('nominee_id', nomineeId)
-        .eq('room_id', roomId)
-
-      if (wrongError) throw new Error(wrongError.message)
-
+      const { error } = await supabase.rpc('declare_scheduled_winner_authorized', {
+        p_room_id: roomId,
+        p_category_id: categoryId,
+        p_winner_id: nomineeId,
+        p_tie_winner_id: null,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+      })
+      if (error) throw new Error(error.message)
       setWinnerSetAt((prev) => ({ ...prev, [categoryId]: Date.now() }))
     } finally {
       settingRef.current = false
@@ -191,52 +300,25 @@ export function useAdmin(roomId: string | undefined): AdminState {
   // ── setTieWinner ───────────────────────────────────────────────────────────────
 
   async function setTieWinner(categoryId: number, nomineeId1: string, nomineeId2: string): Promise<void> {
-    if (!roomId || settingRef.current) return
+    if (!roomId) throw new Error('The room must be restored before a result can be declared.')
+    if (settingRef.current) return
+    if (!player) throw new Error('The host seat must be restored before a result can be declared.')
+    if (!operatorCapability) throw new Error('Current operator authority is required before a result can be declared.')
+    if (!canWriteRef.current) {
+      throw new Error('The winner slate must finish synchronizing before a result can be declared.')
+    }
     settingRef.current = true
 
     try {
-      // 1. Upsert the per-room winner record with both winners
-      const { error: rwError } = await supabase
-        .from('room_winners')
-        .upsert({
-          room_id: roomId,
-          category_id: categoryId,
-          winner_id: nomineeId1,
-          tie_winner_id: nomineeId2,
-        })
-
-      if (rwError) throw new Error(rwError.message)
-
-      // 2a. Mark correct picks — picks matching EITHER winner
-      const { error: correct1Error } = await supabase
-        .from('confidence_picks')
-        .update({ is_correct: true })
-        .eq('category_id', categoryId)
-        .eq('nominee_id', nomineeId1)
-        .eq('room_id', roomId)
-
-      if (correct1Error) throw new Error(correct1Error.message)
-
-      const { error: correct2Error } = await supabase
-        .from('confidence_picks')
-        .update({ is_correct: true })
-        .eq('category_id', categoryId)
-        .eq('nominee_id', nomineeId2)
-        .eq('room_id', roomId)
-
-      if (correct2Error) throw new Error(correct2Error.message)
-
-      // 2b. Mark incorrect picks — picks matching NEITHER winner
-      const { error: wrongError } = await supabase
-        .from('confidence_picks')
-        .update({ is_correct: false })
-        .eq('category_id', categoryId)
-        .neq('nominee_id', nomineeId1)
-        .neq('nominee_id', nomineeId2)
-        .eq('room_id', roomId)
-
-      if (wrongError) throw new Error(wrongError.message)
-
+      const { error } = await supabase.rpc('declare_scheduled_winner_authorized', {
+        p_room_id: roomId,
+        p_category_id: categoryId,
+        p_winner_id: nomineeId1,
+        p_tie_winner_id: nomineeId2,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+      })
+      if (error) throw new Error(error.message)
       setWinnerSetAt((prev) => ({ ...prev, [categoryId]: Date.now() }))
     } finally {
       settingRef.current = false
@@ -246,33 +328,49 @@ export function useAdmin(roomId: string | undefined): AdminState {
   // ── undoWinner ───────────────────────────────────────────────────────────────
 
   async function undoWinner(categoryId: number): Promise<void> {
-    if (!roomId) return
+    if (!roomId) throw new Error('The room must be restored before a result can be undone.')
+    if (settingRef.current) return
+    if (!player) throw new Error('The host seat must be restored before a result can be undone.')
+    if (!operatorCapability) throw new Error('Current operator authority is required before a result can be undone.')
+    if (!canWriteRef.current) {
+      throw new Error('The winner slate must finish synchronizing before a result can be undone.')
+    }
 
     const setAt = winnerSetAt[categoryId]
     if (!setAt || Date.now() - setAt > 30_000) return
+    const current = categories.find((category) => category.id === categoryId)
+    if (!current?.winner_id) return
 
-    const { error: rwError } = await supabase
-      .from('room_winners')
-      .delete()
-      .eq('room_id', roomId)
-      .eq('category_id', categoryId)
+    settingRef.current = true
+    try {
+      const { error } = await supabase.rpc('undo_scheduled_winner_authorized', {
+        p_room_id: roomId,
+        p_category_id: categoryId,
+        p_expected_winner_id: current.winner_id,
+        p_expected_tie_winner_id: current.tie_winner_id,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+      })
+      if (error) throw new Error(error.message)
 
-    if (rwError) throw new Error(rwError.message)
-
-    const { error: cpError } = await supabase
-      .from('confidence_picks')
-      .update({ is_correct: null })
-      .eq('category_id', categoryId)
-      .eq('room_id', roomId)
-
-    if (cpError) throw new Error(cpError.message)
-
-    setWinnerSetAt((prev) => {
-      const next = { ...prev }
-      delete next[categoryId]
-      return next
-    })
+      setWinnerSetAt((prev) => {
+        const next = { ...prev }
+        delete next[categoryId]
+        return next
+      })
+    } finally {
+      settingRef.current = false
+    }
   }
 
-  return { categories, winnerSetAt, isLoading, setWinner, setTieWinner, undoWinner }
+  return {
+    categories,
+    winnerSetAt,
+    isLoading,
+    syncError,
+    retrySync,
+    setWinner,
+    setTieWinner,
+    undoWinner,
+  }
 }

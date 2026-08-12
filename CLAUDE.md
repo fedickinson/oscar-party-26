@@ -18,14 +18,23 @@ Route by request, and run them in lifecycle order when a task spans stages:
 
 Deeper context loads on demand: [architecture](.agents/references/architecture.md) for state,
 phases, Realtime, and the database; [design system](.agents/references/design-system.md) for
-tokens, icons, motion, and the mobile grammar; [RUNBOOK.md](RUNBOOK.md) for live-ops procedure and
-the project's doctrine — grounding, two-canons, the settlement layer, the operator's lens.
+tokens, icons, motion, and the mobile grammar; [ROADMAP.md](ROADMAP.md) for the canonical P0-P8
+build order, product contracts and acceptance gates; [RUNBOOK.md](RUNBOOK.md) for live-ops
+procedure and the project's doctrine — grounding, two-canons, the settlement layer, the
+operator's lens.
 
 ## Working with Claude here
 
 - **Do not collapse the phases.** Even when one agent does everything, plan, implement, verify, and
   review as separate passes. Most of the expensive mistakes in this repo's history were a
   confident implementation that was never actually run.
+- **Start platform work from the roadmap.** P0-P3 are the next-event readiness line; P4-P8 are the
+  campaign extension. Never describe a planned campaign capability as implemented, and never use
+  campaign work to bypass unfinished foundation verification.
+- **Keep identity separate from belief.** Drafting may create a banner, favorite or rivalry, but
+  Story Night players can make convictions across the whole cast. Treat the current
+  `fact_source -> game_model` binding as a compatibility seam to replace through P1, not as the
+  final product ontology.
 - **Subagents:** use them for read-only fan-out — sweeping `src/` for every consumer of a changed
   function, or reading a long doc — not for edits to shared files. Only when the user asks.
 - **Plan mode** is the right default for anything touching scoring, migrations, or a live room.

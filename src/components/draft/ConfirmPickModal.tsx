@@ -21,6 +21,7 @@
 import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
 import { Hallmark } from '../ui/Hallmarks'
+import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -82,29 +83,37 @@ export default function ConfirmPickModal({
         <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ backgroundColor: 'var(--t-line-strong)' }} />
 
         {/* Entity header */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className="text-xs font-bold uppercase tracking-widest px-2 py-1 rounded"
-              style={{
-                backgroundColor: 'var(--t-pending-soft)',
-                color: 'var(--t-pending)',
-              }}
-            >
-              {isFilm ? 'Dragon' : 'Character'}
-            </span>
-          </div>
-
-          <h2 className="font-display text-2xl font-bold leading-tight tracking-wide text-[var(--t-text)]">
-            {entity.name}
-          </h2>
-
-          {!isFilm && entity.film_name && (
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <FilmIcon filmName={entity.film_name} size={12} className="text-[var(--t-text-dim)] flex-shrink-0" />
-              <p className="text-[var(--t-text-muted)] italic">{entity.film_name}</p>
+        <div className="mb-4 flex items-start gap-3">
+          <StoryPortrait
+            name={entity.name}
+            src={entity.portraitUrl}
+            className="h-16 w-16"
+            fallback={<FilmIcon filmName={isFilm ? entity.name : entity.film_name} size={22} className="text-[var(--t-text-muted)]" />}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="text-xs font-bold uppercase tracking-widest px-2 py-1 rounded"
+                style={{
+                  backgroundColor: 'var(--t-pending-soft)',
+                  color: 'var(--t-pending)',
+                }}
+              >
+                {isFilm ? 'Dragon' : 'Character'}
+              </span>
             </div>
-          )}
+
+            <h2 className="font-display text-2xl font-bold leading-tight tracking-wide text-[var(--t-text)]">
+              {entity.name}
+            </h2>
+
+            {!isFilm && entity.film_name && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <FilmIcon filmName={entity.film_name} size={12} className="text-[var(--t-text-dim)] flex-shrink-0" />
+                <p className="text-[var(--t-text-muted)] italic">{entity.film_name}</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Signature beats list */}

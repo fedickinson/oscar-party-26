@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "settlement_receipt": {
+    "path": "./proof-receipt.json",
+    "sha256": "178db77a56dc9ec0af6b3667d55f29008c7a06538e5e288d812fe4f482206b31"
+  },
+  "show": {
+    "title": "The Night of the Lantern",
+    "subtitle": "A synthetic settlement-drop proof",
+    "closing_title": "The lantern goes dark",
+    "return_path": "/room/PROOF/results"
+  },
+  "assets": {
+    "rowan": { "path": "./assets/rowan.svg", "alt": "Portrait of Rowan" },
+    "mira": { "path": "./assets/mira.svg", "alt": "Portrait of Mira" },
+    "fox": { "path": "./assets/fox.svg", "alt": "The copper fox" },
+    "owl": { "path": "./assets/owl.svg", "alt": "The violet owl" }
+  },
+  "players": [
+    { "id": "rowan", "name": "Rowan", "house": "House Fox", "accent": "blue", "portrait_asset": "rowan" },
+    { "id": "mira", "name": "Mira", "house": "House Owl", "accent": "gold", "portrait_asset": "mira" }
+  ],
+  "characters": [
+    {
+      "id": "fox",
+      "name": "The Copper Fox",
+      "kind": "creature",
+      "player_id": "rowan",
+      "portrait_asset": "fox",
+      "muster_tier": "lead",
+      "drawer": {
+        "note": "Two declared turns carried Rowan's roster.",
+        "beats": [
+          { "evidence_id": "rowan-fox-light" },
+          { "evidence_id": "rowan-fox-bargain" },
+          { "evidence_id": "rowan-fox-correction" },
+          { "label": "Returns before dawn", "points": 3, "fired": false }
+        ]
+      }
+    },
+    {
+      "id": "owl",
+      "name": "The Violet Owl",
+      "kind": "creature",
+      "player_id": "mira",
+      "portrait_asset": "owl",
+      "muster_tier": "support",
+      "drawer": {
+        "note": "One final warning entered the record.",
+        "beats": [
+          { "evidence_id": "mira-owl-midnight" },
+          { "label": "Survives the tower", "points": 5, "fired": false }
+        ]
+      }
+    },
+    {
+      "id": "bell",
+      "name": "The Bell Keeper",
+      "kind": "character",
+      "player_id": "rowan",
+      "portrait_asset": "fox",
+      "muster_tier": "support",
+      "drawer": {
+        "note": "Named in the impact tier; no scored trigger fired.",
+        "beats": []
+      }
+    },
+    {
+      "id": "gate",
+      "name": "The Old Gate",
+      "kind": "other",
+      "player_id": "mira",
+      "portrait_asset": "owl",
+      "muster_tier": "absent",
+      "drawer": {
+        "note": "The gate never entered the witnessed record.",
+        "beats": []
+      }
+    },
+    {
+      "id": "wanderer",
+      "name": "The Wanderer",
+      "kind": "character",
+      "portrait_asset": "owl",
+      "muster_tier": "present",
+      "drawer": {
+        "note": "Present in the account without a claimed banner.",
+        "beats": []
+      }
+    }
+  ],
+  "opening": {
+    "eyebrow": "After the room closed",
+    "muster_title": "Two banners took the field",
+    "begins_label": "The record opens"
+  },
+  "acts": [
+    {
+      "id": "the-signal",
+      "title": "The Signal",
+      "subtitle": "What was seen before midnight",
+      "scene": "keep",
+      "interstitial": { "portrait_asset": "fox" },
+      "beats": [
+        {
+          "id": "lantern-lit",
+          "kicker": "The first turn",
+          "title": "The lantern was lit",
+          "summary": "The room found its path and one prediction landed with it.",
+          "weight": "ordinary",
+          "portrait_asset": "fox",
+          "ledger": [
+            { "evidence_id": "rowan-fox-light" },
+            { "evidence_id": "mira-lantern-prediction" }
+          ],
+          "quotes": [
+            {
+              "speaker": "The Witness",
+              "portrait_asset": "owl",
+              "text": "The declaration fixed the signal in the record; the wager followed it, not the rumor.",
+              "refs": ["The Copper Fox", "Room declaration"],
+              "grounding": {
+                "pipeline": "scripts/grounded-line.mts",
+                "fact_block": ["The room declared that the Copper Fox lit the path before midnight."],
+                "attempts": 1,
+                "residual_findings": []
+              }
+            },
+            {
+              "speaker": "The Skeptic",
+              "portrait_asset": "fox",
+              "text": "Five points entered for the claim and five for the prediction; the ledger needs no embellishment.",
+              "refs": ["Settlement v1", "Beat ledger"],
+              "grounding": {
+                "pipeline": "scripts/grounded-line.mts",
+                "fact_block": ["Rowan received five draft points and Mira received five prediction points."],
+                "attempts": 2,
+                "residual_findings": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "midnight-warning",
+          "kicker": "The warning",
+          "title": "The owl spoke once",
+          "summary": "A quiet trigger became the act's final scored fact.",
+          "weight": "death",
+          "portrait_asset": "owl",
+          "ledger": [
+            { "evidence_id": "mira-owl-midnight" },
+            { "kind": "no_card", "fact_id": "shadow-crosses-tower" }
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    {
+      "id": "the-bargain",
+      "title": "The Bargain",
+      "subtitle": "What the closing record changed",
+      "scene": "field",
+      "interstitial": { "portrait_asset": "owl" },
+      "beats": [
+        {
+          "id": "bargain-broken",
+          "kicker": "The break",
+          "title": "The bargain did not survive",
+          "summary": "The heaviest turn joined a roster trigger and two marked squares.",
+          "weight": "betrayal",
+          "portrait_asset": "fox",
+          "ledger": [
+            { "evidence_id": "rowan-fox-bargain" },
+            { "evidence_id": "rowan-fox-correction" },
+            { "evidence_id": "bingo-square:rowan-card:0" },
+            { "evidence_id": "bingo-square:rowan-card:1" }
+          ],
+          "quotes": [
+            {
+              "speaker": "The Archivist",
+              "portrait_asset": "owl",
+              "text": "The room called the break true, then the settlement wrote its scored consequences together.",
+              "refs": ["The Copper Fox", "Bingo ruling"],
+              "grounding": {
+                "pipeline": "scripts/grounded-line.mts",
+                "fact_block": ["The room declared the bargain broken and approved two matching bingo squares."],
+                "attempts": 1,
+                "residual_findings": []
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

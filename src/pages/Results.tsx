@@ -1,8 +1,8 @@
 /**
- * Results — final standings page (phase: finished).
+ * Results — standings page (provisional at finished, researched at closed).
  *
- * Reached when Admin sets room phase to 'finished' (all 24 categories
- * announced). All players navigate here simultaneously via Realtime.
+ * Reached when the room phase becomes finished or closed. All players navigate
+ * here simultaneously via Realtime; the active settlement selects the record.
  *
  * Renders PostCeremonyView which includes:
  *   1. Winner celebration with confetti
@@ -14,20 +14,15 @@
  *   7. Final stretch narrative
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Clapperboard } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, Clapperboard, RefreshCw } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
-import { useRoomSubscription } from '../hooks/useRoom'
+import { usePlayersSubscription, useRoomSubscription } from '../hooks/useRoom'
 import { useScores } from '../hooks/useScores'
 import { useRecap } from '../hooks/useRecap'
 import { useShareResults } from '../hooks/useShareResults'
-import { useBingo } from '../hooks/useBingo'
-import { supabase } from '../lib/supabase'
-import {
-  buildPostShowPrompt,
-  parseCompanionResponse,
-} from '../lib/companion-prompts'
+import { checkBingo, FREE_CENTER_INDEX } from '../lib/bingo-utils'
 import {
   computeScoreTimeline,
   identifyTurningPoints,
@@ -37,6 +32,8 @@ import {
 } from '../lib/timeline-utils'
 import { computeNightAwards } from '../lib/night-awards'
 import { usePlayerVerdicts } from '../hooks/usePlayerVerdicts'
+import { usePostShowCompanions } from '../hooks/usePostShowCompanions'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import PostCeremonyView from '../components/home/PostCeremonyView'
 import { Hallmark } from '../components/ui/Hallmarks'
 
@@ -44,10 +41,12 @@ export default function Results() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
+  const { capability: operatorCapability } = useOperatorAuthority()
 
-  useRoomSubscription(room?.id)
+  const roomSync = useRoomSubscription(room?.id)
+  const rosterSync = usePlayersSubscription(room?.id)
 
-  const scores = useScores(room?.id)
+  const scores = useScores(room?.id, room?.active_settlement_id)
 
   const [gateDismissed, setGateDismissed] = useState(() => {
     if (new URLSearchParams(window.location.search).get('gate') === 'reset') {
@@ -56,111 +55,44 @@ export default function Results() {
     }
     return localStorage.getItem('ceremony_gate_v1') === 'passed'
   })
-  const gated = !gateDismissed
+  // `finished` is the live, provisional ledger and opens immediately. Only a
+  // researched `closed` room owns the ceremony gate and its sealed-record copy.
+  const gated = room?.phase === 'closed' && !gateDismissed
 
-  const bingo = useBingo(room?.id, scores.categories, scores.nominees)
+  const bingo = useMemo(() => {
+    const card = scores.bingoCards.find((row) => row.player_id === player?.id) ?? null
+    if (!card) return { squares: [], marks: [], bingoLines: [] }
+
+    const squareById = new Map(scores.bingoSquares.map((square) => [square.id, square]))
+    const squares = card.squares.map((id) => id === 0 ? null : (squareById.get(id) ?? null))
+    const marks = scores.bingoMarks.filter((mark) => mark.card_id === card.id)
+    const markedIndices = new Set<number>([FREE_CENTER_INDEX])
+    marks.filter((mark) => mark.status === 'approved')
+      .forEach((mark) => markedIndices.add(mark.square_index))
+
+    return { squares, marks, bingoLines: checkBingo(markedIndices, []).lines }
+  }, [player?.id, scores.bingoCards, scores.bingoMarks, scores.bingoSquares])
 
   useEffect(() => {
     if (!loading && !player) navigate('/')
   }, [loading, player, navigate])
 
-  // ── Post-show companion farewell messages (fires once, host only) ──────────
-  //
-  // Waits for scores to load, then checks if a post-show message has already
-  // been sent. If not, fires the buildPostShowPrompt and inserts messages.
-  // Only the host fires the API call; all players receive via Realtime.
-
-  const postShowFiredRef = useRef(false)
   const isHost = player?.is_host ?? false
-
-  useEffect(() => {
-    if (!room || !isHost || scores.isLoading || postShowFiredRef.current) return
-    if (scores.leaderboard.length === 0) return
-
-    postShowFiredRef.current = true
-
-    const timer = setTimeout(async () => {
-      // Guard: skip if post-show messages already exist (page reload case)
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('room_id', room.id)
-        .eq('player_id', 'system')
-        .eq('text', 'Final Standings')
-      if (count != null && count > 0) return
-
-      // Insert a system divider
-      await supabase.from('messages').insert({
-        room_id: room.id,
-        player_id: 'system',
-        text: 'Final Standings',
-      })
-
-      // Fire post-show companion messages
-      const prompt = buildPostShowPrompt(
-        scores.leaderboard,
-        players,
-        scores.categories,
-        scores.confidencePicks,
-      )
-
-      try {
-        const response = await fetch('/api/anthropic/v1/messages', {
-          method: 'POST',
-          headers: {
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-5',
-            max_tokens: 400,
-            // Thinking off for the same reason as the other two callers: on
-            // Sonnet 5 max_tokens caps thinking + text together.
-            thinking: { type: 'disabled' },
-            output_config: { effort: 'low' },
-            system: [
-              {
-                type: 'text',
-                text: prompt.system,
-                cache_control: { type: 'ephemeral', ttl: '1h' },
-              },
-            ],
-            messages: [{ role: 'user', content: prompt.user }],
-          }),
-        })
-
-        if (!response.ok) return
-        const data = await response.json()
-        const blocks = (data?.content ?? []) as Array<{ type?: string; text?: string }>
-        const raw = (blocks.find((b) => b.type === 'text')?.text ?? '') as string
-        if (!raw) return
-
-        const messages = parseCompanionResponse(raw)
-        for (const msg of messages) {
-          if (msg.delay_seconds === 0) {
-            await supabase.from('messages').insert({
-              room_id: room.id,
-              player_id: msg.companion_id,
-              text: msg.text,
-            })
-          } else {
-            setTimeout(() => {
-              supabase.from('messages').insert({
-                room_id: room.id,
-                player_id: msg.companion_id,
-                text: msg.text,
-              })
-            }, msg.delay_seconds * 1000)
-          }
-        }
-      } catch {
-        // Companions are nice-to-have — silently fail
-      }
-    }, 3000) // 3s delay to let scores settle and FinaleOverlay dismiss
-
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room, isHost, scores.isLoading, scores.leaderboard.length])
+  const browserGroundingAuthorized = isHost && operatorCapability !== null
+  usePostShowCompanions({
+    roomId: room?.id,
+    hostPlayerId: room?.host_id,
+    isHost: browserGroundingAuthorized,
+    operatorCapability,
+    ready: !roomSync.isLoading && roomSync.syncError == null &&
+      !rosterSync.isLoading && rosterSync.syncError == null &&
+      !scores.isLoading && scores.recordError == null && scores.leaderboard.length > 0,
+    provisional: room?.phase === 'finished' && scores.recordSource === 'live',
+    leaderboard: scores.leaderboard,
+    players,
+    categories: scores.categories,
+    confidencePicks: scores.confidencePicks,
+  })
 
   // Compute timeline data (memoized — only recomputes when scores data changes)
   const timeline = useMemo(
@@ -172,8 +104,10 @@ export default function Results() {
         scores.draftEntities,
         scores.nominees,
         players,
+        scores.convictionPicks,
+        room?.game_model ?? 'legacy_ensemble',
       ),
-    [scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees, players],
+    [scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees, scores.convictionPicks, players, room?.game_model],
   )
 
   const turningPoints = useMemo(
@@ -201,8 +135,10 @@ export default function Results() {
         scores.draftPicks,
         scores.draftEntities,
         scores.nominees,
+        scores.convictionPicks,
+        room?.game_model ?? 'legacy_ensemble',
       ),
-    [timeline, players, scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees],
+    [timeline, players, scores.categories, scores.confidencePicks, scores.draftPicks, scores.draftEntities, scores.nominees, scores.convictionPicks, room?.game_model],
   )
 
   // ── The Reckoning ──────────────────────────────────────────────────────────
@@ -222,6 +158,7 @@ export default function Results() {
         scores.draftPicks,
         scores.confidencePicks,
         timeline,
+        room?.game_model ?? 'legacy_ensemble',
       ),
     [
       scores.leaderboard,
@@ -232,16 +169,22 @@ export default function Results() {
       scores.draftPicks,
       scores.confidencePicks,
       timeline,
+      room?.game_model,
     ],
   )
 
   const { verdicts } = usePlayerVerdicts({
     roomId: room?.id,
-    isHost,
+    hostPlayerId: player?.id,
+    isHost: browserGroundingAuthorized,
+    operatorCapability,
     playerAwards: awards.playerAwards,
     leaderboard: scores.leaderboard,
     players,
-    ready: !scores.isLoading && scores.leaderboard.length > 0,
+    ready: !roomSync.isLoading && roomSync.syncError == null &&
+      !rosterSync.isLoading && rosterSync.syncError == null &&
+      !scores.isLoading && scores.recordError == null && scores.leaderboard.length > 0,
+    recordSource: scores.recordSource,
   })
 
   const { shareResults, sharePlayerCard, isCopied } = useShareResults()
@@ -262,10 +205,75 @@ export default function Results() {
     verdicts,
   })
 
-  if (loading || scores.isLoading) {
+  if (loading || roomSync.isLoading || rosterSync.isLoading || scores.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (roomSync.syncError) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-4">
+        <section className="material-stone relief-inset w-full rounded-2xl p-4" role="alert">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--t-pending)]" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-xs uppercase tracking-widest text-[var(--t-pending)]">
+                Room record unavailable
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+                The provisional or settled record cannot be chosen safely until the shared room row is current.
+              </p>
+              <button
+                type="button"
+                onClick={roomSync.retrySync}
+                className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden />
+                Retry room synchronization
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (rosterSync.syncError) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md items-center px-4">
+        <section className="material-stone relief-inset w-full rounded-2xl p-4" role="alert">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--t-pending)]" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-xs uppercase tracking-widest text-[var(--t-pending)]">
+                Player roster unavailable
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+                Final keepsakes and farewells wait until the complete room roster is current.
+              </p>
+              <button
+                type="button"
+                onClick={rosterSync.retrySync}
+                className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden />
+                Retry roster synchronization
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (scores.recordError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
+        <p className="text-base font-semibold text-white">The record could not be opened</p>
+        <p className="text-sm text-white/45 mt-2">{scores.recordError}</p>
       </div>
     )
   }
@@ -308,7 +316,7 @@ export default function Results() {
             className="mt-5 text-[11px] uppercase text-[#b9863f]"
             style={{ fontFamily: '"SF Mono",Menlo,Consolas,monospace', letterSpacing: '0.4em' }}
           >
-            The record is sealed
+            The researched record is sealed
           </p>
           <h1
             className="mt-3 text-[34px] font-bold leading-tight text-[#f0e5cb]"
@@ -349,18 +357,36 @@ export default function Results() {
 
   return (
     <>
-      <div className="max-w-md mx-auto px-4 pt-6">
-        <a
-          href="/ceremony.html"
-          className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"
-        >
-          <Clapperboard size={18} className="text-oscar-gold flex-shrink-0" />
-          <span className="font-semibold text-oscar-gold">The Ceremony</span>
-          <span className="ml-auto text-xs text-white/40">rewatch &rsaquo;</span>
-        </a>
-      </div>
+      {scores.recordSource === 'settled' ? (
+        <div className="max-w-md mx-auto px-4 pt-6">
+          <a
+            href="/ceremony.html"
+            className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"
+          >
+            <Clapperboard size={18} className="text-oscar-gold flex-shrink-0" />
+            <span className="font-semibold text-oscar-gold">The Ceremony</span>
+            <span className="ml-auto text-xs text-white/40">rewatch &rsaquo;</span>
+          </a>
+        </div>
+      ) : (
+        <div className="max-w-md mx-auto px-4 pt-6">
+          <div
+            className="material-stone relief-inset rounded-2xl border p-4"
+            style={{ borderColor: 'var(--t-pending)' }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-[color:var(--t-pending)]">
+              Live record · provisional
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-[color:var(--t-text-muted)]">
+              The live floor is closed. Research can still amend these standings
+              before settlement publishes the record.
+            </p>
+          </div>
+        </div>
+      )}
 
       <PostCeremonyView
+      recordSource={scores.recordSource}
       leaderboard={scores.leaderboard}
       players={players}
       timeline={timeline}
@@ -369,9 +395,12 @@ export default function Results() {
       finalStretchNarrative={finalStretchNarrative}
       confidenceData={breakdowns.confidence}
       draftData={breakdowns.draft}
-      onDownloadRecap={downloadRecap}
+      gameModel={room.game_model ?? 'legacy_ensemble'}
+      onDownloadRecap={scores.recordSource === 'settled' ? downloadRecap : undefined}
       isGeneratingRecap={isGenerating}
-      onShareResults={() => shareResults(scores.leaderboard, players, room.code)}
+      onShareResults={scores.recordSource === 'settled'
+        ? () => shareResults(scores.leaderboard, players, room.code)
+        : undefined}
       isCopied={isCopied}
       bingoSquares={bingo.squares}
       bingoMarks={bingo.marks}
@@ -380,17 +409,19 @@ export default function Results() {
       characterAwards={awards.characterAwards}
       verdicts={verdicts}
       currentPlayerId={player.id}
-      roomCode={room.code}
-      onSharePlayerCard={(playerId) => {
-        const award = awards.playerAwards.find((a) => a.playerId === playerId)
-        if (!award || !room) return
-        sharePlayerCard(
-          award,
-          scores.leaderboard.find((e) => e.player.id === playerId),
-          verdicts.get(playerId),
-          room.code,
-        )
-      }}
+      roomCode={scores.recordSource === 'settled' ? room.code : undefined}
+      onSharePlayerCard={scores.recordSource === 'settled'
+        ? (playerId) => {
+            const award = awards.playerAwards.find((a) => a.playerId === playerId)
+            if (!award || !room) return
+            sharePlayerCard(
+              award,
+              scores.leaderboard.find((e) => e.player.id === playerId),
+              verdicts.get(playerId),
+              room.code,
+            )
+          }
+        : undefined}
     />
     </>
   )

@@ -1,0 +1,169 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-batch-decisions",
+  "batch_id": "explicit-relations-and-reunions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "decisions": [
+    {
+      "legacy_signature_beat_id": 2,
+      "basis_legacy_entity_ids": ["aa56f006-abe3-5047-4893-40d08cac7dda", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+      "condition": "Daemon and Rhaenyra explicitly reconcile, forgive one another, or reaffirm that they are acting together.",
+      "exclusions": ["Sharing a scene, pausing an argument, cooperating under necessity, or another character predicting reconciliation does not count without their explicit reconciliation, forgiveness or reaffirmation."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Makes Peace accurately requires an explicit reconciliation, forgiveness or reaffirmed alliance between Daemon and Rhaenyra." }
+    },
+    {
+      "legacy_signature_beat_id": 9,
+      "basis_legacy_entity_ids": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "aa56f006-abe3-5047-4893-40d08cac7dda"],
+      "condition": "Rhaenyra and Daemon explicitly reconcile, forgive one another, or reaffirm that they are acting together.",
+      "exclusions": ["Sharing a scene, pausing an argument, cooperating under necessity, or another character predicting reconciliation does not count without their explicit reconciliation, forgiveness or reaffirmation."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Makes Peace accurately requires an explicit reconciliation, forgiveness or reaffirmed alliance between Rhaenyra and Daemon." }
+    },
+    {
+      "legacy_signature_beat_id": 46,
+      "basis_legacy_entity_ids": ["cd978df7-2733-99cf-c9f7-c56c8dde42a5", "188d91ee-63ee-9d0e-1779-3ce613d3f4c9"],
+      "condition": "Aemond directly accuses or confronts Alicent about poisoning or betraying him.",
+      "exclusions": ["Suspicion, a third-party accusation, a dream or vision, or Aemond discussing Alicent while she is absent does not count as directly calling her out."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Calls Out Alicent accurately requires Aemond to accuse or confront Alicent directly about poisoning or betrayal." }
+    },
+    {
+      "legacy_signature_beat_id": 184,
+      "basis_legacy_entity_ids": ["cd978df7-2733-99cf-c9f7-c56c8dde42a5", "188d91ee-63ee-9d0e-1779-3ce613d3f4c9"],
+      "condition": "A conscious Aemond directly confronts or accuses Alicent about poisoning him, with Alicent present in the scene.",
+      "exclusions": ["Suspicion, a third-party accusation, a dream or vision, or an exchange while Aemond is not mentally responsive does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "You Poisoned Me accurately requires a conscious Aemond to confront Alicent about poisoning him while she is present." }
+    },
+    {
+      "legacy_signature_beat_id": 48,
+      "basis_legacy_entity_ids": ["cd978df7-2733-99cf-c9f7-c56c8dde42a5", "5555bd93-92e7-8e8b-aefa-1543692307d1"],
+      "condition": "A conscious Aemond physically reunites with Vhagar in the present timeline.",
+      "exclusions": ["A dream, vision, memory, mention, distant unconfirmed dragon, or reunion while Aemond remains unconscious does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Finds Vhagar accurately requires a conscious Aemond and Vhagar to reunite physically in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 165,
+      "basis_legacy_entity_ids": ["5555bd93-92e7-8e8b-aefa-1543692307d1", "cd978df7-2733-99cf-c9f7-c56c8dde42a5"],
+      "condition": "Vhagar physically reunites with a conscious Aemond in the present timeline.",
+      "exclusions": ["A dream, vision, memory, mention, distant unconfirmed dragon, or reunion while Aemond remains unconscious does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Finds Aemond accurately requires Vhagar and a conscious Aemond to reunite physically in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 57,
+      "basis_legacy_entity_ids": ["188d91ee-63ee-9d0e-1779-3ce613d3f4c9", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+      "condition": "Alicent and Aegon physically reunite and exchange dialogue in the present timeline.",
+      "exclusions": ["A dream, vision, memory, sighting without dialogue, message delivered by another person, or discussion while they remain apart does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Finds Aegon accurately requires Alicent and Aegon to reunite physically and exchange dialogue in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 66,
+      "basis_legacy_entity_ids": ["b6e1eddd-1c9f-23f7-5ba6-50942783d735", "31c7d058-bdbd-b784-5533-73320a21a65a"],
+      "condition": "Aegon mounts Sunfyre and the two become airborne together in the present timeline.",
+      "exclusions": ["Approaching, touching or mounting a grounded Sunfyre without visible flight, and dreams, visions, memories or recap footage, do not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Flies Sunfyre accurately requires Aegon to mount Sunfyre and become airborne with him in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 169,
+      "basis_legacy_entity_ids": ["31c7d058-bdbd-b784-5533-73320a21a65a", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+      "condition": "Aegon mounts Sunfyre and they become airborne together in the present timeline.",
+      "exclusions": ["Approaching, touching or mounting a grounded Sunfyre without visible flight, and dreams, visions, memories or recap footage, do not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Aegon Flies Again accurately requires Sunfyre and Aegon to become airborne together in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 71,
+      "basis_legacy_entity_ids": ["b6e1eddd-1c9f-23f7-5ba6-50942783d735", "05df4715-65bd-2f1c-fe99-2e0a9653fba9"],
+      "condition": "After Larys's episode-7 departure, Aegon physically reunites with him and explicitly accepts his help or counsel again.",
+      "exclusions": ["A message, memory, dream, sighting without interaction, or physical reunion without Aegon explicitly accepting Larys's help or counsel does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Takes Larys Back accurately requires a physical reunion followed by Aegon's explicit renewed acceptance of Larys's help or counsel." }
+    },
+    {
+      "legacy_signature_beat_id": 73,
+      "basis_legacy_entity_ids": ["05df4715-65bd-2f1c-fe99-2e0a9653fba9", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+      "condition": "After leaving him in episode 7, Larys physically reunites with Aegon and exchanges dialogue with him.",
+      "exclusions": ["A message, memory, dream, distant sighting, or reunion without exchanged dialogue does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Rejoins Aegon accurately requires Larys and Aegon to reunite physically and exchange dialogue after the episode-7 departure." }
+    },
+    {
+      "legacy_signature_beat_id": 186,
+      "basis_legacy_entity_ids": ["b6e1eddd-1c9f-23f7-5ba6-50942783d735", "05df4715-65bd-2f1c-fe99-2e0a9653fba9"],
+      "condition": "After Larys's episode-7 departure, Larys and Aegon physically reunite and exchange dialogue.",
+      "exclusions": ["A message, memory, dream, distant sighting, or reunion without exchanged dialogue does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Road Trip Reunion accurately requires Larys and Aegon to reunite physically and exchange dialogue after the episode-7 departure." }
+    },
+    {
+      "legacy_signature_beat_id": 25,
+      "basis_legacy_entity_ids": ["7856aa97-db30-7245-784d-984f33d04b4d", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4"],
+      "condition": "Baela and Alyn share another unmistakably romantic kiss.",
+      "exclusions": ["A greeting, embrace, near-kiss, dream, vision, memory, or touch without an unmistakably romantic kiss does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Kisses Alyn Again accurately requires Baela and Alyn to share another unmistakably romantic kiss." }
+    },
+    {
+      "legacy_signature_beat_id": 123,
+      "basis_legacy_entity_ids": ["efe00b8c-9fe1-0136-54f3-e152d78a8ec4", "7856aa97-db30-7245-784d-984f33d04b4d"],
+      "condition": "Alyn and Baela share an unmistakably romantic kiss in the present timeline.",
+      "exclusions": ["A greeting, embrace, near-kiss, dream, vision, memory, or touch without an unmistakably romantic kiss does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Kisses Baela accurately requires Alyn and Baela to share an unmistakably romantic kiss in the present timeline." }
+    },
+    {
+      "legacy_signature_beat_id": 35,
+      "basis_legacy_entity_ids": ["b57c8ba1-7151-f57b-dfeb-6881ca6e65be", "6fa86c27-9af6-9c83-c8d8-59ee0b6a842d"],
+      "condition": "Rhaena physically reunites with Sheepstealer and the dragon allows her to approach or remain near him.",
+      "exclusions": ["A dream, vision, memory, distant sighting, report, or encounter in which Sheepstealer avoids or threatens Rhaena does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Sheepstealer Returns accurately requires a physical reunion in which Sheepstealer permits Rhaena to approach or remain nearby." }
+    },
+    {
+      "legacy_signature_beat_id": 36,
+      "basis_legacy_entity_ids": ["b57c8ba1-7151-f57b-dfeb-6881ca6e65be", "6fa86c27-9af6-9c83-c8d8-59ee0b6a842d"],
+      "condition": "Rhaena tries to approach or command Sheepstealer and the dragon visibly avoids, ignores, or threatens her.",
+      "exclusions": ["Rhaena discussing Sheepstealer, failing to find him, or Sheepstealer being absent or unable to respond does not count as visible rejection."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Sheepstealer Rejects accurately requires Rhaena to attempt contact or command and Sheepstealer to visibly refuse it." }
+    },
+    {
+      "legacy_signature_beat_id": 177,
+      "basis_legacy_entity_ids": ["6fa86c27-9af6-9c83-c8d8-59ee0b6a842d", "b57c8ba1-7151-f57b-dfeb-6881ca6e65be"],
+      "condition": "Rhaena tries to command, approach, or reconnect with Sheepstealer and the dragon visibly refuses or threatens her.",
+      "exclusions": ["Rhaena discussing Sheepstealer, failing to find him, or Sheepstealer being absent or unable to respond does not count as visible rejection."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Rejects Rhaena accurately requires Rhaena to attempt contact or command and Sheepstealer to visibly refuse it." }
+    },
+    {
+      "legacy_signature_beat_id": 137,
+      "basis_legacy_entity_ids": ["604d8ab9-48d8-7859-4362-fc92cd46fc05", "1e7ae85e-158a-a679-e8fb-883f08a8b21f"],
+      "condition": "Kat voluntarily agrees to leave immediate danger with Hugh and begins escaping or relocating with him.",
+      "exclusions": ["Discussing departure, being forced or carried, agreeing without beginning to move, or leaving without Hugh does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Leaves With Hugh accurately requires Kat's voluntary agreement and the beginning of their shared escape or relocation." }
+    },
+    {
+      "legacy_signature_beat_id": 188,
+      "basis_legacy_entity_ids": ["1e7ae85e-158a-a679-e8fb-883f08a8b21f", "604d8ab9-48d8-7859-4362-fc92cd46fc05"],
+      "condition": "Kat agrees to leave immediate danger with Hugh and the two begin escaping or relocating together.",
+      "exclusions": ["Discussing departure, Kat being forced or carried, agreeing without beginning to move, or either person leaving alone does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Choose Us accurately requires Kat's agreement and the beginning of Kat and Hugh's shared escape or relocation." }
+    },
+    {
+      "legacy_signature_beat_id": 187,
+      "basis_legacy_entity_ids": ["b3b10757-625e-0013-92ab-7a083d26ce7d", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4"],
+      "condition": "Corlys and Alyn physically reunite after Corlys's kidnapping and exchange dialogue.",
+      "exclusions": ["A message, memory, dream, distant sighting, or reunion without exchanged dialogue does not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Father and Son accurately requires Corlys and Alyn to reunite physically and exchange dialogue after the kidnapping." }
+    }
+  ]
+}

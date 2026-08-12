@@ -34,16 +34,22 @@
  * the WebSocket subscription and preventing memory leaks.
  *
  * PHASE-CHANGE NAVIGATION (the key pattern for multiplayer sync):
- * When the host sets rooms.phase = 'draft', Supabase pushes an UPDATE event
+ * When an authorized room command sets rooms.phase = 'draft', Supabase pushes an UPDATE event
  * to every subscribed client. Each client's subscription callback fires,
  * updating room state in context. Room.tsx has a useEffect watching room.phase,
  * so when it changes to 'draft' everyone navigates to the draft page
  * simultaneously — no polling, no broadcast needed, just a DB write.
  */
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { resolvePlayerReclaim } from '../lib/player-reclaim'
+import {
+  normalizeOperatorCapability,
+  operatorCapabilityStorageKey,
+} from '../lib/operator-capability'
 import { PLAYER_ID_KEY, useGame } from '../context/GameContext'
+import { fetchAllRows } from './fetch-all-rows'
 import type { PlayerRow, RoomRow } from '../types/database'
 
 // One color per player slot. First player (host) gets accent.
@@ -62,66 +68,46 @@ export function useRoom() {
   const { setRoom, setPlayer, setPlayers } = useGame()
 
   /**
-   * Creates a new room + the host player in a safe 3-step sequence.
-   *
-   * THE CHICKEN-AND-EGG PROBLEM:
-   * rooms.host_id FK references players.id, but players.room_id FK references
-   * rooms.id. We can't insert either row first while enforcing both FKs.
-   *
-   * SOLUTION: host_id is nullable. Insert the room first with host_id = null,
-   * then insert the player (room already exists, room_id FK is satisfied), then
-   * update the room's host_id to point at the new player.
-   *
-   * crypto.randomUUID() produces spec-compliant v4 UUIDs — safe to use as PK.
+   * Creates the room, host seat and private operator bearer atomically. The
+   * database resolves the circular room/player foreign keys inside one
+   * transaction and returns the bearer only to this creating call.
    */
   async function createRoom(
     code: string,
     name: string,
     avatarId: string,
-  ): Promise<void> {
-    const playerId = crypto.randomUUID()
+  ): Promise<string> {
+    const { data, error } = await supabase.rpc('create_room_with_host', {
+      p_code: code,
+      p_name: name,
+      p_avatar_id: avatarId,
+      p_color: PLAYER_COLORS[0],
+    })
+    if (error) throw new Error(`Could not create room: ${error.message}`)
 
-    // Step 1: Insert room with host_id = null (nullable after schema migration)
-    const { data: roomData, error: roomError } = await supabase
-      .from('rooms')
-      .insert({ code, host_id: null, phase: 'lobby', current_pick: 0 })
-      .select()
-      .single()
-
-    if (roomError) throw new Error(`Could not create room: ${roomError.message}`)
-
-    // Step 2: Insert the host player — room row exists so room_id FK is satisfied
-    const { data: playerData, error: playerError } = await supabase
-      .from('players')
-      .insert({
-        id: playerId,
-        room_id: roomData.id,
-        name: name.trim(),
-        avatar_id: avatarId,
-        color: PLAYER_COLORS[0],
-        is_host: true,
-      })
-      .select()
-      .single()
-
-    if (playerError) throw new Error(`Could not create player: ${playerError.message}`)
-
-    // Step 3: Update room to point host_id at the now-existing player
-    const { data: updatedRoom, error: updateError } = await supabase
-      .from('rooms')
-      .update({ host_id: playerId })
-      .eq('id', roomData.id)
-      .select()
-      .single()
-
-    if (updateError) throw new Error(`Could not set room host: ${updateError.message}`)
+    const result = data as {
+      room?: RoomRow
+      player?: PlayerRow
+      operator_capability?: unknown
+    } | null
+    const roomData = result?.room
+    const playerData = result?.player
+    const capability = normalizeOperatorCapability(result?.operator_capability)
+    if (!roomData || !playerData || playerData.room_id !== roomData.id
+        || roomData.host_id !== playerData.id || !playerData.is_host || !capability) {
+      throw new Error('Could not create room: the database returned an invalid host session')
+    }
 
     // Persist to localStorage so the session survives page refreshes
-    localStorage.setItem(PLAYER_ID_KEY, playerData.id)
+    try { localStorage.setItem(PLAYER_ID_KEY, playerData.id) } catch { /* current tab still owns context */ }
+    try {
+      localStorage.setItem(operatorCapabilityStorageKey(roomData.id), capability)
+    } catch { /* the destination fragment hands the bearer to the app-shell */ }
 
-    setRoom(updatedRoom)
+    setRoom(roomData)
     setPlayer(playerData)
     setPlayers([playerData])
+    return capability
   }
 
   /**
@@ -131,7 +117,7 @@ export function useRoom() {
   async function joinRoom(
     code: string,
     name: string,
-    avatarId: string,
+    avatarId?: string | null,
   ): Promise<void> {
     const { data: roomData, error: roomError } = await supabase
       .from('rooms')
@@ -141,25 +127,29 @@ export function useRoom() {
 
     if (roomError || !roomData) throw new Error('Room not found. Check the code and try again.')
 
-    const { data: existingPlayers } = await supabase
+    const { data: existingPlayers, error: playersError } = await supabase
       .from('players')
       .select()
       .eq('room_id', roomData.id)
+
+    if (playersError) throw new Error(`Could not load room seats: ${playersError.message}`)
 
     // SEAT RECLAIM: a player whose exact name already exists in this room IS
     // that player — adopt the existing row instead of inserting a duplicate.
     // This is how a phone that lost its stored identity (cleared storage,
     // borrowed device, mid-game hiccup) gets back into a running game with
     // their draft picks, bingo card and team intact: rejoin with the same
-    // name. Names are unique among six friends; a griefer would need both the
-    // room code and a victim's exact name.
-    const reclaim = (existingPlayers ?? []).find(
-      (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase(),
-    )
-    if (reclaim) {
-      localStorage.setItem(PLAYER_ID_KEY, reclaim.id)
+    // name. A griefer would need both the room code and a victim's exact name;
+    // duplicate exact names are ambiguous and are never chosen automatically.
+    const reclaim = resolvePlayerReclaim(existingPlayers ?? [], name)
+    if (reclaim.status === 'ambiguous') {
+      throw new Error('More than one seat uses that exact name. Ask the host which seat is yours.')
+    }
+    if (reclaim.status === 'match') {
+      const reclaimedPlayer = reclaim.player
+      localStorage.setItem(PLAYER_ID_KEY, reclaimedPlayer.id)
       setRoom(roomData)
-      setPlayer(reclaim)
+      setPlayer(reclaimedPlayer)
       setPlayers(existingPlayers ?? [])
       return
     }
@@ -169,6 +159,8 @@ export function useRoom() {
         'This game has already started. To reclaim your seat, join with the exact name you used before.',
       )
     }
+
+    if (!avatarId) throw new Error('Pick an avatar')
 
     const usedColors = (existingPlayers ?? []).map((p) => p.color)
     const color = PLAYER_COLORS.find((c) => !usedColors.includes(c)) ?? PLAYER_COLORS[0]
@@ -199,20 +191,88 @@ export function useRoom() {
 
 // ─── Realtime: single room row ────────────────────────────────────────────────
 
+export interface RoomSubscriptionState {
+  room: RoomRow | null
+  isLoading: boolean
+  syncError: string | null
+  retrySync: () => void
+}
+
+const ROOM_REALTIME_STABILIZATION_MS = 5_000
+
 /**
- * Subscribes to UPDATE events on the specific rooms row. Returns room from
- * context so callers have a single source of truth.
+ * Subscribes to the canonical room row before hydrating it. Every live update
+ * advances a revision, so a fetch that overlaps a phase change is retried
+ * instead of replacing the newer row. A bounded reconciliation also covers a
+ * cold Realtime worker that reports SUBSCRIBED before it begins forwarding WAL.
  *
- * We only listen for UPDATE (not INSERT/DELETE) because:
- *   - INSERT: we just created the room, we already have it in state
- *   - DELETE: out of scope for now (we'd redirect to home)
- *   - UPDATE: this is what carries phase changes, draft_order, etc.
+ * We only listen for UPDATE (not INSERT/DELETE) because the room already exists
+ * before this hook mounts. A missing hydration row is treated as a sync error.
  */
-export function useRoomSubscription(roomId: string | undefined) {
+export function useRoomSubscription(roomId: string | undefined): RoomSubscriptionState {
   const { room, setRoom } = useGame()
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
+  const activeScopeRef = useRef<string | null>(null)
+
+  const requestedScope = roomId ?? null
+  const isLoading = loadingState || (
+    requestedScope != null && requestedScope !== activeScopeRef.current
+  )
+  const syncError = requestedScope != null && requestedScope === activeScopeRef.current
+    ? syncErrorState
+    : null
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId) {
+      activeScopeRef.current = null
+      setLoadingState(false)
+      setSyncErrorState(null)
+      return
+    }
+
+    activeScopeRef.current = roomId
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+    setLoadingState(true)
+    setSyncErrorState(null)
+
+    const hydrateRoom = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const { data, error } = await supabase
+            .from('rooms')
+            .select()
+            .eq('id', roomId)
+            .maybeSingle()
+          if (error) throw error
+          if (!data) throw new Error('The room no longer exists.')
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          setRoom(data as RoomRow)
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Room record load failed:', loadError)
+        setSyncErrorState('The shared room record could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
 
     const channel = supabase
       .channel(`room-row:${roomId}`)
@@ -225,27 +285,51 @@ export function useRoomSubscription(roomId: string | undefined) {
           filter: `id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           setRoom(payload.new as RoomRow)
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateRoom()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateRoom(false)
+          }, ROOM_REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          setSyncErrorState('The shared room feed could not connect to Realtime.')
+          setLoadingState(false)
+        }
+      })
 
-    // Cleanup: removes the WebSocket subscription when the component unmounts.
-    // Without this, navigating away from Room.tsx would leave a dangling channel
-    // that continues receiving events and calling setState on an unmounted component.
     return () => {
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId, setRoom])
+  }, [roomId, retryVersion, setRoom])
 
-  return room
+  const retrySync = useCallback(() => {
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
+
+  return { room, isLoading, syncError, retrySync }
 }
 
 // ─── Realtime: all players in a room ─────────────────────────────────────────
 
 /**
- * Subscribes to INSERT/UPDATE/DELETE on the players table for this room.
- * Also does an initial fetch to catch anyone who joined before we subscribed.
+ * Subscribes to INSERT/UPDATE/DELETE on the players table for this room, then
+ * publishes one complete canonical snapshot.
  *
  * WHY THE INITIAL FETCH?
  * Supabase Realtime doesn't replay past events — subscribing only gets you
@@ -253,25 +337,108 @@ export function useRoomSubscription(roomId: string | undefined) {
  * between component mount and the WebSocket connecting, we'd miss their INSERT.
  * The initial fetch closes that gap.
  *
- * WHY SUBSCRIBE BEFORE FETCHING?
- * We set up the channel first, then do the fetch. This means the subscription
- * is listening by the time the fetch completes. Any INSERT that races between
- * "subscribe" and "fetch response arriving" will be caught by both — the dedup
- * guard (prev.some(p => p.id === newId)) prevents duplicate entries.
+ * WHY WAIT FOR SUBSCRIBED AND REVISION-CHECK THE FETCH?
+ * Calling subscribe() only starts the handshake. Hydration waits for the ready
+ * status, and every live event advances a revision. If a fetch overlaps any
+ * INSERT, UPDATE or DELETE, that snapshot is discarded and retried. Replacing
+ * the final snapshot is therefore safe; a stale merge cannot resurrect a seat
+ * deleted during hydration.
  *
- * DELETE NOTE: payload.old.id is only populated if the table has
- * REPLICA IDENTITY FULL set in Postgres. Otherwise payload.old.id is null
- * and we can't remove the row. This is a Postgres config concern, not a
- * code problem.
+ * DELETE NOTE: a default replica identity carries the primary key but not the
+ * deleted row's room_id, so a room-filtered DELETE subscription never matches.
+ * Deletes use the small global stream, advance the revision, and remove only a
+ * primary key already present in this room's roster.
  */
-export function usePlayersSubscription(roomId: string | undefined) {
+export interface PlayersSubscriptionState {
+  players: PlayerRow[]
+  isLoading: boolean
+  syncError: string | null
+  retrySync: () => void
+}
+
+const ROSTER_REALTIME_STABILIZATION_MS = 5_000
+
+export function usePlayersSubscription(roomId: string | undefined): PlayersSubscriptionState {
   const { players, setPlayers } = useGame()
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
+  const activeScopeRef = useRef<string | null>(null)
+
+  const requestedScope = roomId ?? null
+  const isLoading = loadingState || (
+    requestedScope != null && requestedScope !== activeScopeRef.current
+  )
+  const syncError = requestedScope != null && requestedScope === activeScopeRef.current
+    ? syncErrorState
+    : null
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId) {
+      activeScopeRef.current = null
+      setLoadingState(false)
+      setSyncErrorState(null)
+      return
+    }
+
+    activeScopeRef.current = roomId
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+    setLoadingState(true)
+    setSyncErrorState(null)
+
+    const comparePlayers = (left: PlayerRow, right: PlayerRow) => (
+      left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id)
+    )
+    const upsertPlayer = (row: PlayerRow) => {
+      setPlayers((current) => {
+        const existingIndex = current.findIndex((player) => player.id === row.id)
+        const next = existingIndex === -1
+          ? [...current, row]
+          : current.map((player, index) => index === existingIndex ? row : player)
+        return next.sort(comparePlayers)
+      })
+    }
+
+    const hydrateRoster = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const result = await fetchAllRows<PlayerRow>((from, to) => supabase
+            .from('players')
+            .select()
+            .eq('room_id', roomId)
+            .order('created_at')
+            .order('id')
+            .range(from, to))
+          if (result.error) throw result.error
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          setPlayers(result.data ?? [])
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Player roster load failed:', loadError)
+        setSyncErrorState('The player roster could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
 
     const channel = supabase
-      .channel(`players:${roomId}`)
+      .channel(`player-roster:${roomId}`)
       .on(
         'postgres_changes',
         {
@@ -281,12 +448,9 @@ export function usePlayersSubscription(roomId: string | undefined) {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
-          setPlayers((prev) => {
-            // Dedup: if the initial fetch and INSERT event arrive close together,
-            // we might have the same player row from both paths
-            if (prev.some((p) => p.id === (payload.new as PlayerRow).id)) return prev
-            return [...prev, payload.new as PlayerRow]
-          })
+          if (disposed) return
+          liveRevision += 1
+          upsertPlayer(payload.new as PlayerRow)
         },
       )
       .on(
@@ -298,11 +462,9 @@ export function usePlayersSubscription(roomId: string | undefined) {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
-          setPlayers((prev) =>
-            prev.map((p) =>
-              p.id === (payload.new as PlayerRow).id ? (payload.new as PlayerRow) : p,
-            ),
-          )
+          if (disposed) return
+          liveRevision += 1
+          upsertPlayer(payload.new as PlayerRow)
         },
       )
       .on(
@@ -311,45 +473,47 @@ export function usePlayersSubscription(roomId: string | undefined) {
           event: 'DELETE',
           schema: 'public',
           table: 'players',
-          filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const deletedId = (payload.old as Partial<PlayerRow>).id
           if (deletedId) {
-            setPlayers((prev) => prev.filter((p) => p.id !== deletedId))
+            setPlayers((current) => current.filter((player) => player.id !== deletedId))
           }
         },
       )
-      .subscribe()
-
-    // Initial fetch runs AFTER the channel is set up so we don't miss any
-    // events that fire between mounting and the channel going live.
-    //
-    // We merge with the functional updater instead of overwriting so that
-    // any player INSERTs that arrived via the subscription before this fetch
-    // completes are not silently dropped.
-    supabase
-      .from('players')
-      .select()
-      .eq('room_id', roomId)
-      .then(({ data }) => {
-        if (!data) return
-        setPlayers((prev) => {
-          // Build a map of id → row from the fetched snapshot
-          const fetched = new Map(data.map((p) => [p.id, p]))
-          // Merge: keep any subscription-added players not in the fetch snapshot,
-          // update existing players with the fetched (authoritative) row
-          const merged = prev.map((p) => fetched.get(p.id) ?? p)
-          const mergedIds = new Set(merged.map((p) => p.id))
-          data.forEach((p) => { if (!mergedIds.has(p.id)) merged.push(p) })
-          return merged
-        })
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateRoster()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateRoster(false)
+          }, ROSTER_REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          setSyncErrorState('The player roster feed could not connect to Realtime.')
+          setLoadingState(false)
+        }
       })
 
     return () => {
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId, setPlayers])
+  }, [roomId, retryVersion, setPlayers])
 
-  return players
+  const retrySync = useCallback(() => {
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
+
+  return { players, isLoading, syncError, retrySync }
 }

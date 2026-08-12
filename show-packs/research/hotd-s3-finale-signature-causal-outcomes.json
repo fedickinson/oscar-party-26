@@ -1,0 +1,40 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "causal-information-and-plan-outcomes",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "causal-information-and-plan-outcomes",
+      "beat_ids": [28, 31, 32, 38, 78, 89, 130, 157],
+      "conditions_by_beat_id": {
+        "28": "Mysaria gives specific intelligence that directly causes Rhaenyra or another Black leader to change a plan or take action.",
+        "31": "Mysaria persuades Rhaenyra to take a course of action Rhaenyra was resisting earlier in the same scene.",
+        "32": "A named character gives Rhaenyra concrete evidence that Mysaria concealed, manipulated, or misrepresented something important.",
+        "38": "Rhaena knowingly makes a choice that immediately creates a new danger or materially worsens an existing crisis.",
+        "78": "A plan proposed by Tyland directly gets him and/or Aegon out of an immediate danger.",
+        "89": "Ormund reveals or executes a deception, ambush, planted agent, or prearranged scheme against an opposing force or named character.",
+        "130": "A named Black-aligned character directly discovers that Ulf has agreed to work with Ormund.",
+        "157": "Rhaenyra changes or abandons a plan after Torrhen raises a financial objection."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "28": ["45350e4e-503e-9198-4559-2555a68410f4", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+        "31": ["45350e4e-503e-9198-4559-2555a68410f4", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+        "32": ["45350e4e-503e-9198-4559-2555a68410f4", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"],
+        "38": ["b57c8ba1-7151-f57b-dfeb-6881ca6e65be"],
+        "78": ["2de4bab9-cb97-2069-98ec-df7c5088d457", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+        "89": ["9fa107b0-d130-0e04-8dbe-6a465931b0fd"],
+        "130": ["13da33f8-5825-ad92-054a-5f2215c0bb2b", "9fa107b0-d130-0e04-8dbe-6a465931b0fd"],
+        "157": ["a79ee03a-a87b-852b-72be-6c2f748d8347", "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5"]
+      },
+      "exclusions": [
+        "Information, advice, evidence, an objection, a plan, a choice, or a pre-existing scheme alone does not count unless the preserved discovery, persuasion, change, escape, danger, or execution outcome also occurs.",
+        "Temporal sequence alone does not prove causation; the episode must directly connect the named input or choice to the preserved response or consequence.",
+        "A proxy account, off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or hypothetical outcome does not count."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each title honestly names an information, persuasion, evidence, danger, deception, discovery, escape-plan, or objection outcome; settlement requires the preserved causal link rather than mere sequence."
+    }
+  ]
+}

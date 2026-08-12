@@ -30,7 +30,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Shuffle } from 'lucide-react'
+import { RotateCcw, Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useConfidence } from '../hooks/useConfidence'
@@ -68,7 +68,7 @@ export default function Confidence() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [showExplainer, setShowExplainer] = useState(true)
 
-  useRoomSubscription(room?.id)
+  const roomSync = useRoomSubscription(room?.id)
 
   const {
     categories,
@@ -78,19 +78,21 @@ export default function Confidence() {
     isComplete,
     myHasSubmitted,
     isLoading,
+    syncError,
     assignNominee,
     assignConfidence,
     setLocalPicksDirectly,
     submitPicks,
     lockPicks,
+    retrySync,
   } = useConfidence(room?.id)
 
   // Phase navigation
   useEffect(() => {
-    if (!room || !code) return
+    if (!room || !code || roomSync.isLoading || roomSync.syncError != null) return
     if (room.phase === 'live') navigate(`/room/${code}/live`)
     if (room.phase === 'lobby') navigate(`/room/${code}`)
-  }, [room?.phase, code, navigate])
+  }, [room?.phase, roomSync.isLoading, roomSync.syncError, code, navigate])
 
   // Guard: no session
   useEffect(() => {
@@ -100,6 +102,10 @@ export default function Confidence() {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function handleSubmit() {
+    if (roomSync.isLoading || roomSync.syncError != null) {
+      setSubmitError('The shared room record must synchronize before picks can be submitted.')
+      return
+    }
     setIsSubmitting(true)
     setSubmitError(null)
     try {
@@ -132,6 +138,10 @@ export default function Confidence() {
   }
 
   async function handleLock() {
+    if (roomSync.isLoading || roomSync.syncError != null) {
+      setSubmitError('The shared room record must synchronize before the show can start.')
+      return
+    }
     setIsLocking(true)
     try {
       await lockPicks()
@@ -140,9 +150,41 @@ export default function Confidence() {
     }
   }
 
+  const sharedSyncError = roomSync.syncError ?? syncError
+
+  if (!loading && room && player && sharedSyncError) {
+    return (
+      <div className="mx-auto flex min-h-[80vh] max-w-md items-start px-4 py-6">
+        <section
+          className="material-stone relief-inset w-full rounded-2xl p-4"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p className="font-display text-xs uppercase tracking-widest text-[var(--t-pending)]">
+            Prediction ledger unavailable
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+            {sharedSyncError} Submitting or closing picks stays disabled until the room record is current.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              roomSync.retrySync()
+              retrySync()
+            }}
+            className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            Try again
+          </button>
+        </section>
+      </div>
+    )
+  }
+
   // ── Loading ────────────────────────────────────────────────────────────────
 
-  if (loading || isLoading) {
+  if (loading || roomSync.isLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />

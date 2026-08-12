@@ -9,6 +9,7 @@ import {
 import type {
   CategoryRow,
   ConfidencePickRow,
+  ConvictionPickRow,
   DraftEntityRow,
   DraftPickRow,
   NomineeRow,
@@ -82,6 +83,13 @@ const confidencePick = (
   nominee_id: nomineeId,
   confidence,
   is_correct: isCorrect,
+  created_at: '2026-03-15T00:00:00Z',
+})
+
+const convictionPick = (playerId: string, beatId: number): ConvictionPickRow => ({
+  room_id: 'room-1',
+  player_id: playerId,
+  beat_id: beatId,
   created_at: '2026-03-15T00:00:00Z',
 })
 
@@ -163,6 +171,76 @@ describe('findDraftPointsForWinner', () => {
       1, 'nom-person', categories, nominees, entities, [draftPick('p1', 'e-person')],
     )
     expect(result).toEqual({ playerId: 'p1', points: 12, entityId: 'e-person' })
+  })
+
+  it('uses stable versioned identity when display names collide', () => {
+    const versionedWinner = nominee('nom-versioned', {
+      name: 'The Dragon',
+      film_name: 'The Dragon Film',
+      show_pack_id: 'pack-finale',
+      pack_key: 'the-dragon-rider',
+    })
+    const entities = [
+      entity('e-wrong', {
+        name: 'The Dragon',
+        show_pack_id: 'pack-finale',
+        pack_key: 'the-dragon-decoy',
+      }),
+      entity('e-right', {
+        name: 'The Dragon',
+        show_pack_id: 'pack-finale',
+        pack_key: 'the-dragon-rider',
+      }),
+    ]
+    const result = findDraftPointsForWinner(
+      1,
+      versionedWinner.id,
+      categories,
+      [versionedWinner],
+      entities,
+      [draftPick('wrong-player', 'e-wrong'), draftPick('right-player', 'e-right')],
+    )
+    expect(result).toEqual({ playerId: 'right-player', points: 12, entityId: 'e-right' })
+  })
+
+  it('pays nobody when a versioned identity is ambiguous', () => {
+    const versionedWinner = nominee('nom-versioned', {
+      name: 'The Dragon',
+      film_name: 'The Dragon Film',
+      show_pack_id: 'pack-finale',
+      pack_key: 'the-dragon-rider',
+    })
+    const entities = [
+      entity('e-first', {
+        name: 'The Dragon',
+        show_pack_id: 'pack-finale',
+        pack_key: 'the-dragon-rider',
+      }),
+      entity('e-second', {
+        name: 'The Dragon',
+        show_pack_id: 'pack-finale',
+        pack_key: 'the-dragon-rider',
+      }),
+      entity('e-film-fallback', {
+        name: 'The Dragon Film',
+        type: 'film',
+        film_name: 'The Dragon Film',
+        show_pack_id: 'pack-finale',
+        pack_key: 'the-dragon-film',
+      }),
+    ]
+    expect(findDraftPointsForWinner(
+      1,
+      versionedWinner.id,
+      categories,
+      [versionedWinner],
+      entities,
+      [
+        draftPick('first-player', 'e-first'),
+        draftPick('second-player', 'e-second'),
+        draftPick('film-player', 'e-film-fallback'),
+      ],
+    )).toEqual({ playerId: null, points: 0, entityId: null })
   })
 
   it('rounds a half-point multiplier up', () => {
@@ -308,5 +386,36 @@ describe('computeLeaderboard', () => {
 
   it('returns an empty board for no players', () => {
     expect(computeLeaderboard([], [], [], [], [], [], new Map())).toEqual([])
+  })
+
+  it('moves scarcity to conviction and gives the identity draft no passive score', () => {
+    const declared = category(1, 35, {
+      winner_id: 'nom-1',
+      source_signature_beat_id: 10,
+    })
+    const board = computeLeaderboard(
+      players,
+      [],
+      [draftPick('p2', 'e1')],
+      [entity('e1', { name: 'Rhaenyra' })],
+      [declared],
+      [nominee('nom-1', { name: 'Rhaenyra' })],
+      new Map(),
+      [convictionPick('p1', 10)],
+      'conviction_portfolio',
+    )
+
+    expect(board.find((entry) => entry.player.id === 'p1')).toMatchObject({
+      confidenceScore: 35,
+      ensembleScore: 0,
+      totalScore: 35,
+      correctPickCount: 1,
+      topCorrectPick: 35,
+    })
+    expect(board.find((entry) => entry.player.id === 'p2')).toMatchObject({
+      confidenceScore: 0,
+      ensembleScore: 0,
+      totalScore: 0,
+    })
   })
 })

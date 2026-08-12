@@ -1,0 +1,34 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "direct-combat-actions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "direct-combat-actions",
+      "beat_ids": [131, 133, 141, 145, 154],
+      "conditions_by_beat_id": {
+        "131": "Ulf follows Ormund's direction and uses Silverwing to harm or obstruct the Blacks.",
+        "133": "Ulf deliberately commands Silverwing to attack a Black-aligned person, force, dragon, or position.",
+        "141": "Roddy personally leads or gives the order for a visible charge or major attack by his northern troops.",
+        "145": "Roddy is definitively killed while personally advancing, charging, or fighting in the front line.",
+        "154": "Black Aly personally delivers a fatal blow to a named enemy who could otherwise be captured or spared."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "131": ["13da33f8-5825-ad92-054a-5f2215c0bb2b", "9fa107b0-d130-0e04-8dbe-6a465931b0fd", "5267a749-ae90-a398-5677-74efd428a85d"],
+        "133": ["13da33f8-5825-ad92-054a-5f2215c0bb2b", "5267a749-ae90-a398-5677-74efd428a85d"],
+        "141": ["2395ce7b-d731-6554-93c8-4f2359968ae7"],
+        "145": ["2395ce7b-d731-6554-93c8-4f2359968ae7"],
+        "154": ["ff493811-9199-ddd5-71f1-0ba7cbede994"]
+      },
+      "exclusions": [
+        "Preparation, movement toward battle, a general threat, ordinary presence, an attempted strike without the preserved result, or another combatant's action does not count.",
+        "A proxy fighter or dragon does not count unless the preserved condition explicitly names the owner's command relationship to that force or dragon.",
+        "An off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or ambiguous aftermath does not count."
+      ],
+      "adjudication": { "proxies": "explicit_only", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each title honestly names a direct attack, charge, front-line death, or fatal blow; settlement requires the preserved actor, command relationship, target, battlefield state, and result."
+    }
+  ]
+}

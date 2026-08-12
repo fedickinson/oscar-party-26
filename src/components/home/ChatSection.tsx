@@ -9,7 +9,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Send, MessageSquare, ChevronDown } from 'lucide-react'
+import { AlertTriangle, BookOpen, Send, MessageSquare, ChevronDown, RefreshCw } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useChat } from '../../hooks/useChat'
 import Avatar from '../Avatar'
@@ -19,7 +19,7 @@ import PlayerProfileModal from './PlayerProfileModal'
 import { AI_COMPANIONS, COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, getCompanionById } from '../../data/ai-companions'
 import { getAvatarById } from '../../lib/avatar-utils'
 import { usePendingCompanions, addPendingCompanion, removePendingCompanion } from '../../hooks/companionTypingStore'
-import { supabase } from '../../lib/supabase'
+import { acquireCompanionTypingChannel } from '../../hooks/companionTypingChannel'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -108,9 +108,11 @@ function SingleCompanionTyping({ companionId, onProfile }: { companionId: string
       className="flex gap-2 items-end py-1"
     >
       <motion.button
+        type="button"
         whileTap={{ scale: 0.92 }}
         onClick={() => onProfile(c.id)}
         className="flex-shrink-0 mb-0.5"
+        aria-label={`Open ${c.name} profile`}
       >
         <CompanionAvatar companionId={c.id} size="xl" />
       </motion.button>
@@ -155,8 +157,9 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   // a fresh open should always show the room talking.
   const [collapsed, setCollapsed] = useState(false)
   const { room, player, players } = useGame()
-  const { messages, sendMessage, isLoading } = useChat(room?.id)
+  const { messages, sendMessage, isLoading, syncError, retrySync } = useChat(room?.id)
   const [input, setInput] = useState('')
+  const [sendError, setSendError] = useState<string | null>(null)
   const [profileCompanionId, setProfileCompanionId] = useState<string | null>(null)
   const [profilePlayerId, setProfilePlayerId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -177,22 +180,24 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   // Subscribe to host-broadcast typing events so guests see the same indicators
   useEffect(() => {
     if (!room?.id) return
-    const channel = supabase
-      .channel(`room-${room.id}-companion-typing`)
-      .on('broadcast', { event: 'companion_typing' }, ({ payload }) => {
+    const channel = acquireCompanionTypingChannel(
+      room.id,
+      (payload) => {
         if (payload?.typing) addPendingCompanion(payload.id)
         else removePendingCompanion(payload.id)
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
+      },
+    )
+    return () => { channel.release() }
   }, [room?.id])
 
   // All typing indicators to show — pending delayed companions first (in natural order),
   // then the intro companion if not already covered, deduplicated.
-  const typingCompanionIds = [
-    ...INTRO_COMPANION_IDS.filter((id) => pendingCompanionIds.includes(id)),
-    ...(nextTypingCompanionId && !pendingCompanionIds.includes(nextTypingCompanionId) ? [nextTypingCompanionId] : []),
-  ]
+  const typingCompanionIds = isLoading || syncError
+    ? []
+    : [
+        ...INTRO_COMPANION_IDS.filter((id) => pendingCompanionIds.includes(id)),
+        ...(nextTypingCompanionId && !pendingCompanionIds.includes(nextTypingCompanionId) ? [nextTypingCompanionId] : []),
+      ]
 
   const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
@@ -226,9 +231,12 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   async function handleSend() {
     const text = input.trim()
     if (!text || !player) return
+    setSendError(null)
     const { error } = await sendMessage(player.id, text)
     if (!error) {
       setInput('')
+    } else {
+      setSendError(error.message)
     }
     inputRef.current?.focus()
   }
@@ -352,15 +360,20 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   <div className="flex-shrink-0 mb-0.5">
                     {isCompanion ? (
                       <motion.button
+                        type="button"
                         whileTap={{ scale: 0.92 }}
                         onClick={() => setProfileCompanionId(msg.player_id)}
+                        aria-label={`Open ${senderName} profile`}
                       >
                         <CompanionAvatar companionId={msg.player_id} size="xl" />
                       </motion.button>
                     ) : (
                       <motion.button
+                        type="button"
                         whileTap={{ scale: 0.92 }}
                         onClick={() => setProfilePlayerId(msg.player_id)}
+                        className="flex h-11 w-11 items-center justify-center"
+                        aria-label={`Open ${senderName} profile`}
                       >
                         <Avatar avatarId={avatarId} size="md" />
                       </motion.button>
@@ -443,6 +456,28 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
 
       {/* Input bar */}
       {!collapsed && (
+      <>
+      {(syncError || sendError) && (
+        <div className="mx-3 mt-2 flex items-start gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2" role="alert">
+          <AlertTriangle size={14} className="mt-0.5 flex-shrink-0 text-[var(--t-pending)]" />
+          <p className="min-w-0 flex-1 text-xs leading-relaxed text-[var(--t-text-muted)]">
+            {syncError ?? sendError}
+          </p>
+          {syncError && (
+            <button
+              type="button"
+              onClick={() => {
+                setSendError(null)
+                retrySync()
+              }}
+              className="inline-flex min-h-11 flex-shrink-0 items-center gap-1.5 text-xs font-semibold text-[var(--t-pending)]"
+            >
+              <RefreshCw size={13} />
+              Retry
+            </button>
+          )}
+        </div>
+      )}
       <div className="border-t border-white/10 px-3 py-2 flex gap-2 items-center">
         <input
           ref={inputRef}
@@ -450,20 +485,23 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Say something..."
+          placeholder={isLoading ? 'Synchronizing chat...' : syncError ? 'Chat unavailable' : 'Say something...'}
           maxLength={280}
-          style={{ fontSize: 16 }}
-          className="flex-1 bg-white/8 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/35 outline-none focus:border-accent/50 transition-colors"
+          disabled={isLoading || syncError != null}
+          className="flex-1 rounded-xl border border-white/10 bg-white/8 px-3 py-2 text-[length:var(--t-type-input)] text-white placeholder-white/35 outline-none transition-colors focus:border-accent/50"
         />
         <motion.button
+          type="button"
           whileTap={{ scale: 0.92 }}
           onClick={handleSend}
-          disabled={!input.trim()}
-          className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-opacity"
+          disabled={!input.trim() || isLoading || syncError != null}
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-accent/20 transition-opacity disabled:opacity-40"
+          aria-label="Send chat message"
         >
           <Send size={16} className="text-accent" />
         </motion.button>
       </div>
+      </>
       )}
 
       {/* Companion profile modal */}

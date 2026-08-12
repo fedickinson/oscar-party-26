@@ -19,6 +19,7 @@
 
 import { tallyEntityPoints } from './night-awards'
 import type { PlayerAward } from './night-awards'
+import { resolveEmbeddedDraftEntityPortrait } from './draft-portrait'
 import { checkBingo, countBingos, FREE_CENTER_INDEX } from './bingo-utils'
 import { getCompanionById, isCompanionId } from '../data/ai-companions'
 import { companionImage, getLibraryImage } from '../data/image-library'
@@ -43,6 +44,7 @@ import type {
 
 export interface RosterEntry {
   name: string
+  portrait?: { src: string; alt: string }
   /** 'person' is a character, 'film' is a dragon in the HotD seed. */
   kind: 'character' | 'dragon'
   /** 1-based for display. pick_number is 0-based in the database. */
@@ -273,6 +275,7 @@ export function buildPlayerRecap(args: BuildPlayerRecapArgs): PlayerRecapData {
     .filter((t) => t.ownerId === player.id)
     .map((t) => ({
       name: t.entity.name,
+      portrait: resolveEmbeddedDraftEntityPortrait(t.entity, nominees, imageSources),
       kind: t.entity.type === 'film' ? ('dragon' as const) : ('character' as const),
       pickNumber: (t.pickNumber ?? 0) + 1,
       round: t.round ?? 0,

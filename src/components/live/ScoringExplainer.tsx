@@ -10,6 +10,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Grid3x3, Swords, Target, Trophy, Users } from 'lucide-react'
+import type { GameModel } from '../../types/database'
 
 interface ScoringSection {
   icon: ReactNode
@@ -45,8 +46,30 @@ const SECTIONS: ScoringSection[] = [
   },
 ]
 
-export default function ScoringExplainer() {
+const CONVICTION_SECTIONS: ScoringSection[] = [
+  {
+    icon: <Target size={14} className="flex-shrink-0 text-[var(--t-personal-text)]" />,
+    label: 'Conviction',
+    description: 'Your twelve belief slots can back any authored beat on the board.',
+    detail: 'A true beat pays its authored pot. One believer receives the full amount; a crowd splits it equally, with any indivisible remainder left unawarded. Your dragon is identity, not passive score.',
+  },
+  {
+    icon: <Grid3x3 size={14} className="flex-shrink-0 text-[var(--t-text-muted)]" />,
+    label: 'Bingo',
+    description: 'Every approved square scores. Rarer squares score more.',
+    detail: 'A square pays 1, 2, 3 or 5 points by likelihood. Completed rows, columns and diagonals add line bonuses.',
+  },
+  {
+    icon: <Trophy size={14} className="flex-shrink-0 text-[var(--t-personal-text)]" />,
+    label: 'Total Score',
+    description: 'Conviction and Bingo share one leaderboard.',
+    detail: 'Ties break on conviction score, then correct beliefs, then the largest belief payout that landed.',
+  },
+]
+
+export default function ScoringExplainer({ gameModel = 'legacy_ensemble' }: { gameModel?: GameModel }) {
   const [isOpen, setIsOpen] = useState(false)
+  const sections = gameModel === 'conviction_portfolio' ? CONVICTION_SECTIONS : SECTIONS
 
   return (
     <div className="relief-glass overflow-hidden">
@@ -81,7 +104,7 @@ export default function ScoringExplainer() {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/8">
-              {SECTIONS.map((section, i) => (
+              {sections.map((section, i) => (
                 <motion.div
                   key={section.label}
                   initial={{ opacity: 0, y: 4 }}

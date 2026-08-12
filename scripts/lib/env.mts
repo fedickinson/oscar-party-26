@@ -28,6 +28,8 @@ export interface SupabaseConfig {
   target: Target
   url: string
   anonKey: string
+  /** Required by protected operator writes such as settlement. Never exposed to Vite. */
+  serviceKey?: string
   /** Only set for the remote target, and only when .env.local carries it. */
   anthropicKey?: string
 }
@@ -47,8 +49,19 @@ function parseEnvFile(path: URL): Record<string, string> {
   return out
 }
 
+/** Operator-only model credential. Process environment wins over .env.local. */
+export function anthropicOperatorKey(): string | undefined {
+  if (process.env.ANTHROPIC_API_KEY?.trim()) return process.env.ANTHROPIC_API_KEY.trim()
+  try {
+    return parseEnvFile(new URL('../../.env.local', import.meta.url)).ANTHROPIC_API_KEY
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    throw error
+  }
+}
+
 /** Reads the running stack's keys rather than hardcoding the demo JWTs. */
-function localConfig(): { url: string; anonKey: string } {
+function localConfig(): { url: string; anonKey: string; serviceKey: string } {
   let status: string
   try {
     status = execFileSync('supabase', ['status', '-o', 'json'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
@@ -59,7 +72,7 @@ function localConfig(): { url: string; anonKey: string } {
     )
   }
   const parsed = JSON.parse(status) as Record<string, string>
-  return { url: parsed.API_URL, anonKey: parsed.ANON_KEY }
+  return { url: parsed.API_URL, anonKey: parsed.ANON_KEY, serviceKey: parsed.SERVICE_ROLE_KEY }
 }
 
 export function supabaseConfig(defaultTarget: Target): SupabaseConfig {
@@ -70,9 +83,9 @@ export function supabaseConfig(defaultTarget: Target): SupabaseConfig {
   const target = requested ?? defaultTarget
 
   if (target === 'local') {
-    const { url, anonKey } = localConfig()
+    const { url, anonKey, serviceKey } = localConfig()
     announce(target, url)
-    return { target, url, anonKey }
+    return { target, url, anonKey, serviceKey }
   }
 
   const env = parseEnvFile(new URL('../../.env.local', import.meta.url))
@@ -84,6 +97,7 @@ export function supabaseConfig(defaultTarget: Target): SupabaseConfig {
     target,
     url,
     anonKey,
+    serviceKey: env.SUPABASE_SERVICE_ROLE_KEY,
     anthropicKey: env.ANTHROPIC_API_KEY,
   }
 }

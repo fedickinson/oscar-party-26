@@ -20,6 +20,7 @@
  *   import { groundedLine } from './grounded-line'
  *   const line = await groundedLine({
  *     speaker: 'cersei',
+ *     voice: 'Voice: Cersei\nExpression instruction: Judge power with clipped contempt.',
  *     facts: ['Rhaenyra demanded anointment; the High Septon refused.',
  *             'Rhaenyra ORDERED the killing; Alyn of Hull carried it out with blades.',
  *             'No fire was used by anyone.'],
@@ -27,76 +28,118 @@
  *   })
  */
 import { readFileSync } from 'fs'
+import {
+  parseGroundedLineResponse,
+} from '../src/lib/grounding-response.js'
+import {
+  collectGroundingFindings,
+} from '../src/lib/live-grounding.js'
+import {
+  buildGroundedLineAuditModelRequest,
+  buildGroundedLineModelRequest,
+  GROUNDED_LINE_DEFAULT_LENGTH_HINT,
+  GROUNDED_LINE_DEFAULT_MAX_RETRIES,
+  GROUNDED_LINE_TRANSPORT,
+} from '../src/lib/grounded-line-contract.js'
+import {
+  groundedCompanionBatch,
+  type GroundingModelCaller,
+  type GroundingModelRequest,
+} from '../api/_grounding.js'
+export { groundedCompanionBatch }
+export type { GroundingModelCaller, GroundingModelRequest }
 
-const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-const KEY = env.split('\n').find((l) => l.startsWith('ANTHROPIC_API_KEY='))!.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
-const promptsSrc = readFileSync(new URL('../src/lib/companion-prompts.ts', import.meta.url), 'utf8')
-const SYSTEM = promptsSrc.match(/const SHARED_SYSTEM = `([\s\S]*?)`\n\n/)?.[1] ?? ''
+let cachedOperatorKey: string | null = null
 
-async function call(system: string, user: string, maxTokens = 300): Promise<string> {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+function operatorKey(): string {
+  if (cachedOperatorKey) return cachedOperatorKey
+  const env = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
+  const keyLine = env.split('\n').find((line) => line.startsWith('ANTHROPIC_API_KEY='))
+  if (!keyLine) throw new Error('.env.local is missing ANTHROPIC_API_KEY')
+  cachedOperatorKey = keyLine.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '')
+  return cachedOperatorKey
+}
+
+const call: GroundingModelCaller = async ({ model, system, user, maxTokens }) => {
+  const r = await fetch(GROUNDED_LINE_TRANSPORT.endpoint, {
     method: 'POST',
-    headers: { 'x-api-key': KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    headers: {
+      'x-api-key': operatorKey(),
+      'anthropic-version': GROUNDED_LINE_TRANSPORT.api_version,
+      'content-type': 'application/json',
+    },
     body: JSON.stringify({
-      model: 'claude-sonnet-5', max_tokens: maxTokens,
-      thinking: { type: 'disabled' }, output_config: { effort: 'low' },
-      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+      model, max_tokens: maxTokens,
+      thinking: GROUNDED_LINE_TRANSPORT.thinking,
+      output_config: GROUNDED_LINE_TRANSPORT.output_config,
+      system: [{
+        type: 'text',
+        text: system,
+        cache_control: GROUNDED_LINE_TRANSPORT.system_cache_control,
+      }],
       messages: [{ role: 'user', content: user }],
     }),
   })
-  const d = await r.json()
+  const d = await r.json() as { content?: Array<{ type?: string; text?: string }> }
+  if (!r.ok) {
+    throw new Error(`Anthropic request failed (${r.status}): ${JSON.stringify(d).slice(0, 300)}`)
+  }
   return ((d.content ?? []).find((b: { type?: string }) => b.type === 'text')?.text ?? '') as string
 }
 
-export async function verifyGrounding(line: string, facts: string[]): Promise<string[]> {
-  const user = `FACTS (exhaustive — nothing else happened in this scene):
-${facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}
-
-LINE OF COMMENTARY:
-"${line}"
-
-Your only job is refutation. List every event, action, or method that this line ASSERTS OR IMPLIES occurred in the scene but which is not in the FACTS — including implications carried by framing or comparison (e.g. a line framed around burning implies fire). A speaker's attitude, opinions, or references to their OWN separate past are NOT violations; only claims about this scene count. Restating, paraphrasing, or drawing a judgment from a listed fact (including who ordered vs who executed, when both are listed) is NOT a violation — only the introduction of events, methods, or imagery absent from the list.
-
-Return ONLY JSON: {"violations":["..."]} — empty array if fully grounded.`
-  const raw = await call('You are a strict factual auditor. No leniency for style.', user, 300)
-  try { return JSON.parse(raw.slice(raw.indexOf('{'))).violations ?? [] } catch { return ['auditor parse failure — treat as violation'] }
+export async function verifyGrounding(
+  line: string,
+  facts: string[],
+  caller: GroundingModelCaller = call,
+): Promise<string[]> {
+  const raw = await caller(buildGroundedLineAuditModelRequest(line, facts))
+  return collectGroundingFindings(
+    [{ companion_id: 'line', text: line, delay_seconds: 0 }],
+    [{ companion_id: 'line', raw }],
+  )[0]?.violations ?? []
 }
 
 export async function groundedLine(opts: {
   speaker: string
+  voice: string
   facts: string[]
   angle: string
   lengthHint?: string
   maxRetries?: number
+  caller?: GroundingModelCaller
 }): Promise<{ text: string; attempts: number; lastViolations: string[] }> {
-  const { speaker, facts, angle, lengthHint = 'One or two short sentences.', maxRetries = 2 } = opts
-  let notes = ''
-  for (let attempt = 1; ; attempt++) {
-    const user = `${speaker.toUpperCase()} comments on a scene. ${lengthHint}
-
-FACTS (exhaustive — the scene contains these events and NO others):
-${facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}
-
-ANGLE (attitude only — may draw on ${speaker}'s own canonical past for FLAVOR, but every claim about THIS scene must trace to a numbered fact; do not imply events, methods, or imagery absent from the facts):
-${angle}
-${notes}
-Return ONLY JSON: {"text":"..."}`
-    const raw = await call(SYSTEM, user, 300)
-    let text = ''
-    try {
-      const parsed = JSON.parse(raw.slice(raw.indexOf('{')))
-      // SHARED_SYSTEM enforces its own {"messages":[...]} contract and will
-      // override a user-prompt format request — accept both shapes.
-      text = parsed.text ?? parsed.messages?.[0]?.text ?? ''
-    } catch { continue }
-    if (!text) continue
-    const violations = await verifyGrounding(text, facts)
-    if (violations.length === 0 || attempt > maxRetries) {
+  const {
+    speaker,
+    voice,
+    facts,
+    angle,
+    lengthHint = GROUNDED_LINE_DEFAULT_LENGTH_HINT,
+    maxRetries = GROUNDED_LINE_DEFAULT_MAX_RETRIES,
+    caller = call,
+  } = opts
+  if (!Number.isInteger(maxRetries) || maxRetries < 0) throw new Error('maxRetries must be a non-negative integer')
+  if (!speaker.trim()) throw new Error('speaker is required')
+  if (!voice.trim()) throw new Error('voice is required')
+  let previousFindings: string[] = []
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    const raw = await caller(buildGroundedLineModelRequest({
+      speaker,
+      voice,
+      facts,
+      angle,
+      lengthHint,
+    }, previousFindings))
+    const text = parseGroundedLineResponse(raw, speaker)
+    if (text === null) continue
+    const violations = await verifyGrounding(text, facts, caller)
+    if (violations.length === 0 || attempt === maxRetries + 1) {
       return { text, attempts: attempt, lastViolations: violations }
     }
-    notes = `\nPREVIOUS ATTEMPT WAS REJECTED for implying events not in the facts: ${violations.join('; ')}. Stay strictly inside the fact block.\n`
+    previousFindings = violations
   }
+  throw new Error(`generator returned no parseable commentary after ${maxRetries + 1} attempts`)
 }
+
 
 // ── Self-test on the real failure when run directly ──────────────────────────
 if (process.argv[1]?.endsWith('grounded-line.mts')) {
@@ -112,6 +155,7 @@ if (process.argv[1]?.endsWith('grounded-line.mts')) {
   console.log('── generating a protected replacement ──')
   const out = await groundedLine({
     speaker: 'cersei', facts,
+    voice: 'Voice: Cersei\nExpression instruction: Judge political violence with clipped contempt.',
     angle: 'She has intimate personal history with destroyed septs; what interests her here is the DELEGATION — a queen ordering it done by another\'s hand — and the naivety of thinking belief dies with the priest.',
   })
   console.log(`attempts=${out.attempts} violations=${JSON.stringify(out.lastViolations)}`)

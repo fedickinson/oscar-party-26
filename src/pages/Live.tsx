@@ -21,7 +21,7 @@
  *   all players navigate to the next page at once.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from '../context/GameContext'
@@ -31,7 +31,11 @@ import { useChatReactivity } from '../hooks/useChatReactivity'
 import { useSpotlight } from '../hooks/useSpotlight'
 import { useChat } from '../hooks/useChat'
 import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
+import { useRoomPresence } from '../hooks/useRoomPresence'
+import { useOperatorHeartbeat } from '../hooks/useOperatorHeartbeat'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { findDraftPointsForWinner } from '../lib/scoring'
+import { deriveEngineHeartbeat, deriveNarrativeSequence, derivePresenceRows } from '../lib/operator-lens'
 import { supabase } from '../lib/supabase'
 import TabBar from '../components/live/TabBar'
 import WatchSyncBar from '../components/live/WatchSyncBar'
@@ -40,9 +44,10 @@ import HomeTab from '../components/live/HomeTab'
 import BingoTab from '../components/live/BingoTab'
 import ScoresTab from '../components/live/ScoresTab'
 import GameMasterConsole from '../components/live/GameMasterConsole'
+import WinnersTab from '../components/live/WinnersTab'
 import MyPicksTab from '../components/live/MyPicksTab'
 import WinnerAnnouncement, { type AnnouncementData } from '../components/live/WinnerAnnouncement'
-import { Clapperboard } from 'lucide-react'
+import { AlertTriangle, Clapperboard, RefreshCw, X } from 'lucide-react'
 import FinaleOverlay from '../components/live/FinaleOverlay'
 import SpotlightNotification from '../components/spotlight/SpotlightNotification'
 import PhaseExplainer from '../components/PhaseExplainer'
@@ -70,6 +75,11 @@ export default function Live() {
   const isHost = player?.is_host ?? false
   const currentPlayerId = player?.id ?? ''
   const showStarted = room?.show_started ?? false
+  const {
+    capability: operatorCapability,
+    isLoading: operatorCapabilityLoading,
+    authority: refereeAuthority,
+  } = useOperatorAuthority()
 
   // The host client is the room's engine: companion schedules, welcome queues,
   // bingo reactions all run in ITS timers. A locked phone suspends them all.
@@ -93,28 +103,50 @@ export default function Live() {
     }
   }, [isHost])
 
-  useRoomSubscription(roomId)
+  const roomSync = useRoomSubscription(roomId)
   // Players must stay live here, not just in the lobby. The watch-sync layer
   // reads per-player rows — episode_started_at, watch_group, is_remote_holder —
   // and "Alec started the New York screen" reaches the other five phones as a
   // players UPDATE. Without this subscription the roster froze at mount: the
   // start button never cleared (even for the person who pressed it), holder
   // handoffs were invisible, and a late joiner never appeared.
-  usePlayersSubscription(roomId)
-  const scores = useScores(roomId)
+  const rosterSync = usePlayersSubscription(roomId)
+  const scores = useScores(roomId, room?.active_settlement_id)
   // Use a distinct channelKey so this subscription gets its own Supabase channel
   // instance — prevents ChatSection's removeChannel call from killing this one.
-  const { messages } = useChat(roomId, 'live-badges')
+  const {
+    messages,
+    isLoading: messagesLoading,
+    syncError: messagesSyncError,
+  } = useChat(roomId, 'live-badges')
+  const presence = useRoomPresence(roomId, player)
+  const heartbeat = useOperatorHeartbeat(isHost ? roomId : undefined)
+  const operatorPresenceRows = useMemo(
+    () => derivePresenceRows(
+      players,
+      presence.metas,
+      presence.isSynced && !rosterSync.isLoading && rosterSync.syncError == null,
+    ),
+    [players, presence.metas, presence.isSynced, rosterSync.isLoading, rosterSync.syncError],
+  )
+  const narrativeSequence = useMemo(
+    () => deriveNarrativeSequence(messages, messagesLoading || messagesSyncError != null),
+    [messages, messagesLoading, messagesSyncError],
+  )
+  const engineHeartbeat = useMemo(
+    () => deriveEngineHeartbeat(heartbeat.heartbeat, heartbeat.isLoading, heartbeat.nowMs),
+    [heartbeat.heartbeat, heartbeat.isLoading, heartbeat.nowMs],
+  )
   const [signatureBeats, setSignatureBeats] = useState<SignatureBeatRow[]>([])
   const [beatActivations, setBeatActivations] = useState<BeatActivationRow[]>([])
 
   // Beat choices are frozen before the episode starts, so the live dashboard
   // only needs one snapshot per room.
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId || !room) return
     let cancelled = false
     void Promise.all([
-      supabase.from('signature_beats').select().order('points', { ascending: false }),
+      supabase.from('signature_beats').select().eq('show_pack_id', room.show_pack_id).order('points', { ascending: false }),
       supabase.from('beat_activations').select().eq('room_id', roomId),
     ]).then(([beatRes, activationRes]) => {
       if (cancelled) return
@@ -122,7 +154,7 @@ export default function Live() {
       setBeatActivations((activationRes.data ?? []) as BeatActivationRow[])
     })
     return () => { cancelled = true }
-  }, [roomId])
+  }, [roomId, room?.show_pack_id])
 
   // ── Tab badge notifications ─────────────────────────────────────────────────
   //
@@ -206,17 +238,20 @@ export default function Live() {
     if (chatBadge) set.add(0)
     if (bingoBadge) set.add(1)
     if (scoresBadge) set.add(2)
+    if (isHost && !operatorCapabilityLoading && operatorCapability === null) set.add(3)
     return set
-  }, [chatBadge, bingoBadge, scoresBadge])
+  }, [chatBadge, bingoBadge, scoresBadge, isHost, operatorCapabilityLoading, operatorCapability])
 
-  const { predictionsRef } = useChatReactivity(
+  const chatReactivity = useChatReactivity(
     roomId,
     players,
     scores.nominees,
     scores.leaderboard,
     scores.categories,
-    isHost,
+    isHost && operatorCapability !== null,
+    operatorCapability,
   )
+  const { predictionsRef } = chatReactivity
 
   useAICompanions(
     scores.categories,
@@ -225,20 +260,26 @@ export default function Live() {
     scores.draftPicks,
     scores.draftEntities,
     scores.leaderboard,
-    isHost,
+    isHost && operatorCapability !== null,
+    operatorCapability,
     predictionsRef,
     showStarted,
+    !scores.isLoading && scores.recordError == null &&
+      !roomSync.isLoading && roomSync.syncError == null &&
+      !rosterSync.isLoading && rosterSync.syncError == null,
   )
 
   const {
     isSpotlightActive,
     spotlightCategoryId,
     spotlightNomineeIds,
+    spotlightActionError,
+    clearSpotlightActionError,
     openSpotlight,
     closeSpotlight,
     confirmSpotlightWinner,
     confirmSpotlightTieWinner,
-  } = useSpotlight()
+  } = useSpotlight(refereeAuthority.enabled ? operatorCapability : null)
 
   // ── Spotlight notification + tab switch ───────────────────────────────────────
 
@@ -319,78 +360,6 @@ export default function Live() {
   // film-link tap in chat has nowhere to go. Kept as a no-op rather than
   // removing the prop chain, which threads through ChatSection.
   function handleFilmLinkTap(_filmTitle: string) {}
-
-  // ── Pending bingo count + toast (host only) ───────────────────────────────
-
-  const [pendingBingoCount, setPendingBingoCount] = useState(0)
-
-  const refreshPendingCount = useCallback(async () => {
-    if (!roomId) return
-    const { data: cards } = await supabase
-      .from('bingo_cards')
-      .select('id')
-      .eq('room_id', roomId)
-    if (!cards?.length) { setPendingBingoCount(0); return }
-    const { count } = await supabase
-      .from('bingo_marks')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .in('card_id', cards.map((c) => c.id))
-    setPendingBingoCount(count ?? 0)
-  }, [roomId])
-
-  useEffect(() => {
-    if (!isHost || !roomId) return
-    refreshPendingCount()
-  }, [isHost, roomId, refreshPendingCount])
-
-  useEffect(() => {
-    if (!isHost || !roomId) return
-
-    const channel = supabase
-      .channel(`live-bingo-host:${roomId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'bingo_marks' },
-        async (payload) => {
-          const mark = payload.new as { card_id: string; square_index: number; status: string }
-          const { data: card } = await supabase
-            .from('bingo_cards')
-            .select()
-            .eq('id', mark.card_id)
-            .eq('room_id', roomId)
-            .maybeSingle()
-          if (!card) return
-
-          const markerPlayer = players.find((p) => p.id === card.player_id)
-          const playerName = markerPlayer?.name ?? 'Someone'
-
-          const squareId = card.squares[mark.square_index]
-          const { data: square } = await supabase
-            .from('bingo_squares')
-            .select('short_text')
-            .eq('id', squareId)
-            .maybeSingle()
-          const squareText = (square as { short_text: string } | null)?.short_text ?? 'a square'
-
-          // Only notify the host for marks that require manual approval.
-          // Auto-approved marks (objective squares, host's own card) don't
-          // need the host's attention.
-          if (mark.status === 'pending') {
-            showToast(`${playerName} marked: ${squareText}`, 'warning')
-            setPendingBingoCount((prev) => prev + 1)
-          }
-        },
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'bingo_marks' },
-        () => { refreshPendingCount() },
-      )
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [isHost, roomId, players, showToast, refreshPendingCount])
 
   // ── Winner announcement queue ─────────────────────────────────────────────
   //
@@ -528,29 +497,58 @@ export default function Live() {
   // already flipped the room live, so this stays callable.
   async function handleStartShow() {
     if (!room || !currentPlayerId) return
-    await supabase.rpc('start_episode_for_screen', {
+    if (roomSync.isLoading || roomSync.syncError != null) {
+      showToast('The shared room record must synchronize before this screen can start.', 'warning')
+      return
+    }
+    const { error } = await supabase.rpc('start_episode_for_screen_authorized', {
       p_room_id: room.id,
-      p_player_id: currentPlayerId,
+      p_actor_player_id: currentPlayerId,
+      p_operator_capability: operatorCapability,
     })
+    if (error) {
+      showToast(`Could not start the episode clock: ${error.message}`, 'warning')
+    }
     // Realtime subscription propagates both updates to all clients
   }
 
-  // ── End Ceremony ─────────────────────────────────────────────────────────
+  // ── Close the live floor ─────────────────────────────────────────────────
 
-  const [isEndingCeremony, setIsEndingCeremony] = useState(false)
+  const [isClosingNight, setIsClosingNight] = useState(false)
+  const [closeNightError, setCloseNightError] = useState<string | null>(null)
 
-  async function handleEndCeremony() {
-    if (!room || isEndingCeremony) return
-    setIsEndingCeremony(true)
-    const { error } = await supabase
-      .from('rooms')
-      .update({ phase: 'finished' })
-      .eq('id', room.id)
-    if (error) {
-      // Reset flag so host can retry
-      setIsEndingCeremony(false)
+  async function handleCloseNight() {
+    if (!room || !currentPlayerId || !isHost || isClosingNight) return
+    if (!refereeAuthority.enabled || !operatorCapability) {
+      setCloseNightError(refereeAuthority.message ?? 'Current host authority is required.')
+      return
     }
-    // Navigation handled by phase watcher below
+    if (roomSync.isLoading || roomSync.syncError != null) {
+      setCloseNightError('The shared room record must synchronize before the night can close.')
+      return
+    }
+    if (room.phase !== 'live') {
+      setCloseNightError('This room is no longer live. Reload to see its current phase.')
+      return
+    }
+
+    setIsClosingNight(true)
+    setCloseNightError(null)
+    try {
+      const { error } = await supabase.rpc('close_live_floor_authorized', {
+        p_room_id: room.id,
+        p_actor_player_id: currentPlayerId,
+        p_operator_capability: operatorCapability,
+      })
+      if (error) throw new Error(error.message)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The request did not complete.'
+      setCloseNightError(`Could not close the night: ${message}`)
+    } finally {
+      setIsClosingNight(false)
+    }
+    // Do not navigate here. The rooms Realtime update moves every phone through
+    // the phase watcher below, preserving the shared-transition contract.
   }
 
   // ── Finale overlay ────────────────────────────────────────────────────────
@@ -565,8 +563,8 @@ export default function Live() {
   // ── Phase navigation ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!room) return
-    if (room.phase === 'finished') {
+    if (!room || roomSync.isLoading || roomSync.syncError != null) return
+    if (room.phase === 'finished' || room.phase === 'closed') {
       // The ceremony gates the ending: a device that has not witnessed it
       // goes straight to the curtain — no standings leak on the way.
       if (localStorage.getItem('ceremony_gate_v1') !== 'passed') {
@@ -576,7 +574,7 @@ export default function Live() {
       // Witnessed devices get the finale overlay before the ledger.
       setShowFinale(true)
     }
-  }, [room?.phase, code, navigate])
+  }, [room?.phase, roomSync.isLoading, roomSync.syncError, code, navigate])
 
   function selectTab(next: number) {
     setTabState((prev) => ({
@@ -594,6 +592,74 @@ export default function Live() {
         className="flex flex-col bg-ground"
         style={{ height: 'calc(100dvh - 1.5rem)', marginBottom: '-1.5rem' }}
       >
+        {roomSync.syncError && (
+          <div className="mx-3 mt-2 flex min-h-11 flex-shrink-0 items-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2">
+            <AlertTriangle size={15} className="flex-shrink-0 text-[var(--t-pending)]" />
+            <p className="min-w-0 flex-1 text-xs text-[var(--t-text-muted)]">
+              Shared phase updates are paused on this phone.
+            </p>
+            <button
+              type="button"
+              onClick={roomSync.retrySync}
+              className="inline-flex min-h-11 flex-shrink-0 items-center gap-1.5 text-xs font-semibold text-[var(--t-pending)]"
+            >
+              <RefreshCw size={13} />
+              Retry
+            </button>
+          </div>
+        )}
+
+        {rosterSync.syncError && (
+          <div className="mx-3 mt-2 flex min-h-11 flex-shrink-0 items-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2">
+            <AlertTriangle size={15} className="flex-shrink-0 text-[var(--t-pending)]" />
+            <p className="min-w-0 flex-1 text-xs text-[var(--t-text-muted)]">
+              Player updates are paused on this phone.
+            </p>
+            <button
+              type="button"
+              onClick={rosterSync.retrySync}
+              className="inline-flex min-h-11 flex-shrink-0 items-center gap-1.5 text-xs font-semibold text-[var(--t-pending)]"
+            >
+              <RefreshCw size={13} />
+              Retry
+            </button>
+          </div>
+        )}
+
+        {isHost && spotlightActionError && (
+          <div className="mx-3 mt-2 flex min-h-11 flex-shrink-0 items-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2" role="alert">
+            <AlertTriangle size={15} className="flex-shrink-0 text-[var(--t-pending)]" aria-hidden />
+            <p className="min-w-0 flex-1 text-xs text-[var(--t-text-muted)]">
+              {spotlightActionError}
+            </p>
+            <button
+              type="button"
+              onClick={clearSpotlightActionError}
+              className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-[var(--t-pending)]"
+              aria-label="Dismiss spotlight error"
+            >
+              <X size={15} aria-hidden />
+            </button>
+          </div>
+        )}
+
+        {isHost && chatReactivity.syncError && (
+          <div className="mx-3 mt-2 flex min-h-11 flex-shrink-0 items-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2">
+            <AlertTriangle size={15} className="flex-shrink-0 text-[var(--t-pending)]" />
+            <p className="min-w-0 flex-1 text-xs text-[var(--t-text-muted)]">
+              AI chat reactions are paused on this host phone.
+            </p>
+            <button
+              type="button"
+              onClick={chatReactivity.retrySync}
+              className="inline-flex min-h-11 flex-shrink-0 items-center gap-1.5 text-xs font-semibold text-[var(--t-pending)]"
+            >
+              <RefreshCw size={13} />
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Sync bar — always visible above the tabs. Two playbacks (one screen
             in New York, one remote) drift apart over 75 minutes, and the room
             reacting to something the remote viewer has not seen is the failure
@@ -633,12 +699,11 @@ export default function Live() {
                   spotlightCategoryId={spotlightDisplayId}
                   spotlightNomineeIds={spotlightNomineeIds}
                   isHost={isHost}
+                  refereeEnabled={refereeAuthority.enabled}
                   openSpotlight={openSpotlight}
                   closeSpotlight={closeSpotlight}
                   confirmSpotlightWinner={confirmSpotlightWinner}
                   confirmSpotlightTieWinner={confirmSpotlightTieWinner}
-                  onEndCeremony={handleEndCeremony}
-                  isEndingCeremony={isEndingCeremony}
                   onFilmLinkTap={handleFilmLinkTap}
                 />
               </motion.div>
@@ -690,6 +755,7 @@ export default function Live() {
                     confidencePicks={scores.confidencePicks}
                     draftPicks={scores.draftPicks}
                     draftEntities={scores.draftEntities}
+                    gameModel={room?.game_model ?? 'legacy_ensemble'}
                   />
                 </div>
               </motion.div>
@@ -707,19 +773,39 @@ export default function Live() {
                 className="absolute inset-0 overflow-y-auto"
               >
                 <div className="pb-6">
-                  {/* Episode properties use the GM console: there is no external
-                      event stream, so the host authors events live. WinnersTab
-                      remains for slate-based properties like the Oscars. */}
-                  <GameMasterConsole
-                    roomId={roomId}
-                    isHost={isHost}
-                    myRosterNames={scores.draftPicks
-                      .filter((dp) => dp.player_id === currentPlayerId)
-                      .map((dp) => scores.draftEntities.find((e) => e.id === dp.entity_id)?.name)
-                      .filter((n): n is string => !!n)}
-                    onEndCeremony={handleEndCeremony}
-                    isEndingCeremony={isEndingCeremony}
-                  />
+                  {room?.game_model === 'conviction_portfolio' ? (
+                    <GameMasterConsole
+                      roomId={roomId}
+                      isHost={isHost}
+                      operatorCapability={operatorCapability}
+                      operatorCapabilityLoading={operatorCapabilityLoading}
+                      myRosterNames={scores.draftPicks
+                        .filter((dp) => dp.player_id === currentPlayerId)
+                        .map((dp) => scores.draftEntities.find((e) => e.id === dp.entity_id)?.name)
+                        .filter((n): n is string => !!n)}
+                      onCloseNight={handleCloseNight}
+                      isClosingNight={isClosingNight}
+                      closeNightError={closeNightError}
+                      operatorPresenceRows={operatorPresenceRows}
+                      narrativeSequence={narrativeSequence}
+                      engineHeartbeat={engineHeartbeat}
+                      heartbeatError={heartbeat.error}
+                    />
+                  ) : (
+                    <div className="px-4">
+                      <WinnersTab
+                        roomId={roomId}
+                        isHost={isHost}
+                        onCloseNight={handleCloseNight}
+                        isClosingNight={isClosingNight}
+                        closeNightError={closeNightError}
+                        refereeEnabled={refereeAuthority.enabled}
+                        refereeAuthorityMessage={refereeAuthority.message}
+                        operatorCapability={refereeAuthority.enabled ? operatorCapability : null}
+                        openSpotlight={openSpotlight}
+                      />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -742,6 +828,8 @@ export default function Live() {
                     categories={scores.categories}
                     nominees={scores.nominees}
                     confidencePicks={scores.confidencePicks}
+                    convictionPicks={scores.convictionPicks}
+                    gameModel={room?.game_model ?? 'legacy_ensemble'}
                     draftPicks={scores.draftPicks}
                     draftEntities={scores.draftEntities}
                     players={players}

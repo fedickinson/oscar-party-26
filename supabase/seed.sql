@@ -4,6 +4,13 @@
 -- Contains no rooms, players, messages, marks, picks or verdicts: that data is
 -- a real evening with real names, and this repository is public.
 
+-- The baseline migration creates the fixed legacy registry as published so
+-- historical room defaults remain valid. Local seeding must briefly reopen
+-- only that pack before immutable catalog triggers permit authored inserts.
+update public.show_packs
+set status = 'draft', published_at = null
+where id = '8f27e9a4-9f6b-4f3a-9c91-a6b862c98101';
+
 -- avatars (12 rows)
 insert into public.avatars ("id", "character_name", "actor_name", "film_name", "image_happy", "image_sad", "image_shocked", "image_neutral") values
   ('buckley-agnes', 'Agnes', 'Jessie Buckley', 'Hamnet', '/avatars/buckley-agnes/happy.png', '/avatars/buckley-agnes/sad.png', '/avatars/buckley-agnes/shocked.png', '/avatars/buckley-agnes/neutral.png'),
@@ -702,3 +709,15 @@ insert into public.signature_beats ("id", "entity_id", "name", "trigger_text", "
   ('98', '32f57c47-f49c-4003-3748-c120aae7c45a', 'Joins the Attack', 'Gwayne leaves a defensive position to personally join an organized attack or sortie.', 'Coin flip', '25', 'The knight chooses the field.', NULL),
   ('99', '32f57c47-f49c-4003-3748-c120aae7c45a', 'Stays With Daeron', 'Gwayne deliberately remains with Daeron instead of joining an available battle or pursuit.', 'Coin flip', '25', 'The guardian chooses the boy over glory.', NULL)
 on conflict do nothing;
+
+-- Fail closed rather than publishing a partial local catalog.
+do $$
+begin
+  if not public.show_pack_is_playable('8f27e9a4-9f6b-4f3a-9c91-a6b862c98101'::uuid) then
+    raise exception 'seeded legacy show pack is not playable' using errcode = '23514';
+  end if;
+  update public.show_packs
+  set status = 'published', published_at = clock_timestamp()
+  where id = '8f27e9a4-9f6b-4f3a-9c91-a6b862c98101';
+end;
+$$;

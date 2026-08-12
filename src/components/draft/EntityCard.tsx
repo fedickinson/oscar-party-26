@@ -18,6 +18,7 @@
 
 import { motion } from 'framer-motion'
 import { FilmIcon } from '../../lib/film-icons'
+import StoryPortrait from '../ui/StoryPortrait'
 import type { PlayerRow, SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
 
@@ -66,18 +67,15 @@ export default function EntityCard({
       }}
     >
       <div className="flex items-start gap-3">
-        {/* Left: type badge */}
-        <div className="flex-shrink-0 mt-0.5">
-          {isDragon ? (
-            <div className="p-1.5 rounded-lg" style={{ backgroundColor: isAvailable ? 'var(--t-pending-soft)' : 'var(--t-negative-soft)', color: isAvailable ? 'var(--t-pending)' : 'var(--t-negative)' }}>
-              <FilmIcon filmName={entity.name} size={16} />
-            </div>
-          ) : (
-            <div className="p-1.5 rounded-lg" style={{ backgroundColor: isAvailable ? 'var(--t-surface)' : 'var(--t-negative-soft)', color: isAvailable ? 'var(--t-text-muted)' : 'var(--t-negative)' }}>
-              <FilmIcon filmName={entity.film_name ?? ''} size={16} />
-            </div>
-          )}
-        </div>
+        <StoryPortrait
+          name={entity.name}
+          src={entity.portraitUrl}
+          className="mt-0.5 h-12 w-12"
+          muted={!isAvailable}
+          fallback={isDragon
+            ? <FilmIcon filmName={entity.name} size={18} className={isAvailable ? 'text-[var(--t-pending)]' : 'text-[var(--t-negative)]'} />
+            : <FilmIcon filmName={entity.film_name ?? ''} size={18} className={isAvailable ? 'text-[var(--t-text-muted)]' : 'text-[var(--t-negative)]'} />}
+        />
 
         {/* Center: name + details */}
         <div className="flex-1 min-w-0">

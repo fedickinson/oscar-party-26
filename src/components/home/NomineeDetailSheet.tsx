@@ -93,7 +93,8 @@ export default function NomineeDetailSheet({ nominee, categoryName, onClose }: P
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 mt-1"
+            className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8"
+            aria-label="Close nominee details"
           >
             <X size={16} className="text-white/60" />
           </motion.button>

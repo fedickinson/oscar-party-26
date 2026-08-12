@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { BarChart2, Zap, TrendingUp, CheckCircle, Info, Target } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
-import type { ScoredPlayer } from '../../lib/scoring'
+import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
 
 interface Props {
   isPreCeremony: boolean
@@ -232,10 +232,12 @@ function InfoStatCard({
           <span className="text-[11px] uppercase tracking-wider text-white/50 font-medium">{label}</span>
         </div>
         <motion.button
+          type="button"
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowInfo((v) => !v)}
-          className="p-1 -mr-1 rounded-lg text-white/30 hover:text-white/60 transition-colors"
+          className="-mr-1 flex h-11 w-11 items-center justify-center rounded-lg text-white/30 transition-colors hover:text-white/60"
           aria-label={`What is ${label}?`}
+          aria-expanded={showInfo}
         >
           <Info size={13} />
         </motion.button>
@@ -331,14 +333,16 @@ function LiveStats({
         .filter((cp) => cp.category_id === cat.id && (cp.nominee_id === cat.winner_id || cp.nominee_id === cat.tie_winner_id))
         .reduce((sum, cp) => sum + cp.confidence, 0)
 
-      // Draft points: just the category points (simplified)
-      const draftWin = draftPicks.some((dp) => {
-        const entity = draftEntities.find((e) => e.id === dp.entity_id)
-        if (!entity) return false
-        if (winner.type === 'film') return entity.type === 'film' && entity.film_name === winner.film_name
-        return entity.type === 'person' && entity.name === winner.name
-      })
-      const draftPoints = draftWin ? cat.points : 0
+      const draftPoints = [cat.winner_id, cat.tie_winner_id]
+        .filter((winnerId): winnerId is string => winnerId !== null)
+        .reduce((sum, winnerId) => sum + findDraftPointsForWinner(
+          cat.id,
+          winnerId,
+          categories,
+          nominees,
+          draftEntities,
+          draftPicks,
+        ).points, 0)
 
       const total = confPoints + draftPoints
       if (!best || total > best.totalPoints) {
@@ -358,12 +362,18 @@ function LiveStats({
       const won = picks.filter((dp) => {
         const entity = draftEntities.find((e) => e.id === dp.entity_id)
         if (!entity) return false
-        return announcedCategories.some((cat) => {
-          const winner = nominees.find((n) => n.id === cat.winner_id)
-          if (!winner) return false
-          if (entity.type === 'film') return winner.type === 'film' && winner.film_name === entity.film_name
-          return winner.type === 'person' && winner.name === entity.name
-        })
+        return announcedCategories.some((cat) => (
+          [cat.winner_id, cat.tie_winner_id]
+            .filter((winnerId): winnerId is string => winnerId !== null)
+            .some((winnerId) => findDraftPointsForWinner(
+              cat.id,
+              winnerId,
+              categories,
+              nominees,
+              draftEntities,
+              draftPicks,
+            ).entityId === entity.id)
+        ))
       }).length
 
       return { player: p, pct: Math.round((won / picks.length) * 100), won, total: picks.length }
@@ -459,4 +469,3 @@ export default function QuickStats(props: Props) {
   const { isPreCeremony, ...rest } = props
   return isPreCeremony ? <PreCeremonyStats {...rest} /> : <LiveStats {...rest} />
 }
-

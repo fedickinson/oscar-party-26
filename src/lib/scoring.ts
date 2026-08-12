@@ -10,13 +10,11 @@
  * SCORING CASCADE (what happens when host announces a winner):
  *
  *   1. Host taps "Adrien Brody" as Best Actor winner
- *   2. useAdmin.setWinner() writes two things to Supabase:
- *        a. UPDATE categories SET winner_id = 'brody-uuid' WHERE id = 5
- *        b. UPDATE confidence_picks
- *              SET is_correct = (nominee_id = 'brody-uuid')
- *           WHERE category_id = 5 AND room_id = 'room-uuid'
+ *   2. declare_scheduled_winner() inserts one room_winners fact while holding
+ *      the room lock. Its database trigger derives confidence_picks.is_correct
+ *      in that same transaction.
  *   3. Supabase broadcasts two streams of Realtime events:
- *        - categories UPDATE → every client's useScores subscription fires
+ *        - room_winners INSERT → every client's useScores subscription fires
  *        - confidence_picks UPDATE (one per player) → same subscription fires
  *   4. Each client updates their local state arrays → React re-renders
  *   5. computeLeaderboard() is called with fresh state:
@@ -25,13 +23,10 @@
  *   6. Leaderboard re-sorts by totalScore and all players see the new ranking
  *
  * ENSEMBLE SCORING ENTITY MATCH:
- *   The draft entity for a person (e.g. "Adrien Brody") is identified by:
- *     entity.type === 'person' AND entity.name === nominee.name
- *     AND entity.nominations.some(n => n.category_id === categoryId)
- *   The category_id check prevents false matches for someone like "Taylor Swift"
- *   who might theoretically appear in both acting and music categories.
- *
- *   Film entities (e.g. "The Brutalist") match by film_name.
+ *   Versioned catalogs match the winning nominee to a draft entity by the
+ *   immutable (show_pack_id, pack_key, type) identity compiled from one show
+ *   pack. Display names are presentation and may collide. The fixed legacy
+ *   catalog retains its historical name/film-title compatibility lane.
  */
 
 import type {
@@ -41,7 +36,11 @@ import type {
   DraftPickRow,
   PlayerRow,
   ConfidencePickRow,
+  ConvictionPickRow,
+  GameModel,
 } from '../types/database'
+import { assessDraftEntityForNominee } from './draft-identity'
+import { computeConvictionPortfolioScores } from './conviction'
 
 // ─── Public result types ──────────────────────────────────────────────────────
 
@@ -122,10 +121,9 @@ export function scoreConfidencePick(
  * it. A second implementation of "which entity does this winner map to" would
  * drift from this one the first time either changed.
  *
- * PERSON vs FILM determination:
- *   Uses the winning nominee's `type` field from the nominees table.
- *   'person' → find draft entity by name + category nomination.
- *   'film'   → find draft entity by film_name.
+ * PERSON vs FILM determination uses the winning nominee's `type`, but identity
+ * comes from the versioned pack key. Name and film-title matching are confined
+ * to the fixed legacy/unscoped compatibility branch in draft-identity.ts.
  *
  * FILM FALLBACK FOR UNDRAFTED PEOPLE:
  *   If the winning person has no individual draft entity (or nobody picked
@@ -154,26 +152,14 @@ export function findDraftPointsForWinner(
 
   const pickForEntity = (entity: DraftEntityRow | undefined) =>
     entity ? (draftPicks.find((p) => p.entity_id === entity.id) ?? null) : null
+  const entityResolution = assessDraftEntityForNominee(winningNominee, draftEntities)
+  if (entityResolution.state === 'ambiguous') {
+    return { playerId: null, points: 0, entityId: null }
+  }
+  const resolvedEntity = entityResolution.state === 'matched' ? entityResolution.row : undefined
 
   if (winningNominee.type === 'person') {
-    // Person entities: match by name, then verify nominated in this category.
-    // The nominations JSONB contains { category_id, category_name, points }.
-    const personEntity = draftEntities.find((entity) => {
-      if (entity.type !== 'person') return false
-      if (entity.name !== winningNominee.name) return false
-
-      // Name match is sufficient.
-      //
-      // The Oscars build additionally required the entity to be nominated in
-      // the winning category, to guard against a name appearing in two
-      // unrelated categories. That guard is wrong for event-based properties
-      // (e.g. the HotD finale), where `nominations` is a *suggestion* of which
-      // events a character is likely to feature in, not a restriction — the
-      // host must be free to award any event to any character live.
-      //
-      // Entity names are unique within a property, so collisions aren't a risk.
-      return true
-    })
+    const personEntity = resolvedEntity?.type === 'person' ? resolvedEntity : undefined
 
     const personPick = pickForEntity(personEntity)
     if (personPick) {
@@ -212,9 +198,14 @@ export function findDraftPointsForWinner(
     //   real link to a draftable parent — don't reinterpret film_name.
     const filmTitle = winningNominee.film_name
     if (filmTitle) {
-      const filmEntity = draftEntities.find(
-        (entity) => entity.type === 'film' && entity.film_name === filmTitle,
-      )
+      const filmCandidates = draftEntities.filter((entity) => (
+        entity.type === 'film'
+        && entity.film_name === filmTitle
+        && (winningNominee.show_pack_id
+          ? entity.show_pack_id === winningNominee.show_pack_id
+          : !entity.show_pack_id)
+      ))
+      const filmEntity = filmCandidates.length === 1 ? filmCandidates[0] : undefined
       const filmPick = pickForEntity(filmEntity)
       if (filmPick) {
         return { playerId: filmPick.player_id, points: category.points, entityId: filmEntity!.id }
@@ -223,15 +214,7 @@ export function findDraftPointsForWinner(
 
     return { playerId: null, points: 0, entityId: null }
   } else {
-    // Film entities: match by film_name, type === 'film'.
-    // For Best Picture nominees, film_name may be empty (the film IS the nominee),
-    // so fall back to matching against the nominee's name field.
-    const nomFilmTitle = winningNominee.film_name || winningNominee.name
-    const filmEntity = draftEntities.find(
-      (entity) =>
-        entity.type === 'film' &&
-        entity.film_name === nomFilmTitle,
-    )
+    const filmEntity = resolvedEntity?.type === 'film' ? resolvedEntity : undefined
 
     const pick = pickForEntity(filmEntity)
     if (!pick) return { playerId: null, points: 0, entityId: null }
@@ -261,8 +244,13 @@ export function computeLeaderboard(
   categories: CategoryRow[],
   nominees: NomineeRow[],
   bingoScores: Map<string, number>,
+  convictionPicks: ConvictionPickRow[] = [],
+  gameModel: GameModel = 'legacy_ensemble',
 ): ScoredPlayer[] {
   const announcedCategories = categories.filter((c) => c.winner_id != null)
+  const convictionScores = gameModel === 'conviction_portfolio'
+    ? computeConvictionPortfolioScores(players, convictionPicks, categories)
+    : new Map()
 
   const sorted = players
     .map((player) => {
@@ -271,17 +259,24 @@ export function computeLeaderboard(
       const correctPicks = confidencePicks.filter(
         (p) => p.player_id === player.id && p.is_correct === true,
       )
-      const confidenceScore = correctPicks.reduce((sum, p) => sum + p.confidence, 0)
+      const conviction = convictionScores.get(player.id)
+      const confidenceScore = gameModel === 'conviction_portfolio'
+        ? (conviction?.score ?? 0)
+        : correctPicks.reduce((sum, p) => sum + p.confidence, 0)
 
       // Tiebreak inputs — see compareForRank.
-      const correctPickCount = correctPicks.length
-      const topCorrectPick = correctPicks.reduce((max, p) => Math.max(max, p.confidence), 0)
+      const correctPickCount = gameModel === 'conviction_portfolio'
+        ? (conviction?.correctPickCount ?? 0)
+        : correctPicks.length
+      const topCorrectPick = gameModel === 'conviction_portfolio'
+        ? (conviction?.topCorrectPick ?? 0)
+        : correctPicks.reduce((max, p) => Math.max(max, p.confidence), 0)
 
       // ── Ensemble score ────────────────────────────────────────────────────
       // For each announced category, check if this player's drafted entity won.
       // Each matching entity earns category.points.
       // In a tie, both winners' draft entities earn points independently.
-      const ensembleScore = announcedCategories.reduce((sum, cat) => {
+      const ensembleScore = gameModel === 'conviction_portfolio' ? 0 : announcedCategories.reduce((sum, cat) => {
         const { playerId, points } = findDraftPointsForWinner(
           cat.id,
           cat.winner_id!,

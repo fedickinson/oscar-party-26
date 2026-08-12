@@ -15,17 +15,25 @@
  * as seen and not re-processed.
  */
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGame } from '../context/GameContext'
 import { supabase } from '../lib/supabase'
 import {
   buildChatReactivePrompt,
   buildBanterPrompt,
-  parseCompanionResponse,
 } from '../lib/companion-prompts'
 import { pickBanterResponder } from '../lib/companion-banter'
+import { buildCompanionReactionKey } from '../lib/companion-reaction'
+import {
+  planInitialReactiveTranscript,
+  planReactiveTranscriptReconciliation,
+} from '../lib/reactive-transcript'
 import { addPendingCompanion, removePendingCompanion } from './companionTypingStore'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import { fetchAllRows } from './fetch-all-rows'
+import {
+  acquireCompanionTypingChannel,
+  type CompanionTypingChannelHandle,
+} from './companionTypingChannel'
 import {
   detectMentions,
   detectAmbientTrigger,
@@ -37,6 +45,10 @@ import {
 import { COMPANION_IDS } from '../data/ai-companions'
 import type { CategoryRow, NomineeRow, PlayerRow, MessageRow } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
+import {
+  groundedCompanionBatch,
+  type GroundingModelRequest,
+} from '../../api/_grounding'
 
 // Cooldown durations — kept short to allow natural back-and-forth conversation
 const MENTION_COOLDOWN_MS = 15 * 1000      // 15 seconds per companion (allows rapid conversation)
@@ -65,12 +77,23 @@ export function useChatReactivity(
   leaderboard: ScoredPlayer[],
   categories: CategoryRow[],
   isHost: boolean,
-): { predictionsRef: React.MutableRefObject<StoredPrediction[]> } {
+  operatorCapability: string | null,
+): {
+  predictionsRef: React.MutableRefObject<StoredPrediction[]>
+  isLoading: boolean
+  syncError: string | null
+  retrySync: () => void
+} {
   const { room } = useGame()
+  const [isLoading, setIsLoading] = useState(true)
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
 
   // ── Refs — stable across re-renders ──────────────────────────────────────────
   const isHostRef = useRef(isHost)
   isHostRef.current = isHost
+  const operatorCapabilityRef = useRef(operatorCapability)
+  operatorCapabilityRef.current = operatorCapability
 
   const playersRef = useRef(players)
   playersRef.current = players
@@ -82,12 +105,17 @@ export function useChatReactivity(
   categoriesRef.current = categories
   const roomRef = useRef(room)
   roomRef.current = room
+  const reactionInstanceRef = useRef(crypto.randomUUID())
 
   // Predictions — read by useAICompanions for delayed callbacks
   const predictionsRef = useRef<StoredPrediction[]>([])
 
   // Seen message IDs — initialized from existing messages on mount
   const seenMessageIdsRef = useRef<Set<string>>(new Set())
+  // Realtime callbacks are new work even when the same row is already present
+  // in an overlapping hydration snapshot. This set deduplicates callback
+  // delivery without confusing “present in the database” with “processed.”
+  const processedRealtimeIdsRef = useRef<Set<string>>(new Set())
   const initializedRef = useRef(false)
   // Buffer for messages that arrived via Realtime before the initial fetch completed.
   // Processed once initialization is done so they are not silently dropped.
@@ -112,6 +140,7 @@ export function useChatReactivity(
   const recentCompanionAtRef = useRef<number[]>([])
   const lastHumanAtRef = useRef<number>(0)
   const banterTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const reactionTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
   // Timestamps of banter replies actually scheduled, for the rolling budget.
   const banterSentAtRef = useRef<number[]>([])
   // Debounce state — the most recent companion message, and the timer that will
@@ -126,20 +155,25 @@ export function useChatReactivity(
     return () => {
       banterTimeoutsRef.current.forEach(clearTimeout)
       banterTimeoutsRef.current = []
+      reactionTimeoutsRef.current.forEach(clearTimeout)
+      reactionTimeoutsRef.current = []
       if (settleTimerRef.current) clearTimeout(settleTimerRef.current)
     }
   }, [])
 
   // Typing indicators go out on the same broadcast channel useAICompanions uses,
   // so a banter reply gets the same "…is typing" treatment as everything else.
-  const typingChannelRef = useRef<RealtimeChannel | null>(null)
+  const typingChannelRef = useRef<CompanionTypingChannelHandle | null>(null)
   useEffect(() => {
-    if (!roomId) return
-    const ch = supabase.channel(`room-${roomId}-companion-typing`)
-    ch.subscribe()
-    typingChannelRef.current = ch
+    if (!roomId) {
+      setIsLoading(false)
+      setSyncError(null)
+      return
+    }
+    const channel = acquireCompanionTypingChannel(roomId)
+    typingChannelRef.current = channel
     return () => {
-      supabase.removeChannel(ch)
+      channel.release()
       typingChannelRef.current = null
     }
   }, [roomId])
@@ -147,16 +181,16 @@ export function useChatReactivity(
   function setTyping(companionId: string, typing: boolean) {
     if (typing) addPendingCompanion(companionId)
     else removePendingCompanion(companionId)
-    typingChannelRef.current?.send({
-      type: 'broadcast',
-      event: 'companion_typing',
-      payload: { id: companionId, typing },
-    })
+    void typingChannelRef.current?.send({ id: companionId, typing })
   }
 
   // ── Claude API helper ─────────────────────────────────────────────────────────
 
-  async function callClaude(prompt: { system: string; user: string }): Promise<string> {
+  async function callClaude(
+    prompt: { system: string; user: string },
+    maxTokens = 200,
+    model: GroundingModelRequest['model'] = 'claude-haiku-4-5',
+  ): Promise<string> {
     const response = await fetch('/api/anthropic/v1/messages', {
       method: 'POST',
       headers: {
@@ -164,15 +198,14 @@ export function useChatReactivity(
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        // Haiku, deliberately — THIS is the path where latency is felt: a
-        // human just addressed a companion and is watching for the reply.
+        // Haiku generates the reply deliberately — THIS is the path where
+        // latency is felt: a human just addressed a companion and is watching.
         // Benchmarked ~2x faster than Sonnet (~2s vs ~4s to last token) with
-        // voice holding up on one-liner replies. Event reactions stay on
-        // Sonnet in useAICompanions: multi-voice batches, the Daenerys drift
-        // and the spoiler rules are where the model quality actually shows,
-        // and their latency hides inside theatrical delays.
-        model: 'claude-haiku-4-5',
-        max_tokens: 200,
+        // voice holding up on one-liners. The shared grounding engine still
+        // uses Sonnet for the factual audit; `model` varies because this helper
+        // carries both calls through the same browser proxy.
+        model,
+        max_tokens: maxTokens,
         // This is the busiest caller of the night — one call per player message
         // that earns a reply. CHAT_REACTIVE_SYSTEM is identical every time.
         system: [
@@ -191,34 +224,71 @@ export function useChatReactivity(
     return (blocks.find((b) => b.type === 'text')?.text ?? '') as string
   }
 
-  /**
-   * Returns the inserted row id so the caller can record how deep in a banter
-   * chain this message sits. Reading the id back here rather than matching on
-   * the Realtime echo keeps the depth bookkeeping exact — a guess based on
-   * "a message from Olenna arrived at about the right time" would eventually
-   * mis-attribute and let a thread run past its cap.
-   */
-  async function insertMessage(companionId: string, text: string): Promise<string | null> {
-    const currentRoom = roomRef.current
-    if (!currentRoom) return null
-    const { data } = await supabase
-      .from('messages')
-      .insert({ room_id: currentRoom.id, player_id: companionId, text })
-      .select('id')
-      .maybeSingle()
-    return (data?.id as string | undefined) ?? null
+  async function claimReaction(roomId: string, reactionKey: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc('claim_browser_companion_reaction_authorized', {
+      p_room_id: roomId,
+      p_reaction_key: reactionKey,
+      p_instance_id: reactionInstanceRef.current,
+      p_lease_seconds: 60,
+      p_operator_capability: operatorCapabilityRef.current,
+    })
+    if (error) throw error
+    return (data as Array<{ claimed?: boolean }> | null)?.[0]?.claimed === true
+  }
+
+  async function completeReaction(
+    roomId: string,
+    reactionKey: string,
+    messages: Array<{ companion_id: string; text: string }>,
+  ): Promise<string[]> {
+    const { data, error } = await supabase.rpc('complete_browser_companion_reaction_authorized', {
+      p_room_id: roomId,
+      p_reaction_key: reactionKey,
+      p_instance_id: reactionInstanceRef.current,
+      p_messages: messages.map((message) => ({
+        player_id: message.companion_id,
+        text: message.text,
+      })),
+      p_operator_capability: operatorCapabilityRef.current,
+    })
+    if (error) throw error
+    const result = (data as Array<{
+      completed?: boolean
+      output_message_ids?: string[]
+    }> | null)?.[0]
+    return result?.completed ? (result.output_message_ids ?? []) : []
+  }
+
+  async function releaseReaction(roomId: string, reactionKey: string): Promise<void> {
+    await supabase.rpc('release_browser_companion_reaction_authorized', {
+      p_room_id: roomId,
+      p_reaction_key: reactionKey,
+      p_instance_id: reactionInstanceRef.current,
+      p_operator_capability: operatorCapabilityRef.current,
+    })
   }
 
   async function fireChatReaction(
     companionId: string,
-    triggerMsg: { playerName: string; text: string },
+    triggerMsg: { messageId: string; playerName: string; text: string },
     triggerType: 'mention' | 'ambient',
     ambientType?: string,
     delayMs = 0,
   ) {
+    const reactionRoomId = roomRef.current?.id
+    if (!reactionRoomId) return
+    const reactionKey = buildCompanionReactionKey(
+      triggerMsg.messageId,
+      triggerType,
+      companionId,
+    )
     const fire = async () => {
-      if (!isHostRef.current) return
+      if (!isHostRef.current || roomRef.current?.id !== reactionRoomId) return
+      let claimed = false
+      let completed = false
       try {
+        claimed = await claimReaction(reactionRoomId, reactionKey)
+        if (!claimed || roomRef.current?.id !== reactionRoomId) return
         const prompt = buildChatReactivePrompt(
           companionId,
           triggerMsg,
@@ -230,19 +300,54 @@ export function useChatReactivity(
           triggerType,
           ambientType,
         )
-        const raw = await callClaude(prompt)
-        if (!raw) return
-        const messages = parseCompanionResponse(raw)
-        for (const msg of messages) {
-          await insertMessage(msg.companion_id, msg.text)
+        const grounded = await groundedCompanionBatch({
+          system: prompt.system,
+          user: prompt.user,
+          facts: prompt.groundingFacts,
+          model: 'claude-haiku-4-5',
+          maxTokens: 200,
+          maxRetries: 1,
+          expectedCompanionIds: [companionId],
+          allowEmptyBatch: true,
+          caller: (request) => callClaude(
+            { system: request.system, user: request.user },
+            request.maxTokens,
+            request.model,
+          ),
+        })
+        if (roomRef.current?.id !== reactionRoomId) return
+        if (grounded.findings.length > 0) {
+          const currentRoom = roomRef.current
+          if (currentRoom?.host_id) {
+            const { error: reviewError } = await supabase.rpc('record_companion_grounding_review_authorized', {
+              p_room_id: reactionRoomId,
+              p_actor_player_id: currentRoom.host_id,
+              p_reaction_key: reactionKey,
+              p_surface: 'chat',
+              p_engine: 'browser',
+              p_facts: prompt.groundingFacts,
+              p_attempted_messages: grounded.messages,
+              p_findings: grounded.findings,
+              p_attempts: grounded.attempts,
+              p_model: 'claude-haiku-4-5',
+              p_operator_capability: operatorCapabilityRef.current,
+            })
+            if (reviewError) console.error('Could not preserve blocked chat prose:', reviewError)
+          }
+          return
         }
+        if (grounded.messages.length === 0) return
+        const outputIds = await completeReaction(reactionRoomId, reactionKey, grounded.messages)
+        completed = outputIds.length > 0
       } catch {
         // Chat reactivity is a nice-to-have — silently fail
+      } finally {
+        if (claimed && !completed) await releaseReaction(reactionRoomId, reactionKey)
       }
     }
 
     if (delayMs > 0) {
-      setTimeout(fire, delayMs)
+      reactionTimeoutsRef.current.push(setTimeout(fire, delayMs))
     } else {
       await fire()
     }
@@ -326,6 +431,9 @@ export function useChatReactivity(
     lastBanterAtRef.current = now
     lastCompanionReplyAtRef.current.set(pick.responderId, now)
     banterSentAtRef.current.push(now)
+    const banterRoomId = roomRef.current?.id
+    if (!banterRoomId) return
+    const reactionKey = buildCompanionReactionKey(msg.id, 'banter', pick.responderId)
 
     // Typing appears shortly before the message, not for the whole delay.
     const lead = Math.min(4000, pick.delayMs)
@@ -335,27 +443,67 @@ export function useChatReactivity(
 
     banterTimeoutsRef.current.push(
       setTimeout(async () => {
+        let claimed = false
+        let completed = false
         try {
-          if (!isHostRef.current) return
+          if (!isHostRef.current || roomRef.current?.id !== banterRoomId) return
+          claimed = await claimReaction(banterRoomId, reactionKey)
+          if (!claimed || roomRef.current?.id !== banterRoomId) return
           const prompt = buildBanterPrompt(
             pick.responderId,
-            { companionId: msg.player_id, text: msg.text },
+            { messageId: msg.id, companionId: msg.player_id, text: msg.text },
             recentMessagesRef.current,
             {
               leaderboard: leaderboardRef.current,
               announcedCount: categoriesRef.current.filter((c) => c.winner_id != null).length,
             },
           )
-          const raw = await callClaude(prompt)
-          if (!raw) return
-          for (const out of parseCompanionResponse(raw)) {
-            const id = await insertMessage(out.companion_id, out.text)
-            // Record the reply's depth so it can be answered at most once more.
-            if (id) banterDepthRef.current.set(id, depth + 1)
+          const grounded = await groundedCompanionBatch({
+            system: prompt.system,
+            user: prompt.user,
+            facts: prompt.groundingFacts,
+            model: 'claude-haiku-4-5',
+            maxTokens: 200,
+            maxRetries: 1,
+            expectedCompanionIds: [pick.responderId],
+            allowEmptyBatch: true,
+            caller: (request) => callClaude(
+              { system: request.system, user: request.user },
+              request.maxTokens,
+              request.model,
+            ),
+          })
+          if (roomRef.current?.id !== banterRoomId) return
+          if (grounded.findings.length > 0) {
+            const currentRoom = roomRef.current
+            if (currentRoom?.host_id) {
+              const { error: reviewError } = await supabase.rpc('record_companion_grounding_review_authorized', {
+                p_room_id: banterRoomId,
+                p_actor_player_id: currentRoom.host_id,
+                p_reaction_key: reactionKey,
+                p_surface: 'banter',
+                p_engine: 'browser',
+                p_facts: prompt.groundingFacts,
+                p_attempted_messages: grounded.messages,
+                p_findings: grounded.findings,
+                p_attempts: grounded.attempts,
+                p_model: 'claude-haiku-4-5',
+                p_operator_capability: operatorCapabilityRef.current,
+              })
+              if (reviewError) console.error('Could not preserve blocked banter prose:', reviewError)
+            }
+            return
           }
+          if (grounded.messages.length === 0) return
+          const outputIds = await completeReaction(banterRoomId, reactionKey, grounded.messages)
+          completed = outputIds.length > 0
+          // Record every inserted reply's depth so it can be answered at most
+          // once more. IDs come from the same transaction that seals the claim.
+          outputIds.forEach((id) => banterDepthRef.current.set(id, depth + 1))
         } catch {
           // Banter is decoration — never let it break the chat.
         } finally {
+          if (claimed && !completed) await releaseReaction(banterRoomId, reactionKey)
           setTyping(pick.responderId, false)
           // Keep the depth map from growing all night.
           if (banterDepthRef.current.size > 200) banterDepthRef.current.clear()
@@ -387,7 +535,7 @@ export function useChatReactivity(
     const sender = playersRef.current.find((p) => p.id === msg.player_id)
     if (!sender) return
 
-    const triggerMsg = { playerName: sender.name, text: msg.text }
+    const triggerMsg = { messageId: msg.id, playerName: sender.name, text: msg.text }
 
     // 1. Detect predictions for delayed callbacks
     const nomineeNames = detectPrediction(msg.text, nomineesRef.current)
@@ -445,6 +593,105 @@ export function useChatReactivity(
   useEffect(() => {
     if (!roomId) return
 
+    let disposed = false
+    let subscribed = false
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+
+    setIsLoading(true)
+    setSyncError(null)
+
+    initializedRef.current = false
+    seenMessageIdsRef.current = new Set()
+    processedRealtimeIdsRef.current = new Set()
+    preInitBufferRef.current = []
+    recentMessagesRef.current = []
+    spokenCompanionsRef.current = new Set()
+    predictionsRef.current = []
+    lastMentionResponseRef.current = new Map()
+    lastAmbientResponseRef.current = 0
+    banterDepthRef.current = new Map()
+    lastBanterAtRef.current = 0
+    lastCompanionReplyAtRef.current = new Map()
+    recentCompanionAtRef.current = []
+    lastHumanAtRef.current = 0
+    banterSentAtRef.current = []
+    lastCompanionMsgRef.current = null
+    banterTimeoutsRef.current.forEach(clearTimeout)
+    banterTimeoutsRef.current = []
+    reactionTimeoutsRef.current.forEach(clearTimeout)
+    reactionTimeoutsRef.current = []
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current)
+    settleTimerRef.current = null
+
+    const processRealtimeOnce = (msg: MessageRow) => {
+      if (processedRealtimeIdsRef.current.has(msg.id)) return
+      processedRealtimeIdsRef.current.add(msg.id)
+      seenMessageIdsRef.current.add(msg.id)
+      processMessage(msg)
+    }
+
+    const hydrateReactiveTranscript = async () => {
+      const run = ++hydrationRun
+      try {
+        const result = await fetchAllRows<MessageRow>((from, to) => supabase
+          .from('messages')
+          .select('id, room_id, player_id, text, created_at')
+          .eq('room_id', roomId)
+          .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to))
+        if (result.error) throw result.error
+        if (disposed || run !== hydrationRun) return
+
+        const transcript = result.data ?? []
+        if (!initializedRef.current) {
+          const plan = planInitialReactiveTranscript(
+            transcript,
+            preInitBufferRef.current,
+          )
+          seenMessageIdsRef.current = plan.seenIds
+          for (const msg of transcript) {
+            if (COMPANION_IDS.has(msg.player_id)) spokenCompanionsRef.current.add(msg.player_id)
+          }
+          recentMessagesRef.current = transcript.slice(-10)
+          initializedRef.current = true
+
+          // Every buffered row came from a live INSERT callback after this
+          // channel mounted. Process it once even if the overlapping snapshot
+          // already contained it; database presence and trigger execution are
+          // deliberately separate facts.
+          preInitBufferRef.current = []
+          for (const msg of plan.toProcess) processRealtimeOnce(msg)
+          setSyncError(null)
+          setIsLoading(false)
+          return
+        }
+
+        // A cold worker can report SUBSCRIBED before forwarding WAL. Any row
+        // absent from the prior seen set is a missed live insertion and must be
+        // processed, not merely adopted as context.
+        const plan = planReactiveTranscriptReconciliation(
+          transcript,
+          seenMessageIdsRef.current,
+        )
+        seenMessageIdsRef.current = plan.seenIds
+        for (const msg of plan.toProcess) {
+          processedRealtimeIdsRef.current.add(msg.id)
+          processMessage(msg)
+        }
+        recentMessagesRef.current = transcript.slice(-10)
+        setSyncError(null)
+        setIsLoading(false)
+      } catch (loadError) {
+        if (!disposed && run === hydrationRun) {
+          console.error('Reactive chat transcript load failed:', loadError)
+          setSyncError('The AI chat trigger feed could not be synchronized.')
+          setIsLoading(false)
+        }
+      }
+    }
+
     const channel = supabase
       .channel(`chat-reactive:${roomId}`)
       .on(
@@ -456,6 +703,7 @@ export function useChatReactivity(
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
           const msg = payload.new as MessageRow
 
           // Update recent messages buffer for context
@@ -465,50 +713,47 @@ export function useChatReactivity(
           // isn't silently dropped. It will be processed once seenMessageIdsRef
           // is populated and we know whether it's truly new.
           if (!initializedRef.current) {
-            preInitBufferRef.current.push(msg)
+            if (!processedRealtimeIdsRef.current.has(msg.id) &&
+                !preInitBufferRef.current.some((candidate) => candidate.id === msg.id)) {
+              preInitBufferRef.current = [...preInitBufferRef.current, msg].slice(-200)
+            }
             return
           }
-          if (seenMessageIdsRef.current.has(msg.id)) return
-
-          processMessage(msg)
+          processRealtimeOnce(msg)
         },
       )
-      .subscribe()
-
-    // Fetch existing messages — mark as seen, populate recent buffer
-    supabase
-      .from('messages')
-      .select('id, room_id, player_id, text, created_at')
-      .eq('room_id', roomId)
-      .order('created_at', { ascending: true })
-      .then(({ data }) => {
-        if (data) {
-          for (const msg of data as MessageRow[]) {
-            seenMessageIdsRef.current.add(msg.id)
-            if (COMPANION_IDS.has(msg.player_id)) spokenCompanionsRef.current.add(msg.player_id)
-          }
-          // Keep last 10 for context buffer
-          recentMessagesRef.current = (data as MessageRow[]).slice(-10)
-        }
-        initializedRef.current = true
-
-        // Drain messages that arrived via Realtime before this fetch completed.
-        // Filter out any whose IDs are now in seenMessageIdsRef (they were already
-        // in the DB when we fetched, so they're pre-existing, not new).
-        const newDuringFetch = preInitBufferRef.current.filter(
-          (msg) => !seenMessageIdsRef.current.has(msg.id),
-        )
-        preInitBufferRef.current = []
-        for (const msg of newDuringFetch) {
-          processMessage(msg)
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateReactiveTranscript()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateReactiveTranscript()
+          }, 5_000)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          setSyncError('The AI chat trigger feed could not connect to Realtime.')
+          setIsLoading(false)
         }
       })
 
     return () => {
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId])
+  }, [roomId, retryVersion])
 
-  return { predictionsRef }
+  const retrySync = useCallback(() => {
+    setIsLoading(true)
+    setSyncError(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
+
+  return { predictionsRef, isLoading, syncError, retrySync }
 }

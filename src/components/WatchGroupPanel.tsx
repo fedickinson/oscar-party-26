@@ -27,6 +27,7 @@ import { Check, ChevronDown, MapPin, MonitorPlay, Plus, Tv } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { PlayerRow, RoomRow } from '../types/database'
 import { isSoloWatcher } from '../lib/watch-groups'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 
 interface Props {
   room: RoomRow
@@ -36,9 +37,11 @@ interface Props {
 }
 
 export default function WatchGroupPanel({ room, players, isHost, currentPlayerId }: Props) {
+  const { capability: operatorCapability } = useOperatorAuthority()
   const [newPlace, setNewPlace] = useState('')
   const [adding, setAdding] = useState(false)
   const [showManage, setShowManage] = useState(false)
+  const [authorityError, setAuthorityError] = useState<string | null>(null)
 
   const me = players.find((p) => p.id === currentPlayerId)
   const myPlace = me?.watch_group ?? null
@@ -48,14 +51,35 @@ export default function WatchGroupPanel({ room, players, isHost, currentPlayerId
   )
 
   async function setPlace(playerId: string, place: string | null) {
-    await supabase.from('players').update({ watch_group: place }).eq('id', playerId)
+    setAuthorityError(null)
+    try {
+      const { error } = await supabase.rpc('set_player_watch_group_authorized', {
+        p_room_id: room.id,
+        p_actor_player_id: currentPlayerId,
+        p_target_player_id: playerId,
+        p_watch_group: place,
+        p_operator_capability: playerId === currentPlayerId ? null : operatorCapability,
+      })
+      if (error) throw new Error(error.message)
+    } catch (error) {
+      setAuthorityError(error instanceof Error ? error.message : 'The location change was rejected.')
+    }
   }
 
   async function claimRemote(playerId: string) {
     // Atomic: clears whoever previously held it in the same location and sets
     // the new holder in one transaction. Two client writes would leave a window
     // with two holders or none, and the sync bar reads that state live.
-    await supabase.rpc('set_remote_holder', { p_room_id: room.id, p_player_id: playerId })
+    setAuthorityError(null)
+    try {
+      const { error } = await supabase.rpc('claim_room_remote_authority', {
+        p_room_id: room.id,
+        p_actor_player_id: playerId,
+      })
+      if (error) throw new Error(error.message)
+    } catch (error) {
+      setAuthorityError(error instanceof Error ? error.message : 'The remote handoff was rejected.')
+    }
   }
 
   const myGroupMembers = myPlace ? players.filter((p) => p.watch_group === myPlace) : []
@@ -68,6 +92,12 @@ export default function WatchGroupPanel({ room, players, isHost, currentPlayerId
         <MonitorPlay className="w-4 h-4 text-accent" />
         <h3 className="text-sm font-semibold text-white">Where you're watching</h3>
       </div>
+
+      {authorityError && (
+        <p className="text-xs text-[var(--t-negative)]" role="alert">
+          Playback setup did not change: {authorityError}
+        </p>
+      )}
 
       {/* ── Your own location ─────────────────────────────────────────────── */}
       <div>
