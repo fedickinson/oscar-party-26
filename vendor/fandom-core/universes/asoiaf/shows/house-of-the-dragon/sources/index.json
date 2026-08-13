@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "document_type": "sources",
+  "records": [
+    {
+      "id": "season-three-screen-record-through-episode-seven",
+      "kind": "operator_record",
+      "title": "Witnessed House of the Dragon Season 3 Screen Record Through Episode 7",
+      "locator": "repo:src/data/westeros-encyclopedia.ts#episodeRecaps",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-seven-decider-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 7 Recap",
+      "locator": "https://decider.com/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-seven-ew-dragons-interview",
+      "kind": "recap",
+      "title": "House of the Dragon director explains the big dragon surprises ahead of season 3 finale",
+      "locator": "https://ew.com/house-of-the-dragon-sunfyre-return-dreamfyre-reveal-season-3-director-interview-12032370",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-seven-esquire-stalling",
+      "kind": "sentiment",
+      "title": "House of the Dragon Episode 7 Feels Like Major Stalling",
+      "locator": "https://www.esquire.com/entertainment/tv/a73297586/house-of-the-dragon-season-3-episode-7-recap/",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-seven-sheepstealer-reaction",
+      "kind": "sentiment",
+      "title": "I Didn't Expect To Be So Emotionally Overwhelmed By HOTD's Dragon Abandonment Scene",
+      "locator": "https://www.cinemablend.com/television/hotd-dragon-abandonment-scene-internet-mad-sheepstealer-rhaena",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-six-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 6 Review: The Butcher's Ball",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-review-the-butchers-ball/",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-five-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 5 Review",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/20/house-of-the-dragon-season-3-episode-5-recap-review/",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "episode-three-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 3 Recap",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/05/house-of-the-dragon-season-3-episode-3-recap/",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "season-three-entity-screen-record-through-episode-seven",
+      "kind": "operator_record",
+      "title": "Witnessed House of the Dragon Season 3 Entity States Through Episode 7",
+      "locator": "repo:src/data/westeros-encyclopedia.ts#characters-and-dragons-screen-state",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "season-three-entity-audience-synthesis-through-episode-seven",
+      "kind": "sentiment",
+      "title": "House of the Dragon Season 3 Audience-Reaction Synthesis Through Episode 7",
+      "locator": "repo:src/data/westeros-encyclopedia.ts#characters-and-dragons-audience-reaction",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    },
+    {
+      "id": "season-three-criticism-synthesis-through-episode-seven",
+      "kind": "operator_record",
+      "title": "House of the Dragon Season 3 Criticism and Source-Material Cautions Through Episode 7",
+      "locator": "repo:src/data/westeros-encyclopedia.ts#criticism",
+      "origin_repository": "https://github.com/fedickinson/oscar-party-26.git"
+    }
+  ]
+}

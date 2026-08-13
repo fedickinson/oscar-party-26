@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
+    "fandom:check": "npx tsx scripts/sync-fandom-core.mts",
+    "fandom:sync": "npx tsx scripts/sync-fandom-core.mts --apply",
+    "test": "npm run fandom:check && vitest run",
     "test:watch": "vitest",
     "preview": "vite preview"
   },

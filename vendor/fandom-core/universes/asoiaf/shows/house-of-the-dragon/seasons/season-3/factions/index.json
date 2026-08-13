@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "document_type": "factions",
+  "records": [
+    {
+      "id": "the-blacks",
+      "work_id": "house-of-the-dragon",
+      "name": "The Blacks",
+      "kind": "war_alignment",
+      "description": "Black-aligned at the recorded Season 3 cutoff."
+    },
+    {
+      "id": "the-greens",
+      "work_id": "house-of-the-dragon",
+      "name": "The Greens",
+      "kind": "war_alignment",
+      "description": "Green-aligned at the recorded Season 3 cutoff."
+    },
+    {
+      "id": "neutral",
+      "work_id": "house-of-the-dragon",
+      "name": "Neutral",
+      "kind": "war_alignment",
+      "description": "Not aligned exclusively with either side at the recorded Season 3 cutoff."
+    }
+  ]
+}

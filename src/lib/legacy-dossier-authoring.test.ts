@@ -9,6 +9,7 @@ import {
 
 const LEGACY_SHA = 'a'.repeat(64)
 const ENCYCLOPEDIA_SHA = 'b'.repeat(64)
+const FANDOM_CORE_REVISION = 'c'.repeat(40)
 
 const profiles: LegacyDossierProfile[] = [{
   name: 'Aegon II Targaryen',
@@ -59,6 +60,7 @@ function manifest(): LegacyDossierDecisionManifest {
     target: { pack_id: 'target-pack', pack_version: 1 },
     legacy_worksheet_sha256: LEGACY_SHA,
     encyclopedia_sha256: ENCYCLOPEDIA_SHA,
+    fandom_core_revision: FANDOM_CORE_REVISION,
     approved_entity_legacy_ids: ['legacy-aegon', 'legacy-sunfyre'],
     screen_source: {
       id: 'entity-screen-record',
@@ -84,6 +86,7 @@ describe('legacy dossier authoring', () => {
       authoring,
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })
 
@@ -119,6 +122,7 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })).toThrow('legacy worksheet SHA-256 does not match')
 
@@ -128,8 +132,19 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles,
       encyclopediaSha256: 'c'.repeat(64),
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })).toThrow('encyclopedia SHA-256 does not match')
+
+    expect(() => applyLegacyDossierDecisions({
+      legacy: legacyWorksheet(),
+      legacyWorksheetSha256: LEGACY_SHA,
+      authoring: authoringWorksheet(),
+      profiles,
+      encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: 'd'.repeat(40),
+      manifest: manifest(),
+    })).toThrow('Fandom Core revision does not match')
   })
 
   it('requires exact profile and approval coverage', () => {
@@ -139,6 +154,7 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles: profiles.slice(0, 1),
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })).toThrow('dossier profiles must exactly cover the audited entity names')
 
@@ -150,6 +166,7 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: decisions,
     })).toThrow('approved dossier ids must exactly cover the audited legacy entity ids')
   })
@@ -166,6 +183,7 @@ describe('legacy dossier authoring', () => {
       authoring,
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })).toThrow('entity Aegon II Targaryen already has a conflicting dossier')
   })
@@ -179,6 +197,7 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: decisions,
     })).toThrow('dossier screen source fields are invalid')
   })
@@ -190,6 +209,7 @@ describe('legacy dossier authoring', () => {
       authoring: authoringWorksheet(),
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })
     const second = applyLegacyDossierDecisions({
@@ -198,6 +218,7 @@ describe('legacy dossier authoring', () => {
       authoring: first.worksheet,
       profiles,
       encyclopediaSha256: ENCYCLOPEDIA_SHA,
+      fandomCoreRevision: FANDOM_CORE_REVISION,
       manifest: manifest(),
     })
     expect(second.worksheet).toEqual(first.worksheet)

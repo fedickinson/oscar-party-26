@@ -9,6 +9,15 @@ episode. It keeps four worlds separate:
 - source-material canon, which is attitude-only and never a warrant for a
 screen event.
 
+Reusable fandom knowledge is owned by the private Fandom Core repository. This
+public app consumes the exact revision recorded in
+`vendor/fandom-core.lock.json`; `npm run fandom:check` proves the vendored JSON,
+all 275 current story possibilities and the deployed portrait bytes without
+network access. `npm run fandom:sync -- --source /path/to/fandom-core` is the
+only update path. Show-pack wagers, points, bingo, commentary and activation
+remain product-owned here, and live rooms continue to bind an immutable
+published show-pack version rather than reading Fandom Core at runtime.
+
 Schema version 3 adds a required deploy-owned, SHA-sealed raster portrait for
 every entity. Schema version 2 added the pack-owned commentary voice roster and
 full speaker/voice/fact/angle publication stamp. Older inputs are intentionally
