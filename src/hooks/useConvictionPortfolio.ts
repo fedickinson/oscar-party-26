@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
-import { CONVICTION_BUDGET } from '../lib/conviction'
+import { resolveConvictionBudget } from '../lib/conviction'
 import { supabase } from '../lib/supabase'
 import { fetchAllRows } from './fetch-all-rows'
 import type {
@@ -19,6 +19,7 @@ export interface ConvictionProgress {
 }
 
 export interface ConvictionPortfolioState {
+  budget: number
   entities: DraftEntityRow[]
   beats: SignatureBeatRow[]
   picks: ConvictionPickRow[]
@@ -59,6 +60,7 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
   const togglingRef = useRef(new Set<number>())
   const advancingRef = useRef(false)
   const activeScopeRef = useRef<string | null>(null)
+  const budget = resolveConvictionBudget(room?.game_contract)
 
   useEffect(() => { picksRef.current = picks }, [picks])
   useEffect(() => { beatsRef.current = beats }, [beats])
@@ -84,7 +86,7 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
   }
 
   const requestedScope = roomId && room?.id === roomId
-    ? `${roomId}:${room.show_pack_id}:${room.game_model ?? 'legacy_ensemble'}`
+    ? `${roomId}:${room.show_pack_id}:${room.game_model ?? 'legacy_ensemble'}:${budget ?? 'invalid'}`
     : null
   const isLoading = loadingState || (
     requestedScope != null && requestedScope !== activeScopeRef.current
@@ -108,8 +110,22 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
       return
     }
 
+    if (budget == null) {
+      activeScopeRef.current = `${roomId}:${room.show_pack_id}:conviction_portfolio:invalid`
+      picksRef.current = []
+      beatsRef.current = []
+      setEntities([])
+      setBeats([])
+      setPlayers([])
+      setPicks([])
+      setLoadingState(false)
+      setSyncErrorState('The room has no valid conviction budget.')
+      setActionError(null)
+      return
+    }
+
     const currentRoom = room
-    activeScopeRef.current = `${roomId}:${currentRoom.show_pack_id}:conviction_portfolio`
+    activeScopeRef.current = `${roomId}:${currentRoom.show_pack_id}:conviction_portfolio:${budget}`
     let disposed = false
     let liveRevision = 0
     let hydrationRun = 0
@@ -224,7 +240,7 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
       if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId, room?.id, room?.show_pack_id, room?.game_model, retryVersion, setRoom])
+  }, [roomId, room?.id, room?.show_pack_id, room?.game_model, budget, retryVersion, setRoom])
 
   async function toggle(beatId: number): Promise<void> {
     if (!roomId || !player || isLoading || syncError || togglingRef.current.has(beatId)) return
@@ -233,7 +249,7 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
       pick.player_id === player.id && pick.beat_id === beatId
     ))
     const myCount = picksRef.current.filter((pick) => pick.player_id === player.id).length
-    if (!existing && myCount >= CONVICTION_BUDGET) return
+    if (!existing && (budget == null || myCount >= budget)) return
 
     togglingRef.current.add(beatId)
     setActionError(null)
@@ -314,10 +330,11 @@ export function useConvictionPortfolio(roomId: string | undefined): ConvictionPo
   const progress = players.map((roomPlayer) => ({
     player: roomPlayer,
     chosen: picks.filter((pick) => pick.player_id === roomPlayer.id).length,
-    required: CONVICTION_BUDGET,
+    required: budget ?? 0,
   }))
 
   return {
+    budget: budget ?? 0,
     entities,
     beats,
     picks,

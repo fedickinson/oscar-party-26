@@ -273,6 +273,27 @@ export interface PlayerUpdate {
   is_remote_holder?: boolean
 }
 
+// ─── player_identity_selections ─────────────────────────────────────────────
+
+/** Pack-authored, shared, non-scoring identity selected by one occupied seat. */
+export interface PlayerIdentitySelectionRow {
+  player_id: string
+  room_id: string
+  show_pack_id: string
+  choice_key: string
+  selected_at: string
+}
+
+export interface PlayerIdentitySelectionInsert {
+  player_id: string
+  room_id: string
+  show_pack_id: string
+  choice_key: string
+  selected_at?: string
+}
+
+export type PlayerIdentitySelectionUpdate = Partial<PlayerIdentitySelectionInsert>
+
 // ─── categories ──────────────────────────────────────────────────────────────
 
 export interface CategoryRow {
@@ -1019,6 +1040,7 @@ export interface Database {
       rooms: { Row: RoomRow; Insert: RoomInsert; Update: RoomUpdate }
       show_packs: { Row: ShowPackRow; Insert: ShowPackInsert; Update: ShowPackUpdate }
       players: { Row: PlayerRow; Insert: PlayerInsert; Update: PlayerUpdate }
+      player_identity_selections: { Row: PlayerIdentitySelectionRow; Insert: PlayerIdentitySelectionInsert; Update: PlayerIdentitySelectionUpdate }
       categories: { Row: CategoryRow; Insert: CategoryInsert; Update: CategoryUpdate }
       nominees: { Row: NomineeRow; Insert: NomineeInsert; Update: NomineeUpdate }
       category_nominees: { Row: CategoryNomineeRow; Insert: CategoryNomineeInsert; Update: CategoryNomineeUpdate }

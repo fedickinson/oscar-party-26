@@ -62,7 +62,7 @@ The reusable foundation is already substantially implemented locally:
 - room-bound show packs and a resumable authoring factory;
 - trigger-authoring doctrine and grounded generation;
 - operator lens, review queues and the AI witness proposal rung;
-- a twelve-slot whole-board conviction portfolio with lonely-bet payouts;
+- a pack-sized whole-board conviction portfolio with lonely-bet payouts;
 - an optional one-dragon identity draft for the current story pack; and
 - a reusable settlement-drop ceremony compiler.
 
@@ -276,10 +276,10 @@ lobby show-pack rebind and are frozen once any commitment-dependent state
 exists.
 
 The contract vocabulary intentionally runs ahead of the current execution
-engine. Publication currently accepts only the proven Results Night and Story
-Night profiles. Variable conviction budgets, no-draft or chosen-faction
-identity, and campaign continuity remain P2/P4 work and fail closed rather than
-claiming to work.
+engine. Publication currently accepts the proven Results Night profile and the
+Story Night profile with a positive pack-owned conviction budget plus exclusive
+draft, shared faction or omitted identity. Campaign continuity remains P4 work
+and fails closed rather than claiming to work.
 
 Verification on the disposable local stack: clean migration replay through
 `20260813000100` plus authored seed; warning-level schema lint; 641 unit tests
@@ -316,10 +316,10 @@ those legacy setup sections before restoring the broad harness as a P1 gate.
 **Goal:** make the whole-cast prestige experience the reliable default for an
 arbitrary one-night story event.
 
-- [ ] Retain the fixed whole-board portfolio; make its budget pack-configurable
+- [x] Retain the fixed whole-board portfolio; make its budget pack-configurable
   instead of a hard-coded twelve.
-- [ ] Make the identity phase optional and non-scoring by default.
-- [ ] Support no identity draft, chosen faction/banner and exclusive identity
+- [x] Make the identity phase optional and non-scoring by default.
+- [x] Support no identity draft, chosen faction/banner and exclusive identity
   draft without restricting access to convictions.
 - [ ] Keep lonely-bet payout as the first scoring policy; do not add multiple
   speculative economies before another live test.
@@ -344,6 +344,46 @@ Create show pack
 -> generate recap and ceremony
 -> close
 ```
+
+### P2 implementation ledger — variable conviction budget, 2026-08-13
+
+The room-bound `game_contract.conviction_budget` is now the single portfolio
+size authority. Activation accepts positive Story Night budgets only when the
+pack authors at least that many distinct beats. The conviction page, peer
+readiness ledger and optimistic tap guard all read the copied room contract;
+Postgres independently enforces the same value under the player lock, including
+concurrent final-slot taps. The lonely-bet payout and exclusive identity draft
+are unchanged in this slice.
+
+Focused verification uses a one-slot Story pack with two authored beats: the
+activation command publishes and binds it, the room copies its budget, the
+first anonymous belief succeeds and the second is rejected by the database.
+This budget remains independent from either supported identity opening.
+
+### P2 implementation ledger — optional identity, 2026-08-13
+
+Story Night now has three executable opening profiles: an exclusive,
+non-scoring entity draft, shared faction/banner choice or no identity
+selection. A no-identity pack moves the canonical room phase directly from
+lobby to convictions through a capability-gated
+database command, so every subscribed phone follows the same update. It creates
+no draft order, ready roster or ownership rows. The database rejects both an
+older client trying to open a draft in that room and a direct-convictions command
+against an identity-draft room.
+
+For chosen faction, the immutable show pack's authored `entities[].group`
+values are the option catalog. Each seat writes to a distinct room-and-pack-bound
+selection ledger; options are shared, changeable only in the lobby, non-scoring
+and never ownership. The database requires every occupied seat to choose before
+convictions open and prevents an unselected late join after that transition.
+This deliberately does not reuse the property-specific Black/Green allegiance
+columns.
+
+The lobby derives its action, readiness and explanatory copy from the room-bound
+contract and fails closed for missing or future identity forms. The chosen-faction
+proof runs through two players, option validation, cross-client synchronization,
+conviction write, live open and provisional finish; the explicit no-identity and
+original exclusive-draft paths remain green.
 
 **Exit criteria**
 

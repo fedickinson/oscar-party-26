@@ -103,6 +103,14 @@ try {
   check(malformedOrder.error?.message.includes('every room player exactly once') === true,
     'the database rejects a duplicate or incomplete draft order')
 
+  const wronglySkippedIdentity = await roomCommand('begin_room_convictions_authorized', {
+    p_room_id: room.id,
+    p_actor_player_id: host.id,
+    p_operator_capability: capability,
+  })
+  check(wronglySkippedIdentity.error?.message.includes('requires an identity ceremony') === true,
+    'an identity-draft room cannot skip directly into convictions')
+
   const begun = await roomCommand('begin_room_draft_authorized', {
     p_room_id: room.id,
     p_actor_player_id: host.id,

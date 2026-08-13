@@ -431,7 +431,9 @@ export function summarizeGameContract(contract: ShowPackGameContract): string {
     : contract.identity.selection === 'exclusive_entity_draft'
       ? 'Exclusive entity draft'
       : 'Chosen faction'
-  const identity = `${selection}, ${contract.identity.scoring === 'none' ? 'identity only' : 'ensemble scoring'}`
+  const identity = contract.identity.selection === 'none'
+    ? selection
+    : `${selection}, ${contract.identity.scoring === 'none' ? 'identity only' : 'ensemble scoring'}`
   const visibility = contract.visibility === 'open_counts'
     ? 'Open belief counts'
     : contract.visibility === 'sealed_until_lock'

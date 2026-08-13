@@ -354,15 +354,30 @@ export function assertActivatableShowPack(pack: ShowPack): void {
       issues.push('the current confidence engine requires the Results Night contract profile')
     }
   } else if (contract.commitment === 'open_conviction') {
-    if (contract.conviction_budget !== 12
-      || contract.identity.selection !== 'exclusive_entity_draft'
-      || contract.identity.scoring !== 'none'
+    const identityProfileIsExecutable = contract.identity.scoring === 'none' && (
+      (contract.identity.selection === 'exclusive_entity_draft'
+        && contract.scarcity.identity === 'exclusive')
+      || (contract.identity.selection === 'chosen_faction'
+        && contract.scarcity.identity === 'shared')
+      || (contract.identity.selection === 'none'
+        && contract.scarcity.identity === 'none')
+    )
+    if (!identityProfileIsExecutable
       || contract.scarcity.commitments !== 'fixed_budget'
-      || contract.scarcity.identity !== 'exclusive'
       || contract.visibility !== 'open_counts'
       || contract.cadence !== 'immediate_facts_and_event_close'
       || contract.continuity !== 'canon_write_back') {
       issues.push('the current conviction engine requires the proven Story Night contract profile')
+    }
+    const beatCount = new Set(pack.signature_beats.map((beat) => beat.id)).size
+    if (contract.conviction_budget != null && contract.conviction_budget > beatCount) {
+      issues.push(`conviction budget ${contract.conviction_budget} exceeds the ${beatCount} authored beats`)
+    }
+    if (contract.identity.selection === 'chosen_faction') {
+      const authoredGroups = new Set(pack.entities.map((entity) => entity.group.trim()))
+      if (authoredGroups.size < 2) {
+        issues.push('chosen-faction identity needs at least two authored entity groups')
+      }
     }
   } else {
     issues.push(`commitment ${contract.commitment} has no executable room model yet`)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  compatibilityGameContract,
   compileShowPack,
   deriveGameModel,
   parseShowPack,
@@ -308,6 +309,16 @@ describe('parseShowPack', () => {
     ]))
     expect(summarizeGameContract(parsed.game_contract!)).toBe(
       'Open convictions (12) | Exclusive entity draft, identity only | Open belief counts | Immediate facts plus event close | Canon write-back',
+    )
+  })
+
+  it('describes an omitted identity ceremony without inventing an identity mode', () => {
+    const contract = compatibilityGameContract('room_declared')
+    contract.identity = { selection: 'none', scoring: 'none' }
+    contract.scarcity.identity = 'none'
+
+    expect(summarizeGameContract(contract)).toBe(
+      'Open convictions (12) | No identity selection | Open belief counts | Immediate facts plus event close | Canon write-back',
     )
   })
 

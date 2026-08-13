@@ -1,7 +1,14 @@
 import type { CategoryRow, ConvictionPickRow, PlayerRow } from '../types/database'
+import type { ShowPackGameContract } from '../types/game-contract'
 
-/** Four former character slots times three choices, now spendable anywhere. */
-export const CONVICTION_BUDGET = 12
+/** Reads the one canonical portfolio size from the room-bound show-pack contract. */
+export function resolveConvictionBudget(
+  contract: ShowPackGameContract | null | undefined,
+): number | null {
+  if (contract?.commitment !== 'open_conviction') return null
+  const budget = contract.conviction_budget
+  return Number.isInteger(budget) && Number(budget) > 0 ? budget : null
+}
 
 export interface ConvictionPortfolioScore {
   score: number

@@ -161,8 +161,11 @@ live status in .private/postop/HANDOFF.md):**
    behavior. Room contracts freeze with commitment-dependent state, and the
    activation command prints the profile before any write. Publication
    currently executes only the two proven Results Night and Story Night
-   profiles; optional identity forms, variable conviction budgets and campaigns
-   remain fail-closed P2/P4 work
+   profiles; Story Night conviction budgets are pack-owned and enforced from
+   activation through the phone and database. Story packs may retain the
+   exclusive non-scoring entity ceremony, choose a shared non-scoring faction
+   from the pack's authored entity groups, or omit identity and move directly
+   from lobby to convictions. Campaign continuity remains fail-closed P4 work
 5. Live narrative grounding — declared events, approved bingo marks and direct
    human-to-cast mention/ambient replies are implemented locally in browser and
    daemon; browser-originated companion banter is grounded too. Events project
@@ -233,7 +236,7 @@ reusable Story Night options are the next implementation boundary
    intact and the chosen entity is recorded separately. Confidence-gated
    auto-declare remains a later rung
 8. Conviction-portfolio redesign ("The conviction question") — implemented
-   locally: one dragon identity each, 12 open authored-beat beliefs, shared-bet
+   locally: one dragon identity each, a pack-sized open authored-beat portfolio, shared-bet
    integer splits, Realtime portfolio board, full score/timeline/settlement
    evidence, operator recovery and contract-derived room models
 9. Ceremony engine — the reusable settlement-drop compiler now owns the
@@ -731,12 +734,18 @@ characters to CONVICTION. Tiny identity draft stays (your dragon, your
 banner). Main game: fixed prediction budget staked across ANY beats on the
 board pre-episode — budget scarcity forces a portfolio that IS your read.
 Twist that restores differentiation: lonely bets pay full, crowded bets split.
-Right-and-alone is the jackpot. The implemented contract is 12 equal-weight
-slots per player across any authored signature beat, collisions included. A
+Right-and-alone is the jackpot. The implemented contract uses the positive
+integer budget copied from the room-bound show-pack contract, with equal-weight
+slots per player across any authored signature beat, collisions included.
+Activation requires the pack to author at least that many distinct beats. A
 struck beat pays `floor(authored points / believer count)` to each believer;
 the integer remainder is burned. The identity draft is one dragon per player
-and carries no passive score. Scheduled fact-stream packs retain the legacy
-confidence game; room-declared and AI-witnessed packs select conviction when
+and carries no passive score; a pack may instead select no identity or a shared
+faction/banner derived from its authored entity groups. Shared choices live in
+a separate room-and-pack-bound seat ledger, may overlap, freeze after the lobby
+and create no ownership rows. The capability-gated lobby command opens
+convictions only after every occupied seat has chosen. Scheduled fact-stream
+packs retain the legacy confidence game; room-declared and AI-witnessed packs select conviction when
 bound. Historical rooms stay legacy. The declaration board, banners, cast and
 witness remain the fact spine; score, timelines, results, receipts, settlement
 preflight, authoring worksheets and operator snapshots all consume the same

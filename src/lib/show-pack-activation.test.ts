@@ -16,6 +16,33 @@ const proof = parseShowPack(
   readFileSync(new URL('../../show-packs/examples/hotd-s3e8-proof.json', import.meta.url), 'utf8'),
 )
 
+function withStoryContract(
+  pack: typeof proof,
+  budget: number,
+  identity: 'exclusive_entity_draft' | 'chosen_faction' | 'none' = 'exclusive_entity_draft',
+): typeof proof {
+  pack.schema_version = 4
+  pack.game_contract = {
+    version: 1,
+    commitment: 'open_conviction',
+    conviction_budget: budget,
+    identity: { selection: identity, scoring: 'none' },
+    scarcity: {
+      commitments: 'fixed_budget',
+      identity: identity === 'none' ? 'none' : identity === 'chosen_faction' ? 'shared' : 'exclusive',
+    },
+    visibility: 'open_counts',
+    cadence: 'immediate_facts_and_event_close',
+    continuity: 'canon_write_back',
+  }
+  for (const wager of [
+    ...pack.predictions,
+    ...pack.signature_beats,
+    ...pack.bingo_squares,
+  ]) wager.truth_authority = 'operator_declaration'
+  return pack
+}
+
 describe('show-pack activation gate', () => {
   it('rejects the representative proof slice as too small to deal a bingo card', () => {
     expect(() => assertActivatableShowPack(proof)).toThrow('at least 24 bingo squares')
@@ -35,27 +62,46 @@ describe('show-pack activation gate', () => {
     expect(() => assertActivatableShowPack(pack)).toThrow('one entity or one explicit pair')
   })
 
-  it('rejects complete contracts whose behavior is not implemented yet', () => {
+  it('requires at least two authored groups for a chosen-faction contract', () => {
     const compiled = structuredClone(proof)
-    compiled.schema_version = 4
-    compiled.game_contract = {
-      version: 1,
-      commitment: 'open_conviction',
-      conviction_budget: 8,
-      identity: { selection: 'none', scoring: 'none' },
-      scarcity: { commitments: 'fixed_budget', identity: 'none' },
-      visibility: 'open_counts',
-      cadence: 'immediate_facts_and_event_close',
-      continuity: 'canon_write_back',
-    }
-    for (const wager of [
-      ...compiled.predictions,
-      ...compiled.signature_beats,
-      ...compiled.bingo_squares,
-    ]) wager.truth_authority = 'operator_declaration'
+    compiled.bingo_squares = Array.from({ length: 24 }, (_, index) => ({
+      ...proof.bingo_squares[0],
+      id: `square-${index + 1}`,
+    }))
+    withStoryContract(compiled, 2, 'chosen_faction')
+    compiled.entities[1].group = compiled.entities[0].group
 
     expect(() => assertActivatableShowPack(compiled))
-      .toThrow('current conviction engine requires the proven Story Night contract profile')
+      .toThrow('chosen-faction identity needs at least two authored entity groups')
+
+    compiled.entities[1].group = 'The Blacks'
+    expect(() => assertActivatableShowPack(compiled)).not.toThrow()
+  })
+
+  it('accepts Story Night without an identity ceremony', () => {
+    const pack = structuredClone(proof)
+    pack.bingo_squares = Array.from({ length: 24 }, (_, index) => ({
+      ...proof.bingo_squares[0],
+      id: `square-${index + 1}`,
+    }))
+    withStoryContract(pack, 2, 'none')
+
+    expect(() => assertActivatableShowPack(pack)).not.toThrow()
+  })
+
+  it('accepts a pack-sized conviction budget and rejects a budget larger than its board', () => {
+    const pack = structuredClone(proof)
+    pack.bingo_squares = Array.from({ length: 24 }, (_, index) => ({
+      ...proof.bingo_squares[0],
+      id: `square-${index + 1}`,
+    }))
+    withStoryContract(pack, 2)
+
+    expect(() => assertActivatableShowPack(pack)).not.toThrow()
+
+    pack.game_contract!.conviction_budget = 3
+    expect(() => assertActivatableShowPack(pack))
+      .toThrow('conviction budget 3 exceeds the 2 authored beats')
   })
 
   it('preserves the complete trigger doctrine in the normalized catalog contract', () => {
@@ -88,6 +134,7 @@ describe('show-pack activation gate', () => {
       ...proof.bingo_squares[0],
       id: index === 0 ? proof.bingo_squares[0].id : `square-${index + 1}`,
     }))
+    withStoryContract(pack, 2)
     pack.signature_beats[0].entity_ids = ['aegon-ii-targaryen', 'sunfyre']
 
     const plan = await buildShowPackActivationPlan(pack)
@@ -189,6 +236,7 @@ describe('show-pack activation gate', () => {
       ...proof.bingo_squares[0],
       id: index === 0 ? proof.bingo_squares[0].id : `square-${index + 1}`,
     }))
+    withStoryContract(pack, 2)
     const plan = await buildShowPackActivationPlan(pack)
     const installed: InstalledShowPackCatalog = {
       showPack: structuredClone(plan.showPack),
