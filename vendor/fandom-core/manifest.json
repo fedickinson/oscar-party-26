@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "asoiaf-house-of-the-dragon-season-3",
+  "description": "House of the Dragon Season 3 screen canon through Episode 7 and authored possibilities for Episode 8.",
+  "canon_cutoff": {
+    "work_id": "house-of-the-dragon",
+    "season": 3,
+    "episode": 7
+  },
+  "target_installment": {
+    "work_id": "house-of-the-dragon",
+    "season": 3,
+    "episode": 8,
+    "knowledge_status": "possibilities_only"
+  },
+  "origin": {
+    "repository": "https://github.com/fedickinson/oscar-party-26.git",
+    "source_documents": [
+      {
+        "path": "src/data/westeros-encyclopedia.ts",
+        "sha256": "22b6a033cb7c25b7415c6aa9539328235e1e1762a6287741773f83db4cae4dd4"
+      },
+      {
+        "path": "show-packs/research/hotd-s3-finale-authoring.json",
+        "sha256": "1c43e70b85562320c16a5f7a804ddc600e0037bf62abb268d2659c227e26066d"
+      },
+      {
+        "path": "src/data/image-library.ts",
+        "sha256": "aa69db3be7142bc2f0858055f07884f0ab26599877372f36b5c21329b7747c95"
+      }
+    ]
+  },
+  "files": {
+    "universe": "universes/asoiaf/universe.json",
+    "work": "universes/asoiaf/shows/house-of-the-dragon/show.json",
+    "season": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/season.json",
+    "episodes": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/episodes/index.json",
+    "characters": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/characters/index.json",
+    "dragons": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/dragons/index.json",
+    "factions": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/factions/index.json",
+    "relationships": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/relationships/index.json",
+    "events": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/events/index.json",
+    "sources": "universes/asoiaf/shows/house-of-the-dragon/sources/index.json",
+    "claims": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/claims/index.json",
+    "possibilities": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/possibilities/episode-8.json",
+    "portraits": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/assets/portraits.json"
+  },
+  "counts": {
+    "characters": 32,
+    "dragons": 12,
+    "factions": 3,
+    "relationships": 11,
+    "episodes": 8,
+    "canonical_events": 48,
+    "sources": 11,
+    "claims": 104,
+    "story_possibilities": 275,
+    "portraits": 38
+  }
+}

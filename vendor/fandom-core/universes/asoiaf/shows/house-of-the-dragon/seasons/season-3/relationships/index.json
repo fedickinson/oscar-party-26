@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "document_type": "relationships",
+  "records": [
+    {
+      "id": "rhaena-sheepstealer-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "rhaena",
+      "object_entity_id": "sheepstealer",
+      "label_as_recorded": "Rhaena Targaryen (separated)",
+      "notes": "Wild, large, never reliably obedient. Badly wounded in E7 and now separated from her.",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aegon-sunfyre-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "aegon",
+      "object_entity_id": "sunfyre",
+      "label_as_recorded": "Aegon II Targaryen",
+      "notes": "Golden, severely scarred, ALIVE and newly reunited with him. The show does not explain how Sunfyre survived — any mechanism is fan speculation.",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aemond-vhagar-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "aemond",
+      "object_entity_id": "vhagar",
+      "label_as_recorded": "Aemond Targaryen",
+      "notes": "Largest and oldest living war dragon. WHEREABOUTS CURRENTLY UNCLEAR — the show deliberately left this open. Do not say Vhagar is at Harrenhal.",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daemon-caraxes-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "daemon",
+      "object_entity_id": "caraxes",
+      "label_as_recorded": "Daemon Targaryen",
+      "notes": "Long, red, heavily battle-experienced",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "rhaenyra-syrax-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "rhaenyra",
+      "object_entity_id": "syrax",
+      "label_as_recorded": "Rhaenyra Targaryen",
+      "notes": "Golden royal mount",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "addam-seasmoke-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "addam",
+      "object_entity_id": "seasmoke",
+      "label_as_recorded": "Addam of Hull",
+      "notes": "Formerly Laenor Velaryon’s",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "hugh-vermithor-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "hugh",
+      "object_entity_id": "vermithor",
+      "label_as_recorded": "Hugh Hammer",
+      "notes": "The Bronze Fury, one of the largest living dragons",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "ulf-silverwing-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "ulf",
+      "object_entity_id": "silverwing",
+      "label_as_recorded": "Ulf the White",
+      "notes": "Gentler disposition",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daeron-tessarion-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "daeron",
+      "object_entity_id": "tessarion",
+      "label_as_recorded": "Daeron Targaryen",
+      "notes": "Blue she-dragon; used in the killing of Kat’s brother Leo",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "helaena-dreamfyre-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "helaena",
+      "object_entity_id": "dreamfyre",
+      "label_as_recorded": "Helaena Targaryen",
+      "notes": "Bonded. Her E7 flight is a VISION, not a real sortie — she has not entered combat.",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "baela-moondancer-bond",
+      "work_id": "house-of-the-dragon",
+      "type": "dragon_rider_bond",
+      "subject_entity_id": "baela",
+      "object_entity_id": "moondancer",
+      "label_as_recorded": "Baela Targaryen",
+      "notes": "Smaller, agile",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    }
+  ]
+}

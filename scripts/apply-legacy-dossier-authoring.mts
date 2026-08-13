@@ -3,7 +3,11 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { characters, dragons } from '../src/data/westeros-encyclopedia'
+import {
+  FANDOM_CORE_REVISION,
+  characters,
+  dragons,
+} from '../src/data/westeros-encyclopedia'
 import type { LegacyShowPackMigrationWorksheet } from '../src/lib/legacy-show-pack-audit'
 import {
   assessLegacyShowPackAuthoringWorksheet,
@@ -103,7 +107,10 @@ function main(): void {
   const options = parseArgs(process.argv.slice(2))
   const legacyPath = existingFile(options.legacy, 'legacy migration worksheet')
   const authoringPath = existingFile(options.authoring, 'legacy authoring worksheet')
-  const encyclopediaPath = existingFile('src/data/westeros-encyclopedia.ts', 'Westeros encyclopedia')
+  const fandomCoreManifestPath = existingFile(
+    'vendor/fandom-core/manifest.json',
+    'vendored Fandom Core manifest',
+  )
   const decisionsPath = existingFile(options.decisions, 'dossier decision manifest')
   const outputPath = options.inPlace
     ? authoringPath
@@ -111,7 +118,7 @@ function main(): void {
   const inputs = [
     { label: 'legacy migration worksheet', path: legacyPath },
     { label: 'legacy authoring worksheet', path: authoringPath },
-    { label: 'Westeros encyclopedia', path: encyclopediaPath },
+    { label: 'vendored Fandom Core manifest', path: fandomCoreManifestPath },
     { label: 'dossier decision manifest', path: decisionsPath },
   ]
   if (outputPath) {
@@ -126,10 +133,18 @@ function main(): void {
 
   const legacyInput = readJson(legacyPath, 'legacy migration worksheet')
   const authoringInput = readJson(authoringPath, 'legacy authoring worksheet')
-  const encyclopediaRaw = readFileSync(encyclopediaPath, 'utf8')
+  const fandomCoreInput = readJson(fandomCoreManifestPath, 'vendored Fandom Core manifest')
   const manifestInput = readJson(decisionsPath, 'dossier decision manifest')
   const legacySha = sha256(legacyInput.raw)
-  const encyclopediaSha = sha256(encyclopediaRaw)
+  const fandomCoreManifest = fandomCoreInput.value as {
+    origin?: { source_documents?: Array<{ path?: string; sha256?: string }> }
+  }
+  const encyclopediaSha = fandomCoreManifest.origin?.source_documents?.find(
+    (document) => document.path === 'src/data/westeros-encyclopedia.ts',
+  )?.sha256
+  if (typeof encyclopediaSha !== 'string') {
+    throw new Error('vendored Fandom Core manifest is missing the legacy encyclopedia origin hash')
+  }
   const legacy = legacyInput.value as LegacyShowPackMigrationWorksheet
   const authoring = authoringInput.value as LegacyShowPackAuthoringWorksheet
   const manifest = manifestInput.value as LegacyDossierDecisionManifest
@@ -137,7 +152,8 @@ function main(): void {
   console.log('[legacy-dossier-authoring] target=local-filesystem')
   console.log(`[legacy-dossier-authoring] mode=${options.inPlace ? 'write-in-place' : outputPath ? 'write' : 'dry-run'}`)
   console.log(`[legacy-dossier-authoring] legacy=${legacyPath} sha256=${legacySha}`)
-  console.log(`[legacy-dossier-authoring] encyclopedia=${encyclopediaPath} sha256=${encyclopediaSha}`)
+  console.log(`[legacy-dossier-authoring] fandom_core_revision=${FANDOM_CORE_REVISION}`)
+  console.log(`[legacy-dossier-authoring] legacy_encyclopedia_sha256=${encyclopediaSha}`)
   console.log(`[legacy-dossier-authoring] authoring=${authoringPath}`)
   console.log(`[legacy-dossier-authoring] decisions=${decisionsPath}`)
 
@@ -147,6 +163,7 @@ function main(): void {
     authoring,
     profiles: encyclopediaProfiles(),
     encyclopediaSha256: encyclopediaSha,
+    fandomCoreRevision: FANDOM_CORE_REVISION,
     manifest,
   })
   const status = assessLegacyShowPackAuthoringWorksheet(legacy, legacySha, result.worksheet)

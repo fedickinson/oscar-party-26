@@ -4,6 +4,7 @@ import type { ShowPackClaim, ShowPackSource } from './show-pack'
 import { invalidateStaleLegacyGlobalReviewSeals } from './legacy-global-review'
 
 const SHA256 = /^[a-f0-9]{64}$/
+const COMMIT_SHA = /^[a-f0-9]{40}$/
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 export interface LegacyDossierProfile {
@@ -21,6 +22,7 @@ export interface LegacyDossierDecisionManifest {
   }
   legacy_worksheet_sha256: string
   encyclopedia_sha256: string
+  fandom_core_revision: string
   approved_entity_legacy_ids: string[]
   screen_source: ShowPackSource
   sentiment_source: ShowPackSource
@@ -32,6 +34,7 @@ export interface ApplyLegacyDossierDecisionsInput {
   authoring: LegacyShowPackAuthoringWorksheet
   profiles: LegacyDossierProfile[]
   encyclopediaSha256: string
+  fandomCoreRevision: string
   manifest: LegacyDossierDecisionManifest
 }
 
@@ -99,6 +102,7 @@ function assertManifest(
   authoring: LegacyShowPackAuthoringWorksheet,
   legacyWorksheetSha256: string,
   encyclopediaSha256: string,
+  fandomCoreRevision: string,
 ): void {
   if (manifest.manifest_version !== 1 || manifest.artifact !== 'legacy-dossier-decisions') {
     throw new Error('dossier decision manifest identity is invalid')
@@ -111,6 +115,10 @@ function assertManifest(
   if (!SHA256.test(encyclopediaSha256)
     || encyclopediaSha256 !== manifest.encyclopedia_sha256) {
     throw new Error('encyclopedia SHA-256 does not match the dossier decision manifest')
+  }
+  if (!COMMIT_SHA.test(fandomCoreRevision)
+    || fandomCoreRevision !== manifest.fandom_core_revision) {
+    throw new Error('Fandom Core revision does not match the dossier decision manifest')
   }
   if (authoring.pack_draft.id !== manifest.target.pack_id
     || authoring.pack_draft.version !== manifest.target.pack_version) {
@@ -149,9 +157,16 @@ export function applyLegacyDossierDecisions(
     authoring,
     profiles,
     encyclopediaSha256,
+    fandomCoreRevision,
     manifest,
   } = input
-  assertManifest(manifest, authoring, legacyWorksheetSha256, encyclopediaSha256)
+  assertManifest(
+    manifest,
+    authoring,
+    legacyWorksheetSha256,
+    encyclopediaSha256,
+    fandomCoreRevision,
+  )
 
   const auditedEntities = legacy.identity.entities
   const auditedNames = auditedEntities.map((entity) => entity.name)

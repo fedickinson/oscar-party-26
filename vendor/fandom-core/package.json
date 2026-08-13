@@ -1,0 +1,28 @@
+{
+  "name": "@fedickinson/fandom-core",
+  "version": "0.1.1",
+  "description": "Product-neutral fandom knowledge shared across Fandom products.",
+  "type": "module",
+  "files": [
+    "manifest.json",
+    "universes",
+    "schemas",
+    "docs"
+  ],
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "test": "npm run validate"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    "./manifest.json": "./manifest.json",
+    "./universes/*": "./universes/*",
+    "./schemas/*": "./schemas/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fedickinson/fandom-core.git"
+  }
+}

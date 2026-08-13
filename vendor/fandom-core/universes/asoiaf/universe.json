@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "document_type": "universes",
+  "records": [
+    {
+      "id": "asoiaf",
+      "name": "A Song of Ice and Fire",
+      "description": "The fictional universe containing House of the Dragon."
+    }
+  ]
+}

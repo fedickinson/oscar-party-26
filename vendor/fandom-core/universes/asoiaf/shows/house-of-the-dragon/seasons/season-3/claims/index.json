@@ -1,0 +1,1943 @@
+{
+  "schema_version": "1.0",
+  "document_type": "claims",
+  "records": [
+    {
+      "id": "episode-seven-screen-setup",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "By the end of episode 7, Rhaena was separated from a wounded Sheepstealer, Alicent had poisoned Aemond, Ulf had secretly agreed to defect to Ormund, Sunfyre had returned to Aegon, Rhaenyra and Mysaria had become intimate, and Helaena's vision had shown Dreamfyre.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-seven-decider-recap"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "episode-seven-dragon-setup",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 7 established Sunfyre's return and reunion with Aegon, showed Dreamfyre within Helaena's vision, and established Ormund winning Ulf's secret cooperation.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-seven-ew-dragons-interview"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "episode-seven-stalling-discourse",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Criticism of episode 7 focused on its brooding, vision-heavy structure and on frustration with characters repeating psychological loops while the war advanced elsewhere.",
+      "source_ids": [
+        "episode-seven-esquire-stalling"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "sheepstealer-audience-protectiveness",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience reaction after episode 7 was notably protective of Sheepstealer after the dragon was wounded, separated from Rhaena, and left with an uncertain fate.",
+      "source_ids": [
+        "episode-seven-sheepstealer-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "episode-six-screen-setup",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 6 killed Criston Cole at the Butcher's Ball, advanced the northern and river forces toward Tumbleton, and ended with Corlys captive as the ground war converged on the finale.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-six-forbes-recap"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "episode-five-screen-setup",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 5 continued Aegon and Larys's road story, revealed Helaena's pregnancy, and made Alicent and Helaena's attempt to escape a consequential late-season thread.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-five-forbes-recap"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "episode-three-screen-setup",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 3 established Rhaenyra's governance and resource problems in King's Landing, including missing royal funds, shortages, and the Red Keep's rat infestation.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-three-forbes-recap"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "larys-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive but has ABANDONED Aegon and Tyland rather than face the confrontation. Destination not established.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "larys"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "larys-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "ENJOYED. The Aegon/Larys/Tyland road story is a strong approval area, and Larys finally snapping at Aegon was called 'so damn satisfying'.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "larys"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "ulf-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive and SECRETLY TURNED TO THE GREENS in E7, won over by Ormund with respect, pleasure and the promise of Driftmark. CRITICALLY: nobody on Team Black knows. Rhaenyra and Daemon still count him and Silverwing as theirs. The audience knows; the characters do not.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "ulf"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "ulf-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "SURPRISINGLY WELL LIKED. Obnoxious, but the show made his resentment comprehensible — 'Ulf's motives are completely understandable' is a common note. Viewers condemn the behaviour while buying the psychology.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "ulf"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alicent-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, at Harrenhal, having just poisoned Aemond as the price of Rhaenyra protecting Helaena.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alicent"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alicent-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "THE WRITING IS THE TARGET, NOT THE ACTOR. The poisoning is the focal point of a 'they broke Alicent' argument. Crucially, viewers are sympathetic to Olivia Cooke and think she is excellent — they are unhappy with what the scripts ask her to sell. Do not mock the performance.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alicent"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "hugh-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive and STILL BLACK-ALIGNED on screen. Tied to occupied Tumbleton through his wife Kat, who refuses to leave with him. Loyalty strained — but no defection has happened.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "hugh"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "hugh-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "UNDER-DISCUSSED relative to Ulf. A suspense character rather than a fandom character — the conversation is about Kat, the dragonseeds and what he will choose, rather than about him.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "hugh"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alysrivers-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive at Harrenhal, standing over the poisoned Aemond, and in possession of a hidden clutch of dragon eggs.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alysrivers"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alysrivers-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "DIVISIVE BUT COMPELLING. Rankin's uncanny performance is praised; the Aemond material splits between enthusiasm and Harrenhal fatigue.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alysrivers"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "roderick-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, commanding the Winter Wolves, closing on the Hightower position at Tumbleton.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "roderick"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "roderick-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "WELL LIKED. The dry, brutal veteran is a popular addition.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "roderick"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "tyland-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, revealed to have survived the Gullet, and staying with Aegon after volunteering to stand beside him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "tyland"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "tyland-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "ENJOYED as part of the Aegon/Larys/Tyland trio.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "tyland"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "sunfyre-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, severely scarred, returned in E7 and killed the Black soldiers confronting Aegon. The show does not explain how he survived.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "sunfyre"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "sunfyre-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "ENORMOUSLY POPULAR. His return is the crowd-pleaser of the season — 'Sunfyre really saved the episode'. Viewers respond to the mirroring: scarred king, scarred dragon, both wrecked by the same war. Aegon calling him 'his boy' is widely quoted.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "sunfyre"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "gwayne-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive at Tumbleton, increasingly opposed to Ormund and protective of Daeron. Exposed a fake Baratheon assassination attempt.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "gwayne"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "gwayne-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LIKED as the Green side's conscience.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "gwayne"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "mysaria-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive in King's Landing as Rhaenyra's spymaster and intimate partner.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "mysaria"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "mysaria-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "ONE OF THE CLEAREST AUDIENCE LOSERS — but the complaint is screen time, not the character. 'The fact Mysaria gets more scenes than Aegon is criminal.' The argument is that the Rhaenyra/Mysaria material crowds out the war, Aegon and the dragons. Some viewers do like the chemistry.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "mysaria"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "addam-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive and an active Black dragonrider; helped contain Sheepstealer and escort the queen’s retreat.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "addam"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "addam-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "QUIETLY LIKED. His loyalty reads well against Rhaenyra's mistrust of the dragonseeds.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "addam"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "tessarion-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive at Tumbleton. Used in the killing of Kat's brother Leo.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "tessarion"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "tessarion-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Well liked. Viewers respond to Daeron calling her 'his girl' — read as a genuine bond, set against Ormund's purely instrumental view of dragons.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "tessarion"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "silverwing-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Goes with Ulf to the Greens after his secret defection — Team Black does not know.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "silverwing"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "silverwing-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Discussed mostly as the asset Ulf is taking with him.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "silverwing"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "vhagar-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. WHEREABOUTS UNKNOWN — deliberately left unclear since E5. Do not place her.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "vhagar"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "vhagar-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Her absence is one of the season's most-discussed open questions.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "vhagar"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "kat-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive in occupied Tumbleton, refusing to leave with Hugh.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "kat"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "kat-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "SYMPATHETIC, though viewers question why she will not leave Tumbleton.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "kat"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "orwyle-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive in King's Landing, serving whichever regime holds it.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "orwyle"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "orwyle-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LOW PROFILE.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "orwyle"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "roxton-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive; Ormund’s operative, having successfully kidnapped Corlys.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "roxton"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "roxton-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LOW PROFILE.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "roxton"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "syrax-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Took part in the Sheepstealer fight.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "syrax"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "syrax-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Neutral.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "syrax"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "sheepstealer-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Badly wounded in E7 after fighting Syrax, Seasmoke and Caraxes at once. Daemon deliberately let him escape. Alive, alone, injured.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "sheepstealer"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "sheepstealer-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "THE BREAKOUT OF THE SEASON. 'Justice for Sheepstealer' is the dominant meme — viewers treat him as an innocent dragged into Targaryen nonsense who was 'minding his own business taking sheep'. Genuine sadness, not only jokes, about him being set on by three dragons. Widely admired for surviving 3-v-1. He is more sympathetic to the audience than his own rider.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "sheepstealer"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "baela-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, reconciled with Rhaena, still one of Rhaenyra’s functioning riders.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "baela"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "baela-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LIKED. Some find the Alyn romance under-developed; others are glad she has a life beyond being Jace's fiancée.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "baela"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "vermithor-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. The Bronze Fury, one of the largest living dragons — and the reason Hugh matters strategically.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "vermithor"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "vermithor-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Treated as a looming strategic factor rather than a personality.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "vermithor"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "oscartully-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, co-commanding the Riverlands force closing on Tumbleton.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "oscartully"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "oscartully-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "POSITIVE but lower profile.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "oscartully"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "rhaenyra-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, in King's Landing, holding the Iron Throne after recovering Rhaena. Facing an empty treasury, food shortages, a hostile Faith and restive dragonseeds.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "rhaenyra"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "rhaenyra-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "GOODWILL DETERIORATING. The complaint is not that she is evil but that her decisions look self-destructive — alienating dragonseeds, mistrusting advisers, mishandling the city. 'Rhaenyra's downfall' is now a common video title. Viewers are actively arguing whether this is good tragedy or bad writing.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "rhaenyra"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "ormund-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, controls Tumbleton, holds Corlys prisoner, and has secretly turned Ulf. A large Black northern host is closing on him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "ormund"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "ormund-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LOVE TO HATE. 'I hate this man, give me more of this man.' People hate what he does to Daeron and enjoy watching him do it. Note the difference from Alicent criticism: nobody wants Ormund's scenes removed, they want to analyse them.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "ormund"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "torrhen-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive as far as E7 establishes. His exact position late in the season is NOT re-established — do not invent a battlefield location for him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "torrhen"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "torrhen-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "LOW PROFILE.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "torrhen"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daemon-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Last confirmed at the Sheepstealer fight, having deliberately let the wounded dragon escape. Exact location after that scene is NOT established — do not place him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "daemon"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daemon-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "DEBATABLE. Viewers were divided on him, but E7 earned real credit: many noticed he could have had Caraxes finish Sheepstealer and deliberately chose not to, reading it as choosing his daughter over the obvious move.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "daemon"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "corlys-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive but a PRISONER of Ormund at Tumbleton, missing a finger — sent to Alyn as proof.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "corlys"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "corlys-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "SYMPATHETIC, though viewers find it implausible that so experienced a warlord was kidnapped so easily.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "corlys"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "rhaena-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, returned to King's Landing with Rhaenyra after her secret was exposed. Sheepstealer is wounded and gone.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "rhaena"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "rhaena-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "POLARIZED — and notably less liked than her dragon. Some credit her finally getting agency; a substantial contingent blames her for dragging Sheepstealer into a war he had no part in. Rule of thumb: Rhaena is a debate, Sheepstealer is applause.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "rhaena"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aegon-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, scarred and disabled, on the road with Tyland, newly re-emboldened after Sunfyre returned and killed the Black soldiers confronting him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "aegon"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aegon-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "THE SEASON'S BIGGEST WINNER. Viewers who mocked him now name him a favourite. The wounded road story stripped the swagger and made him a person. You do not have to back him politically to enjoy watching him.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "aegon"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "caraxes-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Fought Sheepstealer in E7; Daemon chose not to finish him.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "caraxes"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "caraxes-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Respected. The choice not to kill Sheepstealer earned Daemon credit.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "caraxes"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daeron-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive at Tumbleton, resisting Ormund’s attempts to make him a puppet king, with Gwayne acting as a counterweight.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "daeron"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "daeron-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "A SUCCESS. Landed well with show-only viewers. Audiences particularly like his genuine affection for Tessarion set against Ormund's coldly instrumental view of dragons. Some book-reader complaints that he has been changed too much.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "daeron"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "seasmoke-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Took part in the Sheepstealer fight.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "seasmoke"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "seasmoke-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Positive, tied to goodwill toward Addam.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "seasmoke"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aemond-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "ALIVE but poisoned with nightshade by Alicent and collapsed at Harrenhal. There is NO on-screen death. His fate is the season’s biggest open question.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "aemond"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "aemond-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "MIXED BUT HIGHLY ENGAGED. 'Mommy issues' has become the shorthand for S3 Aemond. The Alys material works for viewers as gothic psychological horror, not romance. There is real fatigue about another Targaryen stuck at Harrenhal hallucinating.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "aemond"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "dreamfyre-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive. Appeared in E7 only inside Helaena's VISION — she has not flown into combat.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "dreamfyre"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "dreamfyre-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Big excitement at finally seeing her; a wave of explainers and edits since E7.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "dreamfyre"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "helaena-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive and pregnant, effectively a Black ward/prisoner in King's Landing, still protecting Jaehaera.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "helaena"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "helaena-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "INTENSELY PROTECTED. Generates unusually little hostility. Enormous excitement about Dreamfyre finally appearing, and viewers are decoding her visions rather than dismissing them. The instinct is 'protect Helaena at all costs'.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "helaena"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alyn-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive, commanding Velaryon forces, and has just received proof of Corlys’s captivity.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alyn"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alyn-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "WELL RECEIVED, especially his rage at the Gullet when Corlys appears to fall.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alyn"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "moondancer-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "moondancer"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "moondancer-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Neutral to positive.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "moondancer"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alysanne-screen-state",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Alive with the Black river host. Known as Black Aly.",
+      "source_ids": [
+        "season-three-entity-screen-record-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alysanne"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "alysanne-audience-reaction",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "A POINT OF INTEREST since it emerged she personally shot Criston Cole.",
+      "source_ids": [
+        "season-three-entity-audience-synthesis-through-episode-seven"
+      ],
+      "entity_ids": [
+        "alysanne"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-state-of-play-through-episode-seven",
+      "work_id": "house-of-the-dragon",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Rhaenyra holds King's Landing but is broke, short of food and losing the trust of her dragonseeds. Ormund holds Tumbleton with Corlys as a prisoner and Ulf secretly turned, while a large Black northern host closes on him. Aemond lies poisoned at Harrenhal and Vhagar is missing. Aegon is back on his feet with Sunfyre. Hugh Hammer is still loyal to the Blacks, and Helaena is pregnant and held in the capital.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-01",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Giving Rhaena the Sheepstealer story makes her emotionally central but ties her directly to Jace’s death, and collapses a distinct book character into her.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "widespread in book fandom, increasingly general after E7",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-02",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The Gullet is radically personalised — Jace confining Rhaenyra, Sheepstealer disrupting friendly dragons — which readers say transfers blame and changes who Jace is at the end.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "common but contested",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-03",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The fall of King's Landing is driven entirely by Alicent, contorting the civil war around the Rhaenyra/Alicent relationship.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "widespread among adaptation critics, praised by others",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-04",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Helaena is deliberately a noncombatant dragonrider; the show frames her as understanding dragons as purely destructive.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "book-fandom concentrated, increasingly mainstream",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-05",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The complaint is not that nothing happens but that major characters revisit the same dilemma for several episodes while the battlefield advances elsewhere. Aemond stuck wounded at Harrenhal draws direct comparison to Daemon’s much-criticised S2 Harrenhal loop.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "pacing",
+      "prevalence": "strong but not consensus",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-06",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Esquire called E7 \"major stalling\" — characters wait, brood and see visions rather than change the board.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "pacing",
+      "prevalence": "critic-specific",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-07",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Alicent poisoning Aemond is called baffling by critics who argue it does not follow from two seasons of maternal motivation.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "characterisation",
+      "prevalence": "common and highly divisive",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-08",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Critics argue characters around Rhaenyra are repeatedly made less competent so the war can continue.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "characterisation",
+      "prevalence": "common but contested",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-09",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Criston Cole dies eight minutes into E6 and almost nobody processes it afterward, cashing out none of the season’s character work on him.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "characterisation",
+      "prevalence": "critic-specific but persuasive",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-10",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Ulf’s defection is one rewrite that improves causality — he is belittled, restricted and struck by Daemon, and Ormund wins him with respect and flattery.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "characterisation",
+      "prevalence": "notably positive",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-11",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "S3 changes the KIND of incest it foregrounds: from culturally normalised Targaryen dynastic marriage to mother-son eroticism framed as pathology. Aemond kisses Alicent in E1 and hallucinates her while sleeping with Alys in E7.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "incest-discourse",
+      "prevalence": "widespread",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-12",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Alicent is framed as disturbed and repelled, never as consenting. The scenes are coercive and psychologically disturbed, so \"classic Targaryens\" is NOT a safe punchline for the Aemond/Alicent material.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "incest-discourse",
+      "prevalence": "important nuance",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-13",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "There is a clear double standard, and it is the interesting part: audiences treat Targaryen uncle-niece and brother-sister marriage (Rhaenyra and Daemon) as unremarkable world-building, and react to Aemond and Alicent with genuine revulsion. Same show, same house, opposite response.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "incest-discourse",
+      "prevalence": "the actual shape of the reaction",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-14",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "S3 repeatedly uses sexual violence against women as shorthand for military collapse — the village girl in E1, Alicent in E2, Kat in E4, Alys in E5. Critics argue the Alicent assault in particular adds nothing her existing lack of agency had not established.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "sexual-violence",
+      "prevalence": "recurring critical objection",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-15",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The Gullet took roughly two years of R&D; production built wet and dry tanks and ship gimbals, shooting most of the water and ship action practically. E7’s multi-dragon confrontation and the Sunfyre/Dreamfyre work are singled out.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "production",
+      "prevalence": "widely praised",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-16",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Some viewers still complain scenes are too dark to see. There is NO credible S3 source confirming day-for-night is being used; do not claim it is.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "production",
+      "prevalence": "unverified — do not assert",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-17",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Variety praised the shift toward more action after S2. Forbes called E7 possibly the season’s best. Aegon/Larys/Tyland became an unexpected comic-human trio, and Ormund works as an antagonist whose weapons are logistics and manipulation rather than another giant dragon.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "praise",
+      "prevalence": "broad",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-18",
+      "work_id": "house-of-the-dragon",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "S3’s greatest strength and weakness are opposites: the war finally moves, but several principal characters are deliberately trapped in psychological loops while it does.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "praise",
+      "prevalence": "the fairest summary",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-19",
+      "work_id": "house-of-the-dragon",
+      "canon": "source_material",
+      "status": "verified",
+      "text": "In Fire & Blood both Ulf AND Hugh turn against Rhaenyra at Tumbleton. Through E7 only Ulf has turned. Readers treat Hugh’s Kat storyline as setup.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "very widespread among book readers",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Contains source-material information not dramatized on screen through Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "season-three-criticism-20",
+      "work_id": "house-of-the-dragon",
+      "canon": "source_material",
+      "status": "verified",
+      "text": "In the book Sheepstealer’s rider is Nettles, a separate lowborn dragonseed whose relationship with Daemon has consequences the show has not dramatised.",
+      "source_ids": [
+        "season-three-criticism-synthesis-through-episode-seven"
+      ],
+      "category": "adaptation",
+      "prevalence": "long-running book dispute",
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Contains source-material information not dramatized on screen through Season 3, Episode 7."
+      }
+    }
+  ]
+}

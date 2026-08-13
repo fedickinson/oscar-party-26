@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/fedickinson/fandom-core.git",
+  "revision": "0349ea0c1fe4f72740ba9f9008cc60c6317bbbfc",
+  "package_version": "0.1.1",
+  "files": [
+    {
+      "path": "manifest.json",
+      "sha256": "0a7f5f6571ebef2f8d8861ebbe01860684fd7f6961047fa01925fd587de9490d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "e8fa3d082c765907dc80b1faa251757506e691e568dde8d164a86e18230be3c2"
+    },
+    {
+      "path": "schemas/fandom-core.schema.json",
+      "sha256": "17c1e02c85d793cde6fa466ff4d907fac8a52ed36191b44ef21d50b8e5e04079"
+    },
+    {
+      "path": "universes/asoiaf/universe.json",
+      "sha256": "ed17ad3143b4ff14e6000d56292c3f5e4b80e24a84bf39fb8885c24fa7c1d903"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/show.json",
+      "sha256": "91358a24c5825f9102eb56e6b7b9598f116f0756aeb25adb8bb7f3240eafaf43"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/sources/index.json",
+      "sha256": "7318f5d56d92ba958b71e01722ebb6ce72284022c9d50591aa7102dc275b7c70"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/season.json",
+      "sha256": "ca1b1b59569df0621f13f3b0d94d67dc751c96f27a4c5f516f9ca512a17bdb9e"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/episodes/index.json",
+      "sha256": "f5dc8a7602db0cf15630042d85af59bdd9fafdf06e1fe0924567335ae141a237"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/characters/index.json",
+      "sha256": "384f8b6c727661cb0b4b7e79282212d46d95f93d27333300277422f902a6e63c"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/dragons/index.json",
+      "sha256": "6a6cd6e9188e49a0b8b2a546b52af2fec2662601288e8b6e89e0b65dca622889"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/factions/index.json",
+      "sha256": "65893bb2a3bdb4b5911326a25fd83b42ca0a1b9d9d2f67bd5f791f2947858e49"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/relationships/index.json",
+      "sha256": "b85abbacff51419f465dca37c08a064ec2f96262fbc3ca2d2f286af09923ea0e"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/events/index.json",
+      "sha256": "ecae0c0ae69b973ab752f2fb2186a920fe322a57b3fcf16fde6a53dd00cbae3f"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/claims/index.json",
+      "sha256": "5f5582800ba8e932f9d84b2ce5ac5cf9feffcd0ff4b564404098df6d5f713872"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/possibilities/episode-8.json",
+      "sha256": "29e82047c29011260bfe084ce016833fb9cd998d5c24b87c4d9277ba5ddd177f"
+    },
+    {
+      "path": "universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/assets/portraits.json",
+      "sha256": "498e1bb7ba70f5ff6de43ee919c086b204c82100688711e2de0b05bcb3580728"
+    }
+  ]
+}
