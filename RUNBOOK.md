@@ -1337,13 +1337,19 @@ research. Exact commands and candidate shape live in `show-packs/README.md`.
 
 The deterministic factory handoffs now have one resumable operator action:
 `scripts/run-show-pack-factory.mts`. It rebuilds the receipt-to-seed and optional reviewed-research
-chains, composes the working pack, verifies deploy-owned portraits and writes one immutable run
+chains, composes the working pack, applies the separately sealed Story game-contract authoring
+artifact, verifies deploy-owned portraits and writes one immutable run
 directory. Pending prose produces the exact plan and self-contained review desk without a model
 call; residual findings produce a blocked run unless a human explicitly requests a separately
 budgeted retry; fully ready prose crosses the ordinary compiler into `compiled.json`. Continuations
 may change only commentary publication records, may never replace an already-ready line, and replay
 every step from the canonical composition through its exact reviewed plan and matching authorization
-for a changed source-order job prefix. Each run manifest seals authority flags plus input and artifact hashes but
+for a changed source-order job prefix. The contract artifact targets the exact pack/version,
+chooses budget plus one of the three executable identity profiles, assigns a default truth
+authority to every wager and permits only exact per-wager overrides. The factory rejects target
+drift, unknown or duplicate overrides, unsupported contract combinations, an oversized budget and
+chosen faction without two authored groups before it plans commentary. Each run manifest seals
+the contract artifact hash, authority flags and input/output hashes but
 omits local paths. Exact invocation
 syntax and the authorization-to-continuation loop live in `show-packs/README.md`; `--generate`
 remains the separate human-reviewed model and spend boundary.

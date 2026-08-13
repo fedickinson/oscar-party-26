@@ -9,11 +9,14 @@ episode. It keeps four worlds separate:
 - source-material canon, which is attitude-only and never a warrant for a
 screen event.
 
-Schema version 3 adds a required deploy-owned, SHA-sealed raster portrait for
-every entity. Schema version 2 added the pack-owned commentary voice roster and
-full speaker/voice/fact/angle publication stamp. Older inputs are intentionally
-rejected rather than silently losing cast identity or falling back to the
-current show's cast prompt.
+Schema version 4 adds the explicit composable game contract and truth authority
+on every wager. The resumable factory authors that layer from a separately
+sealed contract artifact. Schema version 3 added a required deploy-owned,
+SHA-sealed raster portrait for every entity; schema version 2 added the
+pack-owned commentary voice roster and full speaker/voice/fact/angle publication
+stamp. Older inputs are accepted only through their explicit compatibility lane,
+never by silently losing cast identity or falling back to the current show's
+cast prompt.
 
 The pack also owns the prediction slate, draft entities, signature beats,
 bingo pool, commentary voice roster, and grounded commentary requests. Every wager carries explicit
@@ -570,6 +573,7 @@ predecessor receipt through the commentary boundary:
 ```text
 node --import tsx scripts/run-show-pack-factory.mts \
   --input show-packs/research/hotd-s3e8-authoring.json \
+  --game-contract show-packs/research/hotd-s3e8-game-contract.json \
   --seed show-packs/research/hotd-s3e8-seed.json \
   --receipt settlement-drops/my-show/receipt.json \
   --research show-packs/research/hotd-s3e8-reviewed-research.json \
@@ -580,8 +584,25 @@ node --import tsx scripts/run-show-pack-factory.mts \
 ```
 
 The runner rederives the seed from the exact receipt, exact-rebuilds the optional research chain,
-injects both into the authoring pack, verifies portraits, and reduces the result to one of three
-explicit stages:
+injects both into the authoring pack, applies the required game-contract authoring artifact,
+verifies portraits, and reduces the result to one of three explicit stages. The base authoring
+pack remains schema v3 and must omit `game_contract`; the factory is the only step that upgrades
+it to schema v4 and writes truth authority onto every wager. Start from
+`show-packs/examples/story-night-game-contract.json`, replace its exact target, choose a positive
+budget no larger than the authored beat count, and select one identity pair:
+
+- `none` with scarcity `none`;
+- `chosen_faction` with scarcity `shared` and at least two distinct authored entity groups; or
+- `exclusive_entity_draft` with scarcity `exclusive`.
+
+`truth_authority.default` covers every prediction, signature beat and bingo square. Closed
+`overrides` rows identify one exact wager by `kind` and `id` when a show mixes official results,
+operator declarations and AI proposals with human confirmation. Duplicate or unknown overrides,
+target drift, incomplete contracts, unsupported profiles and undersized beat boards fail before
+commentary planning. The runner prints the resolved contract and seals the exact authoring
+artifact hash in `run.json`.
+
+The three explicit stages are:
 
 - `awaiting_commentary_authorization` writes `working.json`, the exact commentary plan, and a
   self-contained review desk. It prints the bounded call envelope and calls no model.
@@ -618,6 +639,7 @@ completed pack back to the factory rather than compiling it by hand:
 ```text
 node --import tsx scripts/run-show-pack-factory.mts \
   --input show-packs/research/hotd-s3e8-authoring.json \
+  --game-contract show-packs/research/hotd-s3e8-game-contract.json \
   --seed show-packs/research/hotd-s3e8-seed.json \
   --receipt settlement-drops/my-show/receipt.json \
   --continuation .private/show-pack-factory/hotd-s3e8-grounded.json \
@@ -630,7 +652,7 @@ node --import tsx scripts/run-show-pack-factory.mts \
   --output-dir .private/show-pack-factory
 ```
 
-Each continuation must be canonical schema-v3 bytes and may change only commentary publication
+Each continuation must be canonical schema-v4 bytes and may change only commentary publication
 records. It cannot edit facts, sources, wagers, voices, request definitions, or any already-ready
 line. The runner replays the continuation chain from the canonical composition, rebuilds each plan
 against the preceding step, requires the byte-identical `--approved-plan` and matching authorization,

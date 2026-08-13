@@ -11,6 +11,7 @@ import {
 } from '../src/lib/show-pack-commentary'
 import { createShowPackFlywheelSeed, serializeShowPackFlywheelSeed } from '../src/lib/show-pack-flywheel'
 import { parseShowPack } from '../src/lib/show-pack'
+import type { ShowPackGameContractAuthoring } from '../src/lib/show-pack-game-contract-authoring'
 import {
   applyShowPackResearchIntake,
   buildShowPackResearchIntakePacket,
@@ -151,9 +152,38 @@ async function main(): Promise<void> {
       angle: 'Judge the political use of the bond without inventing a new scene event.',
       publication: { status: 'pending' },
     }]
+    authoring.bingo_squares = Array.from({ length: 24 }, (_, index) => ({
+      ...structuredClone(authoring.bingo_squares[0]),
+      id: `factory-square-${String(index + 1).padStart(2, '0')}`,
+    }))
     const authoringPath = write('authoring.json', authoring)
+    const gameContract: ShowPackGameContractAuthoring = {
+      authoring_version: 1,
+      artifact: 'show-pack-game-contract-authoring',
+      target: { pack_id: authoring.pack.id, pack_version: authoring.pack.version },
+      game_contract: {
+        version: 1,
+        commitment: 'open_conviction',
+        conviction_budget: 2,
+        identity: { selection: 'none', scoring: 'none' },
+        scarcity: { commitments: 'fixed_budget', identity: 'none' },
+        visibility: 'open_counts',
+        cadence: 'immediate_facts_and_event_close',
+        continuity: 'canon_write_back',
+      },
+      truth_authority: {
+        default: 'operator_declaration',
+        overrides: [{
+          kind: 'prediction',
+          id: authoring.predictions[0].id,
+          authority: 'ai_proposal_human_confirmation',
+        }],
+      },
+    }
+    const gameContractPath = write('game-contract.json', gameContract)
     const baseArgs = [
       '--input', authoringPath,
+      '--game-contract', gameContractPath,
       '--seed', seedPath,
       '--receipt', receiptPath,
       '--allow-proof',
@@ -174,9 +204,20 @@ async function main(): Promise<void> {
     const runManifest = JSON.parse(readFileSync(join(firstRun, 'run.json'), 'utf8'))
     check(runManifest.inputs.every((input: { path?: string }) => input.path === undefined),
       'run manifest seals input hashes without leaking local paths')
-    check(parseShowPack(readFileSync(join(firstRun, 'working.json'), 'utf8'))
-      .claims.some((claim) => claim.id === 'proof-recap-claim'),
+    const firstWorking = parseShowPack(readFileSync(join(firstRun, 'working.json'), 'utf8'))
+    check(firstWorking.claims.some((claim) => claim.id === 'proof-recap-claim'),
     'factory working pack contains exact-rebuilt reviewed research')
+    check(firstWorking.schema_version === 4
+      && firstWorking.game_contract?.conviction_budget === 2
+      && firstWorking.game_contract.identity.selection === 'none',
+    'factory authors the selected Story contract before commentary')
+    check(firstWorking.predictions[0].truth_authority === 'ai_proposal_human_confirmation'
+      && firstWorking.signature_beats.every((beat) => beat.truth_authority === 'operator_declaration')
+      && firstWorking.bingo_squares.every((square) => square.truth_authority === 'operator_declaration'),
+    'factory authors the default and per-wager truth authorities')
+    check(runManifest.authority.game_contract_authoring_sha256 === sha256Hex(
+      readFileSync(gameContractPath, 'utf8'),
+    ), 'run manifest seals the exact game-contract authoring artifact')
 
     const repeatedOutput = run(baseArgs)
     check(repeatedOutput.includes('write_state=reused') && runDirectory(repeatedOutput) === firstRun,

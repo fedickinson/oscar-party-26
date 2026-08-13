@@ -1,0 +1,28 @@
+{
+  "authoring_version": 1,
+  "artifact": "show-pack-game-contract-authoring",
+  "target": {
+    "pack_id": "replace-with-next-pack-id",
+    "pack_version": 1
+  },
+  "game_contract": {
+    "version": 1,
+    "commitment": "open_conviction",
+    "conviction_budget": 12,
+    "identity": {
+      "selection": "chosen_faction",
+      "scoring": "none"
+    },
+    "scarcity": {
+      "commitments": "fixed_budget",
+      "identity": "shared"
+    },
+    "visibility": "open_counts",
+    "cadence": "immediate_facts_and_event_close",
+    "continuity": "canon_write_back"
+  },
+  "truth_authority": {
+    "default": "operator_declaration",
+    "overrides": []
+  }
+}

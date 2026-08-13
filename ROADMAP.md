@@ -323,7 +323,7 @@ arbitrary one-night story event.
   draft without restricting access to convictions.
 - [ ] Keep lonely-bet payout as the first scoring policy; do not add multiple
   speculative economies before another live test.
-- [ ] Allow the show-pack factory to author and validate all required Story
+- [x] Allow the show-pack factory to author and validate all required Story
   Night contract data.
 - [ ] Make every operator action and generated line consume the room-bound pack
   and settled fact record.
@@ -384,6 +384,23 @@ contract and fails closed for missing or future identity forms. The chosen-facti
 proof runs through two players, option validation, cross-client synchronization,
 conviction write, live open and provisional finish; the explicit no-identity and
 original exclusive-draft paths remain green.
+
+### P2 implementation ledger — factory-owned Story contract, 2026-08-13
+
+The resumable show-pack factory now requires one closed game-contract authoring
+artifact alongside the next-show content. It targets an exact pack/version,
+selects the complete Story contract and assigns a default truth authority to
+every wager with explicit overrides for mixed-authority shows. The factory—not
+a hand edit to compiled JSON—upgrades the composed schema-v3 authoring pack to
+schema v4 before commentary planning and seals the exact artifact hash in the
+immutable run record.
+
+All three executable identity profiles pass the same authoring gate. It rejects
+target drift, duplicate or unknown overrides, unsupported contract combinations,
+budgets larger than the authored beat board, and chosen faction without two
+authored groups. The filesystem-only factory dogfood proves the contract survives
+the authorization, grounded continuation, compiled output and blocked-retry paths
+without a network or model call.
 
 **Exit criteria**
 

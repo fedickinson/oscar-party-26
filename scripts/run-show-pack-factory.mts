@@ -21,15 +21,21 @@ import { runShowPackFactory, serializeShowPackFactoryStatus } from '../src/lib/s
 import { serializeShowPackCommentaryPlan } from '../src/lib/show-pack-commentary'
 import { renderShowPackCommentaryPlanReviewHtml } from '../src/lib/show-pack-commentary-authorization'
 import { assertShowPackResearchIntakeResultCurrent } from '../src/lib/show-pack-research-intake'
+import {
+  applyShowPackGameContractAuthoring,
+  parseShowPackGameContractAuthoring,
+} from '../src/lib/show-pack-game-contract-authoring'
 import { parseSettlementReceipt, serializeSettlementReceipt } from '../src/lib/settlement-receipt'
 import { sha256Hex } from '../src/lib/sha256'
 import { canonicalProspectivePath, writeUtf8FileSafely } from './lib/safe-write.mts'
 import { verifyShowPackPortraitAssets } from './lib/show-pack-assets.mts'
+import { summarizeGameContract } from '../src/lib/show-pack'
 
 interface Options {
   input: string
   seed: string
   receipt: string
+  gameContract: string
   outputDir?: string
   continuations: string[]
   approvedPlans: string[]
@@ -52,14 +58,18 @@ interface FactoryRunManifest {
   run_version: 1
   artifact: 'show-pack-factory-run'
   target: { pack_id: string; pack_version: number }
-  authority: { allow_proof: boolean; retry_blocked: boolean }
+  authority: {
+    allow_proof: boolean
+    retry_blocked: boolean
+    game_contract_authoring_sha256: string
+  }
   inputs: Array<{ label: string; sha256: string }>
   status_sha256: string
   artifacts: Array<{ name: string; sha256: string }>
 }
 
 function usage(): never {
-  console.error('Usage: node --import tsx scripts/run-show-pack-factory.mts --input NEXT-PACK.json --seed SEED.json --receipt RECEIPT.json [--research RESEARCH.json --research-candidates CANDIDATES.json --research-packet PACKET.json --research-decisions DECISIONS.json] [--continuation GROUNDED.json --approved-plan PLAN.json --authorization AUTHORIZATION.json]... [--retry-blocked] [--output-dir DIRECTORY] [--allow-proof]')
+  console.error('Usage: node --import tsx scripts/run-show-pack-factory.mts --input NEXT-PACK.json --game-contract GAME-CONTRACT.json --seed SEED.json --receipt RECEIPT.json [--research RESEARCH.json --research-candidates CANDIDATES.json --research-packet PACKET.json --research-decisions DECISIONS.json] [--continuation GROUNDED.json --approved-plan PLAN.json --authorization AUTHORIZATION.json]... [--retry-blocked] [--output-dir DIRECTORY] [--allow-proof]')
   process.exit(1)
 }
 
@@ -71,7 +81,7 @@ function parseArgs(argv: string[]): Options {
   let retryBlocked = false
   let allowProof = false
   const valued = new Set([
-    '--input', '--seed', '--receipt', '--output-dir', '--continuation',
+    '--input', '--game-contract', '--seed', '--receipt', '--output-dir', '--continuation',
     '--approved-plan', '--authorization', '--research',
     '--research-candidates', '--research-packet', '--research-decisions',
   ])
@@ -93,9 +103,10 @@ function parseArgs(argv: string[]): Options {
     } else throw new Error(`unknown argument ${arg}`)
   }
   const input = values.get('--input')
+  const gameContract = values.get('--game-contract')
   const seed = values.get('--seed')
   const receipt = values.get('--receipt')
-  if (!input || !seed || !receipt) usage()
+  if (!input || !gameContract || !seed || !receipt) usage()
   const research = values.get('--research')
   const researchCandidates = values.get('--research-candidates')
   const researchPacket = values.get('--research-packet')
@@ -109,6 +120,7 @@ function parseArgs(argv: string[]): Options {
   }
   return {
     input,
+    gameContract,
     seed,
     receipt,
     outputDir: values.get('--output-dir'),
@@ -179,6 +191,10 @@ function verifyOrWriteRun(runPath: string, files: Map<string, string>): 'created
 function main(): void {
   const options = parseArgs(process.argv.slice(2))
   const authoring = readArtifact(options.input, 'show-pack authoring input')
+  const gameContractArtifact = readArtifact(
+    options.gameContract,
+    'show-pack game-contract authoring',
+  )
   const seedArtifact = readArtifact(options.seed, 'flywheel seed')
   const receiptArtifact = readArtifact(options.receipt, 'settlement receipt')
   const continuations = options.continuations.map((path, index) => (
@@ -220,8 +236,12 @@ function main(): void {
       })
     : undefined
   const composed = composeShowPackWithFlywheel(authoring.bytes, seed, research)
-  verifyShowPackPortraitAssets(composed)
-  const result = runShowPackFactory(composed, {
+  const contracted = applyShowPackGameContractAuthoring(
+    composed,
+    parseShowPackGameContractAuthoring(gameContractArtifact.bytes),
+  )
+  verifyShowPackPortraitAssets(contracted)
+  const result = runShowPackFactory(contracted, {
     retryBlocked: options.retryBlocked,
     ...(continuations.length > 0
       ? {
@@ -235,7 +255,9 @@ function main(): void {
   })
   if (result.compiled) verifyShowPackPortraitAssets(result.compiled)
 
-  const inputs: InputArtifact[] = [authoring, seedArtifact, receiptArtifact]
+  const inputs: InputArtifact[] = [
+    authoring, gameContractArtifact, seedArtifact, receiptArtifact,
+  ]
   if (researchArtifact && researchCandidates && researchPacket && researchDecisions) {
     inputs.push(researchArtifact, researchCandidates, researchPacket, researchDecisions)
   }
@@ -258,7 +280,11 @@ function main(): void {
     run_version: 1,
     artifact: 'show-pack-factory-run',
     target: { ...result.status.target },
-    authority: { allow_proof: options.allowProof, retry_blocked: options.retryBlocked },
+    authority: {
+      allow_proof: options.allowProof,
+      retry_blocked: options.retryBlocked,
+      game_contract_authoring_sha256: gameContractArtifact.sha256,
+    },
     inputs: publicInputs,
     status_sha256: sha256Hex(statusRaw),
     artifacts: [...payloads].map(([name, bytes]) => ({ name, sha256: sha256Hex(bytes) })),
@@ -268,6 +294,7 @@ function main(): void {
   console.log('[show-pack-factory] target=local-filesystem')
   console.log(`[show-pack-factory] mode=${options.outputDir ? 'write' : 'dry-run'}`)
   console.log(`[show-pack-factory] pack=${result.status.target.pack_id}@${result.status.target.pack_version}`)
+  console.log(`[show-pack-factory] contract=${summarizeGameContract(result.working.game_contract!)}`)
   console.log(`[show-pack-factory] stage=${result.status.stage}`)
   console.log(`[show-pack-factory] working_sha256=${result.status.working_sha256}`)
   console.log(`[show-pack-factory] commentary=pending:${result.status.commentary.pending},ready:${result.status.commentary.ready},blocked:${result.status.commentary.blocked}`)
