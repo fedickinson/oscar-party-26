@@ -18,7 +18,7 @@ import {
   legacyGlobalReviewSealIssue,
   type LegacyGlobalReviewSeal,
 } from './legacy-global-review'
-import { SHOW_PACK_SCHEMA_VERSION, validateShowPack } from './show-pack'
+import { LEGACY_SHOW_PACK_SCHEMA_VERSION, validateShowPack } from './show-pack'
 import type { LegacyShowPackMigrationWorksheet } from './legacy-show-pack-audit'
 
 const SHA256 = /^[a-f0-9]{64}$/
@@ -964,7 +964,7 @@ function projectLegacyShowPackAuthoringWorksheetInternal(
   })
 
   const pack: ShowPack = {
-    schema_version: SHOW_PACK_SCHEMA_VERSION,
+    schema_version: LEGACY_SHOW_PACK_SCHEMA_VERSION,
     pack: {
       id: packDraft.id,
       version: packDraft.version as number,

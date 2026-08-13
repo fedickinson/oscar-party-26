@@ -245,20 +245,56 @@ findings.
 **Goal:** stop deriving all play behavior from `fact_source` and stop treating
 Results Night versus Story Night as an indivisible binary.
 
-- [ ] Define a versioned show-pack game contract covering commitment,
+- [x] Define a versioned show-pack game contract covering commitment,
   conviction budget, identity, scarcity, visibility, cadence and continuity.
-- [ ] Put truth authority on each authored proposition or trigger so one show
+- [x] Put truth authority on each authored proposition or trigger so one show
   can mix official, operator-declared and AI-proposed facts.
-- [ ] Preserve `fact_source` as compatibility metadata until every consumer uses
+- [x] Preserve `fact_source` as compatibility metadata until every consumer uses
   the new canonical contract.
-- [ ] Replace the automatic `fact_source -> game_model` binding for new packs
+- [x] Replace the automatic `fact_source -> game_model` binding for new packs
   with contract-driven room configuration.
-- [ ] Keep all historical rooms on their recorded behavior.
-- [ ] Make room configuration immutable once commitments begin.
-- [ ] Validate contract completeness in the show-pack compiler and at atomic
+- [x] Keep all historical rooms on their recorded behavior.
+- [x] Make room configuration immutable once commitments begin.
+- [x] Validate contract completeness in the show-pack compiler and at atomic
   publication.
-- [ ] Expose an operator-readable summary of the selected contract before a room
+- [x] Expose an operator-readable summary of the selected contract before a room
   starts.
+
+### P1 implementation ledger — 2026-08-13
+
+Schema-v3 packs remain accepted as compatibility inputs and compile into sealed
+schema-v4 bundles. New schema-v4 packs must declare every game-contract
+dimension and a truth authority on every prediction, signature beat and bingo
+trigger. The activation command prints the selected contract before it can
+write, atomic publication attests it, and room binding copies it before deriving
+the compatibility `game_model` from commitment rather than `fact_source`.
+
+The database backfills existing packs from their historical `fact_source` and
+existing rooms from their recorded `game_model`; it does not recompute a room's
+history. Room contracts and compatibility models can change only as part of a
+lobby show-pack rebind and are frozen once any commitment-dependent state
+exists.
+
+The contract vocabulary intentionally runs ahead of the current execution
+engine. Publication currently accepts only the proven Results Night and Story
+Night profiles. Variable conviction budgets, no-draft or chosen-faction
+identity, and campaign continuity remain P2/P4 work and fail closed rather than
+claiming to work.
+
+Verification on the disposable local stack: clean migration replay through
+`20260813000100` plus authored seed; warning-level schema lint; 641 unit tests
+and production build; 22 offline factory checks; 12 real activation checks with
+scheduled compatibility metadata deliberately paired to an explicit Story
+contract; and 35 scheduled-winner checks using an explicit Results contract
+whose compatibility metadata is deliberately room-declared. The scheduled
+spotlight suite passes all canonical state and authority assertions, but a cold
+local Realtime observer missed its bounded opening event on two runs and
+received it on one immediate rerun. Preserve the P0 delivery-timing caveat.
+
+The broad `dogfood-e2e.mts` still creates two impossible hybrid fixtures by
+changing `game_model` without changing the room contract. Its covered Story and
+Results behaviors pass in the focused contract-consistent suites above; migrate
+those legacy setup sections before restoring the broad harness as a P1 gate.
 
 **Initial contract defaults**
 

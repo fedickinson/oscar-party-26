@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   compileShowPack,
+  deriveGameModel,
   parseShowPack,
+  summarizeGameContract,
   type ShowPack,
 } from './show-pack'
 
@@ -206,6 +208,109 @@ function validPack(): ShowPack {
 }
 
 describe('parseShowPack', () => {
+  it('upgrades a legacy pack to an explicit contract without changing its behavior', () => {
+    const compiled = compileShowPack(validPack())
+
+    expect(compiled.schema_version).toBe(4)
+    expect(compiled.game_contract).toEqual({
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    })
+    expect(deriveGameModel(compiled.game_contract!)).toBe('conviction_portfolio')
+    expect(compiled.predictions[0].truth_authority).toBe('operator_declaration')
+    expect(compiled.signature_beats[0].truth_authority).toBe('operator_declaration')
+    expect(compiled.bingo_squares[0].truth_authority).toBe('operator_declaration')
+  })
+
+  it('preserves scheduled legacy packs as Results Night contracts', () => {
+    const pack = validPack()
+    pack.pack.fact_source = 'scheduled'
+    const compiled = compileShowPack(pack)
+
+    expect(deriveGameModel(compiled.game_contract!)).toBe('legacy_ensemble')
+    expect(compiled.game_contract).toEqual({
+      version: 1,
+      commitment: 'confidence_allocation',
+      conviction_budget: null,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+      scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+      visibility: 'sealed_until_lock',
+      cadence: 'immediate_per_outcome',
+      continuity: 'no_carryover',
+    })
+    expect(compiled.predictions[0].truth_authority).toBe('official_result')
+    expect(compiled.signature_beats[0].truth_authority).toBe('official_result')
+    expect(compiled.bingo_squares[0].truth_authority).toBe('official_result')
+  })
+
+  it('requires a complete contract and truth authority on newly authored packs', () => {
+    const pack = structuredClone(validPack()) as unknown as Record<string, any>
+    pack.schema_version = 4
+    pack.game_contract = {
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    }
+    for (const wager of [...pack.predictions, ...pack.signature_beats, ...pack.bingo_squares]) {
+      wager.truth_authority = 'operator_declaration'
+    }
+    expect(parseShowPack(JSON.stringify(pack)).game_contract).toEqual(pack.game_contract)
+
+    const missingDimension = structuredClone(pack)
+    delete missingDimension.game_contract.visibility
+    expect(() => parseShowPack(JSON.stringify(missingDimension)))
+      .toThrow('show pack game_contract visibility is invalid')
+
+    const missingAuthority = structuredClone(pack)
+    delete missingAuthority.signature_beats[0].truth_authority
+    expect(() => parseShowPack(JSON.stringify(missingAuthority)))
+      .toThrow('signature beat sunfyre-protects-aegon truth_authority is required by schema 4')
+  })
+
+  it('lets a new pack select play independently from its compatibility fact source', () => {
+    const pack = structuredClone(validPack()) as unknown as Record<string, any>
+    pack.schema_version = 4
+    pack.pack.fact_source = 'scheduled'
+    pack.game_contract = {
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    }
+    for (const [index, wager] of [...pack.predictions, ...pack.signature_beats, ...pack.bingo_squares].entries()) {
+      wager.truth_authority = index === 0 ? 'official_result' : 'operator_declaration'
+    }
+
+    const parsed = parseShowPack(JSON.stringify(pack))
+    expect(deriveGameModel(parsed.game_contract!)).toBe('conviction_portfolio')
+    expect(new Set([
+      ...parsed.predictions,
+      ...parsed.signature_beats,
+      ...parsed.bingo_squares,
+    ].map((wager) => wager.truth_authority))).toEqual(new Set([
+      'official_result',
+      'operator_declaration',
+    ]))
+    expect(summarizeGameContract(parsed.game_contract!)).toBe(
+      'Open convictions (12) | Exclusive entity draft, identity only | Open belief counts | Immediate facts plus event close | Canon write-back',
+    )
+  })
+
   it('requires a SHA-sealed deploy-owned raster portrait for every entity', () => {
     const migrated = structuredClone(validPack()) as unknown as Record<string, any>
     migrated.schema_version = 3

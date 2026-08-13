@@ -59,7 +59,7 @@ retained a fake room and players despite using a service cleanup key; it now
 deletes its transient room state.
 
 An approved `supabase db reset --local` replays every migration through
-`20260812062700`, loads the authored legacy pack and finishes with warning-fatal
+`20260813000100`, loads the authored legacy pack and finishes with warning-fatal
 lint green. The seed temporarily drafts the immutable pack, loads its catalog,
 then fails closed unless all trigger doctrine and playability checks succeed
 before republishing. The clean catalog is 20 categories, 38 nominees, 38 draft
@@ -123,7 +123,8 @@ live status in .private/postop/HANDOFF.md):**
 2. Show-pack factory — room-bound activation and resumable grounded prose now
    exist locally; the complete legacy catalog now has a deterministic local-only
    migration worksheet, proven 38/38 identity/portrait coverage and a checked,
-   SHA-bound path from explicit human decisions to schema-v3 authoring; its
+   SHA-bound path from explicit human decisions through compatible schema-v3
+   authoring into sealed schema-v4 publication; its
    read-only status ledger now enumerates every filled and open research lane;
    the real authoring worksheet now owns its target identity/cutoff, all 38
    entity kinds, all 20 candidate sets and prediction contracts, all 38 entity
@@ -150,7 +151,19 @@ live status in .private/postop/HANDOFF.md):**
    boundaries: every new-pack wager retains its screen rule, exclusions,
    proxy/off-screen/mention decisions, claim provenance and title approval;
    Postgres rejects privileged seed writes that omit or weaken the contract
-4. Live narrative grounding — declared events, approved bingo marks and direct
+4. Composable game contract — schema-v4 packs explicitly own commitment,
+   conviction budget, identity, scarcity, visibility, settlement cadence and
+   continuity. Truth authority lives on each prediction, signature beat and
+   bingo trigger, so official results, operator declarations and AI proposals
+   can coexist. `fact_source` remains compatibility metadata; room binding
+   copies the exact contract and derives the compatibility `game_model` from
+   commitment. Historical packs and rooms are backfilled from recorded
+   behavior. Room contracts freeze with commitment-dependent state, and the
+   activation command prints the profile before any write. Publication
+   currently executes only the two proven Results Night and Story Night
+   profiles; optional identity forms, variable conviction budgets and campaigns
+   remain fail-closed P2/P4 work
+5. Live narrative grounding — declared events, approved bingo marks and direct
    human-to-cast mention/ambient replies are implemented locally in browser and
    daemon; browser-originated companion banter is grounded too. Events project
    the GM fact, dossier and game state; bingo projects its honor-system live
@@ -167,7 +180,7 @@ live status in .private/postop/HANDOFF.md):**
    too. Keepsake verdicts now use their own strict schema-aware grounding pass,
    exhaustive game/chat/catalog facts, one full-room durable claim and one atomic
    provenance-stamped write; residuals join the same private operator queue
-5. Operator UI (layer 3) — first read-only lens implemented locally: real
+6. Operator UI (layer 3) — first read-only lens implemented locally: real
    foreground/background Presence, an authoritative companion-daemon heartbeat,
    and honest cast/fact sequence evidence; its collapsed host control now derives
    one restrictive whole-room status (`Checking`, `Ready`, or one check per
@@ -201,9 +214,10 @@ live status in .private/postop/HANDOFF.md):**
    room-pack card per seat, and a seat may atomically set or clear only its own
    non-center marks; direct browser card and mark writes fail closed. These
    validate public seat handles and database
-   state; they do not turn an anonymous player id into authenticated caller
-   identity
-6. AI witness ladder (layer 4) — the one-frame proposal rung now exists locally:
+state; they do not turn an anonymous player id into authenticated caller
+identity. P1's explicit composable contract is now implemented locally; P2's
+reusable Story Night options are the next implementation boundary
+7. AI witness ladder (layer 4) — the one-frame proposal rung now exists locally:
    explicit operator send, private reference manifest, structured IDs only,
    exact model-time candidate seal, durable review queue and atomic one-tap
    confirmation. Review now requires a service-issued 256-bit room operator
@@ -218,11 +232,11 @@ live status in .private/postop/HANDOFF.md):**
    explicitly choose an evidenced side; the immutable root observation stays
    intact and the chosen entity is recorded separately. Confidence-gated
    auto-declare remains a later rung
-7. Conviction-portfolio redesign ("The conviction question") — implemented
+8. Conviction-portfolio redesign ("The conviction question") — implemented
    locally: one dragon identity each, 12 open authored-beat beliefs, shared-bet
    integer splits, Realtime portfolio board, full score/timeline/settlement
-   evidence, operator recovery and fact-source-derived room models
-8. Ceremony engine — the reusable settlement-drop compiler now owns the
+   evidence, operator recovery and contract-derived room models
+9. Ceremony engine — the reusable settlement-drop compiler now owns the
    acts/beats grammar, beat-weight tiers, mobile navigation, impact-ranked tiered
    muster, dedicated curtain threshold, grounded pundit desk, character drawers,
    personal-edition gate, honest no-card callouts and the betrayal death-tier/ember

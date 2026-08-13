@@ -12,7 +12,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createClient } from '@supabase/supabase-js'
-import { parseShowPack } from '../src/lib/show-pack'
+import { compileShowPack, parseShowPack } from '../src/lib/show-pack'
 import { buildShowPackActivationPlan } from '../src/lib/show-pack-activation'
 import { supabaseConfig } from './lib/env.mts'
 
@@ -37,6 +37,17 @@ function check(condition: unknown, message: string): asserts condition {
   console.log(`PASS ${message}`)
 }
 
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${canonicalJson(entry)}`)
+      .join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
 function runActivation(args: string[]): string {
   const result = spawnSync(
     process.execPath,
@@ -57,12 +68,15 @@ async function main(): Promise<void> {
   console.log(`  target: ${target}  ${url}`)
   console.log('────────────────────────────────────────────────────────────')
   try {
-    const proof = parseShowPack(readFileSync(
+    const proof = compileShowPack(parseShowPack(readFileSync(
       join(repoRoot, 'show-packs/examples/hotd-s3e8-proof.json'),
       'utf8',
-    ))
-    proof.pack.id = 'show-pack-activation-dogfood'
-    proof.pack.title = 'Show Pack Activation Dogfood'
+    )))
+    proof.pack.id = 'show-pack-contract-activation-dogfood'
+    proof.pack.title = 'Show Pack Contract Activation Dogfood'
+    // Compatibility metadata deliberately disagrees with the explicit Story
+    // Night contract. The room must follow commitment, not fact_source.
+    proof.pack.fact_source = 'scheduled'
     proof.bingo_squares = Array.from({ length: 24 }, (_, index) => ({
       ...structuredClone(proof.bingo_squares[0]),
       id: `activation-square-${String(index + 1).padStart(2, '0')}`,
@@ -103,12 +117,21 @@ async function main(): Promise<void> {
 
     const { data: boundRoom, error: roomError } = await service
       .from('rooms')
-      .select('show_pack_id,game_model')
+      .select('show_pack_id,game_model,game_contract')
       .eq('id', roomId)
       .single()
     if (roomError) throw roomError
     check(boundRoom.show_pack_id === plan.showPackId, 'room binding points at the exact published registry')
-    check(boundRoom.game_model === 'conviction_portfolio', 'declared-fact pack selects the conviction game model')
+    check(boundRoom.game_model === 'conviction_portfolio',
+      'explicit commitment selects conviction independently from scheduled fact metadata')
+    check(canonicalJson(boundRoom.game_contract) === canonicalJson(plan.compiled.game_contract),
+      'room binding copies the explicit pack contract')
+
+    const { error: mutationError } = await service
+      .from('rooms')
+      .update({ game_contract: { ...plan.compiled.game_contract, conviction_budget: 11 } })
+      .eq('id', roomId)
+    check(mutationError !== null, 'room contract cannot change independently from its show pack')
 
     const repeated = runActivation([...commandArgs, '--apply', '--confirm-room', roomCode])
     check(repeated.includes('catalog=attested status=published'), 'repeat apply re-attests the immutable catalog')

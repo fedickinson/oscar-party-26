@@ -1,3 +1,5 @@
+import type { ShowPackGameContract } from './game-contract'
+
 export type RoomPhase =
   | 'lobby'
   | 'pre_draft'
@@ -66,6 +68,8 @@ export interface RoomRow {
   show_pack_id: string
   /** Legacy character ownership or the show-neutral open belief portfolio. */
   game_model?: GameModel
+  /** Immutable resolved behavior contract copied from the bound show pack. */
+  game_contract?: ShowPackGameContract
   /** Realtime invalidation counter for the private host witness queue. */
   witness_revision?: number
   /** Realtime invalidation counter for blocked companion prose reviews. */
@@ -111,6 +115,7 @@ export interface RoomInsert {
   active_settlement_id?: string | null
   show_pack_id?: string
   game_model?: GameModel
+  game_contract?: ShowPackGameContract
   operator_capability_revision?: number
 }
 
@@ -151,6 +156,7 @@ export interface RoomUpdate {
   active_settlement_id?: string | null
   show_pack_id?: string
   game_model?: GameModel
+  game_contract?: ShowPackGameContract
   operator_capability_revision?: number
 }
 
@@ -164,6 +170,7 @@ export interface ShowPackRow {
   property: string
   installment: string
   fact_source: 'scheduled' | 'room_declared' | 'ai_witnessed'
+  game_contract: ShowPackGameContract | null
   manifest_sha256: string | null
   compiled_bundle: unknown | null
   status: ShowPackStatus
@@ -179,6 +186,7 @@ export interface ShowPackInsert {
   property: string
   installment: string
   fact_source: ShowPackRow['fact_source']
+  game_contract?: ShowPackGameContract | null
   manifest_sha256?: string | null
   compiled_bundle?: unknown | null
   status?: ShowPackStatus
@@ -190,6 +198,7 @@ export type ShowPackUpdate = Partial<ShowPackInsert>
 
 /** Structured authoring evidence retained beside each normalized wager row. */
 export interface TriggerContractRow {
+  truth_authority?: 'official_result' | 'operator_declaration' | 'ai_proposal_human_confirmation'
   title: string
   condition: string
   exclusions: string[]

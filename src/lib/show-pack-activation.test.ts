@@ -35,6 +35,29 @@ describe('show-pack activation gate', () => {
     expect(() => assertActivatableShowPack(pack)).toThrow('one entity or one explicit pair')
   })
 
+  it('rejects complete contracts whose behavior is not implemented yet', () => {
+    const compiled = structuredClone(proof)
+    compiled.schema_version = 4
+    compiled.game_contract = {
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 8,
+      identity: { selection: 'none', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'none' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    }
+    for (const wager of [
+      ...compiled.predictions,
+      ...compiled.signature_beats,
+      ...compiled.bingo_squares,
+    ]) wager.truth_authority = 'operator_declaration'
+
+    expect(() => assertActivatableShowPack(compiled))
+      .toThrow('current conviction engine requires the proven Story Night contract profile')
+  })
+
   it('preserves the complete trigger doctrine in the normalized catalog contract', () => {
     const beat = proof.signature_beats[0]
     const contract = buildTriggerContract(beat)
@@ -87,6 +110,7 @@ describe('show-pack activation gate', () => {
       id: plan.showPackId,
       pack_key: 'hotd-s3e8-proof',
       version: 1,
+      game_contract: plan.compiled.game_contract,
       manifest_sha256: plan.manifestSha256,
       compiled_bundle: plan.compiled,
       status: 'draft',

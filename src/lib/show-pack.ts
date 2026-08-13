@@ -1,8 +1,22 @@
 import { groundedLinePromptContractSha256 } from './grounded-line-contract'
+import type { ShowPackGameContract } from '../types/game-contract'
 
-export const SHOW_PACK_SCHEMA_VERSION = 3 as const
+export type { ShowPackGameContract } from '../types/game-contract'
+
+export const SHOW_PACK_SCHEMA_VERSION = 4 as const
+export const LEGACY_SHOW_PACK_SCHEMA_VERSION = 3 as const
+
+export type ShowPackSchemaVersion =
+  | typeof LEGACY_SHOW_PACK_SCHEMA_VERSION
+  | typeof SHOW_PACK_SCHEMA_VERSION
 
 export type ShowFactSource = 'scheduled' | 'room_declared' | 'ai_witnessed'
+export type TruthAuthority =
+  | 'official_result'
+  | 'operator_declaration'
+  | 'ai_proposal_human_confirmation'
+export type GameModel = 'legacy_ensemble' | 'conviction_portfolio'
+
 export type ShowPackSourceKind =
   | 'screen'
   | 'operator_record'
@@ -55,6 +69,7 @@ export interface ShowPackEntity {
 }
 
 export interface TriggerContract {
+  truth_authority?: TruthAuthority
   condition: string
   exclusions: string[]
   adjudication: TriggerAdjudication
@@ -132,7 +147,8 @@ export interface ShowPackCommentaryRequest {
 }
 
 export interface ShowPack {
-  schema_version: typeof SHOW_PACK_SCHEMA_VERSION
+  schema_version: ShowPackSchemaVersion
+  game_contract?: ShowPackGameContract
   pack: {
     id: string
     version: number
@@ -218,6 +234,31 @@ const SOURCE_KINDS = new Set<ShowPackSourceKind>([
   'authoring_record',
 ])
 const FACT_SOURCES = new Set<ShowFactSource>(['scheduled', 'room_declared', 'ai_witnessed'])
+const TRUTH_AUTHORITIES = new Set<TruthAuthority>([
+  'official_result', 'operator_declaration', 'ai_proposal_human_confirmation',
+])
+const COMMITMENTS = new Set<ShowPackGameContract['commitment']>([
+  'confidence_allocation', 'open_conviction', 'season_thesis',
+])
+const IDENTITY_SELECTIONS = new Set<ShowPackGameContract['identity']['selection']>([
+  'none', 'exclusive_entity_draft', 'chosen_faction',
+])
+const IDENTITY_SCORING = new Set<ShowPackGameContract['identity']['scoring']>(['none', 'ensemble'])
+const COMMITMENT_SCARCITY = new Set<ShowPackGameContract['scarcity']['commitments']>([
+  'none', 'ranked_allocation', 'fixed_budget',
+])
+const IDENTITY_SCARCITY = new Set<ShowPackGameContract['scarcity']['identity']>([
+  'none', 'shared', 'exclusive',
+])
+const VISIBILITY = new Set<ShowPackGameContract['visibility']>([
+  'open_counts', 'sealed_until_lock', 'hidden_until_resolution',
+])
+const CADENCE = new Set<ShowPackGameContract['cadence']>([
+  'immediate_per_outcome', 'immediate_facts_and_event_close', 'installment_and_season_close',
+])
+const CONTINUITY = new Set<ShowPackGameContract['continuity']>([
+  'no_carryover', 'canon_write_back', 'cumulative_standings_and_canon',
+])
 const SHA256 = /^[a-f0-9]{64}$/
 const CLAIM_CANONS = new Set<ClaimCanon>(['screen', 'discourse', 'source_material', 'authoring'])
 const CLAIM_STATUSES = new Set<ClaimStatus>(['verified', 'recap', 'unverifiable', 'attitude_only'])
@@ -284,6 +325,131 @@ function checkExactKeys(
   }
 }
 
+function validateGameContract(value: unknown, issues: string[]): value is ShowPackGameContract {
+  if (!isRecord(value)) {
+    issues.push('show pack game_contract is required by schema 4')
+    return false
+  }
+  checkExactKeys(value, [
+    'version', 'commitment', 'conviction_budget', 'identity', 'scarcity',
+    'visibility', 'cadence', 'continuity',
+  ], 'show pack game_contract', issues)
+  if (value.version !== 1) issues.push('show pack game_contract version must be 1')
+  if (!COMMITMENTS.has(value.commitment as ShowPackGameContract['commitment'])) {
+    issues.push('show pack game_contract commitment is invalid')
+  }
+  if (value.conviction_budget !== null && !isPositiveInteger(value.conviction_budget)) {
+    issues.push('show pack game_contract conviction_budget must be null or a positive integer')
+  }
+  if (value.commitment === 'open_conviction' && !isPositiveInteger(value.conviction_budget)) {
+    issues.push('show pack game_contract open convictions require a positive conviction_budget')
+  }
+  if (value.commitment !== 'open_conviction' && value.conviction_budget !== null) {
+    issues.push('show pack game_contract conviction_budget applies only to open convictions')
+  }
+  if (!isRecord(value.identity)) {
+    issues.push('show pack game_contract identity is required')
+  } else {
+    checkExactKeys(value.identity, ['selection', 'scoring'], 'show pack game_contract identity', issues)
+    if (!IDENTITY_SELECTIONS.has(value.identity.selection as ShowPackGameContract['identity']['selection'])) {
+      issues.push('show pack game_contract identity selection is invalid')
+    }
+    if (!IDENTITY_SCORING.has(value.identity.scoring as ShowPackGameContract['identity']['scoring'])) {
+      issues.push('show pack game_contract identity scoring is invalid')
+    }
+  }
+  if (!isRecord(value.scarcity)) {
+    issues.push('show pack game_contract scarcity is required')
+  } else {
+    checkExactKeys(value.scarcity, ['commitments', 'identity'], 'show pack game_contract scarcity', issues)
+    if (!COMMITMENT_SCARCITY.has(
+      value.scarcity.commitments as ShowPackGameContract['scarcity']['commitments'],
+    )) issues.push('show pack game_contract commitment scarcity is invalid')
+    if (!IDENTITY_SCARCITY.has(
+      value.scarcity.identity as ShowPackGameContract['scarcity']['identity'],
+    )) issues.push('show pack game_contract identity scarcity is invalid')
+  }
+  if (!VISIBILITY.has(value.visibility as ShowPackGameContract['visibility'])) {
+    issues.push('show pack game_contract visibility is invalid')
+  }
+  if (!CADENCE.has(value.cadence as ShowPackGameContract['cadence'])) {
+    issues.push('show pack game_contract cadence is invalid')
+  }
+  if (!CONTINUITY.has(value.continuity as ShowPackGameContract['continuity'])) {
+    issues.push('show pack game_contract continuity is invalid')
+  }
+  return true
+}
+
+function compatibilityTruthAuthority(factSource: ShowFactSource): TruthAuthority {
+  return factSource === 'scheduled' ? 'official_result' : 'operator_declaration'
+}
+
+export function compatibilityGameContract(factSource: ShowFactSource): ShowPackGameContract {
+  if (factSource === 'scheduled') {
+    return {
+      version: 1,
+      commitment: 'confidence_allocation',
+      conviction_budget: null,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+      scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+      visibility: 'sealed_until_lock',
+      cadence: 'immediate_per_outcome',
+      continuity: 'no_carryover',
+    }
+  }
+  return {
+    version: 1,
+    commitment: 'open_conviction',
+    conviction_budget: 12,
+    identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+    scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+    visibility: 'open_counts',
+    cadence: 'immediate_facts_and_event_close',
+    continuity: 'canon_write_back',
+  }
+}
+
+export function resolveGameContract(pack: ShowPack): ShowPackGameContract {
+  return pack.game_contract ?? compatibilityGameContract(pack.pack.fact_source)
+}
+
+export function deriveGameModel(contract: ShowPackGameContract): GameModel {
+  if (contract.commitment === 'confidence_allocation') return 'legacy_ensemble'
+  if (contract.commitment === 'open_conviction') return 'conviction_portfolio'
+  throw new Error(`commitment ${contract.commitment} has no executable room model yet`)
+}
+
+export function summarizeGameContract(contract: ShowPackGameContract): string {
+  const commitment = contract.commitment === 'confidence_allocation'
+    ? 'Confidence allocation'
+    : contract.commitment === 'open_conviction'
+      ? `Open convictions (${contract.conviction_budget})`
+      : 'Season thesis'
+  const selection = contract.identity.selection === 'none'
+    ? 'No identity selection'
+    : contract.identity.selection === 'exclusive_entity_draft'
+      ? 'Exclusive entity draft'
+      : 'Chosen faction'
+  const identity = `${selection}, ${contract.identity.scoring === 'none' ? 'identity only' : 'ensemble scoring'}`
+  const visibility = contract.visibility === 'open_counts'
+    ? 'Open belief counts'
+    : contract.visibility === 'sealed_until_lock'
+      ? 'Sealed until lock'
+      : 'Hidden until resolution'
+  const cadence = contract.cadence === 'immediate_per_outcome'
+    ? 'Immediate per outcome'
+    : contract.cadence === 'immediate_facts_and_event_close'
+      ? 'Immediate facts plus event close'
+      : 'Installment plus season close'
+  const continuity = contract.continuity === 'no_carryover'
+    ? 'No carryover'
+    : contract.continuity === 'canon_write_back'
+      ? 'Canon write-back'
+      : 'Cumulative standings and canon'
+  return [commitment, identity, visibility, cadence, continuity].join(' | ')
+}
+
 function checkTextArray(value: unknown, label: string, issues: string[], requireOne = false): value is string[] {
   if (!Array.isArray(value)) {
     issues.push(`${label} must be an array`)
@@ -321,6 +487,7 @@ function validateWagerDoctrine(
   issues: string[],
   variantFields: readonly string[],
   allowAuthoringBasis = false,
+  requireTruthAuthority = false,
 ): raw is ShowPackWagerDoctrine {
   if (!isRecord(raw)) {
     issues.push(`${kind} must be an object`)
@@ -329,11 +496,16 @@ function validateWagerDoctrine(
   const id = hasText(raw.id) ? raw.id : '(missing-id)'
   checkExactKeys(raw, [
     'id', 'title', 'condition', 'exclusions', 'adjudication',
-    'title_review', 'basis_claim_ids', ...variantFields,
+    'title_review', 'basis_claim_ids', 'truth_authority', ...variantFields,
   ], `${kind} ${id}`, issues)
   if (!isSlug(raw.id)) issues.push(`${kind} ${id} id must be a kebab-case slug`)
   if (!hasText(raw.title)) issues.push(`${kind} ${id} title is required`)
   if (!hasText(raw.condition)) issues.push(`${kind} ${id} condition is required`)
+  if (raw.truth_authority === undefined) {
+    if (requireTruthAuthority) issues.push(`${kind} ${id} truth_authority is required by schema 4`)
+  } else if (!TRUTH_AUTHORITIES.has(raw.truth_authority as TruthAuthority)) {
+    issues.push(`${kind} ${id} truth_authority is invalid`)
+  }
   checkTextArray(raw.exclusions, `${kind} ${id} exclusions`, issues, true)
 
   if (!isRecord(raw.adjudication)) {
@@ -394,6 +566,7 @@ function validateTrigger(
   kind: 'signature beat' | 'bingo square',
   claims: ReadonlyMap<string, ShowPackClaim>,
   issues: string[],
+  requireTruthAuthority: boolean,
 ): raw is ShowPackTriggerBase {
   const variantFields = kind === 'signature beat'
     ? ['probability_pct', 'likelihood_tier', 'entity_ids', 'points', 'pitch']
@@ -405,6 +578,7 @@ function validateTrigger(
     issues,
     variantFields,
     kind === 'bingo square',
+    requireTruthAuthority,
   ) || !isRecord(raw)) return false
   const id = String(raw.id)
   if (!Number.isInteger(raw.probability_pct)
@@ -429,12 +603,21 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   const issues: string[] = []
   if (!isRecord(value)) return [{ message: 'show pack must be an object' }]
   checkExactKeys(value, [
-    'schema_version', 'pack', 'sources', 'claims', 'entities',
+    'schema_version', 'game_contract', 'pack', 'sources', 'claims', 'entities',
     'predictions', 'signature_beats', 'bingo_squares',
     'commentary_voices', 'commentary_requests',
   ], 'show pack', issues)
-  if (value.schema_version !== SHOW_PACK_SCHEMA_VERSION) {
-    issues.push(`show pack schema_version must be ${SHOW_PACK_SCHEMA_VERSION}`)
+  const schemaVersion = value.schema_version
+  if (schemaVersion !== LEGACY_SHOW_PACK_SCHEMA_VERSION
+    && schemaVersion !== SHOW_PACK_SCHEMA_VERSION) {
+    issues.push(
+      `show pack schema_version must be ${LEGACY_SHOW_PACK_SCHEMA_VERSION} or ${SHOW_PACK_SCHEMA_VERSION}`,
+    )
+  }
+  if (schemaVersion === SHOW_PACK_SCHEMA_VERSION) {
+    validateGameContract(value.game_contract, issues)
+  } else if (value.game_contract !== undefined) {
+    issues.push(`show pack schema ${LEGACY_SHOW_PACK_SCHEMA_VERSION} cannot declare game_contract`)
   }
 
   if (!isRecord(value.pack)) {
@@ -739,6 +922,8 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
       claimById,
       issues,
       ['points', 'tier', 'candidate_entity_ids'],
+      false,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
     ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!isPositiveInteger(raw.points)) issues.push(`prediction ${id} points must be a positive integer`)
@@ -756,7 +941,13 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   }
 
   for (const raw of signatureBeats) {
-    if (!validateTrigger(raw, 'signature beat', claimById, issues) || !isRecord(raw)) continue
+    if (!validateTrigger(
+      raw,
+      'signature beat',
+      claimById,
+      issues,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
+    ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!checkTextArray(raw.entity_ids, `signature beat ${id} entity_ids`, issues, true)) continue
     pushDuplicateValues(raw.entity_ids, `signature beat ${id} has duplicate entity_ids`, issues)
@@ -768,7 +959,13 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   }
 
   for (const raw of bingoSquares) {
-    if (!validateTrigger(raw, 'bingo square', claimById, issues) || !isRecord(raw)) continue
+    if (!validateTrigger(
+      raw,
+      'bingo square',
+      claimById,
+      issues,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
+    ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!hasText(raw.why_it_is_fun)) issues.push(`bingo square ${id} why_it_is_fun is required`)
     checkTextArray(raw.storyline_tags, `bingo square ${id} storyline_tags`, issues, true)
@@ -991,6 +1188,19 @@ function copyTitleReview(value: TriggerTitleReview): TriggerTitleReview {
   return { status: value.status, note: value.note }
 }
 
+function copyGameContract(value: ShowPackGameContract): ShowPackGameContract {
+  return {
+    version: value.version,
+    commitment: value.commitment,
+    conviction_budget: value.conviction_budget,
+    identity: { ...value.identity },
+    scarcity: { ...value.scarcity },
+    visibility: value.visibility,
+    cadence: value.cadence,
+    continuity: value.continuity,
+  }
+}
+
 /**
  * Produces the stable, publishable bundle. Pending or refutation-blocked prose
  * is never allowed to cross this boundary.
@@ -1022,9 +1232,12 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       settlement_version: pack.pack.predecessor.settlement_version,
     }
   }
+  const gameContract = resolveGameContract(pack)
+  const truthAuthority = compatibilityTruthAuthority(pack.pack.fact_source)
 
   return {
-    schema_version: pack.schema_version,
+    schema_version: SHOW_PACK_SCHEMA_VERSION,
+    game_contract: copyGameContract(gameContract),
     pack: metadata,
     sources: pack.sources.map((source) => ({
       id: source.id,
@@ -1062,6 +1275,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((prediction) => ({
         id: prediction.id,
         title: prediction.title,
+        truth_authority: prediction.truth_authority ?? truthAuthority,
         condition: prediction.condition,
         exclusions: [...prediction.exclusions],
         adjudication: copyAdjudication(prediction.adjudication),
@@ -1076,6 +1290,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((beat) => ({
         id: beat.id,
         title: beat.title,
+        truth_authority: beat.truth_authority ?? truthAuthority,
         condition: beat.condition,
         exclusions: [...beat.exclusions],
         adjudication: copyAdjudication(beat.adjudication),
@@ -1092,6 +1307,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((square) => ({
         id: square.id,
         title: square.title,
+        truth_authority: square.truth_authority ?? truthAuthority,
         condition: square.condition,
         exclusions: [...square.exclusions],
         adjudication: copyAdjudication(square.adjudication),
