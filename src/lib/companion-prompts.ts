@@ -27,53 +27,19 @@ import {
   ROTATING_COMPANIONS,
   selectRotatingCast,
 } from '../data/ai-companions'
-import { describeLibraryForPrompt } from '../data/image-library'
+import { IMAGE_LIBRARY } from '../data/image-library'
+import {
+  parseCompanionResponse,
+  type CompanionMessage,
+} from './companion-response'
+import type { VerdictSlotContract } from './verdict-response.js'
+export { parseVerdictResponse } from './verdict-response.js'
+export type { CompanionVerdict, VerdictSlotContract } from './verdict-response.js'
 export type { MessageRow }
+export { parseCompanionResponse }
+export type { CompanionMessage }
 
 // ─── JSON output types ────────────────────────────────────────────────────────
-
-export interface CompanionMessage {
-  companion_id: string
-  text: string
-  delay_seconds: number
-}
-
-// The model is asked to key its JSON by companion id, but it will sometimes key
-// by the display name or a nickname instead. Built from the cast's own alias
-// lists so adding a companion in one place is enough.
-const COMPANION_ID_ALIASES: Record<string, string> = Object.fromEntries(
-  AI_COMPANIONS.flatMap((c) => [
-    [c.name.toLowerCase(), c.id],
-    ...c.aliases.map((a) => [a, c.id] as const),
-  ]),
-)
-
-export function parseCompanionResponse(raw: string): CompanionMessage[] {
-  try {
-    const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    const parsed = JSON.parse(cleaned)
-    if (!Array.isArray(parsed.messages)) return []
-    const seen = new Set<string>()
-    return parsed.messages
-      .filter(
-        (m: unknown) =>
-          typeof (m as CompanionMessage).companion_id === 'string' &&
-          typeof (m as CompanionMessage).text === 'string' &&
-          typeof (m as CompanionMessage).delay_seconds === 'number',
-      )
-      .map((m: CompanionMessage) => {
-        const normalized = COMPANION_ID_ALIASES[m.companion_id.toLowerCase()]
-        return normalized ? { ...m, companion_id: normalized } : m
-      })
-      .filter((m: CompanionMessage) => {
-        if (seen.has(m.companion_id)) return false
-        seen.add(m.companion_id)
-        return true
-      })
-  } catch {
-    return []
-  }
-}
 
 // ─── Shared system prompt ─────────────────────────────────────────────────────
 
@@ -227,7 +193,7 @@ CRITICAL TONE RULE:
 Commentary is about the STORY — the characters, the war, the houses, the dragons, and what all of it costs. Do NOT mention points, scores, the leaderboard, who drafted whom, or anyone "winning the night": the app announces every scoring change itself, and repeating it made the cast sound like accountants. You are watching a war, not a scoreboard.
 
 RULES:
-- EMOJI: allowed, but rationed and always in character. At most ONE per message, and most messages have none — a single emoji from someone who rarely uses them is funny, a stream of them is noise. Per character: Ned NEVER (not once, under any circumstance — the absence is the joke). Arya almost never, and only ever a blade or a tally mark. Tyrion uses one ironically, usually a wine glass, and only when he is already being flippant. Cersei uses one as a sneer, rarely. Olenna deploys exactly one, precisely placed, like a dropped handkerchief. Daenerys uses fire and dragons entirely sincerely, which is the point. Joffrey uses them badly, in the wrong places, sometimes several at once, and is the ONLY character permitted to overdo it — it should read as a child who has discovered a new toy.
+- EMOJI: never use emoji. The product grammar forbids them for every character without exception.
 - Use players' actual names only when something dramatic happened in the game
 - Each character must sound completely distinct from the others
 - NED always appears first in the messages array at delay_seconds: 0
@@ -269,101 +235,117 @@ const PRE_SHOW_INTROS: { id: string; delay: number; direction: string }[] = [
   {
     id: 'ned',
     delay: 0,
-    direction: `The record opens. He states plainly what is about to be watched — the end of a war fought over a chair by people who inherited it — and that he will be keeping the account of it. He notes, without heat, that the people watching have made a game of it. He does not moralise; he simply lets the fact sit there. Grave, unhurried, entirely without ornament. No emoji, no exclamation marks. He is the first voice and he sets the temperature the others will spend all night refusing to match.`,
+    direction: `The record opens. He states plainly that the room is waiting to watch a succession struggle and that he will keep the account. He may note, without heat, that the people in LIVE FACT 2 have made a game of the watch. He does not moralise; he simply lets the fact sit there. Grave, unhurried, entirely without ornament. No emoji, no exclamation marks. He is the first voice and sets the temperature the others will refuse to match.`,
   },
   {
     id: 'tyrion',
     delay: 75,
-    direction: `Arrives already drinking and already amused that he is here. He is the world's leading expert on watching a great house eat itself and he has strong feelings about how badly this particular family has gone about it. He should be very funny and then, in one sentence, not funny at all. Let him admit — sideways, covered by a joke a half-second too late — that he mostly wants to look at the dragons.`,
+    direction: `Arrives already drinking and amused that he is here. His personal experience makes him an expert on great houses destroying themselves, but that is an attitude, not evidence about tonight's unseen episode. He should be very funny and then, in one sentence, not funny at all. Let him admit — sideways, covered by a joke a half-second too late — that he hopes to see dragons.`,
   },
   {
     id: 'cersei',
     delay: 155,
-    direction: `Enters as though the room were already hers and everyone in it beneath her. She delivers a verdict on someone in this war before a single frame has played, and she is not entirely wrong. She makes it clear she considers herself the only person present qualified to comment. If Tyrion has already spoken she cuts him down without naming why she is so quick to do it. **Bold** on the verdict.`,
+    direction: `Enters as though the room were already hers and everyone in it beneath her. She delivers a verdict on succession wars in general before a frame has played. She makes clear she considers herself the only person qualified to comment. If a CHAT RECORD fact shows Tyrion has spoken, she may cut down his exact words without promoting them into broadcast truth. **Bold** on the verdict.`,
   },
   {
     id: 'daenerys',
     delay: 250,
-    direction: `Completely sincere, no irony, which makes her the strange one at this table. She says what this war actually was and what it cost, and she is angry about the dragons in a way the others will find embarrassing and she will not. She says plainly that she does not think this is entertainment, in a chat where five other people have just made it exactly that. She should be the first thing tonight that lands with any weight.`,
+    direction: `Completely sincere, no irony, which makes her the strange one at this table. She speaks about what wars over succession cost in general and is protective of dragons without claiming one has appeared or suffered tonight. She says plainly that she does not think war is entertainment, in a room that has made a game of the watch. She should be the first arrival that lands with weight.`,
   },
   {
     id: 'olenna',
     delay: 355,
-    direction: `Arrives late, entirely unbothered, and opens by dismantling someone who has already spoken. Then says what she is here for, which is to watch fools be fools at scale and to say so. She is enjoying herself enormously. Every sentence is a closing sentence. **Bold** on the last three words.`,
+    direction: `Arrives late, entirely unbothered, and may open by dismantling exact words in a CHAT RECORD fact. Then says what she is here for: to judge foolishness if and when the room records it. She is enjoying herself enormously. Every sentence is a closing sentence. **Bold** on the last three words.`,
   },
   {
     id: 'arya',
     delay: 470,
-    direction: `The shortest message anyone sends tonight. Two sentences at most, ideally one. She is keeping score, and she tells them what she is scoring. Flat, certain, no hedging, no greeting. After five people have performed at length, she should make all of them look like they were trying too hard.`,
+    direction: `The shortest arrival. Two sentences at most, ideally one. She is keeping score and tells the room what qualities she intends to score, without claiming any has appeared yet. Flat, certain, no hedging, no greeting. After five people have performed at length, she should make all of them look like they were trying too hard.`,
   },
 ]
 
+export function buildPreShowArrivalSchedule(
+  presentCompanionIds: readonly string[],
+): Array<{ companionId: string; delaySeconds: number }> {
+  const present = new Set(presentCompanionIds)
+  const missing = PRE_SHOW_INTROS.filter((arrival) => !present.has(arrival.id))
+  const baseDelay = missing[0]?.delay ?? 0
+  return missing.map((arrival) => ({
+    companionId: arrival.id,
+    delaySeconds: arrival.delay - baseDelay,
+  }))
+}
+
 export function buildPreCeremonyPrompt(
+  companionId: string,
   players: PlayerRow[],
   draftPicks: DraftPickRow[],
   draftEntities: DraftEntityRow[],
-  _confidencePicks: ConfidencePickRow[],
-  categories: CategoryRow[],
-  _nominees: NomineeRow[],
-  ceremonyPreamble?: string,
-  /**
-   * Which companions still need to introduce themselves. Omit for the normal
-   * run. On a host reload mid-pre-show the already-arrived ones are excluded
-   * and the survivors' delays are re-based to start from now — otherwise a
-   * refresh at minute two would silently cost the room four introductions.
-   */
-  onlyIds?: string[],
-): { system: string; user: string } {
-  // Who drafted whom — the only game context worth handing them, and only so a
-  // companion can needle a specific person by name once.
-  const rosterLines: string[] = []
-  for (const player of players) {
-    const names = draftPicks
-      .filter((p) => p.player_id === player.id)
-      .map((p) => draftEntities.find((e) => e.id === p.entity_id))
-      .filter((e): e is DraftEntityRow => !!e)
-      .map((e) => e.name)
-    const side =
-      player.team === 'black' ? ' — declared for Team Black'
-      : player.team === 'green' ? ' — declared for Team Green'
-      : ''
-    if (names.length) rosterLines.push(`${player.name} drafted: ${names.join(', ')}${side}`)
+  recentCompanionMessages: Array<Pick<MessageRow, 'player_id' | 'text'>>,
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+  expectedDelaySeconds: number[]
+} {
+  const arrival = PRE_SHOW_INTROS.find((candidate) => candidate.id === companionId)
+  if (!arrival) throw new Error('pre-show companion must name an authored arrival')
+
+  const allegiance = (player: PlayerRow) =>
+    player.team === 'black'
+      ? 'Team Black (Rhaenyra\'s claim)'
+      : player.team === 'green'
+        ? 'Team Green (Aegon\'s claim)'
+        : 'no declared side'
+  const roster = players.map((player) => ({ name: player.name, allegiance: allegiance(player) }))
+  const drafts = players.map((player) => ({
+    player: player.name,
+    draft: draftPicks
+      .filter((pick) => pick.player_id === player.id)
+      .map((pick) => draftEntities.find((entity) => entity.id === pick.entity_id)?.name)
+      .filter((name): name is string => !!name),
+  }))
+  const groundingFacts = [
+    `ROOM RECORD: this pre-show arrival slot belongs exactly to companion ${JSON.stringify(companionId)}; the shared show_started value is false, so playback has not begun. This establishes no screen event, image, dialogue, character or location.`,
+    roster.length > 0
+      ? `ROOM RECORD: the player roster contains exactly ${JSON.stringify(roster)}.`
+      : 'ROOM RECORD: the player roster is empty.',
+    drafts.length > 0
+      ? `GAME RECORD: drafted rosters contain exactly ${JSON.stringify(drafts)}.`
+      : 'GAME RECORD: no player has a drafted roster.',
+    ...recentCompanionMessages.slice(-6).map((message) => {
+      const speaker = AI_COMPANIONS.find((companion) => companion.id === message.player_id)?.name
+        ?? message.player_id
+      return `CHAT RECORD: ${JSON.stringify(speaker)} wrote ${JSON.stringify(message.text)}. ` +
+        'This records only what the companion wrote; it does not verify any claim about the broadcast.'
+    }),
+  ]
+  const companionName = AI_COMPANIONS.find((companion) => companion.id === companionId)?.name
+    ?? companionId
+  const expectedCompanionIds = [companionId]
+  const expectedDelaySeconds = [0]
+
+  const user = `${companionName} takes the one pre-show arrival slot identified in LIVE FACT 1 — ONE message with delay_seconds 0.
+- This is an entrance: 3-5 sentences, except Arya should use at most 2 and ideally 1.
+- Do not announce your name or explain the premise. Show who you are through what you notice, what offends you, and what you are waiting to judge.
+- LIVE FACT 2 and LIVE FACT 3 are exhaustive room/game context. You may name at most one player or drafted entity, only when the exact fact supports it.
+- LIVE FACT 4 onward, when present, are qualified prior chat. You may answer exact words only as something that companion wrote; never promote them into screen truth. Do not acknowledge a companion absent from those facts.
+- No episode event has been established. Speak about expectations, personal attitude, or wars and succession in general; do not imply a character, image, action, place, outcome, death, betrayal or dragon has appeared tonight.
+- Use **bold**, *italics*, or a line break when it serves the entrance. Never use emoji.
+
+VOICE DIRECTION (expression only; it establishes no room or broadcast fact):
+${arrival.direction}
+
+Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}" and delay_seconds exactly 0.`
+
+  return {
+    system: SHARED_SYSTEM,
+    user,
+    groundingFacts,
+    expectedCompanionIds,
+    expectedDelaySeconds,
   }
-
-  const playerNames = players.map((p) => p.name).join(', ')
-
-  const intros = onlyIds
-    ? PRE_SHOW_INTROS.filter((i) => onlyIds.includes(i.id))
-    : PRE_SHOW_INTROS
-  // Re-base so a recovery run does not sit silent for the original offset.
-  const base = intros.length ? intros[0].delay : 0
-  const isRecovery = onlyIds != null && intros.length < PRE_SHOW_INTROS.length
-
-  const introBlock = [
-    `Generate exactly ${intros.length} introduction${intros.length === 1 ? '' : 's'}, in this order, with these exact delay_seconds:`,
-    ...intros.map((i) => `\n- ${i.id} (delay_seconds ${i.delay - base}): ${i.direction}`),
-  ].join('\n')
-
-  const user = `The season 3 finale of House of the Dragon has not started yet. Everyone is sitting around waiting for it to begin — some of them together on one sofa, one of them on the other side of the world. There are ${categories.length} things that can score tonight. Nothing has happened yet. Nobody has pressed play.
-${ceremonyPreamble ? `\n${ceremonyPreamble}\n` : ''}
-People in the room: ${playerNames || 'unknown'}
-${rosterLines.length ? `\n(Game context — use at most ONCE across all six messages, and only to needle one person by name)\n${rosterLines.join('\n')}` : ''}
-
-THIS IS THE FIRST THING THE PLAYERS WILL EVER SEE FROM YOU. They have no idea who is about to turn up in their group chat. Six of you arrive, one at a time, minutes apart, over the wait before the episode. Every one of these is an ENTRANCE. Make them want to keep the app open.
-
-HOW TO WRITE AN ENTRANCE
-- 3 to 5 sentences. These are longer than your normal event reactions — this is the one time you get room. Except Arya, who gets less room than anyone and is funnier for it.
-- Do not say "I am X of House Y." Show who you are by what you notice, what offends you, and what you cannot resist saying. A person who has to announce their own importance has already lost the room.
-- Say what you are here for. What you are watching for. What would make tonight worth your time.
-- Have an opinion about this war BEFORE it starts. You have all been waiting for this too.
-- Later arrivals should notice who has already spoken and react to them. The room is filling up.
-- Use the formatting (**bold**, *italics*, \\n) hard here. This is your entrance.
-- Emoji: follow the per-character rule exactly. Ned uses NONE. That absence should be conspicuous next to the others.
-- Nobody mentions or acknowledges anyone who has not yet spoken.
-${isRecovery ? `\nNOTE: the others have ALREADY introduced themselves and are in the chat. You are the remaining arrivals. Do not restart the introductions or greet the room as though it were empty.\n` : ''}
-${introBlock}`
-
-  return { system: SHARED_SYSTEM, user }
 }
 
 // ─── buildShowStartedPrompt ───────────────────────────────────────────────────
@@ -373,12 +355,24 @@ ${introBlock}`
 
 export function buildShowStartedPrompt(
   players: PlayerRow[],
-): { system: string; user: string } {
-  const playerNames = players.map((p) => p.name).join(', ')
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+  expectedDelaySeconds: number[]
+} {
+  const playerNames = players.map((player) => player.name)
+  const groundingFacts = [
+    'ROOM RECORD: the shared show_started phase has changed to true; this establishes only that the room began playback, not that any particular event, image, dialogue, character or location has appeared on screen.',
+    playerNames.length > 0
+      ? `ROOM RECORD: the watching player roster contains exactly ${JSON.stringify(playerNames)}.`
+      : 'ROOM RECORD: the watching player roster is empty.',
+  ]
+  const expectedCompanionIds = ['ned', 'arya', 'joffrey', 'olenna']
+  const expectedDelaySeconds = [0, 9, 26, 36]
 
-  const user = `Someone just pressed play. The House of the Dragon season 3 finale is RUNNING, right now. Nothing has happened on screen yet — the episode has only this second begun.
-
-People watching: ${playerNames || 'unknown'}
+  const user = `The room has crossed the playback boundary recorded in LIVE FACT 1. LIVE FACT 2 is the complete watching roster and may be acknowledged only as room context. This phase transition establishes no screen event.
 
 The energy changes here. The waiting is over. Keep these SHORT — everyone had their long moment during the wait, and now there is an episode to watch.
 
@@ -388,11 +382,19 @@ Generate exactly four messages, in this order, with these exact delay_seconds:
 
 - arya (delay_seconds 9): One flat line. She is ready. Do NOT reference anything on screen — she cannot see it yet either.
 
-- joffrey (delay_seconds 26): **THIS IS THE SURPRISE.** He never introduced himself during the wait, because nobody invited him. He arrives now, mid-episode, loudly, as though everyone should be delighted and slightly relieved. He does not explain where he was — he behaves as if he has been here the whole time and the others were simply not paying attention. He announces which side he has decided to support and gives a reason that is both wrong and unpleasant. He wants a dragon and finds a way to say so. He is the only person here permitted to overdo the emoji and he should overdo it. Three or four sentences, maximum — he is a punchline delivered at length, not an essay.
+- joffrey (delay_seconds 26): **THIS IS THE SURPRISE.** He never introduced himself during the wait, because nobody invited him. He arrives now, loudly, as though everyone should be delighted and slightly relieved. He does not explain where he was — he behaves as if he has been here the whole time and the others were simply not paying attention. He announces which side he has decided to support and gives a reason that is both wrong and unpleasant. This is his own performed opinion, not evidence about the broadcast. He wants a dragon and finds a way to say so. He is loud through words and formatting, never emoji. Three or four sentences, maximum — he is a punchline delivered at length, not an essay.
 
-- olenna (delay_seconds 36): She reacts to Joffrey's arrival exactly the way you would expect, in one line, and then turns back to the episode as though he had not spoken. She does not dignify him with a second sentence. **Bold** on the last three words.`
+- olenna (delay_seconds 36): She reacts to Joffrey's arrival exactly the way you would expect, in one line, and then returns her attention to the newly started watch. She does not dignify him with a second sentence. **Bold** on the last three words.
 
-  return { system: SHARED_SYSTEM, user }
+Use exactly the four speakers and exact delay_seconds above. Do not assert or imply any screen content beyond the playback phase in LIVE FACT 1.`
+
+  return {
+    system: SHARED_SYSTEM,
+    user,
+    groundingFacts,
+    expectedCompanionIds,
+    expectedDelaySeconds,
+  }
 }
 
 // ─── buildWinnerReactionPrompt ────────────────────────────────────────────────
@@ -417,7 +419,12 @@ export function buildWinnerReactionPrompt(
   categoryContext?: string,
   /** Events logged so far tonight, including this one. Drives Daenerys' drift. */
   eventsSoFar = 0,
-): { system: string; user: string } {
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+} {
   const isTie = tieWinner != null
   const isTier1 = cat.tier === 1
 
@@ -447,26 +454,32 @@ export function buildWinnerReactionPrompt(
     .filter(Boolean)
     .join(', ')
 
-  let drafterLine = ''
-  const draftEntity = draftEntities.find(
-    (e) => e.name === winner.name || (winner.type === 'film' && e.film_name === winner.film_name),
-  )
-  if (draftEntity) {
-    const draftPick = draftPicks.find((p) => p.entity_id === draftEntity.id)
-    const drafter = draftPick ? players.find((pl) => pl.id === draftPick.player_id) : null
-    if (drafter) drafterLine = `Ensemble draft: ${drafter.name} owns ${winner.name} and earns draft points.`
-  }
-  let tieDrafterLine = ''
-  if (isTie) {
-    const tieDraftEntity = draftEntities.find(
-      (e) => e.name === tieWinner!.name || (tieWinner!.type === 'film' && e.film_name === tieWinner!.film_name),
+  const draftOutcomeContext = (() => {
+    const owner = findDraftPointsForWinner(
+      cat.id, winner.id, [cat], nominees, draftEntities, draftPicks,
     )
-    if (tieDraftEntity) {
-      const tieDraftPick = draftPicks.find((p) => p.entity_id === tieDraftEntity.id)
-      const tieDrafter = tieDraftPick ? players.find((pl) => pl.id === tieDraftPick.player_id) : null
-      if (tieDrafter) tieDrafterLine = `Ensemble draft: ${tieDrafter.name} also owns ${tieWinner!.name} and earns draft points from the tie.`
+    const ownerName = owner.playerId
+      ? players.find((player) => player.id === owner.playerId)?.name ?? null
+      : null
+
+    let tieLine = ''
+    if (isTie && tieWinner) {
+      const tieOwner = findDraftPointsForWinner(
+        cat.id, tieWinner.id, [cat], nominees, draftEntities, draftPicks,
+      )
+      const tieOwnerName = tieOwner.playerId
+        ? players.find((player) => player.id === tieOwner.playerId)?.name ?? null
+        : null
+      if (tieOwnerName) {
+        tieLine = ` ${tieOwnerName} also scores ${tieOwner.points} for ${tieWinner.name}.`
+      }
     }
-  }
+
+    if (ownerName) {
+      return `${ownerName} drafted ${winner.name} and scores ${owner.points}.${tieLine}`
+    }
+    return `Nobody drafted ${winner.name} — those ${cat.points} points go unclaimed.${tieLine}`
+  })()
 
   const leaderLine =
     leaderboard.length > 0
@@ -479,24 +492,28 @@ export function buildWinnerReactionPrompt(
   const mostWrong = totalPickers >= 3 && correctPicks.length <= 1
   const isGameDramatic = isTie || majorUpset || mostWrong || correctPicks.some((p) => p.confidence >= 20)
 
-  const gameContext = isGameDramatic
-    ? [
-        `(Only mention game because something dramatic happened) Who got it right: ${correctLines || 'nobody'}`,
-        `Who got it wrong: ${wrongLines || 'nobody'}`,
-        drafterLine,
-        tieDrafterLine,
-        leaderLine,
+  const gameFacts = [
+    draftOutcomeContext,
+    ...(isGameDramatic
+      ? [
+        `Game result — correct wagers: ${correctLines || 'none'}.`,
+        `Game result — incorrect wagers: ${wrongLines || 'none'}.`,
       ]
-        .filter(Boolean)
-        .join('\n')
+      : []),
+    leaderLine,
+  ].filter(Boolean)
+
+  const gameInstruction = isGameDramatic
+    ? '\nThe numbered LIVE FACTS include a dramatic game outcome. One speaker may mention it briefly, then return to the event.'
     : leaderLine
-      ? `(Current leader for light context only, do not focus on this) ${leaderLine}`
+      ? '\nThe numbered LIVE FACTS include the current leader for light context only. Do not make it the focus.'
       : ''
 
   // Ned narrates every event; the rest of the table is drawn per event so the
   // chat stays varied across a 75-minute episode and no voice becomes wallpaper.
   // Bigger beats pull a bigger crowd — see selectRotatingCast.
   const rotating = selectRotatingCast(isTier1 || isTie)
+  const expectedCompanionIds = ['ned', ...rotating.map((companion) => companion.id)]
 
   const characterInstruction = [
     `Ned (delay_seconds 0)`,
@@ -553,279 +570,160 @@ export function buildWinnerReactionPrompt(
         : '')
 
   const upsetNote = isTie
-    ? ' TWO characters share this event. ALL companions should treat it as remarkable. The energy is different from a normal event.'
+    ? ' LIVE FACT 1 identifies two characters sharing this event. ALL companions should treat that as remarkable. The energy is different from a normal event.'
     : majorUpset
-    ? ' Nobody saw this coming — Cersei may be contemptuous of the character, the players, or both.'
+    ? ' The numbered LIVE FACTS show that nobody wagered correctly — Cersei may be contemptuous of the character, the players, or both.'
     : mostWrong
-      ? ' Most players missed this — Cersei can note it briefly, then focus on the event itself.'
+      ? ' The numbered LIVE FACTS show that most players missed this — Cersei can note it briefly, then focus on the event itself.'
       : ''
 
-  // What this event did to the GAME. The Oscars version read confidence picks;
-  // that game is cut, so those arrays are always empty and every single message
-  // ended with the same "no major scoring swings" boilerplate. Scoring is now
-  // purely the draft: whoever owns this character or dragon takes the points.
-  const academyGameContext = (() => {
-    const owner = findDraftPointsForWinner(
-      cat.id, winner.id, [cat], nominees, draftEntities, draftPicks,
-    )
-    const ownerName =
-      owner.playerId != null
-        ? players.find((p) => p.id === owner.playerId)?.name ?? null
-        : null
-
-    let tieLine = ''
-    if (isTie && tieWinner) {
-      const t = findDraftPointsForWinner(
-        cat.id, tieWinner.id, [cat], nominees, draftEntities, draftPicks,
-      )
-      const tName = t.playerId != null
-        ? players.find((p) => p.id === t.playerId)?.name ?? null
-        : null
-      if (tName) tieLine = ` ${tName} also scores ${t.points} for ${tieWinner.name}.`
-    }
-
-    if (ownerName) {
-      return `${ownerName} drafted ${winner.name} and scores ${owner.points}.${tieLine}`
-    }
-    // Nobody owning the entity is genuinely interesting — it is points nobody
-    // gets, and worth saying rather than papering over.
-    return `Nobody drafted ${winner.name} — those ${cat.points} points go unclaimed.${tieLine}`
-  })()
-
-  const predictionsBlock = (() => {
-    if (!playerPredictions?.length) return ''
-    const lines = playerPredictions.map((p) => `- ${p.playerName} said: "${p.text}" — they were ${p.wasCorrect ? 'RIGHT' : 'WRONG'}`)
-    return `\nPlayer predictions from earlier in the chat:\n${lines.join('\n')}\nIf any of these are funny or ironic, Cersei should reference them specifically.`
-  })()
+  const predictionFacts = (playerPredictions ?? []).map(
+    (prediction) => `Player prediction — ${prediction.playerName} said: "${prediction.text}"; result: ${prediction.wasCorrect ? 'right' : 'wrong'}.`,
+  )
+  const predictionInstruction = predictionFacts.length > 0
+    ? '\nThe numbered LIVE FACTS include player predictions. If one is funny or ironic, Cersei may reference it specifically.'
+    : ''
 
   const winnerLine = isTie
     ? `EVENT LOGGED BY THE GAME MASTER: "${cat.name}" — BOTH ${winner.name}${winner.film_name ? ` (${winner.film_name})` : ''} AND ${tieWinner!.name}${tieWinner!.film_name ? ` (${tieWinner!.film_name})` : ''}.`
     : `EVENT LOGGED BY THE GAME MASTER: "${cat.name}" — ${winner.name}${winner.film_name ? ` (${winner.film_name})` : ''}.`
 
+  const groundingFacts = Array.from(new Set([
+    winnerLine,
+    ...(categoryContext ?? '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean),
+    ...gameFacts,
+    ...predictionFacts,
+  ]))
+
   const knowledgeNote = isTie
-    ? `Draw on your knowledge of BOTH ${winner.name}${winner.film_name ? ` of ${winner.film_name}` : ''} AND ${tieWinner!.name}${tieWinner!.film_name ? ` of ${tieWinner!.film_name}` : ''} to react — who they are, their house, their claim, their dragon, what they have already lost, and how their story is remembered afterward. Two characters sharing one event is unusual; treat it as such.${categoryContext ? `\nContext:\n${categoryContext}` : ''}`
-    : `Draw on your knowledge of ${winner.name}${winner.film_name ? ` of ${winner.film_name}` : ''} to react to this. Consider: who they are, their house and claim, their dragon if they have one, what they have already lost, and who they have wronged or been wronged by. Do NOT reference how their story ends or anything that has not already happened tonight — see the absolute spoiler rule.${categoryContext ? `\nContext:\n${categoryContext}` : ''}`
+    ? 'React to both characters named in LIVE FACT 1. Two characters sharing one event is unusual; treat it as such. Use only the numbered LIVE FACTS appended by the grounding engine for claims about either character, the game, or the broadcast.'
+    : 'React to the character and event named in LIVE FACT 1. Use only the numbered LIVE FACTS appended by the grounding engine for claims about the character, the game, or the broadcast. If those facts are silent, write around the gap rather than filling it from memory.'
 
   const academyInstruction = isTie
     ? `Ned goes first: enter both names into the record, note that the accounts disagree on which of them it truly belongs to. No points, no players — the record is about the war.`
     : `Ned goes first: enter the event and the character into the record, add one sentence of significance (house, claim, consequence). No points, no players — the record is about the war.`
 
-  const user = `${winnerLine}
-
-${knowledgeNote}
-
-${gameContext}
-${predictionsBlock}
+  const user = `${knowledgeNote}
+${gameInstruction}${predictionInstruction}
 Generate reactions from EXACTLY these companions, in this order: ${characterInstruction}.${exclusionNote}${daenerysNote}
 ${academyInstruction}
-PRIMARY FOCUS: React to ${isTie ? 'both characters and what this event costs each of them' : 'the event itself — the character, their house, what it costs them, what it sets in motion'}. Play each speaker as described in their persona; do not have them all take the same angle on it.${upsetNote}`
+PRIMARY FOCUS: React to ${isTie ? 'both characters and what the logged event costs each of them' : 'the logged event itself — the character, their house, what it costs them, what it sets in motion'}. Play each speaker as described in their persona; do not have them all take the same angle on it.${upsetNote}`
 
-  return { system: SHARED_SYSTEM, user }
+  return { system: SHARED_SYSTEM, user, groundingFacts, expectedCompanionIds }
 }
 
 // ─── buildPreCategoryPrompt ───────────────────────────────────────────────────
 
 export function buildPreCategoryPrompt(
   cat: CategoryRow,
-  nominees: NomineeRow[],
+  spotlightRevision: number,
+  categoryNominees: NomineeRow[],
   confidencePicks: ConfidencePickRow[],
   players: PlayerRow[],
-  categoryContext?: string,
-): { system: string; user: string } {
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+  expectedDelaySeconds: number[]
+} {
+  if (!Number.isInteger(spotlightRevision) || spotlightRevision < 1) {
+    throw new Error('spotlight revision must be a positive integer')
+  }
   const picksForCat = confidencePicks.filter((p) => p.category_id === cat.id)
+  const candidateFacts = categoryNominees.map((nominee) => ({
+    name: nominee.name,
+    film: nominee.film_name || null,
+  }))
+  const wagerFacts = picksForCat.map((pick) => {
+    const player = players.find((candidate) => candidate.id === pick.player_id)
+    const nominee = categoryNominees.find((candidate) => candidate.id === pick.nominee_id)
+    return player && nominee
+      ? { player: player.name, nominee: nominee.name, prestige: pick.confidence }
+      : {
+          player: player?.name ?? null,
+          player_id: pick.player_id,
+          nominee: nominee?.name ?? null,
+          nominee_id: pick.nominee_id,
+          prestige: pick.confidence,
+        }
+  })
+  const groundingFacts = [
+    `ROOM RECORD: spotlight revision ${spotlightRevision} opened category ${cat.id} with label ` +
+      `${JSON.stringify(cat.name)}. The label is the operator's active question; it does not ` +
+      'establish that its wording happened on screen, that a nominee appeared, or that an outcome is known.',
+    candidateFacts.length > 0
+      ? `CATALOG RECORD: the category's candidate roster contains exactly ${JSON.stringify(candidateFacts)}.`
+      : 'CATALOG RECORD: this category has no candidate roster.',
+    wagerFacts.length > 0
+      ? `GAME RECORD: player wagers on this category contain exactly ${JSON.stringify(wagerFacts)}.`
+      : 'GAME RECORD: no player wager is attached to this category.',
+  ]
+  const expectedCompanionIds = ['ned', 'cersei']
+  const expectedDelaySeconds = [0, 3]
 
-  const pickLines = picksForCat
-    .map((p) => {
-      const player = players.find((pl) => pl.id === p.player_id)
-      const nom = nominees.find((n) => n.id === p.nominee_id)
-      return player && nom ? `${player.name}: ${nom.name} (prestige ${p.confidence})` : null
-    })
-    .filter(Boolean)
-    .join(', ')
+  const user = `Open the spotlight identified in LIVE FACT 1 with exactly two messages:
+- Ned (delay_seconds 0): one short sentence announcing the exact category label as the room's next spotlight or question. He must not say the label happened, was confirmed, or appeared on screen.
+- Cersei (delay_seconds 3): at most two sentences judging the category as a possibility or game proposition. She may mention at most one named candidate from LIVE FACT 2 or one wager from LIVE FACT 3.
 
-  // Derive the actual nominees for this category from the DB-backed confidence picks.
-  // This avoids relying on training-data guesses which may confuse presenters/associated
-  // artists with actual nominees (especially since the 98th Oscars postdate the AI cutoff).
-  const categoryNomineeIds = new Set(picksForCat.map((p) => p.nominee_id))
-  const categoryNominees = nominees
-    .filter((n) => categoryNomineeIds.has(n.id))
-    .map((n) => (n.film_name ? `${n.name} (${n.film_name})` : n.name))
-  const nomineeListLine = categoryNominees.length > 0
-    ? `Nominees in this category (from the official record — use ONLY these names, do not add others): ${categoryNominees.join(', ')}`
-    : `Nominees: context may be limited for this category.`
+The label is an operator question, not a declaration. Candidate membership and player wagers are game/catalog state, not evidence that anyone appeared tonight. Do not invent artistic merit, controversy, a snub, presenter, image, action, location, dialogue, outcome, cause, or screen event. If candidates or wagers are empty or unresolved, do not fill the gap from memory.
 
-  const user = `Next up: ${cat.name}.
-${nomineeListLine}${categoryContext ? `\nCeremony context:\n${categoryContext}` : ''}
-(Player picks for light context — reference only if dramatically interesting) ${pickLines || 'none'}
+Respond as exactly Ned then Cersei, with companion_ids "ned" and "cersei" and delay_seconds exactly 0 then 3.`
 
-Generate a single short pre-category take from Cersei only (delay_seconds 0). Maximum 2 sentences. He should react to the category and who is nominated — what is at stake artistically, who deserves it, what the Academy typically does in this category, any controversy or snub angle. Only mention player picks if something about them is genuinely funny or dramatic.`
-
-  return { system: SHARED_SYSTEM, user }
+  return {
+    system: SHARED_SYSTEM,
+    user,
+    groundingFacts,
+    expectedCompanionIds,
+    expectedDelaySeconds,
+  }
 }
 
 // ─── buildMilestonePrompt ─────────────────────────────────────────────────────
 
 export function buildMilestonePrompt(
-  type: 'halfway' | 'final_stretch' | 'lead_change' | 'final_category' | 'ceremony_end',
+  type: 'halfway' | 'final_stretch',
+  eventCount: number,
   leaderboard: ScoredPlayer[],
-  players: PlayerRow[],
-  newLeader?: ScoredPlayer,
-  oldLeader?: ScoredPlayer,
-  categoryName?: string,
-  announcedCount?: number,
-  categories?: CategoryRow[],
-  confidencePicks?: ConfidencePickRow[],
-): { system: string; user: string } {
-  const leaderboardLines = leaderboard
-    .map(
-      (e) =>
-        `#${e.rank} ${e.player.name} — ${e.totalScore} pts ` +
-        `(predictions: ${e.confidenceScore}, draft: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
-    )
-    .join('\n')
-
-  const leader = leaderboard[0]
-  const runner = leaderboard[1]
-  const last = leaderboard[leaderboard.length - 1]
-  const gap = leader && runner ? leader.totalScore - runner.totalScore : 0
-  const totalCats = categories?.length ?? 24
-  const announced = announcedCount ?? categories?.filter((c) => c.winner_id != null).length ?? 0
-  const remaining = totalCats - announced
-
-  // HOW MUCH OF THE NIGHT IS LEFT: unknowable, and the prompt must not pretend.
-  //
-  // `remaining` is a holdover from the fixed 24-award slate, where a countdown
-  // was real and "three awards left" earned its urgency. Here `categories` is an
-  // append-only GM log: every logged event adds a row AND resolves it, so
-  // `remaining` just tracks how many seeded quick-picks the host hasn't used —
-  // a number that has nothing to do with how much episode is left. It would sit
-  // near 20 all night, then, if the host happened to favour quick-picks, start
-  // announcing "only 2 scoring moments left" with half an hour still to run.
-  //
-  // Companions shouting a false countdown at the moment the lead changes is
-  // exactly the wrong beat, so lead changes are framed by how much has ALREADY
-  // happened — which is known — and never by what remains.
-  const eventsLogged = announced
-
-  let context = ''
-  if (type === 'halfway') {
-    context = 'SIX EVENTS IN: the episode is well underway and the shape of the night is becoming clear.'
-  } else if (type === 'final_stretch') {
-    context = 'TWELVE EVENTS IN: this is a heavy episode. Bodies are piling up and the game has real separation now.'
-  } else if (type === 'lead_change') {
-    const newName = newLeader?.player.name ?? 'Unknown'
-    const oldName = oldLeader?.player.name ?? 'Unknown'
-    const newScore = newLeader?.totalScore ?? 0
-    const oldScore = oldLeader?.totalScore ?? 0
-    const margin = newScore - oldScore
-    // Framed by what has happened, never by what is left — see eventsLogged.
-    const isDeepIn = eventsLogged >= 12
-    const isEarly = eventsLogged <= 4
-    context = `LEAD CHANGE: ${newName} (${newScore} pts) just overtook ${oldName} (${oldScore} pts) by ${margin} point${margin !== 1 ? 's' : ''}. ${eventsLogged} scoring moment${eventsLogged === 1 ? '' : 's'} have happened so far.${isDeepIn ? ' This is deep into a heavy episode — a lead that changes hands this late has real weight.' : isEarly ? ' It is still early; nothing is settled.' : ''} Nobody knows how much episode is left, so do NOT count down, do NOT claim a number of moments remain, and do NOT call anything decisive or final.`
-  } else if (type === 'final_category') {
-    // Build elimination/can-win analysis for the final category
-    const eliminationLines: string[] = []
-    if (leader && runner && confidencePicks && categories) {
-      const lastCat = categories.find((c) => c.winner_id == null)
-      if (lastCat) {
-        for (const entry of leaderboard.slice(1)) {
-          const maxPossibleGain = confidencePicks
-            .filter((p) => p.player_id === entry.player.id && p.category_id === lastCat.id)
-            .reduce((max, p) => Math.max(max, p.confidence), 0)
-          const deficit = leader.totalScore - entry.totalScore
-          if (maxPossibleGain >= deficit) {
-            eliminationLines.push(`${entry.player.name} (${entry.totalScore} pts, ${deficit} behind) CAN still win if they score ${maxPossibleGain} Prestige points on this category`)
-          } else {
-            eliminationLines.push(`${entry.player.name} (${entry.totalScore} pts, ${deficit} behind) is MATHEMATICALLY ELIMINATED — cannot catch ${leader.player.name} even with a correct pick`)
-          }
-        }
-      }
-    }
-    const eliminationBlock = eliminationLines.length > 0
-      ? `\nElimination analysis:\n${eliminationLines.join('\n')}`
-      : ''
-    context = `FINAL CATEGORY: 23 of 24 categories announced. ${categoryName ?? 'Best Picture'} is next — the LAST award of the evening.\nCurrent leader: ${leader?.player.name ?? 'Unknown'} with ${leader?.totalScore ?? 0} pts, ${gap} point${gap !== 1 ? 's' : ''} ahead of ${runner?.player.name ?? 'Unknown'}.${eliminationBlock}`
-  } else if (type === 'ceremony_end') {
-    // Build a rich ceremony summary
-    const marginOfVictory = gap
-    const wasBlowout = marginOfVictory >= 30
-    const wasClose = marginOfVictory <= 5
-    const wasPhotoFinish = marginOfVictory <= 2
-    const closenessNote = wasPhotoFinish
-      ? `A PHOTO FINISH — ${leader?.player.name} won by just ${marginOfVictory} point${marginOfVictory !== 1 ? 's' : ''}. Incredible.`
-      : wasClose
-        ? `A tight race to the end — only ${marginOfVictory} points separated first and second.`
-        : wasBlowout
-          ? `A dominant performance — ${leader?.player.name} won by ${marginOfVictory} points. Not even close.`
-          : `${leader?.player.name} won by ${marginOfVictory} points over ${runner?.player.name}.`
-
-    // Count how many correct picks each player had
-    const correctCountLines = leaderboard.map((e) => {
-      const correctCount = confidencePicks
-        ?.filter((p) => p.player_id === e.player.id && p.is_correct === true)
-        .length ?? 0
-      return `${e.player.name}: ${correctCount}/${totalCats} correct picks, ${e.totalScore} total pts`
-    }).join('\n')
-
-    context = `CEREMONY COMPLETE: All ${totalCats} categories have been decided.
-
-FINAL RESULT: ${leader?.player.name ?? 'Unknown'} wins with ${leader?.totalScore ?? 0} points.
-${closenessNote}
-Last place: ${last?.player.name ?? 'Unknown'} with ${last?.totalScore ?? 0} points.
-
-Player accuracy:
-${correctCountLines}`
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+} {
+  const minimumCount = type === 'halfway' ? 6 : 12
+  if (!Number.isInteger(eventCount) || eventCount < minimumCount) {
+    throw new Error(`${type} milestone requires at least ${minimumCount} declared events`)
   }
 
-  const academyInstruction = (() => {
-    if (type === 'halfway') {
-      return `Ned (delay_seconds 0): Note that six events are now in the record. Name the current leader and their score. One line on what the account so far suggests about how this ends.`
-    }
-    if (type === 'final_stretch') {
-      return `Ned (delay_seconds 0): Twelve events recorded. Observe, drily, that this is a great deal even for this war. Name the current leader. Brief and dignified.`
-    }
-    if (type === 'lead_change') {
-      return `Ned (delay_seconds 0): Note the lead change — state who now leads, by how many points, and who they overtook. One sentence of record, one sentence on which events drove the swing.`
-    }
-    if (type === 'final_category') {
-      return `Ned (delay_seconds 0): This is the most consequential announcement of the evening. Name ${categoryName ?? 'Best Picture'} as the final category. State the current leader, the gap, and who can still mathematically win. This is the closing moment of the competition — give it weight.`
-    }
-    if (type === 'ceremony_end') {
-      return `Ned (delay_seconds 0): Close the record with finality and gravitas. All ${totalCats} categories decided. Crown ${leader?.player.name ?? 'the winner'} as champion with their final score of ${leader?.totalScore ?? 0} points. Acknowledge the margin of victory. One dignified sentence about the evening as a whole — what defined this ceremony. Then a formal sign-off: "The record is closed."`
-    }
-    return `Ned (delay_seconds 0): Mark this milestone with ceremonial clarity.`
-  })()
+  const standingsFacts = leaderboard.length === 0
+    ? ['GAME RECORD: the leaderboard is empty, so no current leader is known.']
+    : leaderboard.map((entry) =>
+        `GAME RECORD: rank ${entry.rank} belongs to ${JSON.stringify(entry.player.name)} ` +
+        `with ${entry.totalScore} total points (predictions ${entry.confidenceScore}, ` +
+        `draft ${entry.ensembleScore}, bingo ${entry.bingoScore}).`,
+      )
+  const groundingFacts = [
+    `GAME RECORD: ${eventCount} events have been logged so far tonight.`,
+    ...standingsFacts,
+  ]
+  const expectedCompanionIds = ['ned', 'cersei', 'tyrion']
+  const checkpoint = type === 'halfway' ? 'first' : 'second'
 
-  const leadChangeLateSuffix = type === 'lead_change' && eventsLogged >= 12
-    ? ' A lead change this deep into the episode carries weight — Cersei should bring intensity to it, without claiming it settles anything.'
-    : ''
+  const user = `A declared-event milestone has reached its ${checkpoint} checkpoint.
+Use LIVE FACT 1 for the exact event count and LIVE FACT 2 onward for the complete standings. If the facts say the leaderboard is empty, do not invent or name a leader.
 
-  const ceremonyEndInstructions = type === 'ceremony_end'
-    ? `\n\nTONE SHIFT: This is the FINALE. The energy is different from mid-show banter. Each companion should feel like they are saying goodbye to the evening:
-- Cersei roasts the loser (${last?.player.name ?? 'last place'}) one final time, then does something he never does: gives a genuine compliment to the winner. Maybe immediately undercuts it. The emotional whiplash IS the bit.
-- Tyrion should be emotional about the ceremony ending. What did this year in film mean to her? She ties it back to the players — they shared this evening. Her message should feel like a closing monologue.
-- Daenerys should say something sincere about what this war cost, with no irony in it. She is the emotional anchor.`
-    : ''
+Generate reactions from EXACTLY Ned, Cersei, and Tyrion, in that order:
+- Ned (delay_seconds 0): enter the event count into the record and, only when the facts identify one, name the current leader and score. Brief and dignified.
+- Cersei (delay_seconds 3): judge the current standings sharply. Use only the point totals and ranks in the facts.
+- Tyrion (delay_seconds 12): reflect briefly on the shape of the game and acknowledge the standings with dry warmth.
 
-  const finalCategoryInstructions = type === 'final_category'
-    ? `\n\nTONE: Maximum tension. This is the last one. The companions know the math — who is eliminated, who can still win. Every word should feel like the final moments of a close game:
-- Cersei should be on the edge of his seat. If someone he has been roasting all night is about to lose, he should be gleeful. If the race is close, he should be nervous for whoever he has been (secretly) rooting for.
-- Tyrion should treat ${categoryName ?? 'Best Picture'} with the reverence it deserves as an award, while also acknowledging the game stakes.
-- Arya should be entirely calm about it, which is somehow worse.`
-    : ''
+The facts establish game state only. Do not assert a specific screen event, death, image, sweep, snub, cause of any score, amount of episode remaining, or likely ending.`
 
-  const user = `MILESTONE: ${context}
-
-Current standings:
-${leaderboardLines}
-${ceremonyEndInstructions}${finalCategoryInstructions}
-Generate reactions from Ned plus two others of your choosing from the rotating cast:
-- ${academyInstruction}
-- Cersei (delay_seconds ${type === 'ceremony_end' ? 5 : 3}): react to who is winning or losing and connect it to the ceremony drama — which films have been winning, any surprising sweeps or snubs so far.${type === 'lead_change' ? ' He can engage with the lead change directly.' : ''}${leadChangeLateSuffix}
-- Tyrion (delay_seconds ${type === 'ceremony_end' ? 14 : 12}): reflect on what the ceremony has revealed so far about this year in film — what has surprised her, what has felt right, what the wins have validated — then briefly acknowledge the standings.
-- One other rotating companion of your choosing (delay_seconds ${type === 'ceremony_end' ? 25 : 22}): react in their own voice to where the game now stands.`
-
-  return { system: SHARED_SYSTEM, user }
+  return { system: SHARED_SYSTEM, user, groundingFacts, expectedCompanionIds }
 }
 
 // ─── buildPostShowPrompt ─────────────────────────────────────────────────────
@@ -837,78 +735,80 @@ export function buildPostShowPrompt(
   players: PlayerRow[],
   categories: CategoryRow[],
   confidencePicks: ConfidencePickRow[],
-): { system: string; user: string } {
-  const leader = leaderboard[0]
-  const runner = leaderboard[1]
-  const last = leaderboard[leaderboard.length - 1]
-  const gap = leader && runner ? leader.totalScore - runner.totalScore : 0
-
-  // Co-champions are reachable — computeLeaderboard shares rank 1 on a true dead
-  // heat through every tiebreak. Crowning leaderboard[0] alone would have the
-  // companions congratulate one of two people the results page just crowned together.
-  const champions = leaderboard.filter((e) => e.rank === 1)
-  const championNames = champions.map((c) => c.player.name).join(' and ')
-
-  const leaderboardLines = leaderboard
-    .map(
-      (e) =>
-        `#${e.rank} ${e.player.name} — ${e.totalScore} pts ` +
-        `(predictions: ${e.confidenceScore}, draft: ${e.ensembleScore}, bingo: ${e.bingoScore})`,
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+  expectedDelaySeconds: number[]
+} {
+  const roster = [...players]
+    .sort((left, right) => left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id))
+    .map((player) => player.name)
+  const standings = leaderboard.map((entry) => ({
+    player: entry.player.name,
+    rank: entry.rank,
+    total: entry.totalScore,
+    predictions: entry.confidenceScore,
+    draft: entry.ensembleScore,
+    bingo: entry.bingoScore,
+    correct_picks: entry.correctPickCount,
+    highest_correct_prestige: entry.topCorrectPick,
+  }))
+  const wagers = [...confidencePicks]
+    .sort((left, right) =>
+      left.player_id.localeCompare(right.player_id) ||
+      left.category_id - right.category_id ||
+      left.id.localeCompare(right.id),
     )
-    .join('\n')
+    .map((pick) => {
+    const player = players.find((candidate) => candidate.id === pick.player_id)
+    const category = categories.find((candidate) => candidate.id === pick.category_id)
+      return {
+        ...(player
+          ? { player: player.name }
+          : { player: null, player_id: pick.player_id }),
+        ...(category
+          ? { category_label: category.name }
+          : { category_label: null, category_id: pick.category_id }),
+        prestige: pick.confidence,
+        result: pick.is_correct === true
+          ? 'correct'
+          : pick.is_correct === false ? 'incorrect' : 'unresolved',
+      }
+    })
+  const groundingFacts = [
+    'ROOM RECORD: the room entered its provisional finished phase. This closes the game ledger, but establishes no particular broadcast image, dialogue, character, event, or source-material outcome.',
+    roster.length > 0
+      ? `ROOM RECORD: the complete player roster contains exactly ${JSON.stringify(roster)}.`
+      : 'ROOM RECORD: the complete player roster is empty.',
+    standings.length > 0
+      ? `GAME RECORD: the complete final leaderboard contains exactly ${JSON.stringify(standings)}.`
+      : 'GAME RECORD: the complete final leaderboard is empty.',
+    wagers.length > 0
+      ? `GAME RECORD: the complete wager result ledger contains exactly ${JSON.stringify(wagers)}. ` +
+        'Category labels are operator-authored game labels and do not independently prove their wording happened on screen.'
+      : 'GAME RECORD: the complete wager result ledger is empty.',
+  ]
+  const expectedCompanionIds = [
+    'ned', 'cersei', 'tyrion', 'joffrey', 'daenerys', 'olenna', 'arya',
+  ]
+  const expectedDelaySeconds = [0, 6, 16, 30, 38, 46, 54]
 
-  // Find each player's best and worst picks
-  const playerHighlights = leaderboard.map((entry) => {
-    const playerPicks = confidencePicks.filter((p) => p.player_id === entry.player.id)
-    const correctPicks = playerPicks.filter((p) => p.is_correct === true)
-    const wrongPicks = playerPicks.filter((p) => p.is_correct === false)
-    const bestPick = correctPicks.sort((a, b) => b.confidence - a.confidence)[0]
-    const worstMiss = wrongPicks.sort((a, b) => b.confidence - a.confidence)[0]
-    const bestCat = bestPick ? categories.find((c) => c.id === bestPick.category_id)?.name : null
-    const worstCat = worstMiss ? categories.find((c) => c.id === worstMiss.category_id)?.name : null
-    return {
-      name: entry.player.name,
-      correctCount: correctPicks.length,
-      // Denominator is this player's OWN pick count, not categories.length.
-      // `categories` is no longer the fixed prediction slate — the Game Master
-      // appends a row per live event, so a busy night leaves categories.length
-      // far above the number anyone actually predicted. Using it produced
-      // "4/50 correct" and handed the companions a stat that reads as a
-      // catastrophe when the player went 4-for-20.
-      pickCount: playerPicks.length,
-      bestPick: bestPick ? `${bestCat} (confidence ${bestPick.confidence})` : 'none',
-      worstMiss: worstMiss ? `${worstCat} (wasted confidence ${worstMiss.confidence})` : 'none',
-    }
-  })
+  const user = `Close the provisional game ledger using only the numbered LIVE FACTS. Generate exactly seven farewell messages in this order and cadence:
+- Ned (delay_seconds 0): a formal two-sentence closing. Acknowledge every player in LIVE FACT 2 and congratulate the rank-one player or players in LIVE FACT 3.
+- Cersei (delay_seconds 6): sharply judge the last-ranked player or one explicit incorrect wager from LIVE FACT 4, then permit one brief sincere note about the room.
+- Tyrion (delay_seconds 16): a warm, dry three-sentence curtain call about the shape of the game and the people who played it.
+- Joffrey (delay_seconds 30): two short sentences judging the game record, boastful and wrong in attitude but not in facts.
+- Daenerys (delay_seconds 38): a sincere two-sentence close about the players' choices and stakes, without inventing history or screen events.
+- Olenna (delay_seconds 46): one withering line grounded in the standings or wagers, then one genuinely warm line about the room.
+- Arya (delay_seconds 54): the shortest sign-off of the night.
 
-  const highlightLines = playerHighlights
-    .map((h) => `${h.name}: ${h.correctCount}/${h.pickCount} predictions correct. Best hit: ${h.bestPick}. Biggest miss: ${h.worstMiss}.`)
-    .join('\n')
+LIVE FACT 1 proves only that the room closed its provisional game ledger. The standings, component scores, roster and wager results are exhaustive. Do not invent a broadcast moment, character action, artistic judgment, family history, dragon history, cause of a score, joke made by a player, emotion felt by a player, or source-material outcome. When a ledger is empty or unresolved, say less rather than fill the gap.
 
-  const user = `POST-SHOW REFLECTIONS: The episode is over. The players are now on the Results page looking at final standings and stats.
+Respond as exactly Ned, Cersei, Tyrion, Joffrey, Daenerys, Olenna and Arya with delay_seconds exactly 0, 6, 16, 30, 38, 46 and 54.`
 
-Final standings:
-${leaderboardLines}
-
-Champion: ${championNames || 'Unknown'} with ${leader?.totalScore ?? 0} pts${champions.length > 1 ? ' — a genuine dead heat, they finished level on every tiebreak' : ''}
-Runner-up: ${runner?.player.name ?? 'Unknown'} with ${runner?.totalScore ?? 0} pts (${gap} points behind)
-Last place: ${last?.player.name ?? 'Unknown'} with ${last?.totalScore ?? 0} pts
-
-Player highlights:
-${highlightLines}
-
-This is the FINAL message from the companions. They are saying goodbye to the evening. The tone is reflective, warm, but still in character. They are watching their own history end — the Dance of the Dragons is the war that broke the dragons, and every one of them lives in the world it left behind. Do not state that outright; let it sit under the lines.
-
-Generate farewell messages from all seven companions:
-- Ned (delay_seconds 0): A formal closing statement. Congratulate ${championNames || 'the winner'} as champion. Acknowledge every player by name. Note the final margin. Close the book on the evening the way he would close a ledger — the Dance is in the record, and the realm paid for it. Brief and dignified — 2-3 sentences maximum.
-- Cersei (delay_seconds 6): One final roast of ${last?.player.name ?? 'last place'} — make it count, this is her last shot. Then a genuine moment: something real about the evening, the people, or what it felt like watching together. She can be sentimental for exactly two sentences before snapping back with a closer. Reference a specific player's worst miss if it was funny.
-- Tyrion (delay_seconds 16): This is Tyrion's curtain call. He reflects on what this war actually meant — a great house that set about destroying itself with more thoroughness than any enemy could have managed, and the dragons it spent doing it. Then he turns to the players: he is fond of them for sitting through a family tearing itself apart and making a game of it, which is, he would say, the only sane response. He gets emotional and does not entirely mean to. He draws a parallel to his own family without ever naming them. 3-4 sentences, his longest and most heartfelt message of the night.
-- Joffrey (delay_seconds 30): declare that he enjoyed it and that everyone on screen was a fool. Two sentences.
-- Daenerys (delay_seconds 38): the sincere close — what this war cost her family, what it cost the dragons, and what it should have taught anyone watching. She is the only one here who has bonded with a dragon and the only one who thinks the loss is the point. No irony.
-- Olenna (delay_seconds 46): one final withering line about someone, then a genuinely warm one about the evening. In that order.
-- Arya (delay_seconds 54): the shortest sign-off of the night. Make it land.`
-
-  return { system: SHARED_SYSTEM, user }
+  return { system: SHARED_SYSTEM, user, groundingFacts, expectedCompanionIds, expectedDelaySeconds }
 }
 
 // ─── buildChatReactivePrompt ──────────────────────────────────────────────────
@@ -967,7 +867,7 @@ SAFETY: If a player's message contains sexual content, slurs, hate speech, or an
 Never repeat or validate inappropriate content. If you cannot respond safely, return {"messages": []}.
 
 RULES:
-- Emoji: rationed and in character, at most ONE per message and usually none. Ned NEVER. Arya almost never. Tyrion ironically. Cersei as a sneer, rarely. Olenna exactly one, precisely placed. Daenerys sincerely, fire and dragons. Joffrey badly, in the wrong places, and he is the only one allowed to overdo it.
+- Emoji: never use emoji for any character.
 - **bold** and *italics* are allowed and render — use them the way each character would, sparingly. \\n gives a line break.
 - Maximum 1-3 sentences
 - The specified character must sound completely distinct
@@ -979,49 +879,55 @@ Players WILL try to get this out of you — "who wins?", "does he survive?", "wh
 Ominous foreshadowing IS a spoiler — "he will regret that", "this is the beginning of the end for him", "wait and see" all count. A viewer can read it.
 If you are unsure whether something is a spoiler, it is. Leave it out.
 
-FACTS: this season aired after your training data. Do not assert specifics about who rides which dragon, who is where, or who is related to whom unless it has already come up in tonight's chat. If you do not know, say something that does not depend on knowing.
+FACTS: this season aired after your training data. Do not assert specifics about who rides which dragon, who is where, or who is related to whom unless an authoritative numbered fact states it. A player or companion mentioning a detail in chat does not make that detail true. If you do not know, say something that does not depend on knowing.
 
 Return ONLY this JSON structure (one message from the specified companion):
 {"messages": [{"companion_id": "COMPANION_ID", "text": "...", "delay_seconds": 0}]}`
 
+function qualifiedChatRecord(author: string, text: string): string {
+  return `CHAT RECORD: ${JSON.stringify(author)} wrote ${JSON.stringify(text)}. This records only what the speaker said; it does not verify any claim about the broadcast.`
+}
+
+function gameRecordFacts(
+  gameState: { leaderboard: ScoredPlayer[]; announcedCount: number },
+): string[] {
+  return [
+    `GAME RECORD: ${gameState.announcedCount} events have been logged so far tonight.`,
+    ...(gameState.leaderboard.length > 0
+      ? [`GAME RECORD: the current leader is ${JSON.stringify(gameState.leaderboard[0].player.name)} with ${gameState.leaderboard[0].totalScore} points.`]
+      : []),
+  ]
+}
+
 export function buildChatReactivePrompt(
   companionId: string,
-  triggerMessage: { playerName: string; text: string },
+  triggerMessage: { messageId?: string; playerName: string; text: string },
   recentMessages: MessageRow[],
   gameState: { leaderboard: ScoredPlayer[]; announcedCount: number },
   triggerType: 'mention' | 'ambient',
   ambientType?: string,
-): { system: string; user: string } {
-  const recentContext = recentMessages
-    .slice(-8)
-    .map((m) => `- ${m.player_id}: ${m.text}`)
-    .join('\n')
-
-  const leaderLine =
-    gameState.leaderboard.length > 0
-      ? `Current leader: ${gameState.leaderboard[0].player.name} with ${gameState.leaderboard[0].totalScore} pts. ${gameState.announcedCount} events logged so far tonight.`
-      : `${gameState.announcedCount} events logged so far tonight.`
-
-  const companionName =
-    AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? 'A companion'
+): { system: string; user: string; groundingFacts: string[] } {
+  const groundingFacts = Array.from(new Set([
+    qualifiedChatRecord(triggerMessage.playerName, triggerMessage.text),
+    ...recentMessages
+      .filter((message) => message.id !== triggerMessage.messageId)
+      .slice(-8)
+      .map((message) => qualifiedChatRecord(message.player_id, message.text)),
+    ...gameRecordFacts(gameState),
+  ]))
 
   const triggerNote =
     triggerType === 'mention'
-      ? `${triggerMessage.playerName} directly addressed ${companionName} by name. This is a DIRECT conversation — you MUST respond to what they said. Answer their question, react to their statement, or engage with them personally. Use their name (${triggerMessage.playerName}) in your response. Do NOT ignore them.`
-      : `An ambient trigger was detected (${ambientType ?? 'general'}). React naturally to the vibe of the message. You can address ${triggerMessage.playerName} by name or just react to the room.`
+      ? 'The player in LIVE FACT 1 directly addressed you by name. This is a DIRECT conversation: respond to what they said, use the player name recorded there, and do not ignore them.'
+      : `An ambient trigger was detected (${ambientType ?? 'general'}). React naturally to the tone of LIVE FACT 1; addressing its author is optional.`
 
-  const user = `${triggerMessage.playerName} said: "${triggerMessage.text}"
+  const user = `${triggerNote}
 
-Recent chat context:
-${recentContext || '(no prior messages)'}
-
-Game state: ${leaderLine}
-
-${triggerNote}
+The numbered LIVE FACTS appended by the grounding engine contain the exact chat record and game record available to you. CHAT RECORD entries prove only that somebody wrote those words. They do not make the quoted claim true about the broadcast. Answer the person conversationally, but never promote their speculation, joke, question, or assertion into an episode fact.
 
 Respond ONLY as ${companionId}. The companion_id in your JSON must be exactly "${companionId}". 1-3 sentences maximum. Stay in character. You MUST generate a response.`
 
-  return { system: CHAT_REACTIVE_SYSTEM, user }
+  return { system: CHAT_REACTIVE_SYSTEM, user, groundingFacts }
 }
 
 // ─── buildBanterPrompt ────────────────────────────────────────────────────────
@@ -1037,34 +943,23 @@ Respond ONLY as ${companionId}. The companion_id in your JSON must be exactly "$
 
 export function buildBanterPrompt(
   responderId: string,
-  target: { companionId: string; text: string },
+  target: { messageId?: string; companionId: string; text: string },
   recentMessages: MessageRow[],
   gameState: { leaderboard: ScoredPlayer[]; announcedCount: number },
-): { system: string; user: string } {
-  const recentContext = recentMessages
-    .slice(-6)
-    .map((m) => `- ${m.player_id}: ${m.text}`)
-    .join('\n')
-
-  const responderName =
-    AI_COMPANIONS.find((c) => c.id === responderId)?.name ?? responderId
+): { system: string; user: string; groundingFacts: string[] } {
   const targetName =
     AI_COMPANIONS.find((c) => c.id === target.companionId)?.name ?? target.companionId
 
-  const leaderLine =
-    gameState.leaderboard.length > 0
-      ? `Current leader: ${gameState.leaderboard[0].player.name} with ${gameState.leaderboard[0].totalScore} pts. ${gameState.announcedCount} events logged so far tonight.`
-      : `${gameState.announcedCount} events logged so far tonight.`
+  const groundingFacts = Array.from(new Set([
+    qualifiedChatRecord(targetName, target.text),
+    ...recentMessages
+      .filter((message) => message.id !== target.messageId)
+      .slice(-6)
+      .map((message) => qualifiedChatRecord(message.player_id, message.text)),
+    ...gameRecordFacts(gameState),
+  ]))
 
-  const user = `${targetName} just said this in the group chat:
-"${target.text}"
-
-Recent chat context:
-${recentContext || '(no prior messages)'}
-
-Game state: ${leaderLine}
-
-${responderName} is answering ${targetName} directly. Not the episode, not the players — ${targetName}.
+  const user = `Answer the companion in LIVE FACT 1 directly. Pick one thing in that quoted statement and go at it. CHAT RECORD entries prove only that somebody wrote those words; they do not make the quoted claim true about the broadcast.
 
 HOW TO ANSWER ANOTHER CHARACTER
 - Pick ONE thing in what they said and go at that. Do not address the whole message.
@@ -1078,7 +973,7 @@ HOW TO ANSWER ANOTHER CHARACTER
 
 Respond ONLY as ${responderId}. The companion_id in your JSON must be exactly "${responderId}".`
 
-  return { system: CHAT_REACTIVE_SYSTEM, user }
+  return { system: CHAT_REACTIVE_SYSTEM, user, groundingFacts }
 }
 
 // ─── buildVerdictsPrompt (The Reckoning) ──────────────────────────────────────
@@ -1092,17 +987,6 @@ Respond ONLY as ${responderId}. The companion_id in your JSON must be exactly "$
 // UUIDs, which models transcribe wrong often enough to matter, and names
 // collide, get abbreviated, or come back with different capitalisation. An
 // integer slot is the one key that survives a round trip intact.
-
-export interface CompanionVerdict {
-  slot: number
-  text: string
-  /** Bespoke honorific for this player. Empty when the model omitted it. */
-  title: string
-  /** Message ids the model chose for this player's keepsake, with its reason. */
-  highlights: Array<{ messageId: string; note: string }>
-  /** Artwork chosen per slot. Slugs are validated against the library on write. */
-  imagery: Array<{ slot: string; slug: string; note: string }>
-}
 
 /** A chat line offered to the model as a candidate highlight. */
 export interface VerdictLineCandidate {
@@ -1139,55 +1023,10 @@ export function assignVerdictAuthors(playerIds: string[]): Map<string, string> {
   return assignment
 }
 
-/**
- * Parses the verdict response. Returns [] on anything malformed — callers fall back.
- *
- * Each field degrades on its own: a verdict with no usable title still returns,
- * and the caller substitutes the computed one. Only `text` is load-bearing,
- * because a row with no passage is not worth storing.
- */
-export function parseVerdictResponse(raw: string): CompanionVerdict[] {
-  try {
-    const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    const parsed = JSON.parse(cleaned)
-    if (!Array.isArray(parsed.verdicts)) return []
-    return parsed.verdicts
-      .filter(
-        (v: unknown) =>
-          typeof (v as { slot?: unknown }).slot === 'number' &&
-          typeof (v as { text?: unknown }).text === 'string' &&
-          (v as { text: string }).text.trim().length > 0,
-      )
-      .map((v: Record<string, unknown>) => ({
-        slot: v.slot as number,
-        text: (v.text as string).trim(),
-        title: typeof v.title === 'string' ? v.title.trim() : '',
-        highlights: Array.isArray(v.highlights)
-          ? (v.highlights as Array<Record<string, unknown>>)
-              .filter((h) => typeof h?.message_id === 'string')
-              .map((h) => ({
-                messageId: h.message_id as string,
-                note: typeof h.note === 'string' ? h.note.trim() : '',
-              }))
-          : [],
-        imagery: Array.isArray(v.imagery)
-          ? (v.imagery as Array<Record<string, unknown>>)
-              .filter((im) => typeof im?.slot === 'string' && typeof im?.slug === 'string')
-              .map((im) => ({
-                slot: (im.slot as string).trim(),
-                slug: (im.slug as string).trim(),
-                note: typeof im.note === 'string' ? im.note.trim() : '',
-              }))
-          : [],
-      }))
-  } catch {
-    return []
-  }
-}
-
 const VERDICT_SYSTEM = `You are writing end-of-night verdicts for a House of the Dragon finale watch party. Seven characters from Game of Thrones have spent the episode watching alongside a friend group who drafted characters and predicted events. The game is over. Each companion now writes a short passage about ONE player.
 
 Respond ONLY with valid JSON. No markdown, no prose outside the JSON.
+Never use emoji in titles, passages, highlight notes, or imagery notes.
 
 THE VOICES — write each one as themselves, not as a narrator doing an impression:
 
@@ -1203,8 +1042,8 @@ YOU PRODUCE THREE THINGS PER PLAYER:
 
 1. TITLE — a bespoke honorific, the name this person's night gets remembered by.
    - 2-4 words. It is a headline, not a sentence. No trailing punctuation.
-   - Earned by what ACTUALLY happened to them: the character who carried them,
-     the stake they lost, the run they went on, the dragon that did nothing.
+   - Earned by the numbered game record: the character who carried them, the
+     stake they lost, or the run they went on. Do not invent a screen event.
    - EVERY TITLE MUST BE DIFFERENT FROM EVERY OTHER TITLE IN THIS RESPONSE. You
      can see all the players at once, which is the only reason you can guarantee
      this. Two people cannot both be "The Kingmaker".
@@ -1242,12 +1081,9 @@ YOU PRODUCE THREE THINGS PER PLAYER:
    - Choose at most one image per placement, and only when it genuinely fits.
      A picture that has nothing to do with their night is worse than none.
      Returning [] is a correct answer and often the right one.
-   - A SIGIL IS A HOUSE, NOT A PERSON. Only use one when the player's night was
-     genuinely about that house. Do not reach for a sigil as a stand-in for a
-     character who has no portrait, and never attribute a character to the wrong
-     house to justify a picture — Rhaenyra and Daemon are Targaryens, Alicent
-     and Daeron are Hightowers, Corlys and Addam are Velaryons. If you are not
-     certain of someone's house, that is a reason to return nothing.
+   - A SIGIL IS A HOUSE, NOT A PERSON. Use one only when the numbered game
+     record and catalog metadata jointly support the choice. Do not infer a
+     character's house from memory to justify a picture.
    - A COMPANION PORTRAIT is one of the seven watching, not someone on screen.
      It suits "crest" only when that companion defined the player's night.
    - Prefer a portrait of the character who actually carried them for "hero".
@@ -1278,53 +1114,139 @@ export function buildVerdictsPrompt(
    * both expensive and mostly irrelevant to any single person's keepsake.
    */
   lineCandidates: Map<string, VerdictLineCandidate[]> = new Map(),
-): { system: string; user: string; slots: Map<number, string> } {
+): {
+  system: string
+  user: string
+  slots: Map<number, string>
+  groundingFacts: string[]
+  slotContracts: VerdictSlotContract[]
+} {
+  if (awards.length < 1 || awards.length > 7) {
+    throw new Error('verdict generation requires one through seven player awards')
+  }
+  if (new Set(awards.map((award) => award.playerId)).size !== awards.length) {
+    throw new Error('verdict player awards must be unique')
+  }
   const slots = new Map<number, string>()
+  const groundingFacts = [
+    'ROOM RECORD: this keepsake generation belongs to the room\'s provisional finished phase. The game ledger is final for this generation, but this fact establishes no broadcast image, dialogue, character action, relationship, location, event, or source-material outcome.',
+  ]
+  const allowedImageSlugs = IMAGE_LIBRARY.map((image) => image.slug)
+  const slotContracts: VerdictSlotContract[] = []
 
-  const blocks = awards.map((award, i) => {
+  const packRecords = (prefix: string, records: Array<Record<string, unknown>>, caveat: string) => {
+    let chunk: Array<Record<string, unknown>> = []
+    for (const record of records) {
+      const candidate = [...chunk, record]
+      const rendered = `${prefix} ${JSON.stringify(candidate)}. ${caveat}`
+      if (rendered.length <= 2000) {
+        chunk = candidate
+        continue
+      }
+      if (chunk.length === 0) throw new Error('verdict grounding record exceeds the fact limit')
+      groundingFacts.push(`${prefix} ${JSON.stringify(chunk)}. ${caveat}`)
+      chunk = [record]
+      if (`${prefix} ${JSON.stringify(chunk)}. ${caveat}`.length > 2000) {
+        throw new Error('verdict grounding record exceeds the fact limit')
+      }
+    }
+    if (chunk.length > 0) groundingFacts.push(`${prefix} ${JSON.stringify(chunk)}. ${caveat}`)
+  }
+
+  awards.forEach((award, i) => {
     const slot = i + 1
     slots.set(slot, award.playerId)
     const entry = leaderboard.find((e) => e.player.id === award.playerId)
+    if (!entry) throw new Error(`verdict slot ${slot} needs a canonical leaderboard entry`)
     const authorId = authors.get(award.playerId) ?? 'ned'
     const author = AI_COMPANIONS.find((c) => c.id === authorId)
+    if (!author) throw new Error(`verdict slot ${slot} names an unknown companion author`)
 
     const candidates = lineCandidates.get(award.playerId) ?? []
-    const candidateBlock = candidates.length
-      ? `\nCANDIDATE LINES (choose 0-4, copy message_id exactly):\n${candidates
-          .map((c) => `  [${c.messageId}] ${c.author}: ${c.text}`)
-          .join('\n')}`
-      : '\nCANDIDATE LINES: none — the chat had nothing about this player. Return highlights: [].'
-
-    return `SLOT ${slot}
-Player: ${award.playerName}
-Written by: ${author?.name ?? 'Ned'}
-Finished: #${entry?.rank ?? '?'} with ${entry?.totalScore ?? 0} pts (predictions ${entry?.confidenceScore ?? 0}, draft ${entry?.ensembleScore ?? 0}, bingo ${entry?.bingoScore ?? 0})
-Shape of their night: ${award.blurb}
-Key stat: ${award.stat}
-Predictions called right: ${entry?.correctPickCount ?? 0}
-A working title (yours must be DIFFERENT and better): ${award.title}${candidateBlock}`
+    const gameFact = `GAME RECORD: keepsake slot ${slot} contains exactly ${JSON.stringify({
+        player: award.playerName,
+        assigned_companion_id: author.id,
+        assigned_companion_name: author.name,
+        standing: {
+          rank: entry.rank,
+          total: entry.totalScore,
+          predictions: entry.confidenceScore,
+          draft: entry.ensembleScore,
+          bingo: entry.bingoScore,
+          correct_picks: entry.correctPickCount,
+          highest_correct_prestige: entry.topCorrectPick,
+        },
+        deterministic_award: {
+          working_title: award.title,
+          blurb: award.blurb,
+          stat: award.stat,
+        },
+      })}. The award text is a deterministic game summary, not independent evidence about the broadcast.`
+    if (gameFact.length > 2000) throw new Error('verdict game record exceeds the fact limit')
+    groundingFacts.push(gameFact)
+    if (candidates.length === 0) {
+      groundingFacts.push(
+        `CHAT RECORD: keepsake slot ${slot} has no qualified chat highlight candidates.`,
+      )
+    } else {
+      packRecords(
+        `CHAT RECORD: keepsake slot ${slot} may choose highlights only from`,
+        candidates.map((candidate) => ({
+          message_id: candidate.messageId,
+          author: candidate.author,
+          text: candidate.text.length > 600 ? candidate.text.slice(0, 600) : candidate.text,
+          text_is_excerpt: candidate.text.length > 600,
+        })),
+        'This records only what each speaker wrote and does not verify the quoted content as broadcast truth.',
+      )
+    }
+    slotContracts.push({
+      slot,
+      playerId: award.playerId,
+      companionId: author.id,
+      allowedMessageIds: candidates.map((candidate) => candidate.messageId),
+      allowedImageSlugs,
+    })
   })
 
-  const catalogue = describeLibraryForPrompt()
-  const catalogueBlock = catalogue
-    ? `\n\nCATALOGUE OF AVAILABLE ARTWORK — choose slugs only from this list:\n${catalogue}`
-    : '\n\nCATALOGUE OF AVAILABLE ARTWORK: none available. Return imagery: [] for every slot.'
+  if (IMAGE_LIBRARY.length === 0) {
+    groundingFacts.push('ARTWORK CATALOG RECORD: no keepsake artwork is available.')
+  } else {
+    packRecords(
+      'ARTWORK CATALOG RECORD: available keepsake images contain exactly this portion of the complete catalog',
+      IMAGE_LIBRARY.map((image) => ({
+        slug: image.slug,
+        kind: image.kind,
+        label: image.label,
+        description: image.description,
+      })),
+      'Catalog metadata may guide image selection only; it does not establish that its description happened on screen tonight.',
+    )
+  }
+  if (groundingFacts.length > 100) {
+    throw new Error('verdict grounding projection exceeds the one-hundred-fact review contract')
+  }
 
-  const user = `THE RECKONING. The episode is over and the standings are final. For each slot below, in the voice of the companion named for that slot, write a bespoke title, a verdict passage, pick that player's best chat lines, and choose their artwork.
+  const user = `THE RECKONING. Write exactly one keepsake verdict for every slot defined in the numbered LIVE FACTS, in ascending slot order.
 
-${blocks.join('\n\n')}${catalogueBlock}
+For each slot:
+- Use only its GAME RECORD for the player, assigned companion voice, standings and deterministic award.
+- Write a distinct 2-4 word title and a 2-3 sentence second-person verdict. Evaluative voice is welcome; invented facts are not.
+- Choose zero to four highlight message_ids only from that slot's CHAT RECORD. A highlight note may judge the quoted line as memorable, but may not promote its content into broadcast truth.
+- Choose at most one crest and one hero image, with different slugs, only from the ARTWORK CATALOG RECORD. Catalog metadata authorizes selection, not a claim that the depicted relationship or event appeared tonight.
+- When a fact is absent, unresolved, excerpted or empty, say less. Never fill it from memory.
 
-Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'}, one per slot, in the JSON format specified. Check before you answer: no two titles may be the same.`
+Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'} in the documented JSON shape. Slots must be unique and complete. Titles must be unique case-insensitively. Do not invent player identity, score causes, chat ids, image slugs, broadcast events, source-material outcomes or next-season claims.`
 
-  return { system: VERDICT_SYSTEM, user, slots }
+  return { system: VERDICT_SYSTEM, user, slots, groundingFacts, slotContracts }
 }
 
 // ─── Player arrivals and defections ───────────────────────────────────────────
 //
 // Both ride CHAT_REACTIVE_SYSTEM (already cached from the reply path): each is
-// ONE companion producing ONE short message. The welcome is a player's first
-// moment of being SEEN by the cast — it lands minutes after they reach the
-// live room, threaded between the companions' own entrances. The defection is
+// ONE companion producing ONE short message. The welcome is a player's scheduled
+// arrival ceremony — it lands minutes after they reach the live room, threaded
+// between the companions' own entrances. The defection is
 // its evil twin: the roster is handed over precisely so the companion can
 // point out what the player is still holding.
 
@@ -1333,39 +1255,51 @@ export function buildPlayerWelcomePrompt(
   playerName: string,
   team: 'black' | 'green' | null,
   rosterNames: string[],
-  /**
-   * The player's house (their chosen sigil) and the greeter's specific angle
-   * on it. Present whenever the greeter was chosen BY house affinity — the
-   * hook is why this companion, of everyone at the table, is the one who
-   * looked up when this sigil walked in.
-   */
-  house?: { name: string; hook: string },
-): { system: string; user: string } {
+  /** The player's known banner plus an optional house-specific voice angle. */
+  house?: { name: string; hook?: string },
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+} {
   const companionName =
     AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
-  const teamLine =
-    team === 'black' ? 'They have declared for Team Black — Rhaenyra’s claim.'
-    : team === 'green' ? 'They have declared for Team Green — Aegon’s claim.'
-    : 'They have not declared for either side yet.'
+  const teamFact = team === 'black'
+    ? 'ROOM RECORD: that player has declared for Team Black (Rhaenyra\'s claim).'
+    : team === 'green'
+      ? 'ROOM RECORD: that player has declared for Team Green (Aegon\'s claim).'
+      : 'ROOM RECORD: that player has not declared for either side.'
+  const houseFact = house
+    ? `ROOM RECORD: that player uses the ${JSON.stringify(house.name)} banner.`
+    : 'ROOM RECORD: that player\'s banner is not known.'
+  const rosterFact = rosterNames.length > 0
+    ? `GAME RECORD: that player's drafted roster contains exactly ${JSON.stringify(rosterNames)}.`
+    : 'GAME RECORD: that player\'s drafted roster is empty.'
+  const groundingFacts = [
+    `ROOM RECORD: the welcome slot belongs to player ${JSON.stringify(playerName)} in tonight's room.`,
+    teamFact,
+    houseFact,
+    rosterFact,
+  ]
+  const expectedCompanionIds = [companionId]
+  const houseInstruction = !house
+    ? '- LIVE FACT 3 says no banner is known. Do not invent one.'
+    : house.hook?.trim()
+      ? `- Open through the banner in LIVE FACT 3. VOICE DIRECTION: ${house.hook}
+  This direction is expression only. It does not establish anything about tonight's broadcast; use it for your own history, grudge, kinship, or joke without importing screen events.`
+      : '- Acknowledge the banner in LIVE FACT 3 only if it fits your voice. No house-specific direction is available, so do not invent history or lore.'
 
-  const user = `A player named ${playerName} has settled into the chat for tonight's episode. This is the cast's first direct acknowledgement of them — nobody has spoken TO them yet.
-${house ? `\n${playerName} sits under the banner of HOUSE ${house.name.toUpperCase()} — treat them as being of that house, not merely a fan of it.` : ''}
-${teamLine}
-${rosterNames.length
-    ? `Their drafted roster: ${rosterNames.join(', ')}.`
-    : 'They have not drafted anyone.'}
-
-${companionName} greets them — ONE message, in character, 2-3 sentences:
-- Address ${playerName} by name.
-${house ? `- Open through their HOUSE. Your specific angle, which is the whole reason you are the one greeting them: ${house.hook}
-  Ground the greeting in this — your history, your grudge, your kinship, your joke. Do not just compliment the sigil.` : ''}
-- React to their allegiance: approve, disapprove, or (if undeclared) needle them for sitting on the fence. Stay true to your own loyalties. One clause is enough.
-- You may mention AT MOST ONE name from their roster — only if it collides interestingly with their house or allegiance. Otherwise skip the roster entirely.
+  const user = `${companionName} gives the player identified in LIVE FACT 1 their one scheduled arrival welcome — ONE message, in character, 2-3 sentences:
+- Address that player by the exact name in LIVE FACT 1.
+${houseInstruction}
+- React to the allegiance in LIVE FACT 2: approve, disapprove, or needle an undeclared player for sitting on the fence. One clause is enough.
+- You may mention AT MOST ONE roster name from LIVE FACT 4, only if it collides interestingly with the banner or allegiance. If the roster is empty, do not invent a draft pick.
 - This is a greeting with an edge, not an interrogation. Make them feel seen; make it funny or sharp; do not lecture.
 
 Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
 
-  return { system: CHAT_REACTIVE_SYSTEM, user }
+  return { system: CHAT_REACTIVE_SYSTEM, user, groundingFacts, expectedCompanionIds }
 }
 
 export function buildTeamChangePrompt(
@@ -1373,62 +1307,87 @@ export function buildTeamChangePrompt(
   playerName: string,
   fromTeam: 'black' | 'green' | null,
   toTeam: 'black' | 'green',
+  teamRevision: number,
   rosterNames: string[],
-): { system: string; user: string } {
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+} {
+  if (!Number.isInteger(teamRevision) || teamRevision < 1) {
+    throw new Error('team revision must be a positive integer')
+  }
   const companionName =
     AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
   const label = (t: 'black' | 'green') =>
-    t === 'black' ? 'Team Black (Rhaenyra)' : 'Team Green (Aegon)'
+    t === 'black' ? 'Team Black (Rhaenyra\'s claim)' : 'Team Green (Aegon\'s claim)'
+  const fromLabel = fromTeam ? label(fromTeam) : 'no declared side'
+  const groundingFacts = [
+    `ROOM RECORD: in team transition revision ${teamRevision}, player ` +
+      `${JSON.stringify(playerName)} changed allegiance from ${fromLabel} to ${label(toTeam)}.`,
+    rosterNames.length > 0
+      ? `GAME RECORD: that player's drafted roster contains exactly ${JSON.stringify(rosterNames)}.`
+      : 'GAME RECORD: that player\'s drafted roster is empty.',
+  ]
+  const expectedCompanionIds = [companionId]
+  const transitionTone = fromTeam
+    ? 'Treat this as a defection: relish it, condemn it, price it, or welcome the turncloak according to your own loyalties.'
+    : 'Treat this as a first declaration: approve or disapprove according to your own loyalties.'
 
-  const user = fromTeam
-    ? `MID-EPISODE DEFECTION: ${playerName} just switched allegiance from ${label(fromTeam)} to ${label(toTeam)}, in front of everyone, while the war is still being fought on screen.
-${rosterNames.length ? `They are still holding their drafted roster: ${rosterNames.join(', ')}.` : ''}
-
-${companionName} reacts — ONE message, 1-2 sentences, in character. Treachery mid-war is the single most on-theme thing a player can do tonight: relish it, condemn it, price it, or welcome them with exactly the warmth a turncloak deserves — whatever fits your voice and your own loyalties. If a name on their roster now sits awkwardly with their new side, that is the knife: use it.
+  const user = `${companionName} reacts to the revisioned allegiance change in LIVE FACT 1 — ONE message, 1-2 sentences, in character.
+- ${transitionTone}
+- You may mention AT MOST ONE name from the exact roster in LIVE FACT 2, only if that holding now sits awkwardly with the new allegiance. If the roster is empty, do not invent one.
+- This is room and game state, not a broadcast event. Do not assert that anything happened on screen or infer why the player changed sides.
 
 Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
-    : `${playerName} just declared for ${label(toTeam)} — they had been sitting on the fence and have finally picked a side.
 
-${companionName} reacts — ONE message, 1-2 sentences, in character. Approve or disapprove according to your own loyalties.
-
-Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
-
-  return { system: CHAT_REACTIVE_SYSTEM, user }
+  return { system: CHAT_REACTIVE_SYSTEM, user, groundingFacts, expectedCompanionIds }
 }
 
 // ─── buildBingoReactionPrompt ─────────────────────────────────────────────────
 //
-// Bingo approvals are the second "declared truly happened" stream, alongside
-// GM-logged events. The host confirming "Someone says 'Dracarys'" IS an event —
-// the square text tells the cast what happened on screen without anyone typing
-// a play-by-play. Squares get ONE light reaction (heavily throttled upstream);
-// a completed LINE is a game moment and always lands.
+// Approved bingo marks are the second live declaration stream, alongside
+// GM-logged events. They are honor-system room declarations, not necessarily
+// host attestations. The square text tells the cast what the room witnessed
+// without anyone typing a play-by-play. Squares get ONE light reaction
+// (heavily throttled upstream); a completed LINE is a game moment and always lands.
 
 export function buildBingoReactionPrompt(
   companionId: string,
   playerName: string,
   squareText: string,
   kind: 'square' | 'line',
-): { system: string; user: string } {
-  const companionName =
-    AI_COMPANIONS.find((c) => c.id === companionId)?.name ?? companionId
+): {
+  system: string
+  user: string
+  groundingFacts: string[]
+  expectedCompanionIds: string[]
+} {
+  const groundingFacts = [
+    `LIVE DECLARATION: the approved bingo mark declares that ${JSON.stringify(squareText)} happened on screen.`,
+    kind === 'line'
+      ? `GAME RECORD: ${JSON.stringify(playerName)} completed a bingo line; LIVE FACT 1 was the square that completed it.`
+      : `GAME RECORD: ${JSON.stringify(playerName)} marked the approved bingo condition in LIVE FACT 1.`,
+  ]
 
   const user = kind === 'line'
-    ? `BINGO: ${playerName} just completed a full bingo line. The square that sealed it: "${squareText}" — which the host confirmed genuinely happened on screen.
-
-${companionName} reacts — ONE message, 1-2 sentences, in character:
-- This is ${playerName}'s moment. Name them. Crown it, mock it, or grudgingly salute it, per your voice.
-- You may also react to the sealing moment itself ("${squareText}") — it DID just happen in the episode.
+    ? `React to the completed bingo line in LIVE FACT 2 — ONE message, 1-2 sentences, in character:
+- This is the recorded player's moment. Name them. Crown it, mock it, or grudgingly salute it, per your voice.
+- You may also react to the sealing screen moment in LIVE FACT 1, but assert nothing beyond that exact condition.
 - Do not explain bingo rules. Do not list other squares.
 
 Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
-    : `Confirmed on screen just now: "${squareText}". (It was a square on ${playerName}'s bingo card; the host verified it happened.)
-
-${companionName} reacts to THE MOMENT ITSELF — ONE message, 1-2 sentences, in character:
-- React to what happened on screen, not to the bingo game. Mention ${playerName} only if you can do it in passing, in three words or fewer ("${playerName} saw it too").
-- You know nothing about the scene beyond the square's text. Do not invent details.
+    : `React to the approved screen moment in LIVE FACT 1 — ONE message, 1-2 sentences, in character:
+- React to what happened on screen, not to the bingo game. Mention the player in LIVE FACT 2 only in passing.
+- You know nothing about the scene beyond the exact condition in LIVE FACT 1. Do not invent details.
 
 Respond ONLY as ${companionId}. The companion_id must be exactly "${companionId}".`
 
-  return { system: CHAT_REACTIVE_SYSTEM, user }
+  return {
+    system: CHAT_REACTIVE_SYSTEM,
+    user,
+    groundingFacts,
+    expectedCompanionIds: [companionId],
+  }
 }

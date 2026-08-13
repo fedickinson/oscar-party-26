@@ -18,7 +18,7 @@ import {
 } from 'recharts'
 import { Brain, Grid3X3, Swords } from 'lucide-react'
 import { AVATAR_CONFIGS } from '../../data/avatars'
-import type { PlayerRow } from '../../types/database'
+import type { GameModel, PlayerRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
 
 const CHART_LINE_COLORS = ['#B9863F', '#7B2FF7', '#22C55E', '#F97316']
@@ -28,6 +28,7 @@ interface Props {
   draftData: Array<Record<string, number | string>>
   leaderboard: ScoredPlayer[]
   players: PlayerRow[]
+  gameModel?: GameModel
 }
 
 function getPlayerColor(_avatarId: string, playerIndex: number): string {
@@ -220,14 +221,15 @@ export default function MiniTimelines({
   draftData,
   leaderboard,
   players,
+  gameModel = 'legacy_ensemble',
 }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/30">
         Game Breakdown
       </p>
-      <MiniLineChart title="Confidence Picks" icon={Brain} data={confidenceData} players={players} />
-      <MiniLineChart title="Ensemble" icon={Swords} data={draftData} players={players} />
+      <MiniLineChart title={gameModel === 'conviction_portfolio' ? 'Conviction' : 'Confidence Picks'} icon={Brain} data={confidenceData} players={players} />
+      {gameModel === 'legacy_ensemble' && <MiniLineChart title="Ensemble" icon={Swords} data={draftData} players={players} />}
       <BingoBarChart leaderboard={leaderboard} />
     </div>
   )

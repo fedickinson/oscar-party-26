@@ -17,9 +17,8 @@
  *   └─────────────────────────────┘
  *
  * SUBSCRIPTION ARCHITECTURE:
- * - useRoomSubscription: updates room in GameContext (current_pick, phase)
- * - useDraft: reads room from context + subscribes to draft_picks
- * No duplicate subscriptions to the same table.
+ * - useDraft owns one ready-before-hydrate channel for the room row and picks
+ * - room.current_pick and draft ownership publish as one revision-safe ledger
  *
  * PHASE NAVIGATION:
  * When the host auto-transitions to 'confidence' (beat activation), the
@@ -30,9 +29,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Trophy, Flame, Users, Shuffle } from 'lucide-react'
+import { AlertTriangle, Trophy, Flame, RefreshCw, Users, Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { useRoomSubscription } from '../hooks/useRoom'
 import { useDraft } from '../hooks/useDraft'
 import DraftTimer from '../components/draft/DraftTimer'
 import EntityCard from '../components/draft/EntityCard'
@@ -74,9 +72,6 @@ export default function Draft() {
   const [pickError, setPickError] = useState<string | null>(null)
   const [isAutoDrafting, setIsAutoDrafting] = useState(false)
 
-  // Subscribe to room row changes (current_pick, phase) — updates GameContext
-  useRoomSubscription(room?.id)
-
   const {
     entities,
     availableEntities,
@@ -89,9 +84,11 @@ export default function Draft() {
     roundInfo,
     timeRemaining,
     isLoading,
+    syncError,
     myTotalPickSlots,
     draftSubPhase,
     makePick,
+    retrySync,
     devAutoPickAll,
   } = useDraft(room?.id)
 
@@ -129,6 +126,29 @@ export default function Draft() {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (syncError) {
+    return (
+      <div className="min-h-[80vh] flex items-start justify-center pt-16 px-4">
+        <div className="relief-raised material-stone w-full max-w-sm rounded-2xl border border-[var(--t-line)] p-5 text-center">
+          <AlertTriangle size={28} className="mx-auto mb-3 text-[var(--t-pending)]" />
+          <h1 className="font-display text-xl font-bold text-[var(--t-text)]">Draft feed unavailable</h1>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+            Picking is paused until this phone has a complete room ledger.
+          </p>
+          <p className="mt-2 text-xs text-[var(--t-text-dim)]">{syncError}</p>
+          <button
+            type="button"
+            onClick={retrySync}
+            className="relief-raised mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-4 py-2 text-sm font-semibold text-[var(--t-pending)]"
+          >
+            <RefreshCw size={16} />
+            Retry synchronization
+          </button>
+        </div>
       </div>
     )
   }
@@ -239,7 +259,9 @@ export default function Draft() {
               >
                 <Trophy size={48} className="text-[var(--t-ornament)] mx-auto mb-3" />
                 <p className="font-display text-xl font-bold text-[var(--t-text)] mb-1">Roster complete</p>
-                <p className="text-[var(--t-text-muted)] text-sm">Taking you to choose your bets…</p>
+                <p className="text-[var(--t-text-muted)] text-sm">
+                  Taking you to {room.game_model === 'conviction_portfolio' ? 'build your conviction portfolio' : 'choose your bets'}…
+                </p>
               </motion.div>
             ) : isDragonPhase ? (
               /* ── Dragons sub-draft ── */

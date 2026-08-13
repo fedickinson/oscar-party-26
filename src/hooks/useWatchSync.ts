@@ -183,23 +183,23 @@ export function useWatchSync(
 
   const postBeacon = useCallback(async () => {
     if (!room || !playerId || !hasPosition) return
-    await supabase
-      .from('rooms')
-      .update({
-        sync_position_ms: Math.round(readPosition()),
-        sync_posted_at: new Date().toISOString(),
-        sync_posted_by: playerId,
-      })
-      .eq('id', room.id)
+    const { error } = await supabase.rpc('post_room_playback_beacon', {
+      p_room_id: room.id,
+      p_actor_player_id: playerId,
+      p_position_ms: Math.round(readPosition()),
+    })
+    if (error) throw new Error(error.message)
   }, [room, playerId, hasPosition, readPosition])
 
   const requestPause = useCallback(
     async (reason?: string) => {
       if (!room || !playerId) return
-      await supabase
-        .from('rooms')
-        .update({ pause_requested_by: playerId, pause_reason: reason ?? null })
-        .eq('id', room.id)
+      const { error } = await supabase.rpc('request_room_playback_pause', {
+        p_room_id: room.id,
+        p_actor_player_id: playerId,
+        p_reason: reason ?? null,
+      })
+      if (error) throw new Error(error.message)
     },
     [room, playerId],
   )
@@ -209,25 +209,17 @@ export function useWatchSync(
   // stopping mid-shot.
   const confirmPause = useCallback(
     async (atMs: number) => {
-      if (!room) return
+      if (!room || !playerId) return
       // Guarded on is_paused: BOTH screens' holders see the confirm button and
       // both will legitimately tap it (each pauses their own TV). The first tap
       // establishes the canonical park position; a second tap must not move it,
       // because the other screen may already be parked there.
-      await supabase
-        .from('rooms')
-        .update({
-          is_paused: true,
-          paused_at_ms: Math.round(atMs),
-          pause_requested_by: null,
-          resume_ready: [],
-          sync_position_ms: Math.round(atMs),
-          sync_posted_at: new Date().toISOString(),
-          sync_posted_by: playerId ?? null,
-          resume_at: null,
-        })
-        .eq('id', room.id)
-        .eq('is_paused', false)
+      const { error } = await supabase.rpc('confirm_room_playback_pause', {
+        p_room_id: room.id,
+        p_actor_player_id: playerId,
+        p_position_ms: Math.round(atMs),
+      })
+      if (error) throw new Error(error.message)
     },
     [room, playerId],
   )
@@ -235,21 +227,23 @@ export function useWatchSync(
   // A pause request the requester thought better of. Without this the amber
   // banner sits on every phone until somebody actually pauses a playback.
   const cancelPauseRequest = useCallback(async () => {
-    if (!room) return
-    await supabase
-      .from('rooms')
-      .update({ pause_requested_by: null, pause_reason: null })
-      .eq('id', room.id)
-  }, [room])
+    if (!room || !playerId) return
+    const { error } = await supabase.rpc('cancel_room_playback_pause_request', {
+      p_room_id: room.id,
+      p_actor_player_id: playerId,
+    })
+    if (error) throw new Error(error.message)
+  }, [room, playerId])
 
   const markReady = useCallback(async () => {
     if (!room || !playerId) return
     // RPC rather than read-modify-write: two people tapping at once would
     // otherwise overwrite each other.
-    await supabase.rpc('mark_resume_ready', {
+    const { error } = await supabase.rpc('mark_room_playback_resume_ready', {
       p_room_id: room.id,
-      p_player_id: playerId,
+      p_actor_player_id: playerId,
     })
+    if (error) throw new Error(error.message)
   }, [room, playerId])
 
   // Both playbacks must press play at the SAME instant. One person pressing and
@@ -258,19 +252,25 @@ export function useWatchSync(
   // target wall clock and both sides count down to it.
   const startResumeCountdown = useCallback(
     async (seconds = 5) => {
-      if (!room) return
-      await supabase
-        .from('rooms')
-        .update({ resume_at: new Date(Date.now() + seconds * 1000).toISOString() })
-        .eq('id', room.id)
+      if (!room || !playerId) return
+      const { error } = await supabase.rpc('schedule_room_playback_resume', {
+        p_room_id: room.id,
+        p_actor_player_id: playerId,
+        p_countdown_seconds: seconds,
+      })
+      if (error) throw new Error(error.message)
     },
-    [room],
+    [room, playerId],
   )
 
   const cancelResume = useCallback(async () => {
-    if (!room) return
-    await supabase.from('rooms').update({ resume_at: null }).eq('id', room.id)
-  }, [room])
+    if (!room || !playerId) return
+    const { error } = await supabase.rpc('cancel_room_playback_resume', {
+      p_room_id: room.id,
+      p_actor_player_id: playerId,
+    })
+    if (error) throw new Error(error.message)
+  }, [room, playerId])
 
   // ── Automatic beacons ──────────────────────────────────────────────────────
   // Drift is only visible if somebody publishes their position, and until now
@@ -285,8 +285,8 @@ export function useWatchSync(
   const amHolder = playerId != null && remoteHolderIds(players).includes(playerId)
   useEffect(() => {
     if (!room || !amHolder || startedAt == null || isPaused) return
-    void postBeacon()
-    const t = setInterval(() => void postBeacon(), BEACON_INTERVAL_MS)
+    void postBeacon().catch(() => {})
+    const t = setInterval(() => void postBeacon().catch(() => {}), BEACON_INTERVAL_MS)
     return () => clearInterval(t)
   }, [room?.id, amHolder, startedAt, isPaused, postBeacon])
 
@@ -304,11 +304,29 @@ export function useWatchSync(
   useEffect(() => {
     if (resumeAt == null || !isPaused) { releasedRef.current = false; return }
     const delay = resumeAt - Date.now()
-    const t = setTimeout(() => {
-      if (releasedRef.current) return
+    let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+    let releaseAttempts = 0
+    const release = async () => {
+      if (cancelled || releasedRef.current) return
       releasedRef.current = true
+      releaseAttempts += 1
       const at = room?.paused_at_ms ?? 0
       setMyPosition(at)
+      const holders = remoteHolderIds(players)
+      if (!room || !playerId || !holders.includes(playerId)) return
+      const { error } = await supabase.rpc('release_room_playback_resume', {
+        p_room_id: room.id,
+        p_actor_player_id: playerId,
+        p_expected_resume_at: room.resume_at,
+      })
+      if (error && !cancelled && releaseAttempts < 5) {
+        releasedRef.current = false
+        retryTimer = setTimeout(() => void release(), 1_000)
+      }
+    }
+    const t = setTimeout(() => {
+      if (releasedRef.current) return
       // EVERY holder attempts the release write, guarded on is_paused so the
       // first one through wins and the rest match zero rows. The previous
       // version elected holders[0] by sorted id — which quietly assumed that
@@ -316,24 +334,13 @@ export function useWatchSync(
       // elected one was asleep, nobody ever wrote the room back to playing and
       // the whole party stayed frozen. All writers send identical payloads, so
       // the race is harmless.
-      const holders = remoteHolderIds(players)
-      if (room && playerId && holders.includes(playerId)) {
-        void supabase
-          .from('rooms')
-          .update({
-            is_paused: false,
-            resume_ready: [],
-            pause_reason: null,
-            resume_at: null,
-            sync_position_ms: at,
-            sync_posted_at: new Date().toISOString(),
-            sync_posted_by: playerId,
-          })
-          .eq('id', room.id)
-          .eq('is_paused', true)
-      }
+      void release()
     }, Math.max(0, delay))
-    return () => clearTimeout(t)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+      if (retryTimer) clearTimeout(retryTimer)
+    }
   }, [resumeAt, isPaused, room, playerId, players, setMyPosition])
 
   // Derived from watch groups, not a flat list on the room. Includes solo

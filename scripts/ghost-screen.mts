@@ -109,10 +109,20 @@ async function main() {
   } else {
     log(`re-adopted existing ghost in ${ROOM_CODE}`)
   }
-  await db(`players?id=eq.${ghost.id}`, {
-    method: 'PATCH', body: JSON.stringify({ watch_group: 'Ghost apartment' }),
+  if (room.show_started && ghost.watch_group !== 'Ghost apartment') {
+    throw new Error('join the ghost before shared playback begins so its screen can be declared')
+  }
+  await rpc('set_player_watch_group_authorized', {
+    p_room_id: room.id,
+    p_actor_player_id: ghost.id,
+    p_target_player_id: ghost.id,
+    p_watch_group: 'Ghost apartment',
+    p_operator_capability: null,
   })
-  await rpc('set_remote_holder', { p_room_id: room.id, p_player_id: ghost.id })
+  await rpc('claim_room_remote_authority', {
+    p_room_id: room.id,
+    p_actor_player_id: ghost.id,
+  })
   log('claimed the remote in "Ghost apartment" — this is now a second screen')
 
   let screenStarted = false
@@ -147,7 +157,11 @@ async function main() {
       // ── Start my screen shortly after the show goes live ─────────────────
       if (room.show_started && !screenStarted) {
         await new Promise((r) => setTimeout(r, 4000)) // fumbling for the remote
-        await rpc('start_episode_for_screen', { p_room_id: room.id, p_player_id: ghost.id })
+        await rpc('start_episode_for_screen_authorized', {
+          p_room_id: room.id,
+          p_actor_player_id: ghost.id,
+          p_operator_capability: null,
+        })
         // If the room already has a beacon (joined mid-episode), start near it
         // so the rehearsal begins in sync; otherwise start at 0 (+ any --ahead).
         const base = room.sync_position_ms != null
@@ -173,13 +187,10 @@ async function main() {
 
       // ── Beacon while playing ─────────────────────────────────────────────
       if (!room.is_paused && Date.now() - lastBeacon > 45_000) {
-        await db(`rooms?id=eq.${room.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            sync_position_ms: Math.round(pos()),
-            sync_posted_at: new Date().toISOString(),
-            sync_posted_by: ghost.id,
-          }),
+        await rpc('post_room_playback_beacon', {
+          p_room_id: room.id,
+          p_actor_player_id: ghost.id,
+          p_position_ms: Math.round(pos()),
         })
         lastBeacon = Date.now()
         log(`beacon: I am at ${fmt(pos())}`)
@@ -194,14 +205,10 @@ async function main() {
           const p = Math.round(pos())
           // Guarded exactly like the app: if the other screen confirmed first,
           // this matches zero rows and their park position stands.
-          await db(`rooms?id=eq.${room.id}&is_paused=eq.false`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-              is_paused: true, paused_at_ms: p, pause_requested_by: null,
-              resume_ready: [], sync_position_ms: p,
-              sync_posted_at: new Date().toISOString(), sync_posted_by: ghost.id,
-              resume_at: null,
-            }),
+          await rpc('confirm_room_playback_pause', {
+            p_room_id: room.id,
+            p_actor_player_id: ghost.id,
+            p_position_ms: p,
           })
           log(`scene break — paused my screen at ${fmt(p)}`)
         }, 8000 + Math.random() * 6000)
@@ -215,7 +222,10 @@ async function main() {
         parkTimer = setTimeout(async () => {
           parkTimer = null
           freezeAt(park) // …then I scrub to the canonical spot
-          await rpc('mark_resume_ready', { p_room_id: room.id, p_player_id: ghost.id })
+          await rpc('mark_room_playback_resume_ready', {
+            p_room_id: room.id,
+            p_actor_player_id: ghost.id,
+          })
           log(`parked my screen at ${fmt(park)} — ready`)
         }, 5000 + Math.random() * 4000)
       }
@@ -223,13 +233,10 @@ async function main() {
       // ── Countdown hit zero: release if no browser beat me to it ──────────
       if (room.is_paused && room.resume_at && new Date(room.resume_at).getTime() <= Date.now() - 1500) {
         const at = room.paused_at_ms ?? 0
-        await db(`rooms?id=eq.${room.id}&is_paused=eq.true`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            is_paused: false, resume_ready: [], pause_reason: null, resume_at: null,
-            sync_position_ms: at, sync_posted_at: new Date().toISOString(),
-            sync_posted_by: ghost.id,
-          }),
+        await rpc('release_room_playback_resume', {
+          p_room_id: room.id,
+          p_actor_player_id: ghost.id,
+          p_expected_resume_at: room.resume_at,
         })
         log('GO — released the room (no browser got there first)')
       }
@@ -242,9 +249,10 @@ async function main() {
       ) {
         lastRestless = Date.now()
         const reason = ['Bathroom', 'Refill', 'Need a minute'][Math.floor(Math.random() * 3)]
-        await db(`rooms?id=eq.${room.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ pause_requested_by: ghost.id, pause_reason: reason }),
+        await rpc('request_room_playback_pause', {
+          p_room_id: room.id,
+          p_actor_player_id: ghost.id,
+          p_reason: reason,
         })
         log(`asked for a pause (${reason}) — your move: pause at a scene break and confirm`)
       }

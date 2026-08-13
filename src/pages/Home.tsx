@@ -28,8 +28,12 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoom } from '../hooks/useRoom'
+import { resolvePlayerReclaim } from '../lib/player-reclaim'
 import AvatarPicker from '../components/AvatarPicker'
+import Avatar from '../components/Avatar'
 import { Hallmark } from '../components/ui/Hallmarks'
+import { PLAYER_AVATARS } from '../data/avatar-config'
+import type { PlayerRow, RoomPhase } from '../types/database'
 
 // ─── Screen state ─────────────────────────────────────────────────────────────
 
@@ -37,7 +41,12 @@ type Screen =
   | { view: 'landing' }
   | { view: 'create-form'; code: string }
   | { view: 'join-code' }
-  | { view: 'join-form'; code: string; takenAvatarIds: string[]; takenBy: Record<string, string> }
+  | {
+    view: 'join-form'
+    code: string
+    phase: RoomPhase
+    existingPlayers: Array<Pick<PlayerRow, 'id' | 'name' | 'avatar_id'>>
+  }
 
 // 4-letter uppercase code using consonants only (avoids accidental words and
 // ambiguous I/O characters)
@@ -69,6 +78,13 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const reclaim = screen.view === 'join-form'
+    ? resolvePlayerReclaim(screen.existingPlayers, name)
+    : null
+  const reclaimedPlayer = reclaim?.status === 'match' ? reclaim.player : null
+  const reclaimedAvatar = reclaimedPlayer
+    ? PLAYER_AVATARS.find((avatar) => avatar.id === reclaimedPlayer.avatar_id)
+    : null
 
   // If the session was restored (refresh), go straight to the room
   useEffect(() => {
@@ -111,18 +127,20 @@ export default function Home() {
       // lives in joinRoom, where the reclaim check can run first.
 
       // Prefetch taken avatars so the picker greys them out immediately
-      const { data: existingPlayers } = await supabase
+      const { data: existingPlayers, error: playersError } = await supabase
         .from('players')
-        .select('avatar_id, name')
+        .select('id, avatar_id, name')
         .eq('room_id', roomData.id)
 
-      const takenAvatarIds = (existingPlayers ?? []).map((p) => p.avatar_id)
-      const takenBy: Record<string, string> = {}
-      for (const p of existingPlayers ?? []) {
-        takenBy[p.avatar_id] = p.name
-      }
+      if (playersError) throw new Error(`Could not load room seats: ${playersError.message}`)
 
-      setScreen({ view: 'join-form', code, takenAvatarIds, takenBy })
+      setSelectedAvatar(null)
+      setScreen({
+        view: 'join-form',
+        code,
+        phase: roomData.phase,
+        existingPlayers: existingPlayers ?? [],
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
     } finally {
@@ -138,8 +156,8 @@ export default function Home() {
     setIsSubmitting(true)
     setError(null)
     try {
-      await createRoom(screen.code, name, selectedAvatar)
-      navigate(`/room/${screen.code}`)
+      const operatorCapability = await createRoom(screen.code, name, selectedAvatar)
+      navigate(`/room/${screen.code}#operator=${operatorCapability}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
     } finally {
@@ -150,12 +168,19 @@ export default function Home() {
   async function handleJoinSubmit() {
     if (screen.view !== 'join-form') return
     if (!name.trim()) { setError('Enter your name'); return }
-    if (!selectedAvatar) { setError('Pick an avatar'); return }
-
+    const reclaim = resolvePlayerReclaim(screen.existingPlayers, name)
+    if (reclaim.status === 'ambiguous') {
+      setError('More than one seat uses that exact name. Ask the host which seat is yours.')
+      return
+    }
     setIsSubmitting(true)
     setError(null)
     try {
-      await joinRoom(screen.code, name, selectedAvatar)
+      await joinRoom(
+        screen.code,
+        name,
+        reclaim.status === 'match' ? reclaim.player.avatar_id : selectedAvatar,
+      )
       navigate(`/room/${screen.code}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
@@ -448,7 +473,7 @@ export default function Home() {
                   </label>
                   <input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { setName(e.target.value); setError(null) }}
                     placeholder="Enter your name"
                     maxLength={24}
                     style={{ fontSize: '16px' }}
@@ -482,7 +507,7 @@ export default function Home() {
 
                 <button
                   onClick={() => setScreen({ view: 'landing' })}
-                  className="w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
+                  className="min-h-11 w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     <ArrowLeft size={14} /> Back
@@ -539,7 +564,7 @@ export default function Home() {
 
                 <button
                   onClick={() => { setScreen({ view: 'landing' }); setError(null) }}
-                  className="w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
+                  className="min-h-11 w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     <ArrowLeft size={14} /> Back
@@ -580,7 +605,7 @@ export default function Home() {
                   </label>
                   <input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { setName(e.target.value); setError(null) }}
                     placeholder="Enter your name"
                     maxLength={24}
                     style={{ fontSize: '16px' }}
@@ -588,18 +613,71 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Avatar */}
-                <div>
-                  <label className="text-xs text-white/50 uppercase tracking-widest block mb-2">
-                    Pick Your Avatar
-                  </label>
-                  <AvatarPicker
-                    onSelect={setSelectedAvatar}
-                    selectedId={selectedAvatar}
-                    takenIds={screen.takenAvatarIds}
-                    takenBy={screen.takenBy}
-                  />
-                </div>
+                {reclaimedPlayer ? (
+                  <div
+                    className="material-stone relief-inset flex items-center gap-4 p-4"
+                    style={{ borderColor: 'var(--t-positive)' }}
+                    aria-live="polite"
+                  >
+                    <Avatar
+                      avatarId={reclaimedPlayer.avatar_id}
+                      size="lg"
+                      highlighted
+                      className="flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p
+                        className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest"
+                        style={{ color: 'var(--t-positive)' }}
+                      >
+                        <Check size={13} aria-hidden /> Seat recognized
+                      </p>
+                      <h2 className="mt-1 text-lg font-bold leading-tight text-[var(--t-text)]">
+                        Welcome back, {reclaimedPlayer.name}
+                      </h2>
+                      <p className="mt-1 text-sm text-[var(--t-text-muted)]">
+                        {reclaimedAvatar
+                          ? `House ${reclaimedAvatar.name} is still yours. No new sigil needed.`
+                          : 'Your original sigil and every game choice are still attached.'}
+                      </p>
+                    </div>
+                  </div>
+                ) : reclaim?.status === 'ambiguous' ? (
+                  <div
+                    className="material-stone relief-inset p-4"
+                    style={{ borderColor: 'var(--t-negative)' }}
+                    aria-live="polite"
+                  >
+                    <p className="text-sm font-bold" style={{ color: 'var(--t-negative)' }}>
+                      That seat name is not unique
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--t-text-muted)]">
+                      Ask the host which seat is yours before continuing.
+                    </p>
+                  </div>
+                ) : screen.phase !== 'lobby' ? (
+                  <div className="material-iron relief-inset p-4" aria-live="polite">
+                    <p className="text-sm font-bold text-[var(--t-text)]">Reclaim an existing seat</p>
+                    <p className="mt-1 text-sm text-[var(--t-text-muted)]">
+                      This room is underway. Enter the exact name you used before;
+                      your original sigil will return automatically.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-xs text-white/50 uppercase tracking-widest block mb-2">
+                      Pick Your Avatar
+                    </label>
+                    <AvatarPicker
+                      onSelect={setSelectedAvatar}
+                      selectedId={selectedAvatar}
+                      takenIds={screen.existingPlayers.map((player) => player.avatar_id)}
+                      takenBy={Object.fromEntries(
+                        screen.existingPlayers.map((player) => [player.avatar_id, player.name]),
+                      )}
+                    />
+                  </div>
+                )}
 
                 {error && (
                   <p className="text-red-400 text-sm text-center">{error}</p>
@@ -610,12 +688,18 @@ export default function Home() {
                   disabled={isSubmitting}
                   className="w-full py-4 rounded-2xl bg-accent text-ground font-bold text-lg disabled:opacity-50 hover:bg-accent-light active:scale-95 transition-all"
                 >
-                  {isSubmitting ? 'Joining…' : 'Join Room'}
+                  {isSubmitting
+                    ? 'Joining…'
+                    : reclaimedPlayer
+                      ? 'Reclaim Seat'
+                      : screen.phase !== 'lobby'
+                        ? 'Find My Seat'
+                        : 'Join Room'}
                 </button>
 
                 <button
                   onClick={() => { setScreen({ view: 'join-code' }); setError(null) }}
-                  className="w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
+                  className="min-h-11 w-full py-2 text-white/40 text-sm hover:text-white/60 transition-colors"
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     <ArrowLeft size={14} /> Back

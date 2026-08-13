@@ -1,0 +1,237 @@
+{
+  "schema_version": 3,
+  "pack": {
+    "id": "hotd-s3e8-proof",
+    "version": 1,
+    "title": "House of the Dragon Season 3 Finale Proof Slice",
+    "property": "House of the Dragon",
+    "installment": "Season 3, Episode 8",
+    "fact_source": "room_declared",
+    "canon_cutoff": "End of Season 3, Episode 7"
+  },
+  "sources": [
+    {
+      "id": "episode-seven-screen-record",
+      "kind": "screen",
+      "title": "Episode 7 witnessed screen record",
+      "locator": "screen:hotd-s3e7"
+    },
+    {
+      "id": "episode-seven-reaction-sweep",
+      "kind": "sentiment",
+      "title": "Episode 7 audience reaction sweep",
+      "locator": "research:westeros-encyclopedia:audience-reaction"
+    },
+    {
+      "id": "fire-and-blood",
+      "kind": "source_material",
+      "title": "Fire and Blood",
+      "locator": "book:fire-and-blood"
+    }
+  ],
+  "claims": [
+    {
+      "id": "aegon-alive-after-episode-seven",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Aegon was alive at the end of Episode 7 and had reunited with Sunfyre.",
+      "source_ids": [
+        "episode-seven-screen-record"
+      ]
+    },
+    {
+      "id": "sunfyre-alive-after-episode-seven",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Sunfyre was alive at the end of Episode 7 and directly protected Aegon.",
+      "source_ids": [
+        "episode-seven-screen-record"
+      ]
+    },
+    {
+      "id": "sunfyre-reunion-audience-favorite",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The Aegon and Sunfyre reunion was one of the season's strongest audience-approval moments.",
+      "source_ids": [
+        "episode-seven-reaction-sweep"
+      ]
+    },
+    {
+      "id": "source-chronicle-dragon-bonds",
+      "canon": "source_material",
+      "status": "attitude_only",
+      "text": "The source chronicle treats dragon bonds as politically consequential.",
+      "source_ids": [
+        "fire-and-blood"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "id": "aegon-ii-targaryen",
+      "name": "Aegon II Targaryen",
+      "kind": "person",
+      "group": "The Greens",
+      "draftable": true,
+      "portrait": {
+        "path": "/avatars/characters/aegon.jpeg",
+        "sha256": "2c06d011f54ff823df0bb6a78c05d5ce92b2d36436366980ae7fb745cc2173cf"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "aegon-alive-after-episode-seven"
+        ],
+        "discourse_claim_ids": [
+          "sunfyre-reunion-audience-favorite"
+        ]
+      }
+    },
+    {
+      "id": "sunfyre",
+      "name": "Sunfyre",
+      "kind": "creature",
+      "group": "The Greens",
+      "draftable": true,
+      "portrait": {
+        "path": "/avatars/characters/sunfyre.jpeg",
+        "sha256": "14e23ab444855b53c3c4a7a8247727a27bd4d216de5135ab1237cc70195dce75"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "sunfyre-alive-after-episode-seven"
+        ],
+        "discourse_claim_ids": [
+          "sunfyre-reunion-audience-favorite"
+        ]
+      }
+    }
+  ],
+  "predictions": [
+    {
+      "id": "cliffhanger-centers-on",
+      "title": "The Cliffhanger Centers On",
+      "condition": "The episode's final unresolved turn or reveal primarily centers on the winning entity on screen.",
+      "exclusions": [
+        "A dialogue-only mention or an earlier unresolved plot does not count unless it controls the episode's final turn."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title and condition both promise the subject of the episode's final unresolved turn."
+      },
+      "basis_claim_ids": [
+        "aegon-alive-after-episode-seven",
+        "sunfyre-alive-after-episode-seven"
+      ],
+      "points": 10,
+      "tier": 1,
+      "candidate_entity_ids": [
+        "aegon-ii-targaryen",
+        "sunfyre"
+      ]
+    }
+  ],
+  "signature_beats": [
+    {
+      "id": "aegon-sass",
+      "entity_ids": [
+        "aegon-ii-targaryen"
+      ],
+      "title": "Aegon Sass",
+      "condition": "Aegon delivers an unmistakably sarcastic, cutting, morbidly funny, or self-aware line on screen.",
+      "exclusions": [
+        "Another character describing Aegon as funny or sarcastic does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Both title and condition promise a cutting line delivered by Aegon himself."
+      },
+      "probability_pct": 70,
+      "likelihood_tier": "likely",
+      "points": 20,
+      "pitch": "Your safest payout is that Aegon remains Aegon.",
+      "basis_claim_ids": [
+        "aegon-alive-after-episode-seven"
+      ]
+    },
+    {
+      "id": "sunfyre-saves-aegon-again",
+      "entity_ids": [
+        "sunfyre"
+      ],
+      "title": "Saves Aegon Again",
+      "condition": "Sunfyre directly stops an immediate on-screen threat from killing or capturing Aegon.",
+      "exclusions": [
+        "Aegon escaping without Sunfyre's direct intervention does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title and condition promise the same direct rescue by Sunfyre."
+      },
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
+      "points": 25,
+      "pitch": "Episode 7 proved this dragon has impeccable dramatic timing.",
+      "basis_claim_ids": [
+        "sunfyre-alive-after-episode-seven"
+      ]
+    }
+  ],
+  "bingo_squares": [
+    {
+      "id": "sunfyre-love",
+      "title": "Sunfyre Love",
+      "condition": "Aegon and Sunfyre share a clearly affectionate or emotionally meaningful interaction on screen.",
+      "exclusions": [
+        "Merely appearing together, mounting, or fighting side by side does not count without an obvious emotional beat."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title's affection promise is exactly the interaction required by the condition."
+      },
+      "probability_pct": 50,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The prior reunion gives viewers a relationship payoff to root for.",
+      "storyline_tags": [
+        "aegon",
+        "dragons",
+        "sunfyre"
+      ],
+      "basis_claim_ids": [
+        "sunfyre-alive-after-episode-seven",
+        "sunfyre-reunion-audience-favorite"
+      ]
+    }
+  ],
+  "commentary_voices": [
+    {
+      "id": "cersei",
+      "name": "Cersei",
+      "instruction": "Judge power with clipped contempt and political precision.",
+      "attitude_claim_ids": [
+        "source-chronicle-dragon-bonds"
+      ]
+    }
+  ],
+  "commentary_requests": []
+}

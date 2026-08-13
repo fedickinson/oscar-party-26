@@ -47,6 +47,7 @@ export default function SpotlightView({
 }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const winnerNomineeId = category.winner_id
   const tieWinnerNomineeId = category.tie_winner_id
@@ -61,6 +62,7 @@ export default function SpotlightView({
 
   function handleNomineeTap(nomineeId: string) {
     if (!isHost || isSubmitting || viewState !== 'suspense') return
+    setSubmitError(null)
 
     setSelectedIds((prev) => {
       if (prev.includes(nomineeId)) {
@@ -74,6 +76,7 @@ export default function SpotlightView({
   async function handleConfirm() {
     if (isSubmitting) return
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
       if (selectedIds.length === 1) {
         await onSelectWinner(selectedIds[0])
@@ -81,6 +84,8 @@ export default function SpotlightView({
         await onSelectTieWinner(selectedIds[0], selectedIds[1])
       }
       setSelectedIds([])
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'The winner could not be declared.')
     } finally {
       setIsSubmitting(false)
     }
@@ -98,19 +103,23 @@ export default function SpotlightView({
         />
         {isHost && !winnerNomineeId && (
           <motion.button
+            type="button"
             whileTap={{ scale: 0.88 }}
             onClick={onClose}
             disabled={isSubmitting}
-            className="mt-0.5 w-8 h-8 rounded-full bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0"
+            className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8"
+            aria-label="Close spotlight"
           >
             <X size={14} className="text-white/50" />
           </motion.button>
         )}
         {isHost && winnerNomineeId && (
           <motion.button
+            type="button"
             whileTap={{ scale: 0.97 }}
             onClick={onClose}
-            className="mt-0.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-white/70 text-xs font-semibold flex-shrink-0"
+            className="mt-0.5 min-h-11 flex-shrink-0 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/70"
+            aria-label="Close spotlight"
           >
             In the spotlight
           </motion.button>
@@ -164,10 +173,10 @@ export default function SpotlightView({
               >
                 {/* Tie warning */}
                 {isTie && (
-                  <div className="flex items-start gap-2 px-2 py-2 bg-amber-500/10 border border-amber-500/25 rounded-lg">
-                    <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 rounded-lg border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-2 py-2">
+                    <AlertTriangle size={14} className="mt-0.5 flex-shrink-0 text-[var(--t-pending)]" />
                     <div>
-                      <p className="text-xs font-semibold text-amber-300 leading-tight">
+                      <p className="text-xs font-semibold leading-tight text-[var(--t-pending)]">
                         Are you sure there was a tie?
                       </p>
                       <p className="text-[10px] text-white/35 mt-0.5">
@@ -175,6 +184,12 @@ export default function SpotlightView({
                       </p>
                     </div>
                   </div>
+                )}
+
+                {submitError && (
+                  <p className="rounded-lg border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-3 py-2 text-xs text-[var(--t-pending)]" role="alert">
+                    {submitError}
+                  </p>
                 )}
 
                 {/* Selection summary */}
@@ -210,20 +225,25 @@ export default function SpotlightView({
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setSelectedIds([])}
+                    type="button"
+                    onClick={() => {
+                      setSelectedIds([])
+                      setSubmitError(null)
+                    }}
                     disabled={isSubmitting}
-                    className="flex-1 py-2 rounded-xl bg-white/10 text-white/70 text-sm font-medium disabled:opacity-40"
+                    className="min-h-11 flex-1 rounded-xl bg-white/10 py-2 text-sm font-medium text-white/70 disabled:opacity-40"
                   >
                     Cancel
                   </button>
                   <motion.button
+                    type="button"
                     whileTap={{ scale: 0.97 }}
                     onClick={handleConfirm}
                     disabled={isSubmitting}
                     className={[
-                      'flex-1 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-60',
+                      'min-h-11 flex-1 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-60',
                       isTie
-                        ? 'bg-amber-500 text-ground'
+                        ? 'bg-[var(--t-pending)] text-ground'
                         : 'bg-accent text-ground',
                     ].join(' ')}
                   >

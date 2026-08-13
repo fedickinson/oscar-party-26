@@ -24,6 +24,8 @@ import {
   Clock,
   FastForward,
   RotateCcw,
+  AlertTriangle,
+  RefreshCw,
   Trophy,
   User,
 } from 'lucide-react'
@@ -39,8 +41,8 @@ const UNDO_WINDOW_MS = 30_000
 
 const TIER_BADGE_COLORS: Record<number, string> = {
   1: 'bg-accent/20 text-accent',
-  2: 'bg-purple-500/20 text-purple-300',
-  3: 'bg-blue-500/20 text-blue-300',
+  2: 'bg-[var(--t-personal-field)] text-[var(--t-personal-text)]',
+  3: 'bg-[var(--t-pending-soft)] text-[var(--t-pending)]',
   4: 'bg-positive/20 text-positive',
   5: 'bg-white/10 text-white/50',
 }
@@ -48,20 +50,37 @@ const TIER_BADGE_COLORS: Record<number, string> = {
 interface Props {
   roomId: string
   isHost: boolean
-  onEndCeremony: () => Promise<void>
-  isEndingCeremony: boolean
+  onCloseNight: () => Promise<void>
+  isClosingNight: boolean
+  closeNightError: string | null
+  refereeEnabled: boolean
+  refereeAuthorityMessage: string | null
+  operatorCapability: string | null
   openSpotlight: (categoryId: number) => Promise<void>
   onDevAutoCompleteRunning?: (running: boolean) => void
 }
 
-export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCeremony, openSpotlight, onDevAutoCompleteRunning }: Props) {
+export default function WinnersTab({
+  roomId,
+  isHost,
+  onCloseNight,
+  isClosingNight,
+  closeNightError,
+  refereeEnabled,
+  refereeAuthorityMessage,
+  operatorCapability,
+  openSpotlight,
+  onDevAutoCompleteRunning,
+}: Props) {
   const {
     categories,
     winnerSetAt,
     isLoading,
+    syncError,
+    retrySync,
     undoWinner,
     setWinner,
-  } = useAdmin(roomId)
+  } = useAdmin(roomId, operatorCapability)
 
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
   const [isAutoCompleting, setIsAutoCompleting] = useState(false)
@@ -91,20 +110,20 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
 
       if (!toMark.length) continue
 
-      const now = new Date().toISOString()
-      await supabase.from('bingo_marks').insert(
-        toMark.map((index) => ({
-          card_id: card.id,
-          square_index: index,
-          status: 'approved',
-          marked_at: now,
-        })),
-      )
+      for (const index of toMark) {
+        await supabase.rpc('set_player_bingo_mark', {
+          p_room_id: roomId,
+          p_actor_player_id: card.player_id,
+          p_card_id: card.id,
+          p_square_index: index,
+          p_marked: true,
+        })
+      }
     }
   }
 
   async function handleDevAutoComplete() {
-    if (!isHost || isAutoCompleting) return
+    if (!isHost || !refereeEnabled || isAutoCompleting) return
     setIsAutoCompleting(true)
     onDevAutoCompleteRunning?.(true)
     try {
@@ -116,7 +135,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
         }
       }
       await devFillBingoCards()
-      await onEndCeremony()
+      await onCloseNight()
     } finally {
       setIsAutoCompleting(false)
       onDevAutoCompleteRunning?.(false)
@@ -164,6 +183,32 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
     })
   }
 
+  if (syncError) {
+    return (
+      <div className="material-stone relief-inset mt-2 space-y-3 rounded-2xl p-4" role="alert">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--t-pending)] text-[var(--t-pending)]">
+            <AlertTriangle size={16} aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-[var(--t-text)]">Winner feed unavailable</p>
+            <p className="mt-1 text-sm leading-relaxed text-[var(--t-text-muted)]">
+              {syncError} Results and operator actions are paused on this phone.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={retrySync}
+          className="relief-raised flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] px-4 text-sm font-semibold text-[var(--t-pending)]"
+        >
+          <RefreshCw size={15} aria-hidden />
+          Retry winner feed
+        </button>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -180,25 +225,34 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
     <>
       <div className="space-y-3 pt-2">
 
+        {isHost && refereeAuthorityMessage && (
+          <p
+            role="status"
+            className="rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] p-3 text-sm text-[var(--t-text-muted)]"
+          >
+            {refereeAuthorityMessage}
+          </p>
+        )}
+
         {/* Dev-only: auto-complete all categories and end ceremony */}
         {import.meta.env.DEV && isHost && (
           <motion.button
             onClick={handleDevAutoComplete}
-            disabled={isAutoCompleting}
+            disabled={isAutoCompleting || !refereeEnabled}
             whileTap={!isAutoCompleting ? { scale: 0.97 } : undefined}
             className={[
               'min-h-11 w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all',
               !isAutoCompleting
-                ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
+                ? 'border-[var(--t-personal-device)] bg-[var(--t-personal-field)] text-[var(--t-personal-text)]'
                 : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed',
             ].join(' ')}
           >
             {isAutoCompleting ? (
-              <div className="w-3.5 h-3.5 border-2 border-purple-300/40 border-t-purple-300 rounded-full animate-spin" />
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--t-personal-field)] border-t-[var(--t-personal-text)]" />
             ) : (
               <FastForward size={12} />
             )}
-            {isAutoCompleting ? 'Auto-completing...' : 'DEV: Auto-Complete All & End'}
+            {isAutoCompleting ? 'Auto-completing...' : 'DEV: Auto-Complete All & Close'}
           </motion.button>
         )}
 
@@ -226,7 +280,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
           </div>
         </div>
 
-        {/* End Ceremony — host only, when all announced */}
+        {/* Close the live floor — host only, when all announced */}
         <AnimatePresence>
           {allAnnounced && isHost && (
             <motion.div
@@ -243,28 +297,34 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                 </p>
               </div>
               <p className="text-xs text-white/50">
-                End the ceremony to lock scores and show final standings.
+                Close the live floor to publish provisional results on every phone.
               </p>
               <motion.button
-                onClick={onEndCeremony}
-                disabled={isEndingCeremony}
-                whileTap={!isEndingCeremony ? { scale: 0.97 } : undefined}
+                type="button"
+                onClick={onCloseNight}
+                disabled={isClosingNight || !refereeEnabled}
+                whileTap={!isClosingNight && refereeEnabled ? { scale: 0.97 } : undefined}
                 className={[
                   'min-h-11 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
-                  !isEndingCeremony
+                  !isClosingNight && refereeEnabled
                     ? 'bg-accent text-ground'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
                 ].join(' ')}
               >
-                {isEndingCeremony ? (
+                {isClosingNight ? (
                   <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
                 ) : (
                   <>
                     <Flame size={14} />
-                    End Ceremony
+                    Close the Live Floor
                   </>
                 )}
               </motion.button>
+              {closeNightError && (
+                <p className="text-xs text-[var(--t-pending)]" role="alert">
+                  {closeNightError}
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -369,7 +429,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           )}
                         </p>
                         {hasTie && (
-                          <span className="text-[9px] text-amber-400/60 uppercase tracking-wide font-semibold">Tie</span>
+                          <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--t-pending)]">Tie</span>
                         )}
                         {winnerNominee.film_name && !hasTie && (
                           <div className="flex items-center gap-1 mt-0.5">
@@ -400,6 +460,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           e.stopPropagation()
                           openSpotlight(category.id)
                         }}
+                        disabled={!refereeEnabled}
                         className="relief-raised min-h-11 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                       >
                         Spotlight
@@ -415,6 +476,7 @@ export default function WinnersTab({ roomId, isHost, onEndCeremony, isEndingCere
                           e.stopPropagation()
                           handleUndo(category.id)
                         }}
+                        disabled={!refereeEnabled}
                         className="relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white/50 text-[11px]"
                       >
                         <RotateCcw size={10} />

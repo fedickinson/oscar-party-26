@@ -1,0 +1,60 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "direct-protective-actions",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "direct-protective-actions",
+      "beat_ids": [4, 13, 16, 37, 41, 52, 60, 79, 88, 95, 103, 119, 129, 152, 162, 168, 170, 179],
+      "conditions_by_beat_id": {
+        "4": "Daemon takes a concrete action that shields Rhaena from punishment, capture, or immediate physical danger.",
+        "13": "Rhaenyra takes a concrete action to protect Helaena or Jaehaera from another character's threat or demand.",
+        "16": "Helaena takes a concrete action to hide, move, defend, or secure Jaehaera from a perceived threat.",
+        "37": "Rhaena takes a deliberate action that directly saves a named ally from serious danger.",
+        "41": "Orwyle knowingly helps Helaena or Jaehaera escape, hide from, or bypass Black custody.",
+        "52": "Alicent takes a concrete action intended to secure Helaena or Jaehaera's safety.",
+        "60": "Alys actively treats, rescues, or otherwise prevents Aemond from dying from the poisoning or its immediate consequences.",
+        "79": "Tyland knowingly puts himself in immediate physical danger to protect Aegon or buy him time.",
+        "88": "Daeron takes a concrete action that directly protects or rescues Gwayne from immediate danger.",
+        "95": "Gwayne physically intervenes, gives up an advantage, or defies another person to protect Daeron from immediate danger.",
+        "103": "Jon deliberately releases or helps Corlys escape against Ormund's interests.",
+        "119": "Alyn personally launches or joins an operation whose explicit purpose is rescuing Corlys.",
+        "129": "Hugh takes a concrete action that directly removes Kat from an immediate threat or dangerous location.",
+        "152": "Black Aly uses her bow or another weapon to stop an immediate threat to Roddy.",
+        "162": "Caraxes physically intervenes to prevent an immediate threat from killing or capturing Daemon.",
+        "168": "Tessarion directly prevents an immediate threat from killing or capturing Daeron.",
+        "170": "Sunfyre directly stops an immediate threat from killing or capturing Aegon.",
+        "179": "Moondancer directly intervenes to protect Rhaena from an immediate threat."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "4": ["aa56f006-abe3-5047-4893-40d08cac7dda", "b57c8ba1-7151-f57b-dfeb-6881ca6e65be"],
+        "13": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "df62fafa-0055-c917-50e8-aa130ed43ef4"],
+        "16": ["df62fafa-0055-c917-50e8-aa130ed43ef4"],
+        "37": ["b57c8ba1-7151-f57b-dfeb-6881ca6e65be"],
+        "41": ["68b299e8-92c2-6391-2d4f-629c6a2a85ad", "df62fafa-0055-c917-50e8-aa130ed43ef4"],
+        "52": ["188d91ee-63ee-9d0e-1779-3ce613d3f4c9", "df62fafa-0055-c917-50e8-aa130ed43ef4"],
+        "60": ["23358073-19dd-7d87-de02-91d217a63c77", "cd978df7-2733-99cf-c9f7-c56c8dde42a5"],
+        "79": ["2de4bab9-cb97-2069-98ec-df7c5088d457", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+        "88": ["cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e", "32f57c47-f49c-4003-3748-c120aae7c45a"],
+        "95": ["32f57c47-f49c-4003-3748-c120aae7c45a", "cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e"],
+        "103": ["6d5fc989-7205-b24a-2231-ff3297c0749e", "b3b10757-625e-0013-92ab-7a083d26ce7d", "9fa107b0-d130-0e04-8dbe-6a465931b0fd"],
+        "119": ["efe00b8c-9fe1-0136-54f3-e152d78a8ec4", "b3b10757-625e-0013-92ab-7a083d26ce7d"],
+        "129": ["1e7ae85e-158a-a679-e8fb-883f08a8b21f", "604d8ab9-48d8-7859-4362-fc92cd46fc05"],
+        "152": ["ff493811-9199-ddd5-71f1-0ba7cbede994", "2395ce7b-d731-6554-93c8-4f2359968ae7"],
+        "162": ["c421be7b-b9eb-3f23-231c-d95f0f918d57", "aa56f006-abe3-5047-4893-40d08cac7dda"],
+        "168": ["510ec8cb-f91f-cfd3-3339-ddc0aba04ddc", "cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e"],
+        "170": ["31c7d058-bdbd-b784-5533-73320a21a65a", "b6e1eddd-1c9f-23f7-5ba6-50942783d735"],
+        "179": ["f0b703a0-c333-b1fb-2cdd-aced8451e3aa", "b57c8ba1-7151-f57b-dfeb-6881ca6e65be"]
+      },
+      "exclusions": [
+        "Concern, advice, a stated wish, an unacted plan, ordinary proximity, or an action that does not satisfy the preserved protection, rescue, escape, treatment, or intervention threshold does not count.",
+        "A coincidental outcome, self-rescue, unrelated attack, or proxy intervention does not count for the named protector unless the preserved condition explicitly names participation in an operation.",
+        "An off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or hypothetical danger or rescue does not count."
+      ],
+      "adjudication": { "proxies": "explicit_only", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each title honestly names a concrete protection, rescue, escape, treatment, or intervention; settlement requires the preserved actor, beneficiary, danger, intent, and causal threshold."
+    }
+  ]
+}

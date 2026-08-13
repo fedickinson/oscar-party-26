@@ -78,7 +78,8 @@ export default function PlayerProfileModal({ playerName, avatarId, isSelf, onClo
 
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center z-20"
+              className="absolute top-3 right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur"
+              aria-label="Close player profile"
             >
               <X size={14} className="text-white/80" />
             </button>

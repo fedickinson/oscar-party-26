@@ -4,7 +4,7 @@
  * REALTIME FLOW (how phase changes drive navigation):
  *
  *   1. Host taps "Start Draft"
- *   2. startDraft() calls supabase.update({ phase: 'pre_draft', draft_order: [...] })
+ *   2. startDraft() calls the capability-gated begin-draft command
  *   3. Supabase pushes an UPDATE event over WebSocket to every subscribed client
  *   4. Each client's useRoomSubscription callback fires → setRoom(payload.new)
  *   5. The useEffect watching room?.phase sees 'pre_draft' → show PhaseExplainer overlay
@@ -21,9 +21,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Copy, Crown, Flame } from 'lucide-react'
+import { AlertTriangle, Check, Copy, Crown, Flame, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
 import Avatar from '../components/Avatar'
 import PhaseExplainer from '../components/PhaseExplainer'
@@ -36,6 +37,7 @@ export default function Room() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
+  const { capability: operatorCapability, authority: operatorAuthority } = useOperatorAuthority()
 
   const [copied, setCopied] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
@@ -44,19 +46,20 @@ export default function Room() {
   // Activate realtime — these hooks subscribe to DB changes and update context.
   // They're called with room?.id (undefined-safe) so they no-op until the
   // session restore has populated room state.
-  useRoomSubscription(room?.id)
-  usePlayersSubscription(room?.id)
+  const roomSync = useRoomSubscription(room?.id)
+  const rosterSync = usePlayersSubscription(room?.id)
 
   // ── Phase-change navigation ────────────────────────────────────────────────
   // Every client (host and guests) navigates here when the room phase changes.
   // 'pre_draft' stays on this page (overlays handle it).
   useEffect(() => {
-    if (!room || !code) return
+    if (!room || !code || roomSync.isLoading || roomSync.syncError != null) return
     if (room.phase === 'draft') navigate(`/room/${code}/draft`)
     if (room.phase === 'confidence') navigate(`/room/${code}/confidence`)
     if (room.phase === 'live') navigate(`/room/${code}/live`)
     if (room.phase === 'finished') navigate(`/room/${code}/results`)
-  }, [room?.phase, code, navigate])
+    if (room.phase === 'closed') navigate(`/room/${code}/results`)
+  }, [room?.phase, roomSync.isLoading, roomSync.syncError, code, navigate])
 
   // ── Guard: no session ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -72,7 +75,17 @@ export default function Room() {
   }
 
   async function startDraft() {
-    if (!room || !player?.is_host || players.length < 2) return
+    if (!room || !player?.is_host) return
+    if (!operatorAuthority.enabled || !operatorCapability) {
+      setStartError(operatorAuthority.message ?? 'Current operator authority is required.')
+      return
+    }
+    if (roomSync.isLoading || roomSync.syncError != null ||
+        rosterSync.isLoading || rosterSync.syncError != null) {
+      setStartError('The shared room and player roster must finish synchronizing before the party can start.')
+      return
+    }
+    if (players.length < 2) return
     setIsStarting(true)
     setStartError(null)
 
@@ -81,10 +94,12 @@ export default function Room() {
       .sort(() => Math.random() - 0.5)
       .map((p) => p.id)
 
-    const { error } = await supabase
-      .from('rooms')
-      .update({ phase: 'pre_draft', draft_order: shuffled, ready_players: [], countdown_started_at: null })
-      .eq('id', room.id)
+    const { error } = await supabase.rpc('begin_room_draft_authorized', {
+      p_room_id: room.id,
+      p_actor_player_id: player.id,
+      p_operator_capability: operatorCapability,
+      p_draft_order: shuffled,
+    })
 
     if (error) {
       setStartError(error.message)
@@ -99,6 +114,8 @@ export default function Room() {
   // multiple players tap simultaneously.
   async function markReady() {
     if (!room || !player) return
+    if (roomSync.isLoading || roomSync.syncError != null ||
+        rosterSync.isLoading || rosterSync.syncError != null) return
     await supabase.rpc('mark_player_ready', {
       p_room_id: room.id,
       p_player_id: player.id,
@@ -107,11 +124,15 @@ export default function Room() {
 
   // Called by the host after the countdown completes — moves everyone to the draft.
   async function finalizeDraft() {
-    if (!room || !player?.is_host) return
-    await supabase
-      .from('rooms')
-      .update({ phase: 'draft' })
-      .eq('id', room.id)
+    if (!room || !player?.is_host || !operatorAuthority.enabled || !operatorCapability) return
+    if (roomSync.isLoading || roomSync.syncError != null ||
+        rosterSync.isLoading || rosterSync.syncError != null) return
+    const { error } = await supabase.rpc('open_room_draft_authorized', {
+      p_room_id: room.id,
+      p_actor_player_id: player.id,
+      p_operator_capability: operatorCapability,
+    })
+    if (error) setStartError(error.message)
     // All clients navigate via their realtime subscription watching room.phase.
   }
 
@@ -137,28 +158,43 @@ export default function Room() {
 
   // Record the moment all players became ready so every client can compute
   // elapsed time and derive the correct countdown position locally.
-  const allReady = players.length > 0 && readyPlayerIds.length >= players.length
+  const allReady = !roomSync.isLoading && roomSync.syncError == null &&
+    !rosterSync.isLoading && rosterSync.syncError == null &&
+    players.length > 0 && readyPlayerIds.length >= players.length
 
   // The host stamps the countdown start on the ROOM, so every client derives
   // the same 3-2-1 from one wall-clock instant. Previously each client kept its
   // own local ref and ran its own timer chain, which meant they could disagree
   // — and a client whose chain broke simply froze.
   useEffect(() => {
-    if (!isPreDraft || !allReady || !player?.is_host) return
+    if (!isPreDraft || !allReady || !player?.is_host
+        || !operatorAuthority.enabled || !operatorCapability) return
     if (room?.countdown_started_at) return
-    void supabase
-      .from('rooms')
-      .update({ countdown_started_at: new Date().toISOString() })
-      .eq('id', room!.id)
-  }, [isPreDraft, allReady, player?.is_host, room?.countdown_started_at, room?.id])
+    void supabase.rpc('begin_room_draft_countdown_authorized', {
+      p_room_id: room!.id,
+      p_actor_player_id: player.id,
+      p_operator_capability: operatorCapability,
+    }).then(({ error }) => {
+      if (error) setStartError(error.message)
+    })
+  }, [
+    isPreDraft,
+    allReady,
+    player?.id,
+    player?.is_host,
+    room?.countdown_started_at,
+    room?.id,
+    operatorAuthority.enabled,
+    operatorCapability,
+  ])
 
   const countdownStartedAt = room?.countdown_started_at
     ? new Date(room.countdown_started_at).getTime()
-    : Date.now()
+    : null
 
   // ─── Loading & null guards ───────────────────────────────────────────────────
 
-  if (loading) {
+  if (loading || roomSync.isLoading || rosterSync.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
@@ -169,7 +205,11 @@ export default function Room() {
   if (!room || !player) return null // useEffect is navigating us away
 
   const isHost = player.is_host
-  const canStart = players.length >= 2
+  const hasEnoughPlayers = players.length >= 2
+  const roomHealthy = roomSync.syncError == null
+  const rosterHealthy = rosterSync.syncError == null
+  const sharedStateHealthy = roomHealthy && rosterHealthy
+  const canStart = hasEnoughPlayers && sharedStateHealthy && operatorAuthority.enabled
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -236,6 +276,50 @@ export default function Room() {
             <p className="text-[var(--t-text-dim)] text-sm text-center py-4">No players yet…</p>
           )}
 
+          {rosterSync.syncError && (
+            <div className="relief-inset mt-4 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-[var(--t-pending)]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--t-text)]">Roster feed unavailable</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--t-text-muted)]">
+                    The visible seats are cached. Shared start controls remain paused until the roster is current.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={rosterSync.retrySync}
+                    className="mt-2 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--t-pending)]"
+                  >
+                    <RefreshCw size={14} />
+                    Retry roster synchronization
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {roomSync.syncError && (
+            <div className="relief-inset mt-4 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="mt-0.5 flex-shrink-0 text-[var(--t-pending)]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--t-text)]">Room feed unavailable</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--t-text-muted)]">
+                    Phase and countdown controls remain paused until the shared room record is current.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={roomSync.retrySync}
+                    className="mt-2 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--t-pending)]"
+                  >
+                    <RefreshCw size={14} />
+                    Retry room synchronization
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* People assume a lobby means "everyone has to be here right now" and
               try to coordinate a simultaneous join. They do not: the room and the
               code persist, and identity is kept in localStorage, so anyone can
@@ -266,7 +350,7 @@ export default function Room() {
                 <span>You're the host</span>
               </div>
 
-              {!canStart && (
+              {!hasEnoughPlayers && sharedStateHealthy && (
                 <p className="text-[var(--t-text-dim)] text-sm">
                   The hall needs at least 2 players…
                 </p>
@@ -274,6 +358,10 @@ export default function Room() {
 
               {startError && (
                 <p className="text-[var(--t-negative)] text-sm">{startError}</p>
+              )}
+
+              {!operatorAuthority.enabled && operatorAuthority.message && (
+                <p className="text-[var(--t-pending)] text-sm">{operatorAuthority.message}</p>
               )}
 
               {canStart && watchSetupIncomplete && !overrodeWatchSetup && (
@@ -311,6 +399,10 @@ export default function Room() {
               >
                 {isStarting ? (
                   'Starting…'
+                ) : !sharedStateHealthy ? (
+                  'Room synchronization unavailable'
+                ) : !operatorAuthority.enabled ? (
+                  operatorAuthority.status === 'loading' ? 'Verifying operator authority' : 'Private operator link required'
                 ) : canStart && watchSetupIncomplete && !overrodeWatchSetup ? (
                   'Waiting on screens and remotes'
                 ) : canStart ? (
@@ -343,14 +435,16 @@ export default function Room() {
 
       {/* ── pre_draft overlays ──────────────────────────────────────────────── */}
       <AnimatePresence>
-        {isPreDraft && !playerIsReady && (
+        {isPreDraft && !playerIsReady && sharedStateHealthy && (
           <PhaseExplainer key="explainer" phase="draft" onContinue={markReady} />
         )}
         {/* Keep ReadyUpScreen mounted through the 'draft' phase too so the
             overlay stays up while navigate() runs. Without this, isPreDraft
             flips false the instant the phase update arrives, briefly exposing
-            the lobby before navigation completes. */}
-        {(isPreDraft || room?.phase === 'draft') && playerIsReady && (
+            the lobby before navigation completes. Degraded shared state unmounts
+            the one-shot countdown so its rejected completion can be retried
+            from the shared timestamp after synchronization recovers. */}
+        {(isPreDraft || room?.phase === 'draft') && playerIsReady && sharedStateHealthy && (
           <ReadyUpScreen
             key="readyup"
             players={players}

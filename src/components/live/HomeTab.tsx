@@ -24,7 +24,7 @@ import type {
   DraftEntityRow,
   NomineeRow,
 } from '../../types/database'
-import type { ScoredPlayer } from '../../lib/scoring'
+import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
 
 interface Props {
   categories: CategoryRow[]
@@ -41,13 +41,11 @@ interface Props {
   spotlightCategoryId: number | null
   spotlightNomineeIds: string[]
   isHost: boolean
+  refereeEnabled: boolean
   openSpotlight: (categoryId: number) => Promise<void>
   closeSpotlight: () => Promise<void>
   confirmSpotlightWinner: (nomineeId: string) => Promise<void>
   confirmSpotlightTieWinner: (nomineeId1: string, nomineeId2: string) => Promise<void>
-  // Finale
-  onEndCeremony: () => Promise<void>
-  isEndingCeremony: boolean
   // Film encyclopedia link
   onFilmLinkTap?: (filmTitle: string) => void
 }
@@ -66,12 +64,11 @@ export default function HomeTab({
   spotlightCategoryId,
   spotlightNomineeIds,
   isHost,
+  refereeEnabled,
   openSpotlight,
   closeSpotlight,
   confirmSpotlightWinner,
   confirmSpotlightTieWinner,
-  onEndCeremony,
-  isEndingCeremony,
   onFilmLinkTap,
 }: Props) {
   const { player } = useGame()
@@ -94,17 +91,15 @@ export default function HomeTab({
           cp.category_id === spotlightCategoryId &&
           cp.nominee_id === nominee.id,
       )
-      const filmTitle = nominee.film_name || nominee.name
-      const matchingEntity = draftEntities.find((e) =>
-        nominee.type === 'person'
-          ? e.type === 'person' && e.name === nominee.name
-          : e.type === 'film' && e.film_name === filmTitle,
+      const draftResult = findDraftPointsForWinner(
+        spotlightCategory.id,
+        nominee.id,
+        categories,
+        nominees,
+        draftEntities,
+        draftPicks,
       )
-      const myDraftPick = matchingEntity
-        ? draftPicks.some(
-            (dp) => dp.entity_id === matchingEntity.id && dp.player_id === currentPlayerId,
-          )
-        : false
+      const myDraftPick = draftResult.playerId === currentPlayerId
 
       return { nominee, myConfidence: myPick?.confidence ?? null, myDraftPick }
     })
@@ -113,7 +108,7 @@ export default function HomeTab({
       <SpotlightView
         category={spotlightCategory}
         nomineeData={nomineeData}
-        isHost={isHost}
+        isHost={isHost && refereeEnabled}
         onSelectWinner={confirmSpotlightWinner}
         onSelectTieWinner={confirmSpotlightTieWinner}
         onClose={closeSpotlight}
@@ -153,11 +148,9 @@ export default function HomeTab({
               draftPicks={draftPicks}
               draftEntities={draftEntities}
               leaderboard={leaderboard}
-              isHost={isHost}
+              isHost={isHost && refereeEnabled}
               showStarted={showStarted}
               openSpotlight={openSpotlight}
-              onEndCeremony={onEndCeremony}
-              isEndingCeremony={isEndingCeremony}
               onFilmLinkTap={onFilmLinkTap}
             />
           ) : (

@@ -1,0 +1,44 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-family-decisions",
+  "batch_id": "direct-two-person-scenes",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "families": [
+    {
+      "family_id": "direct-two-person-scenes",
+      "beat_ids": [6, 7, 64, 109, 110, 121, 135, 182, 183, 189],
+      "conditions_by_beat_id": {
+        "6": "Daemon and Baela have a private conversation in which either one directly discusses Jace, Rhaena, or their family relationship.",
+        "7": "Daemon and Aemond directly see, address, or attack one another in the present timeline.",
+        "64": "Alys and Alicent directly confront one another about Aemond, the poisoning, or who controls what happens to him next.",
+        "109": "Corlys explicitly apologizes to Alyn or the two reach a clear father-son reconciliation.",
+        "110": "After reuniting or communicating, Corlys and Alyn directly argue about fatherhood, legitimacy, or Corlys's past treatment of his sons.",
+        "121": "Alyn explicitly accepts an apology from Corlys or tells Corlys he forgives him.",
+        "135": "Ulf and Hugh directly argue, threaten, or fight over Ulf's deal with Ormund or their loyalty to Rhaenyra.",
+        "182": "Rhaenyra and Daemon have a direct hostile confrontation about Rhaena, Sheepstealer, Mysaria, or the conduct of the war.",
+        "183": "Rhaenyra and Mysaria kiss or engage in unmistakably romantic or sexual contact in the present timeline.",
+        "189": "Baela and Alyn kiss again or make an explicit mutual romantic declaration to one another."
+      },
+      "basis_legacy_entity_ids_by_beat_id": {
+        "6": ["aa56f006-abe3-5047-4893-40d08cac7dda", "7856aa97-db30-7245-784d-984f33d04b4d"],
+        "7": ["aa56f006-abe3-5047-4893-40d08cac7dda", "cd978df7-2733-99cf-c9f7-c56c8dde42a5"],
+        "64": ["23358073-19dd-7d87-de02-91d217a63c77", "188d91ee-63ee-9d0e-1779-3ce613d3f4c9", "cd978df7-2733-99cf-c9f7-c56c8dde42a5"],
+        "109": ["b3b10757-625e-0013-92ab-7a083d26ce7d", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4"],
+        "110": ["b3b10757-625e-0013-92ab-7a083d26ce7d", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4"],
+        "121": ["efe00b8c-9fe1-0136-54f3-e152d78a8ec4", "b3b10757-625e-0013-92ab-7a083d26ce7d"],
+        "135": ["13da33f8-5825-ad92-054a-5f2215c0bb2b", "1e7ae85e-158a-a679-e8fb-883f08a8b21f"],
+        "182": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "aa56f006-abe3-5047-4893-40d08cac7dda"],
+        "183": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "45350e4e-503e-9198-4559-2555a68410f4"],
+        "189": ["7856aa97-db30-7245-784d-984f33d04b4d", "efe00b8c-9fe1-0136-54f3-e152d78a8ec4"]
+      },
+      "exclusions": [
+        "Separate scenes, secondhand descriptions, indirect messages, parallel actions, inferred feelings, or merely sharing a location do not count as the preserved direct interaction.",
+        "A proxy, ally, messenger, imagined counterpart, or stand-in does not count for either named participant.",
+        "An off-screen report, recap, mention, dream, vision, memory, prediction, promotional image, or hypothetical version of the scene does not count."
+      ],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review_note": "Each title honestly names a direct two-person conversation, confrontation, reconciliation, forgiveness, argument, or romantic interaction whose exact subject and threshold remain the preserved audited condition."
+    }
+  ]
+}

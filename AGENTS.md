@@ -19,14 +19,104 @@ What is constant is the platform: declared facts as the spine, a board of possib
 cascading scores, a character cast reacting to facts, chat as the record, an operator's lens.
 Themed content and copy are current-show-specific; the engine is not.
 
+The product thesis is **commitment under unfolding canon**: people care enough about what happens
+next to commit to a belief before a shared canon resolves it; the room witnesses the resolution,
+settles the commitments and remembers the consequences. Winning is only one form of resolution.
+Character survival, allegiance, betrayal, relationships, transformation, revelation and theories
+are equally valid game material.
+
 **Serverless. No backend server. No REST API.** React talks directly to Supabase over HTTPS and
 WebSockets. Row Level Security is the entire authorization layer. Supabase Realtime (logical
-replication) is the entire sync layer. The one server-side file is a Vercel function proxying the
-Anthropic API for the AI cast (`api/anthropic/v1/messages.ts`).
+replication) is the entire sync layer. The only server-side runtime surface is a Vercel function
+proxying the Anthropic API for the AI cast (`api/anthropic/v1/messages.ts`), supported by shared
+guards and grounding logic under `api/`.
 
 ```text
 User action -> Supabase write -> Realtime broadcast -> all clients update state -> React re-renders
 ```
+
+## Current system and intended direction
+
+Keep implemented behavior separate from planned behavior.
+
+### Implemented in the current checkout
+
+- **Results Night** uses `legacy_ensemble`: a scheduled, externally resolved fact stream with an
+  entity draft, confidence picks and ceremony spotlights.
+- **Story Night** uses `conviction_portfolio`: each player spends a fixed twelve-slot portfolio
+  across any authored signature beats on the whole board. A resolved beat's authored pot is split
+  among its believers; a correct lonely belief receives the full pot. The current story pack keeps
+  one dragon per player as a non-scoring identity draft, not as exclusive prediction access.
+- Show packs bind authored content to rooms; exact trigger contracts govern declarations.
+- Rooms move through `lobby -> pre_draft -> draft -> confidence -> live -> finished -> closed`.
+  `finished` is provisional; only researched settlement and write-back produce canonical `closed`.
+- The AI cast, browser reactions and daemon use the shared grounded-generation engine. The witness
+  ladder currently stops at AI proposals requiring human review; AI auto-declaration is not an
+  implemented authority.
+- Settlement receipts are the canonical post-show evidence. The settlement-drop compiler consumes
+  a receipt to produce the reusable offline ceremony, and the show-pack flywheel can use settled
+  show N as evidence for authoring show N+1.
+
+“Implemented in the current checkout” is not the same as committed, deployed or fully verified.
+This worktree may contain a large platformization pass. Inspect the diff and run the evidence
+required by the relevant roadmap exit criteria before making a readiness claim.
+
+### Known architectural seam
+
+The current database still couples orthogonal product decisions: a show pack has one
+`fact_source`, and binding that pack derives one room `game_model` (`scheduled` selects
+`legacy_ensemble`; room-declared or AI-witnessed selects `conviction_portfolio`). This is the
+present compatibility behavior, not the target ontology. A future hybrid may mix official facts,
+operator declarations and AI proposals in one event.
+
+There is no season-campaign model yet. Current rooms represent one event or installment. Campaign
+membership, installment containers, historical thesis revisions, evolving character state and the
+between-installments home are planned work, not existing capabilities.
+
+### Product rules that survive every mode
+
+1. **Drafting may create identity and rivalry, but it must not determine what a player is allowed
+   to believe.** Whole-cast conviction is the Story Night default; exclusive ownership is an
+   optional rule.
+2. Truth authority, commitment instrument, scarcity, identity, duration, settlement cadence,
+   visibility and continuity are independent dimensions. Do not add another hard-coded genre mode
+   when a show-pack contract can compose the primitives.
+3. Settled receipts, not AI summaries, own evolving canon. AI may propose or narrate; it cannot
+   silently promote an interpretation into a screen fact.
+4. A campaign contains independently recoverable installment rooms. Do not stretch one room phase
+   machine across an entire season.
+5. Conviction revisions are append-only. Changing a mind must not erase what was believed earlier
+   or make a late call appear early.
+
+### Current build priority
+
+[`ROADMAP.md`](ROADMAP.md) is the canonical tactical plan and status ledger:
+
+1. **P0:** close and prove the current platform foundation.
+2. **P1:** replace the coarse `fact_source -> game_model` derivation for new packs with an explicit,
+   composable game contract while preserving historical behavior.
+3. **P2:** productize reusable Story Night, including optional identity and pack-configurable
+   whole-cast convictions.
+4. **P3:** author and rehearse the next real event end to end.
+5. **P4-P8:** only then add campaign containers, conviction lifecycles, canonical character
+   write-back, the campaign home and the season ceremony.
+
+P0-P3 are the next-event readiness line. Do not use campaign work to bypass unfinished foundation
+verification. When live evidence changes the order, update the roadmap decision log rather than
+creating a competing plan.
+
+### Documentation authority
+
+| Question | Canonical source |
+| --- | --- |
+| What does the software and schema do now? | Code, migrations and real-entry-point verification |
+| What should be built next and in what order? | `ROADMAP.md` |
+| What doctrine governs live operation, canon, settlement and generated prose? | `RUNBOOK.md` |
+| What are the repository-wide engineering and safety rules? | `AGENTS.md` |
+| What is the private, transient handoff state? | `.private/postop/HANDOFF.md` |
+
+Documentation is navigation, not implementation proof. If prose and code disagree, report the
+drift and resolve it deliberately; do not silently choose whichever account is more convenient.
 
 ## Map
 
@@ -39,9 +129,12 @@ User action -> Supabase write -> Realtime broadcast -> all clients update state 
 | `src/data/` | Static content: cast, avatars, encyclopedias, bingo master pool. |
 | `src/types/` | Supabase row types (`database.ts`) + derived game types. |
 | `src/index.css` | The design token contract. Source of truth for every color, space, and type value. |
-| `supabase/migrations/` | Timestamped SQL. 19 files. Additive by convention — see invariants. |
+| `supabase/migrations/` | Generated baseline plus timestamped additive migrations — see invariants. |
 | `scripts/` | Operator and verification tooling (`.mts`, run with `npx tsx`). |
-| `api/anthropic/v1/messages.ts` | The only server-side code. |
+| `settlement-drops/` | Versioned offline-ceremony authoring examples and contract guidance. |
+| `show-packs/` | Versioned authoring inputs and compiler/activation guidance. |
+| `api/` | The Anthropic Vercel proxy plus its shared authorization, parsing and grounding helpers. |
+| `ROADMAP.md` | Canonical P0-P8 tactical build plan, exit criteria and decision log. |
 | `RUNBOOK.md` | Live-ops procedure **and** the project's doctrine ledger. Load it for anything involving a live game, generated prose, or mobile layout. |
 
 Deeper references, loaded only when relevant:
@@ -58,16 +151,44 @@ Verified in this repository on the current checkout:
 | Dev server | `npm run dev` | Vite, on `localhost:5173`. |
 | Type check | `npx tsc -p tsconfig.app.json --noEmit` | Fast inner-loop check on `src` only. |
 | **Build gate** | `npm run build` | `tsc -b && vite build`, covering `src`, `api` and the configs. Green build is the ship gate; nothing ships red. |
-| **Unit tests** | `npm test` | Vitest over the pure layer — `src/lib` and the proxy guards. 102 tests, no network, no database. |
+| **Unit tests** | `npm test` | Vitest over pure/deterministic helpers and the proxy guards. 365 tests, no network, no database. |
 | Tests, watching | `npm run test:watch` | Inner loop while changing `src/lib`. |
 | Local stack | `supabase start` / `supabase stop` | Full Postgres + PostgREST + Realtime in Docker. `npm run dev` talks to it automatically. |
 | Rebuild local DB | `supabase db reset` | Replays the baseline migration and `supabase/seed.sql` (authored content, no player data). |
-| Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | 50 assertions, real write shapes. **Runs against local by default.** Required when a change touches backend writes. |
+| Backend e2e | `npx tsx scripts/dogfood-e2e.mts` | Full local suite over real write shapes. **Local-only.** Required when a change touches backend writes. |
+| Room phase authority dogfood | `npx tsx scripts/dogfood-room-phase-authority.mts` | Focused local atomic creator, bearer/host, direct-write, countdown, draft-skip and phase-machine proof; writes no catalog row. |
+| Seat authority dogfood | `npx tsx scripts/dogfood-playback-sync-authority.mts` | Focused local direct-write, bingo deal/mark ownership, allegiance/welcome, holder, clock, pause and exact-resume proof; writes no catalog row. |
+| Draft command dogfood | `npx tsx scripts/dogfood-draft-command.mts` | Focused local concurrency and compatibility proof; reads the seed catalog but writes only one disposable room. |
+| Scheduled winner dogfood | `npx tsx scripts/dogfood-scheduled-winner-command.mts` | Focused local winner/tie/undo, confidence projection, concurrency and mixed-version proof; never writes catalog rows. |
+| Scheduled spotlight dogfood | `npx tsx scripts/dogfood-scheduled-spotlight-command.mts` | Focused local host/revision/open/close concurrency and Realtime proof; never writes catalog rows. |
+| Close-floor dogfood | `npx tsx scripts/dogfood-close-live-floor-command.mts` | Focused local host authorization, concurrency, zero-event, spotlight cleanup, mixed-version and Realtime proof; never writes catalog rows. |
+| Roster sync dogfood | `npx tsx scripts/dogfood-roster-sync.mts` | Focused local INSERT/UPDATE/DELETE race proof; writes and removes one disposable room only. |
+| Room sync dogfood | `npx tsx scripts/dogfood-room-sync.mts` | Focused local phase/update race proof; writes and removes one disposable room only. |
+| Chat sync dogfood | `npx tsx scripts/dogfood-chat-sync.mts` | Focused local transcript and reactive-trigger INSERT/race proof; writes and removes one disposable room only. |
+| Companion claim dogfood | `npx tsx scripts/dogfood-companion-claims.mts` | Focused local concurrent engine lease, grounded/atomic direct-chat, banter, welcome, revisioned team change, pre-show arrival, show-start, revisioned spotlight, bingo and milestone completion, and idempotent staggered delivery proof; writes and removes one disposable room only. |
+| Grounding review dogfood | `npx tsx scripts/dogfood-grounding-reviews.mts` | Focused local capability-gated browser recording/review, daemon-provenance and revision proof; writes and removes one disposable room only. |
+| Sentinel dogfood | `npx tsx scripts/dogfood-sentinel.mts` | Focused local read-only alarm and stable-loop proof; writes and removes one disposable room only. |
+| Operator capability dogfood | `npx tsx scripts/dogfood-operator-capability.mts` | Focused local witness/grounding authority, rotation, secret-file and cleanup proof; writes no catalog row. |
 | Second player | `npx tsx scripts/ghost-screen.mts` | Joins your room as a real counterparty. Local by default. |
 | Schema parity | `npx tsx scripts/schema-diff.mts` | Fingerprints local against production and diffs, object by object. Non-zero exit on drift. |
-| Room dashboard | `npx tsx scripts/gm-pulse.mts --room CODE` | Presence, declares, marks, cast liveness. |
-| DB snapshot | `npx tsx scripts/snapshot-game.mts [--loop 300]` | Dumps all tables to `.private/snapshots/`. |
-| Cast daemon | `npx tsx scripts/companion-daemon.mts --room CODE` | Phone-independent narrative engine. |
+| Room dashboard | `npx tsx scripts/gm-pulse.mts --room CODE` | Declares, marks, cast sequence, persisted daemon heartbeat. |
+| Room sentinel | `npx tsx scripts/sentinel.mts --room CODE [--loop 15]` | Read-only exact-room alarms; one-shot exits 0 clear, 2 attention, 1 observer failure. |
+| DB snapshot | `npx tsx scripts/snapshot-game.mts [--loop 300]` | Atomically seals all 24 public tables plus schema integrity in `.private/snapshots/`. |
+| Room recovery | `npx tsx scripts/restore-room-snapshot.mts --snapshot DIR --room CODE` | Local missing-row dry run by default; apply requires `--apply --confirm-room CODE` and never overwrites or deletes. |
+| AI witness | `npx tsx scripts/witness-once.mts --room CODE --frame FRAME --references REFERENCES.json` | Local plan only by default. `--send-frame --confirm-room CODE` explicitly sends private images to Anthropic and may queue one host-reviewed proposal. |
+| Witness observer | `npx tsx scripts/witness-observer.mts --room CODE --ingress DIR --references REFERENCES.json` | Samples the newest stable frame from an explicit local ingress. Existing frames are ignored and nothing is sent by default; `--send-frames --confirm-room CODE` enables proposal-only observation. |
+| Operator capability | `npx tsx scripts/issue-operator-capability.mts --room CODE` | Read-only status by default; apply requires room confirmation and writes the private token/link mode 0600 without printing either. |
+| Cast daemon | `npx tsx scripts/companion-daemon.mts --room CODE` | Service-role phone-independent narrative engine; one renewable lease per room. Requires `SUPABASE_SERVICE_ROLE_KEY` remotely. |
+| Settlement preparation | `npx tsx scripts/prepare-settlement.mts --room CODE` | Read-only, local by default. Writes private decision worksheets only under `.private/settlements/`; finalization extracts the closed manifest contract. |
+| Settlement | `npx tsx scripts/settle-room.mts --room CODE --manifest record.json` | Local, read-only dry run by default. Apply requires `--apply --confirm-room CODE`; `--receipt FILE` emits canonical drop evidence after apply. |
+| Settlement dogfood | `npx tsx scripts/dogfood-settlement-command.mts` | Local-only real CLI proof: private preparation, explicit authoring, apply guards, amendment chain, byte-stable active replays, stale-version rejection, exact cleanup. Never writes catalog tables. |
+| Legacy pack audit | `npx tsx scripts/audit-legacy-show-pack.mts` | Local-only, read-only complete catalog and portrait audit. `--output FILE` writes a deterministic non-publishable migration worksheet. |
+| Show-pack compile | `npx tsx scripts/compile-show-pack.mts --input PACK.json` | Pure local validation and publishability dry run. `--output BUNDLE.json` writes deterministic bytes; never touches Supabase. |
+| Show-pack prose | `npx tsx scripts/publish-show-pack-commentary.mts --input PACK.json --output WORKING.json` | Read-only plan by default. `--generate` calls the canonical grounding pipeline and checkpoints after every request; `--resume` continues an existing output. |
+| Show-pack activation | `npx tsx scripts/activate-show-pack.mts --input PACK.json --room CODE` | Local read-only preflight by default. Apply requires `--apply --confirm-room CODE`; production additionally requires `SUPABASE_TARGET=remote`. |
+| Settlement drop | `npx tsx scripts/generate-settlement-drop.mts --input DROP.json` | Pure local validation and HTML dry run. `--output CEREMONY.html` writes one self-contained offline artifact. |
+| Show-pack flywheel | `npx tsx scripts/generate-show-pack-flywheel.mts --input RECEIPT.json` | Offline, public-safe research seed from canonical settlement evidence. |
+| Show-pack compose | `npx tsx scripts/compose-show-pack-flywheel.mts --input NEXT.json --seed SEED.json --receipt RECEIPT.json` | Receipt-verifies and compiles a next pack; `--authoring` opens the grounded-prose stage first. |
 | Bingo seed | `node scripts/generate-bingo-migration.mjs` | After editing `src/data/bingo-master-pool.json`. |
 | Deploy | `npx vercel --prod` | |
 | Rollback | `npx vercel ls` then `npx vercel alias set <url> <domain>` | Seconds, no redeploy. |
@@ -78,10 +199,11 @@ There is no playwright and no component testing.
 
 So the verification surface is: `npm test` for pure logic, the build for types, `dogfood-e2e.mts`
 for real write shapes against the live database, the operator scripts, and a human or a headless
-browser actually using the app. Unit tests cover `src/lib` and the proxy guards — **not** hooks,
-components, Realtime delivery, or layout. Say which layer you verified instead of implying the
-rest. CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the build and the tests on
-every push and pull request.
+browser actually using the app. Unit tests cover `src/lib`, the proxy guards, and the injected
+PostgREST page collector — **not** React hook state, components, Realtime delivery, or layout.
+Say which layer you verified instead of implying the rest. CI
+([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the build and the tests on every push
+and pull request.
 
 ## Invariants
 
@@ -112,7 +234,7 @@ every push and pull request.
 9. **This repository is public, and the hosted Supabase project is production.** Develop against
    the local stack; `SUPABASE_TARGET=remote` is what makes a script touch the real one, and every
    script prints the target it resolved before it does anything. Writers (`dogfood-e2e`,
-   `ghost-screen`) default to local; the operator's lens (`gm-pulse`, `snapshot-game`,
+   `ghost-screen`) default to local; the operator's lens (`gm-pulse`, `sentinel`, `snapshot-game`,
    `companion-daemon`) defaults to remote, because it exists to watch a live party. No secrets in
    tracked files: `docs/`, `.private/`, `.env*.local`, and `.claude/settings.local.json` are
    gitignored, and `supabase/seed.sql` carries authored content only — never rooms, players or

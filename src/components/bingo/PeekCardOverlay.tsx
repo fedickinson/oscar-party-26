@@ -177,7 +177,7 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
                 </div>
                 <button
                   onClick={() => setTappedIndex(null)}
-                  className="flex-shrink-0 -mt-1 -mr-1 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
+                  className="flex h-11 w-11 flex-shrink-0 -mt-1 -mr-1 items-center justify-center text-white/30 hover:text-white/60 transition-colors"
                   aria-label="Close square detail"
                 >
                   <X size={15} />

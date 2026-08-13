@@ -22,19 +22,27 @@ import { useState } from 'react'
 import { CheckCircle, XCircle, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryIcon } from '../../lib/category-icons'
+import { resolveDraftEntityPortrait } from '../../lib/draft-portrait'
 import { FilmIcon } from '../../lib/film-icons'
+import {
+  draftEntityHasHitSignatureBeat,
+  signatureBeatWasHit,
+} from '../../lib/signature-beat-status'
 import Avatar from '../Avatar'
 import TeamPicker from '../TeamPicker'
+import StoryPortrait from '../ui/StoryPortrait'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type {
   BeatActivationRow,
   CategoryRow,
   NomineeRow,
   ConfidencePickRow,
+  ConvictionPickRow,
   DraftPickRow,
   DraftEntityRow,
   PlayerRow,
   SignatureBeatRow,
+  GameModel,
 } from '../../types/database'
 
 interface Props {
@@ -43,6 +51,8 @@ interface Props {
   categories: CategoryRow[]
   nominees: NomineeRow[]
   confidencePicks: ConfidencePickRow[]
+  convictionPicks: ConvictionPickRow[]
+  gameModel: GameModel
   draftPicks: DraftPickRow[]
   draftEntities: DraftEntityRow[]
   players: PlayerRow[]
@@ -65,16 +75,9 @@ function getEntityStatus(
   nominees: NomineeRow[],
   beats: SignatureBeatRow[],
 ): EntityStatus {
-  const nominee = nominees.find((candidate) => candidate.name === entity.name)
-  if (!nominee) return 'in_play'
-  const entityBeats = beats.filter((beat) => beat.entity_id === entity.id || beat.partner_entity_id === entity.id)
-  const scored = categories.some((category) => {
-    if (category.winner_id !== nominee.id && category.tie_winner_id !== nominee.id) return false
-    return entityBeats.some((beat) =>
-      category.name === beat.name || category.name.startsWith(`${beat.name} — `),
-    )
-  })
-  return scored ? 'won' : 'in_play'
+  return draftEntityHasHitSignatureBeat(entity, categories, nominees, beats)
+    ? 'won'
+    : 'in_play'
 }
 
 function oddsLabel(odds: string): string {
@@ -96,12 +99,7 @@ function beatWasHit(
   categories: CategoryRow[],
   nominees: NomineeRow[],
 ): boolean {
-  const nominee = nominees.find((candidate) => candidate.name === entity.name)
-  if (!nominee) return false
-  return categories.some((category) =>
-    (category.winner_id === nominee.id || category.tie_winner_id === nominee.id)
-    && (category.name === beat.name || category.name.startsWith(`${beat.name} — `)),
-  )
+  return signatureBeatWasHit(beat, entity, categories, nominees)
 }
 
 export default function MyPicksTab({
@@ -110,6 +108,8 @@ export default function MyPicksTab({
   categories,
   nominees,
   confidencePicks,
+  convictionPicks,
+  gameModel,
   draftPicks,
   draftEntities,
   players,
@@ -140,6 +140,79 @@ export default function MyPicksTab({
   const totalPlayers = leaderboard.length
   const isFirst = rank === 1
   const isLast = rank === totalPlayers && totalPlayers > 1
+
+  if (gameModel === 'conviction_portfolio') {
+    const beatById = new Map(signatureBeats.map((beat) => [beat.id, beat]))
+    const selectedBeliefs = convictionPicks
+      .filter((pick) => pick.player_id === rosterPlayerId)
+      .flatMap((pick) => {
+        const beat = beatById.get(pick.beat_id)
+        if (!beat) return []
+        const believers = convictionPicks.filter((candidate) => candidate.beat_id === beat.id).length
+        const hit = categories.some((category) => (
+          category.winner_id != null && category.source_signature_beat_id === beat.id
+        ))
+        return [{ beat, believers, hit, payout: Math.floor(beat.points / Math.max(1, believers)) }]
+      })
+      .sort((left, right) => Number(right.hit) - Number(left.hit) || right.payout - left.payout)
+    const identity = selectedDraftEntities.find((entity) => entity.type === 'film')
+
+    return (
+      <div className="flex flex-col gap-5 py-2">
+        <TeamPicker compact />
+        {myScore && rank > 0 && (
+          <section className="relief-glass rounded-2xl border-l-4! border-l-[var(--t-personal-device)]! p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-[var(--t-text-dim)]">Your score</p>
+                <p className="text-3xl font-black tabular-nums text-[var(--t-text)]">{myScore.totalScore}<span className="ml-1 text-base font-semibold opacity-50">pts</span></p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-widest text-[var(--t-text-dim)]">Rank</p>
+                <p className="text-xl font-black text-[var(--t-text)]">{ordinal(rank)}<span className="ml-1 text-xs font-medium text-[var(--t-text-dim)]">of {totalPlayers}</span></p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <ScoreBreakdownCell label="Conviction" value={myScore.confidenceScore} dimmed={myScore.confidenceScore === 0} />
+              <ScoreBreakdownCell label="Bingo" value={myScore.bingoScore} dimmed={myScore.bingoScore === 0} />
+            </div>
+          </section>
+        )}
+        <button onClick={onSwitchToBingo} className="relief-glass flex min-h-11 w-full items-center justify-between rounded-xl border-l-4! border-l-[var(--t-personal-device)]! px-4 py-3">
+          <span className="text-sm font-medium text-[var(--t-personal-text)]">View Bingo Card</span>
+          <ChevronRight size={16} className="text-[var(--t-personal-text)]" />
+        </button>
+        <section>
+          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--t-text-muted)]">Belief ledgers</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {players.map((roomPlayer) => (
+              <button key={roomPlayer.id} type="button" onClick={() => setSelectedPlayerId(roomPlayer.id)} className={[
+                'relief-glass flex min-h-11 items-center gap-2 rounded-xl border px-3',
+                rosterPlayerId === roomPlayer.id ? 'border-[var(--t-personal-device)] text-[var(--t-personal-text)]' : 'border-[var(--t-line)] text-[var(--t-text-muted)]',
+              ].join(' ')}>
+                <Avatar avatarId={roomPlayer.avatar_id} size="sm" />
+                <span className="text-xs font-semibold">{roomPlayer.id === currentPlayerId ? 'You' : roomPlayer.name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+          {identity && <p className="mb-3 text-sm text-[var(--t-text-muted)]">Banner: <span className="font-semibold text-[var(--t-text)]">{identity.name}</span></p>}
+          <div className="space-y-2">
+            {selectedBeliefs.map(({ beat, believers, hit, payout }) => (
+              <article key={beat.id} className="relief-glass flex min-h-11 items-center gap-3 rounded-xl px-3 py-3">
+                {hit ? <CheckCircle className="h-4 w-4 flex-shrink-0 text-[var(--t-positive)]" /> : <Clock className="h-4 w-4 flex-shrink-0 text-[var(--t-pending)]" />}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--t-text)]">{beat.name}</p>
+                  <p className="text-xs text-[var(--t-text-dim)]">{believers === 1 ? 'Alone' : `${believers} believers`} · {payout} points if true</p>
+                </div>
+                <span className="font-display text-sm font-bold text-[var(--t-personal-text)]">{hit ? `+${payout}` : payout}</span>
+              </article>
+            ))}
+            {selectedBeliefs.length === 0 && <p className="py-6 text-center text-sm text-[var(--t-text-dim)]">No beliefs recorded</p>}
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-5 py-2">
@@ -480,6 +553,7 @@ export default function MyPicksTab({
             {selectedDraftEntities.map((entity) => {
               const status = getEntityStatus(entity, categories, nominees, signatureBeats)
               if (draftFilter !== 'all' && status !== draftFilter) return null
+              const portraitUrl = resolveDraftEntityPortrait(entity, nominees)
               const entityBeats = signatureBeats.filter((beat) =>
                 beat.entity_id === entity.id || beat.partner_entity_id === entity.id,
               )
@@ -505,14 +579,22 @@ export default function MyPicksTab({
                   ].join(' ')}
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[var(--t-text)]">{entity.name}</p>
-                    {entity.film_name && entity.type === 'person' && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <FilmIcon filmName={entity.film_name} size={10} className="flex-shrink-0 text-[var(--t-text-dim)]" />
-                        <p className="truncate text-xs text-[var(--t-text-dim)]">{entity.film_name}</p>
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                      <StoryPortrait
+                        name={entity.name}
+                        src={portraitUrl}
+                        className="h-12 w-12"
+                        fallback={<FilmIcon filmName={entity.type === 'film' ? entity.name : entity.film_name} size={18} className="text-[var(--t-text-muted)]" />}
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[var(--t-text)]">{entity.name}</p>
+                      {entity.film_name && entity.type === 'person' && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <FilmIcon filmName={entity.film_name} size={10} className="flex-shrink-0 text-[var(--t-text-dim)]" />
+                          <p className="truncate text-xs text-[var(--t-text-dim)]">{entity.film_name}</p>
+                        </div>
+                      )}
                       </div>
-                    )}
                     </div>
                     <span className={[
                       'whitespace-nowrap rounded-full border px-2 py-0.5 text-xs uppercase tracking-wider',

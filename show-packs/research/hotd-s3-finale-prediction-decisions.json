@@ -1,0 +1,371 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-prediction-contract-decisions",
+  "target": {
+    "pack_id": "hotd-s3e8",
+    "pack_version": 1
+  },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "decisions": [
+    {
+      "legacy_prediction_id": 1,
+      "condition": "The first candidate whom the episode definitively establishes as dead, ordered by the moment the death occurs or is first confirmed.",
+      "exclusions": [
+        "A candidate already dead before the episode does not count.",
+        "An ambiguous disappearance, apparently fatal wound, or unconfirmed fall does not count.",
+        "Deaths of unnamed people and people outside the candidate list do not settle this prediction."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Named character means a listed candidate, and death requires definitive screen evidence or explicit confirmation."
+      }
+    },
+    {
+      "legacy_prediction_id": 2,
+      "condition": "The candidate with the greatest number of people or creatures they directly kill on screen during the episode; a shared highest total may be settled as a tie.",
+      "exclusions": [
+        "Orders carried out by soldiers, allies, or a bonded dragon do not count as the candidate's direct kill.",
+        "Unconfirmed casualties and kills occurring wholly off screen do not count.",
+        "Damage, capture, and incapacitation without death do not count as kills."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "On-screen kills is literal: the candidate must directly cause each visible death."
+      }
+    },
+    {
+      "legacy_prediction_id": 3,
+      "condition": "The candidate whom the operator judges to commit the episode's most consequential deliberate betrayal of an established ally, oath, or active agreement; an inseparable judgment may be settled as a tie.",
+      "exclusions": [
+        "Open hostility, a previously declared change of side, or ordinary disagreement does not count as betrayal.",
+        "An accidental failure or coerced act without a meaningful choice does not count.",
+        "A suspected betrayal without an act or explicit confirmation does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Biggest is an operator judgment about consequence, limited to deliberate betrayals shown or explicitly confirmed in the episode."
+      }
+    },
+    {
+      "legacy_prediction_id": 4,
+      "condition": "The candidate whose bonded or commanded dragon is first definitively killed or rendered unable to continue fighting during the episode.",
+      "exclusions": [
+        "A dragon merely landing, retreating, being briefly grounded, or taking a non-disabling wound does not count.",
+        "A dragon's prior condition at the start of the episode does not count as falling in this episode.",
+        "A rider being separated from an otherwise capable dragon does not count."
+      ],
+      "adjudication": {
+        "proxies": "principal_accepts_if_unrefused",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Falls means the candidate's dragon is killed or clearly disabled from the fight, not merely knocked downward."
+      }
+    },
+    {
+      "legacy_prediction_id": 5,
+      "condition": "The candidate who is the primary subject of the episode's final unresolved revelation, reversal, or imminent threat immediately before the end credits.",
+      "exclusions": [
+        "A candidate's presence in the final sequence does not count if another candidate is clearly the unresolved subject.",
+        "A resolved final beat, recap image, or credits image does not count as the cliffhanger.",
+        "General suspense about a battle or faction does not settle a candidate unless the final turn centers that candidate."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Centers on identifies the primary subject of the final unresolved story turn, not simply the last face shown."
+      }
+    },
+    {
+      "legacy_prediction_id": 6,
+      "condition": "The candidate whose side achieves the clearest tactical victory in the episode's principal organized battle; if the battle has two inseparable victors, they may be settled as a tie.",
+      "exclusions": [
+        "A minor skirmish, duel, raid, or political exchange does not replace the episode's principal organized battle.",
+        "Strategic advantage without a clear battlefield result does not count as winning the battle.",
+        "If the principal battle remains unresolved, the prediction is void rather than awarded for momentum."
+      ],
+      "adjudication": {
+        "proxies": "principal_accepts_if_unrefused",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Wins refers to the episode's principal organized battle and allows a leader to receive the result achieved by their forces unless the episode refutes that command relationship."
+      }
+    },
+    {
+      "legacy_prediction_id": 7,
+      "condition": "The candidate visible latest in the episode's story footage before the end credits; candidates visible together in the final shot may be settled as a tie.",
+      "exclusions": [
+        "Recap footage, opening-title imagery, end-credit art, and next-episode material do not count.",
+        "A name spoken after the candidate's last appearance does not make that candidate last on screen.",
+        "An indistinguishable distant figure does not count without a clear identity."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "On screen means visibly identifiable in story footage immediately before credits."
+      }
+    },
+    {
+      "legacy_prediction_id": 8,
+      "condition": "The candidate with the greatest cumulative time visibly present in the episode's story footage; a measurement tie may be settled as a tie.",
+      "exclusions": [
+        "Recap footage, opening titles, credits, and next-episode material do not count.",
+        "A scene discussing a candidate while they are absent does not count toward that candidate.",
+        "Voice-only presence does not count as screen time."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Screen time is cumulative visible presence in story footage, measured across the whole episode."
+      }
+    },
+    {
+      "legacy_prediction_id": 9,
+      "condition": "The first candidate to directly cause a fresh visible physical injury or death during the episode.",
+      "exclusions": [
+        "Threats, property damage, restraint, and blows that cause no visible injury do not count.",
+        "An injury caused by the candidate's soldiers, allies, or dragon does not count for the candidate.",
+        "An injury that occurred before the episode or wholly off screen does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "First blood means the first directly caused visible injury or death, not the first hostile act."
+      }
+    },
+    {
+      "legacy_prediction_id": 10,
+      "condition": "The candidate who physically sits on the Iron Throne in the episode's present-day story.",
+      "exclusions": [
+        "Standing beside, touching, approaching, or being proclaimed ruler near the throne does not count.",
+        "Dreams, visions, recaps, statues, and remembered earlier scenes do not count.",
+        "Sitting on another throne or ceremonial chair does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Sits is literal and the object must be the Iron Throne in present-day story action."
+      }
+    },
+    {
+      "legacy_prediction_id": 11,
+      "condition": "The candidate whom the operator judges to end the episode with the most severe net combination of danger, loss, captivity, injury, isolation, or loss of power; an inseparable judgment may be settled as a tie.",
+      "exclusions": [
+        "A candidate's pre-existing hardship does not count unless the episode materially worsens it.",
+        "Temporary embarrassment or a setback already reversed by episode end does not outweigh lasting consequences.",
+        "Speculative future danger unsupported by the final state does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Worst position is an operator comparison of each candidate's net end-of-episode state, not a single objective metric."
+      }
+    },
+    {
+      "legacy_prediction_id": 12,
+      "condition": "The candidate who newly establishes an accepted rider bond with, or clear rider control over, an unclaimed dragon during the episode.",
+      "exclusions": [
+        "Approaching, touching, feeding, surviving, or speaking to a dragon without accepted control does not count.",
+        "Continuing or restoring a bond that existed before the episode does not count as claiming a dragon.",
+        "Commanding a dragon through another rider does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Claims means a new accepted rider bond or clear rider control, not mere contact with a dragon."
+      }
+    },
+    {
+      "legacy_prediction_id": 13,
+      "condition": "The first candidate shown riding a dragon in sustained airborne travel or combat during the episode.",
+      "exclusions": [
+        "Mounting a grounded dragon without visible flight does not count.",
+        "Recap footage, dreams, visions, and next-episode material do not count.",
+        "A candidate merely accompanying or commanding another rider does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Ride requires visible sustained airborne travel or combat in the episode's story footage."
+      }
+    },
+    {
+      "legacy_prediction_id": 14,
+      "condition": "The first candidate audibly shown speaking the exact word 'Dracarys' in the episode's story footage.",
+      "exclusions": [
+        "Recap audio, opening or credit audio, next-episode material, and an unidentifiable voice do not count.",
+        "A subtitle, written word, or another character quoting the candidate does not count.",
+        "A different High Valyrian command does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Say is literal: the candidate's identifiable voice must speak the exact command in story footage."
+      }
+    },
+    {
+      "legacy_prediction_id": 15,
+      "condition": "The candidate whose sustained spoken address the operator judges strongest in performance, rhetoric, and consequence during the episode; an inseparable judgment may be settled as a tie.",
+      "exclusions": [
+        "A single quip, brief command, ordinary conversation, or voiceover fragment does not count as a speech.",
+        "The importance of a scene without a sustained address does not make it a speech.",
+        "A speech only reported by another character does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Best is an operator judgment among sustained spoken addresses, using performance, rhetoric, and consequence."
+      }
+    },
+    {
+      "legacy_prediction_id": 16,
+      "condition": "The candidate who survives a direct mortal threat that the episode presents as likely to kill them, with the operator selecting the clearest case; inseparable cases may be settled as a tie.",
+      "exclusions": [
+        "General wartime danger, political precarity, or an old threat that does not become immediate in the episode does not count.",
+        "A candidate who avoids danger before it becomes a direct mortal threat does not count.",
+        "An unresolved apparent death does not count as survival."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "explicit_only",
+        "mentions": "explicit_only"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Against all odds means surviving an immediate episode-presented mortal threat, with the clearest case chosen by the operator."
+      }
+    },
+    {
+      "legacy_prediction_id": 17,
+      "condition": "The first candidate whose identifiable voice speaks intelligible dialogue in the episode's story footage.",
+      "exclusions": [
+        "Recap audio, opening narration outside the story, and next-episode material do not count.",
+        "Breathing, crying, grunts, screams, and other nonverbal sounds do not count as dialogue.",
+        "An unidentifiable off-screen voice does not count until its speaker is established."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Line of dialogue means the first intelligible spoken words by an identifiable candidate in story footage; the speaker need not be visible."
+      }
+    },
+    {
+      "legacy_prediction_id": 18,
+      "condition": "The first candidate visibly shown shedding tears or unmistakably sobbing during the episode's story footage.",
+      "exclusions": [
+        "A sad expression, reddened eyes, or a breaking voice without visible tears or unmistakable sobbing does not count.",
+        "Recap footage, dreams, visions, and next-episode material do not count.",
+        "Another character reporting that the candidate cried does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Cry requires visible tears or unmistakable sobbing in story footage."
+      }
+    },
+    {
+      "legacy_prediction_id": 19,
+      "condition": "The candidate whose sustained look the operator judges most clearly intimidating or threatening during the episode; an inseparable judgment may be settled as a tie.",
+      "exclusions": [
+        "A neutral reaction shot, ordinary concentration, or a look whose target and menace are unclear does not count.",
+        "Threatening dialogue without a qualifying sustained look does not count.",
+        "Recap footage and promotional material do not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Most menacing is an operator judgment among sustained, clearly threatening looks shown in the episode."
+      }
+    },
+    {
+      "legacy_prediction_id": 20,
+      "condition": "The candidate whose spoken line the operator judges most foolish, absurd, or self-defeating in context during the episode; an inseparable judgment may be settled as a tie.",
+      "exclusions": [
+        "A bad decision without a qualifying spoken line does not count.",
+        "A line made wrong only by information unavailable to the speaker does not count unless it is also foolish in context.",
+        "A quotation reported by another character does not count as the candidate saying it."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "Dumbest is an operator judgment about a candidate's own spoken line in its scene context."
+      }
+    }
+  ]
+}

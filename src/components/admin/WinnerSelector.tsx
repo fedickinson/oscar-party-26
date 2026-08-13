@@ -35,6 +35,7 @@ import Avatar from '../Avatar'
 import type { NomineeRow, PlayerRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
 import { CategoryIcon } from '../../lib/category-icons'
+import { findDraftPointsForWinner } from '../../lib/scoring'
 
 const TIER_LABELS: Record<number, string> = {
   1: 'Major Awards',
@@ -84,7 +85,7 @@ export default function WinnerSelector({
   onClose,
   isSubmitting,
 }: Props) {
-  const { players } = useGame()
+  const { players, room } = useGame()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [pickContext, setPickContext] = useState<PickContext>({
     draftPlayer: null,
@@ -111,22 +112,23 @@ export default function WinnerSelector({
     async function fetchContext() {
       // ── Draft: find which player drafted the winning entities ───────────────
       const [{ data: entities }, { data: draftPicks }] = await Promise.all([
-        supabase.from('draft_entities').select(),
+        supabase.from('draft_entities').select().eq('show_pack_id', room!.show_pack_id),
         supabase.from('draft_picks').select().eq('room_id', roomId),
       ])
 
       function findDraftPlayer(nominee: NomineeRow): PlayerRow | null {
         if (!entities || !draftPicks) return null
-        const filmTitle = nominee.film_name || nominee.name
-        const matchingEntity = entities.find((e) =>
-          nominee.type === 'person'
-            ? e.type === 'person' && e.name === nominee.name
-            : e.type === 'film' && e.film_name === filmTitle,
+        const result = findDraftPointsForWinner(
+          category.id,
+          nominee.id,
+          [category],
+          category.nominees,
+          entities,
+          draftPicks,
         )
-        if (!matchingEntity) return null
-        const pick = draftPicks.find((p) => p.entity_id === matchingEntity.id)
-        if (!pick) return null
-        return players.find((p) => p.id === pick.player_id) ?? null
+        return result.playerId
+          ? players.find((player) => player.id === result.playerId) ?? null
+          : null
       }
 
       const nominee1 = category.nominees.find((n) => n.id === selectedIds[0])
@@ -170,7 +172,7 @@ export default function WinnerSelector({
 
     fetchContext()
     return () => { cancelled = true }
-  }, [selectedIds.join(','), roomId, category.id, players])
+  }, [selectedIds.join(','), roomId, category.id, players, room?.show_pack_id])
 
   function handleNomineeTap(nominee: NomineeRow) {
     if (isSubmitting) return

@@ -1,0 +1,36 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-calibration",
+  "target": {
+    "pack_id": "hotd-s3e8",
+    "pack_version": 1
+  },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "rationale": "Restrictive intersections of the published signature-beat odds bands and schema-v3 likelihood tiers; the single-episode WDKH calibration report remains descriptive and is not used to retune authored probabilities.",
+  "mappings": [
+    {
+      "legacy_odds": "likely",
+      "legacy_points": 20,
+      "probability_pct": 60,
+      "likelihood_tier": "likely"
+    },
+    {
+      "legacy_odds": "coin flip",
+      "legacy_points": 25,
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up"
+    },
+    {
+      "legacy_odds": "long shot",
+      "legacy_points": 35,
+      "probability_pct": 20,
+      "likelihood_tier": "long_shot"
+    },
+    {
+      "legacy_odds": "wild",
+      "legacy_points": 45,
+      "probability_pct": 9,
+      "likelihood_tier": "chaos"
+    }
+  ]
+}

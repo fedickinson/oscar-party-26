@@ -13,7 +13,7 @@ import QuickStats from '../home/QuickStats'
 import ScoringExplainer from './ScoringExplainer'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { FeedEvent } from '../../hooks/useScores'
-import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
+import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, GameModel, NomineeRow } from '../../types/database'
 
 interface Props {
   leaderboard: ScoredPlayer[]
@@ -24,6 +24,7 @@ interface Props {
   confidencePicks: ConfidencePickRow[]
   draftPicks: DraftPickRow[]
   draftEntities: DraftEntityRow[]
+  gameModel: GameModel
 }
 
 export default function ScoresTab({
@@ -35,14 +36,15 @@ export default function ScoresTab({
   confidencePicks,
   draftPicks,
   draftEntities,
+  gameModel,
 }: Props) {
   return (
     <div className="flex flex-col gap-4 py-2">
-      <ScoringExplainer />
+      <ScoringExplainer gameModel={gameModel} />
 
       <section>
         <p className="text-xs text-white/35 uppercase tracking-widest mb-3">Standings</p>
-        <Leaderboard leaderboard={leaderboard} currentPlayerId={currentPlayerId} />
+        <Leaderboard leaderboard={leaderboard} currentPlayerId={currentPlayerId} gameModel={gameModel} />
       </section>
 
       <div className="flex items-center gap-3">
@@ -55,24 +57,27 @@ export default function ScoresTab({
         <ActivityFeed feed={activityFeed} />
       </section>
 
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-white/8" />
-        <span className="text-[10px] text-white/25 uppercase tracking-widest">Stats</span>
-        <div className="flex-1 h-px bg-white/8" />
-      </div>
-
-      <section className="pb-2">
-        <QuickStats
-          isPreCeremony={false}
-          section="bottom"
-          categories={categories}
-          nominees={nominees}
-          confidencePicks={confidencePicks}
-          draftPicks={draftPicks}
-          draftEntities={draftEntities}
-          leaderboard={leaderboard}
-        />
-      </section>
+      {gameModel === 'legacy_ensemble' && (
+        <>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/8" />
+            <span className="text-[10px] text-white/25 uppercase tracking-widest">Stats</span>
+            <div className="flex-1 h-px bg-white/8" />
+          </div>
+          <section className="pb-2">
+            <QuickStats
+              isPreCeremony={false}
+              section="bottom"
+              categories={categories}
+              nominees={nominees}
+              confidencePicks={confidencePicks}
+              draftPicks={draftPicks}
+              draftEntities={draftEntities}
+              leaderboard={leaderboard}
+            />
+          </section>
+        </>
+      )}
     </div>
   )
 }

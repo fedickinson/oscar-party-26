@@ -1,0 +1,403 @@
+{
+  "manifest_version": 2,
+  "artifact": "legacy-bingo-contract-decisions",
+  "target": {
+    "pack_id": "hotd-s3e8",
+    "pack_version": 1
+  },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "master_pool_sha256": "25e49fba47c1ba42b01f172d5c762dc01179aeb3027eb02deb759c8bfd648e09",
+  "approved_square_ids": [
+    "dragon_dies",
+    "dragon_vs_dragon",
+    "friendly_fire",
+    "dragon_says_nope",
+    "sunfyre_love",
+    "vhagar_entrance",
+    "sheepstealer_justice",
+    "dreamfyre_appears",
+    "dragon_hug",
+    "rhaena_screws_up",
+    "sheepstealer_rejects",
+    "rhaena_gets_blamed",
+    "baela_side_eye",
+    "jace_guilt",
+    "daemon_daddy",
+    "daemon_defies",
+    "rhaenyra_dragged",
+    "sapphic_spark",
+    "mysaria_roasted",
+    "broke_queen",
+    "rhaena_cries",
+    "rhaena_says_sorry",
+    "aegon_sass",
+    "aegon_goes_king",
+    "larys_being_larys",
+    "tyland_surprise",
+    "aemond_wakes",
+    "mommy_issues",
+    "alys_witchcraft",
+    "harrenhal_gets_weird",
+    "alicent_regrets_it",
+    "helaena_says_what",
+    "helaena_chooses",
+    "protect_helaena",
+    "poison_works",
+    "dreamfyre_real_ride",
+    "aemond_dies",
+    "ormund_humbled",
+    "daeron_defies",
+    "ulf_gets_smacked",
+    "ulf_exposed",
+    "hugh_chooses",
+    "kat_gets_out",
+    "corlys_freed",
+    "alyn_goes_rogue",
+    "northmen_charge",
+    "criston_callback",
+    "tumbleton_battle",
+    "hostage_threat",
+    "corlys_loses_more",
+    "ulf_changes_title",
+    "dead_son_callback",
+    "vision_fakeout",
+    "rat_cameo",
+    "wine_suspicious",
+    "brooding_window",
+    "gratuitous_gore",
+    "sex_scene",
+    "named_death"
+  ],
+  "approved_gameplay_square_ids": [
+    "rider_falls",
+    "dragon_snack",
+    "dragon_crash",
+    "dracarys_spoken",
+    "dragon_wounded",
+    "dragon_eats_name",
+    "bastard_problem",
+    "iron_throne_bites",
+    "daeron_tessarion_love",
+    "otto_shadow",
+    "decoy_trick",
+    "head_comes_off",
+    "someone_burns",
+    "secret_passage",
+    "raven_ruins_everything",
+    "someone_kneels"
+  ],
+  "sources": [
+    {
+      "id": "season-three-screen-record-through-episode-seven",
+      "kind": "operator_record",
+      "title": "Witnessed House of the Dragon Season 3 Screen Record Through Episode 7",
+      "locator": "repo:src/data/westeros-encyclopedia.ts#episodeRecaps"
+    },
+    {
+      "id": "episode-seven-decider-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 7 Recap",
+      "locator": "https://decider.com/2026/08/02/house-of-the-dragon-season-3-episode-7-recap/"
+    },
+    {
+      "id": "episode-seven-ew-dragons-interview",
+      "kind": "recap",
+      "title": "House of the Dragon director explains the big dragon surprises ahead of season 3 finale",
+      "locator": "https://ew.com/house-of-the-dragon-sunfyre-return-dreamfyre-reveal-season-3-director-interview-12032370"
+    },
+    {
+      "id": "episode-seven-esquire-stalling",
+      "kind": "sentiment",
+      "title": "House of the Dragon Episode 7 Feels Like Major Stalling",
+      "locator": "https://www.esquire.com/entertainment/tv/a73297586/house-of-the-dragon-season-3-episode-7-recap/"
+    },
+    {
+      "id": "episode-seven-sheepstealer-reaction",
+      "kind": "sentiment",
+      "title": "I Didn't Expect To Be So Emotionally Overwhelmed By HOTD's Dragon Abandonment Scene",
+      "locator": "https://www.cinemablend.com/television/hotd-dragon-abandonment-scene-internet-mad-sheepstealer-rhaena"
+    },
+    {
+      "id": "episode-six-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 6 Review: The Butcher's Ball",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/26/house-of-the-dragon-season-3-episode-6-review-the-butchers-ball/"
+    },
+    {
+      "id": "episode-five-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 5 Review",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/20/house-of-the-dragon-season-3-episode-5-recap-review/"
+    },
+    {
+      "id": "episode-three-forbes-recap",
+      "kind": "recap",
+      "title": "House of the Dragon Season 3 Episode 3 Recap",
+      "locator": "https://www.forbes.com/sites/erikkain/2026/07/05/house-of-the-dragon-season-3-episode-3-recap/"
+    }
+  ],
+  "authoring_source": {
+    "id": "bingo-master-pool-authoring-record",
+    "kind": "authoring_record",
+    "title": "Reviewed House of the Dragon Season 3 Finale Bingo Master Pool",
+    "locator": "repo:src/data/bingo-master-pool.json:sha256:25e49fba47c1ba42b01f172d5c762dc01179aeb3027eb02deb759c8bfd648e09"
+  },
+  "claims": [
+    {
+      "id": "episode-seven-screen-setup",
+      "canon": "screen",
+      "status": "verified",
+      "text": "By the end of episode 7, Rhaena was separated from a wounded Sheepstealer, Alicent had poisoned Aemond, Ulf had secretly agreed to defect to Ormund, Sunfyre had returned to Aegon, Rhaenyra and Mysaria had become intimate, and Helaena's vision had shown Dreamfyre.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-seven-decider-recap"
+      ]
+    },
+    {
+      "id": "episode-seven-dragon-setup",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 7 established Sunfyre's return and reunion with Aegon, showed Dreamfyre within Helaena's vision, and established Ormund winning Ulf's secret cooperation.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-seven-ew-dragons-interview"
+      ]
+    },
+    {
+      "id": "episode-seven-stalling-discourse",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Criticism of episode 7 focused on its brooding, vision-heavy structure and on frustration with characters repeating psychological loops while the war advanced elsewhere.",
+      "source_ids": [
+        "episode-seven-esquire-stalling"
+      ]
+    },
+    {
+      "id": "sheepstealer-audience-protectiveness",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience reaction after episode 7 was notably protective of Sheepstealer after the dragon was wounded, separated from Rhaena, and left with an uncertain fate.",
+      "source_ids": [
+        "episode-seven-sheepstealer-reaction"
+      ]
+    },
+    {
+      "id": "episode-six-screen-setup",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 6 killed Criston Cole at the Butcher's Ball, advanced the northern and river forces toward Tumbleton, and ended with Corlys captive as the ground war converged on the finale.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-six-forbes-recap"
+      ]
+    },
+    {
+      "id": "episode-five-screen-setup",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 5 continued Aegon and Larys's road story, revealed Helaena's pregnancy, and made Alicent and Helaena's attempt to escape a consequential late-season thread.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-five-forbes-recap"
+      ]
+    },
+    {
+      "id": "episode-three-screen-setup",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Episode 3 established Rhaenyra's governance and resource problems in King's Landing, including missing royal funds, shortages, and the Red Keep's rat infestation.",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven",
+        "episode-three-forbes-recap"
+      ]
+    },
+    {
+      "id": "rider-falls-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Rider Falls\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "dragon-snack-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Dragon Snack\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "dragon-crash-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Dragon Crash\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "dracarys-spoken-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Dracarys Spoken\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "dragon-wounded-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Dragon Wounded\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "named-dragon-snack-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Named Dragon Snack\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "bastard-problem-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Bastard Problem\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "throne-bites-back-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Throne Bites Back\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "tessarion-love-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Tessarion Love\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "ottos-shadow-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Otto's Shadow\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "decoy-trick-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Decoy Trick\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "head-comes-off-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Head Comes Off\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "someone-burns-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Someone Burns\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "secret-passage-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Secret Passage\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "raven-ruins-everything-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Raven Ruins Everything\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    },
+    {
+      "id": "someone-kneels-authored-game-rule",
+      "canon": "authoring",
+      "status": "verified",
+      "text": "The \"Someone Kneels\" bingo square is intentionally authored as judgeable game texture under its complete win condition; its inclusion and probability are not a sourced forecast or a claim that prior screen canon predicts it.",
+      "source_ids": ["bingo-master-pool-authoring-record"]
+    }
+  ],
+  "authoring_claim_id_by_square_id": {
+    "rider_falls": "rider-falls-authored-game-rule",
+    "dragon_snack": "dragon-snack-authored-game-rule",
+    "dragon_crash": "dragon-crash-authored-game-rule",
+    "dracarys_spoken": "dracarys-spoken-authored-game-rule",
+    "dragon_wounded": "dragon-wounded-authored-game-rule",
+    "dragon_eats_name": "named-dragon-snack-authored-game-rule",
+    "bastard_problem": "bastard-problem-authored-game-rule",
+    "iron_throne_bites": "throne-bites-back-authored-game-rule",
+    "daeron_tessarion_love": "tessarion-love-authored-game-rule",
+    "otto_shadow": "ottos-shadow-authored-game-rule",
+    "decoy_trick": "decoy-trick-authored-game-rule",
+    "head_comes_off": "head-comes-off-authored-game-rule",
+    "someone_burns": "someone-burns-authored-game-rule",
+    "secret_passage": "secret-passage-authored-game-rule",
+    "raven_ruins_everything": "raven-ruins-everything-authored-game-rule",
+    "someone_kneels": "someone-kneels-authored-game-rule"
+  },
+  "source_id_by_source_key": {
+    "e7_recap": "episode-seven-decider-recap",
+    "e7_dragons": "episode-seven-ew-dragons-interview",
+    "e7_stalling": "episode-seven-esquire-stalling",
+    "sheepstealer_reaction": "episode-seven-sheepstealer-reaction",
+    "e6_recap": "episode-six-forbes-recap",
+    "e5_recap": "episode-five-forbes-recap",
+    "e3_recap": "episode-three-forbes-recap"
+  },
+  "basis_claim_by_source_key": {
+    "e7_recap": "episode-seven-screen-setup",
+    "e7_dragons": "episode-seven-dragon-setup",
+    "e7_stalling": "episode-seven-stalling-discourse",
+    "sheepstealer_reaction": "sheepstealer-audience-protectiveness",
+    "e6_recap": "episode-six-screen-setup",
+    "e5_recap": "episode-five-screen-setup",
+    "e3_recap": "episode-three-screen-setup"
+  },
+  "adjudication": {
+    "proxies": "do_not_count",
+    "offscreen": "do_not_count",
+    "mentions": "do_not_count"
+  },
+  "adjudication_by_square_id": {
+    "dragon_dies": {
+      "proxies": "do_not_count",
+      "offscreen": "explicit_only",
+      "mentions": "explicit_only"
+    },
+    "poison_works": {
+      "proxies": "do_not_count",
+      "offscreen": "explicit_only",
+      "mentions": "explicit_only"
+    },
+    "aemond_dies": {
+      "proxies": "do_not_count",
+      "offscreen": "explicit_only",
+      "mentions": "explicit_only"
+    },
+    "named_death": {
+      "proxies": "do_not_count",
+      "offscreen": "explicit_only",
+      "mentions": "explicit_only"
+    }
+  },
+  "exclusions_by_square_id": {
+    "baela_side_eye": [
+      "Subtle or ambiguous reactions that require frame-by-frame interpretation do not count."
+    ],
+    "larys_being_larys": [
+      "Ordinary honest advice or action without manipulation, betrayal, blackmail, strategic deception, or exploitation does not count."
+    ],
+    "helaena_chooses": [
+      "Compliance, hesitation, or a refusal that does not change what happens does not count."
+    ]
+  },
+  "title_review_note": "Reviewed all 59 approved titles against their complete win conditions; each title is honest shorthand for the event the condition requires.",
+  "gameplay_title_review_note": "Reviewed all 16 gameplay-only titles against their complete win conditions; each title is honest shorthand for the event the condition requires."
+}

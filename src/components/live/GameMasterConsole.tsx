@@ -23,29 +23,49 @@ import { useGameMaster, GM_POINT_TIERS } from '../../hooks/useGameMaster'
 import { Hallmark } from '../ui/Hallmarks'
 import { useGame } from '../../context/GameContext'
 import { useWatchSync, formatEpisodeTime } from '../../hooks/useWatchSync'
+import { useCompanionGroundingReviews } from '../../hooks/useCompanionGroundingReviews'
+import { useWitnessProposals } from '../../hooks/useWitnessProposals'
 import { supabase } from '../../lib/supabase'
+import type { EngineHeartbeatSignal, NarrativeSequence, OperatorPresenceRow } from '../../lib/operator-lens'
+import { deriveOperatorReviewQueue } from '../../lib/operator-lens'
 import type { BeatActivationRow, DraftEntityRow, DraftPickRow, PlayerRow, SignatureBeatRow } from '../../types/database'
+import OperatorLens from './OperatorLens'
+import WitnessProposalQueue from './WitnessProposalQueue'
+import CompanionGroundingReviewQueue from './CompanionGroundingReviewQueue'
 
 const FREE_CENTER_INDEX = 12
 
 interface Props {
   roomId: string
   isHost: boolean
+  operatorCapability: string | null
+  operatorCapabilityLoading: boolean
   /** Names of draft entities the CURRENT player drafted — their roster leads
    *  the character picker, because you call events for your own fighters. */
   myRosterNames?: string[]
-  /** Ends the episode and moves the room to 'finished'. Carried over from
-   *  WinnersTab, which this console replaces for episode-based properties. */
-  onEndCeremony: () => void
-  isEndingCeremony: boolean
+  /** Closes the live floor and moves every phone to provisional results. */
+  onCloseNight: () => void
+  isClosingNight: boolean
+  closeNightError: string | null
+  operatorPresenceRows: OperatorPresenceRow[]
+  narrativeSequence: NarrativeSequence
+  engineHeartbeat: EngineHeartbeatSignal
+  heartbeatError: string | null
 }
 
 export default function GameMasterConsole({
   roomId,
   isHost,
+  operatorCapability,
+  operatorCapabilityLoading,
   myRosterNames = [],
-  onEndCeremony,
-  isEndingCeremony,
+  onCloseNight,
+  isClosingNight,
+  closeNightError,
+  operatorPresenceRows,
+  narrativeSequence,
+  engineHeartbeat,
+  heartbeatError,
 }: Props) {
   const {
     events,
@@ -53,17 +73,46 @@ export default function GameMasterConsole({
     characters,
     isLoading,
     isLogging,
+    canReferee,
+    authorityMessage,
     error,
     logEvent,
     undoEvent,
     unresolvedPredictionEvents,
-  } = useGameMaster(roomId)
+  } = useGameMaster(roomId, operatorCapability, operatorCapabilityLoading)
 
   // The GM narrates a broadcast; the single most useful piece of context while
   // doing it is what minute of the episode we are in — it anchors "wait, when
   // did that happen?" arguments and makes the log read like a timeline.
   const { room, player, players } = useGame()
   const sync = useWatchSync(room, player?.id, players)
+  const reviewQueuesEnabled = isHost && player !== null && !operatorCapabilityLoading
+  const groundingReviews = useCompanionGroundingReviews(
+    roomId,
+    player?.id,
+    room?.grounding_review_revision,
+    reviewQueuesEnabled,
+    operatorCapability,
+  )
+  const witnessProposals = useWitnessProposals(
+    roomId,
+    player?.id,
+    room?.witness_revision,
+    reviewQueuesEnabled,
+    operatorCapability,
+  )
+  const operatorReviewQueues = {
+    grounding: deriveOperatorReviewQueue(
+      groundingReviews.reviews.length,
+      !player || operatorCapabilityLoading || groundingReviews.isLoading,
+      groundingReviews.error,
+    ),
+    witness: deriveOperatorReviewQueue(
+      witnessProposals.proposals.length,
+      !player || operatorCapabilityLoading || witnessProposals.isLoading,
+      witnessProposals.error,
+    ),
+  }
 
   const [draft, setDraft] = useState('')
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
@@ -94,8 +143,8 @@ export default function GameMasterConsole({
   useEffect(() => {
     void (async () => {
       const [{ data: beats }, { data: ents }, { data: activations }, { data: picks }, { data: roomPlayers }] = await Promise.all([
-        supabase.from('signature_beats').select(),
-        supabase.from('draft_entities').select(),
+        supabase.from('signature_beats').select().eq('show_pack_id', room!.show_pack_id),
+        supabase.from('draft_entities').select().eq('show_pack_id', room!.show_pack_id),
         supabase.from('beat_activations').select().eq('room_id', roomId),
         supabase.from('draft_picks').select().eq('room_id', roomId),
         supabase.from('players').select().eq('room_id', roomId),
@@ -132,10 +181,17 @@ export default function GameMasterConsole({
         }),
       ))
     })()
-  }, [roomId])
-  const [confirmingEnd, setConfirmingEnd] = useState(false)
+  }, [roomId, room?.show_pack_id])
+  const [confirmingClose, setConfirmingClose] = useState(false)
 
-  const canCommit = draft.trim().length > 0 && selectedCharacter !== null && !isLogging
+  const canCommit = canReferee && draft.trim().length > 0 && selectedCharacter !== null && !isLogging
+
+  const sourceForBeat = (beat: SignatureBeatRow) => beat.trigger_contract
+    ? {
+        sourceSignatureBeatId: beat.id,
+        triggerContract: beat.trigger_contract,
+      }
+    : undefined
 
   async function commit(points: number) {
     if (!canCommit || !selectedCharacter) return
@@ -165,10 +221,15 @@ export default function GameMasterConsole({
       const toMark = Array.from({ length: 25 }, (_, i) => i)
         .filter((i) => !marked.has(i) && Math.random() < 0.5)
       if (!toMark.length) continue
-      const now = new Date().toISOString()
-      await supabase.from('bingo_marks').insert(
-        toMark.map((index) => ({ card_id: card.id, square_index: index, status: 'approved', marked_at: now })),
-      )
+      for (const index of toMark) {
+        await supabase.rpc('set_player_bingo_mark', {
+          p_room_id: roomId,
+          p_actor_player_id: card.player_id,
+          p_card_id: card.id,
+          p_square_index: index,
+          p_marked: true,
+        })
+      }
     }
   }
 
@@ -222,11 +283,13 @@ export default function GameMasterConsole({
       `${beat.name} — ${sides.leftName.split(' ')[0]}`,
       beat.points,
       sides.leftNominee.id,
+      sourceForBeat(beat),
     )
     await logEvent(
       `${beat.name} — ${sides.rightName.split(' ')[0]}`,
       beat.points,
       sides.rightNominee.id,
+      sourceForBeat(beat),
     )
     setDraft('')
     setSelectedCharacter(null)
@@ -240,7 +303,7 @@ export default function GameMasterConsole({
       <motion.button
         key={beat.id}
         whileTap={{ scale: 0.98 }}
-        disabled={used || isLogging}
+        disabled={used || isLogging || !canReferee}
         title={beat.trigger_text}
         onClick={() => void awardCollision(beat)}
         className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors
@@ -274,6 +337,214 @@ export default function GameMasterConsole({
 
   return (
     <div className="px-4 py-6 space-y-6">
+      {/* ── Close the live floor (host only) ─────────────────────────────
+          This is deliberately permanent and first in the operator surface.
+          The previous control disappeared in a zero-event room and lived below
+          the entire board, which left a real night without a discoverable
+          terminus. `finished` is provisional; settlement alone writes `closed`. */}
+      {isHost && (
+        <section
+          className="material-stone relief-inset rounded-2xl p-4 space-y-3"
+          aria-label="Close the night"
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border"
+              style={{
+                borderColor: 'var(--t-line)',
+                color: 'var(--t-personal-text)',
+              }}
+            >
+              <Flag className="h-4 w-4" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p
+                className="text-xs font-bold uppercase tracking-widest"
+                style={{ color: 'var(--t-personal-text)' }}
+              >
+                Operator
+              </p>
+              <h2 className="mt-1 text-lg font-bold text-[color:var(--t-text)]">
+                Night is live
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-[color:var(--t-text-muted)]">
+                When the credits finish, move every phone to the provisional
+                ledger. Research and settlement come next.
+              </p>
+            </div>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {confirmingClose && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3 border-t border-[color:var(--t-line)] pt-3">
+                  <div>
+                    <p className="text-sm font-bold text-[color:var(--t-text)]">
+                      Close the live floor?
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-[color:var(--t-text-muted)]">
+                      Every connected phone will leave live play and open the
+                      provisional results. This does not publish the researched record.
+                    </p>
+                  </div>
+
+                  {events.length === 0 && (
+                    <div
+                      className="rounded-xl border p-3"
+                      style={{
+                        borderColor: 'var(--t-pending)',
+                        background: 'var(--t-pending-soft)',
+                      }}
+                    >
+                      <p className="text-sm font-bold text-[color:var(--t-pending)]">
+                        No events have been declared
+                      </p>
+                      <p className="mt-1 text-sm text-[color:var(--t-text-muted)]">
+                        The provisional event ledger will be empty. Close only if
+                        that is the true live record.
+                      </p>
+                    </div>
+                  )}
+
+                  {unresolvedPredictionEvents.length > 0 && (
+                    <div
+                      className="rounded-xl border p-3"
+                      style={{
+                        borderColor: 'var(--t-pending)',
+                        background: 'var(--t-pending-soft)',
+                      }}
+                    >
+                      <p className="text-sm font-bold text-[color:var(--t-pending)]">
+                        {unresolvedPredictionEvents.length} prediction
+                        {unresolvedPredictionEvents.length === 1 ? '' : 's'} still open
+                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-[color:var(--t-text-muted)]">
+                        They score nothing in the provisional ledger until the
+                        researched settlement rules them or voids them.
+                      </p>
+                      <ul className="mt-3 space-y-1">
+                        {unresolvedPredictionEvents.map((category) => (
+                          <li
+                            key={category.id}
+                            className="flex items-center justify-between gap-3 text-sm"
+                          >
+                            <span className="truncate text-[color:var(--t-text)]">
+                              {category.name}
+                            </span>
+                            <span className="flex-shrink-0 tabular-nums text-[color:var(--t-text-dim)]">
+                              {category.points} pts
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {closeNightError && (
+            <p
+              role="alert"
+              className="rounded-xl border p-3 text-sm"
+              style={{
+                borderColor: 'var(--t-negative)',
+                background: 'var(--t-negative-soft)',
+                color: 'var(--t-text)',
+              }}
+            >
+              {closeNightError}
+            </p>
+          )}
+
+          {authorityMessage && (
+            <p
+              role="status"
+              className="rounded-xl border border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] p-3 text-sm text-[color:var(--t-text-muted)]"
+            >
+              {authorityMessage}
+            </p>
+          )}
+
+          {confirmingClose ? (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setConfirmingClose(false)}
+                disabled={isClosingNight}
+                className="min-h-11 rounded-xl border border-[color:var(--t-line)] px-3 py-2
+                           text-sm font-medium text-[color:var(--t-text-muted)]
+                           disabled:opacity-40"
+              >
+                Keep room live
+              </button>
+              <button
+                onClick={onCloseNight}
+                disabled={isClosingNight || !canReferee}
+                className="min-h-11 rounded-xl bg-[var(--t-personal-device)] px-3 py-2
+                           text-sm font-bold text-[color:var(--t-ground)] disabled:opacity-40"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  {isClosingNight ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  ) : (
+                    <Flag className="h-4 w-4" aria-hidden />
+                  )}
+                  {isClosingNight ? 'Closing…' : 'Show provisional results'}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingClose(true)}
+              disabled={isClosingNight || !canReferee}
+              className="min-h-11 w-full rounded-xl border border-[color:var(--t-line)] px-4 py-2
+                         text-sm font-bold text-[color:var(--t-text)] disabled:opacity-40"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <Flag className="h-4 w-4" aria-hidden />
+                Close the night
+              </span>
+            </button>
+          )}
+        </section>
+      )}
+
+      {isHost && (
+        <OperatorLens
+          presenceRows={operatorPresenceRows}
+          narrativeSequence={narrativeSequence}
+          engineHeartbeat={engineHeartbeat}
+          heartbeatError={heartbeatError}
+          reviewQueues={operatorReviewQueues}
+        />
+      )}
+
+      {isHost && player && (
+        <CompanionGroundingReviewQueue
+          reviews={groundingReviews.reviews}
+          isLoading={groundingReviews.isLoading}
+          dismissingId={groundingReviews.dismissingId}
+          error={groundingReviews.error}
+          onDismiss={groundingReviews.dismiss}
+        />
+      )}
+
+      {isHost && player && (
+        <WitnessProposalQueue
+          proposals={witnessProposals.proposals}
+          isLoading={witnessProposals.isLoading}
+          reviewingId={witnessProposals.reviewingId}
+          error={witnessProposals.error}
+          onReview={witnessProposals.review}
+        />
+      )}
+
       {/* ── THE BOARD — moment-first lookup ──────────────────────────────
           The fun loop of the night: something happens on screen and the table
           asks "was that on the board?" The fighters accordion answers it
@@ -283,7 +554,7 @@ export default function GameMasterConsole({
           declarable right from the result. One input, silent until used. */}
       {(() => {
         const q = boardQuery.trim().toLowerCase()
-        const results: { nom: (typeof characters)[number]; beat: { id: number; name: string; points: number; trigger_text: string; pitch?: string } }[] = []
+        const results: { nom: (typeof characters)[number]; beat: SignatureBeatRow }[] = []
         if (q.length >= 2) {
           for (const c of characters) {
             for (const b of beatsByName.get(c.name) ?? []) {
@@ -326,7 +597,7 @@ export default function GameMasterConsole({
                     <div key={beat.id}>
                       <motion.button
                         whileTap={{ scale: 0.98 }}
-                        disabled={hit || isLogging}
+                        disabled={hit || isLogging || !canReferee}
                         onClick={() => setArmedBeatId(armed ? null : beat.id)}
                         className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
                           ${hit ? 'border-[color:var(--t-line-soft)] opacity-50' : armed ? 'border-[color:var(--t-personal-text)] rounded-b-none' : 'border-[color:var(--t-line)]'}`}
@@ -344,24 +615,24 @@ export default function GameMasterConsole({
                         </span>
                       </motion.button>
                       {armed && !hit && (
-                        <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-black/25">
+                        <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-[var(--t-ground-deep)]">
                           <p className="text-xs text-[color:var(--t-text)] leading-relaxed">{beat.trigger_text}</p>
                           <div className="flex gap-2">
                             <motion.button
                               whileTap={{ scale: 0.97 }}
-                              disabled={isLogging}
+                              disabled={isLogging || !canReferee}
                               onClick={() => {
                                 setArmedBeatId(null)
                                 setBoardQuery('')
-                                void logEvent(beat.name, beat.points, nom.id)
+                                void logEvent(beat.name, beat.points, nom.id, sourceForBeat(beat))
                               }}
-                              className="flex-1 min-h-10 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-vellum-light,#f0e5cb)] text-xs font-bold"
+                              className="flex-1 min-h-11 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-text)] text-xs font-bold"
                             >
                               It happened — declare +{beat.points}
                             </motion.button>
                             <button
                               onClick={() => setArmedBeatId(null)}
-                              className="px-3 min-h-10 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
+                              className="min-h-11 px-3 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
                             >
                               Not yet
                             </button>
@@ -423,7 +694,7 @@ export default function GameMasterConsole({
                           <div key={beat.id}>
                             <motion.button
                               whileTap={{ scale: 0.98 }}
-                              disabled={used || isLogging}
+                              disabled={used || isLogging || !canReferee}
                               onClick={() => setArmedBeatId(armed ? null : beat.id)}
                               className={`material-iron relief-raised min-h-11 w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left
                                 ${used
@@ -444,7 +715,7 @@ export default function GameMasterConsole({
                                 to it. Mobile has no hover, so this drawer is the
                                 only way the details exist at all. */}
                             {armed && !used && (
-                              <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-black/25">
+                              <div className="border border-t-0 border-[color:var(--t-personal-text)] rounded-b-lg px-3 py-2.5 space-y-2 bg-[var(--t-ground-deep)]">
                                 <p className="text-xs text-[color:var(--t-text)] leading-relaxed">
                                   {beat.trigger_text}
                                 </p>
@@ -456,18 +727,18 @@ export default function GameMasterConsole({
                                 <div className="flex gap-2 pt-0.5">
                                   <motion.button
                                     whileTap={{ scale: 0.97 }}
-                                    disabled={isLogging}
+                                    disabled={isLogging || !canReferee}
                                     onClick={() => {
                                       setArmedBeatId(null)
-                                      void logEvent(beat.name, beat.points, nom.id)
+                                      void logEvent(beat.name, beat.points, nom.id, sourceForBeat(beat))
                                     }}
-                                    className="flex-1 min-h-10 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-vellum-light,#f0e5cb)] text-xs font-bold"
+                                    className="flex-1 min-h-11 py-2 rounded-lg bg-[var(--t-personal-device)] text-[color:var(--t-text)] text-xs font-bold"
                                   >
                                     It happened — declare +{beat.points}
                                   </motion.button>
                                   <button
                                     onClick={() => setArmedBeatId(null)}
-                                    className="px-3 min-h-10 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
+                                    className="min-h-11 px-3 rounded-lg border border-[color:var(--t-line)] text-xs text-[color:var(--t-text-muted)]"
                                   >
                                     Not yet
                                   </button>
@@ -597,10 +868,10 @@ export default function GameMasterConsole({
                       <motion.button
                         key={b.id}
                         whileTap={{ scale: 0.98 }}
-                        disabled={used || !active || isLogging}
+                        disabled={used || !active || isLogging || !canReferee}
                         title={b.trigger_text}
                         onClick={() => {
-                          void logEvent(b.name, b.points, selectedCharacter!).then(() => {
+                          void logEvent(b.name, b.points, selectedCharacter!, sourceForBeat(b)).then(() => {
                             setDraft('')
                             setSelectedCharacter(null)
                           })
@@ -719,7 +990,7 @@ export default function GameMasterConsole({
               <button
                 key={n}
                 onClick={() => void devAutoLog(n)}
-                disabled={autoRunning}
+                disabled={autoRunning || !canReferee}
                 className={`min-h-11 py-2.5 rounded-xl text-xs font-semibold border flex items-center
                             justify-center gap-1.5 ${
                   autoRunning
@@ -796,10 +1067,11 @@ export default function GameMasterConsole({
                   {isHost && (
                     <button
                       onClick={() => undoEvent(ev.category.id)}
+                      disabled={!canReferee || isLogging}
                       aria-label={`Undo ${ev.category.name}`}
                       /* 44px touch target */
                       className="flex-shrink-0 w-11 h-11 -mr-1 flex items-center justify-center
-                                 text-white/30 hover:text-white/70 transition-colors"
+                                 text-white/30 hover:text-white/70 transition-colors disabled:opacity-30"
                     >
                       <RotateCcw className="w-4 h-4" />
                     </button>
@@ -811,101 +1083,6 @@ export default function GameMasterConsole({
         )}
       </div>
 
-      {/* ── End episode (host only) ──────────────────────────────────────── */}
-      {/*
-        Two-step when predictions are still open. Ending the episode is the one
-        irreversible action in the console — undoEvent can walk back a mistaken
-        call, but nothing walks back a final scoreboard — and any event left
-        unresolved silently voids every confidence point staked on it.
-      */}
-      {isHost && events.length > 0 && (
-        <div className="space-y-2">
-          <AnimatePresence initial={false}>
-            {confirmingEnd && unresolvedPredictionEvents.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/25">
-                  <p className="text-sm font-semibold text-amber-200">
-                    {unresolvedPredictionEvents.length} prediction
-                    {unresolvedPredictionEvents.length === 1 ? '' : 's'} still open
-                  </p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-white/60">
-                    Everyone staked confidence on these before the episode. If you end
-                    now they score nothing for anyone — including whoever called them
-                    right.
-                  </p>
-                  <ul className="mt-3 space-y-1">
-                    {unresolvedPredictionEvents.map((c) => (
-                      <li
-                        key={c.id}
-                        className="flex items-center justify-between gap-3 text-[13px]"
-                      >
-                        <span className="text-white/75 truncate">{c.name}</span>
-                        <span className="shrink-0 text-white/35 tabular-nums">
-                          {c.points} pts
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {confirmingEnd ? (
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmingEnd(false)}
-                disabled={isEndingCeremony}
-                className="min-h-11 flex-1 py-3 rounded-2xl bg-white/5 border border-white/10
-                           text-sm font-medium text-white/70 hover:text-white
-                           hover:border-white/25 disabled:opacity-40 transition-colors"
-              >
-                Keep going
-              </button>
-              <button
-                onClick={onEndCeremony}
-                disabled={isEndingCeremony}
-                className="min-h-11 flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl
-                           bg-accent/15 border border-accent/40 text-sm font-semibold
-                           text-accent hover:bg-accent/25
-                           disabled:opacity-40 transition-colors"
-              >
-                {isEndingCeremony ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Flag className="w-4 h-4" />
-                )}
-                {isEndingCeremony ? 'Ending…' : 'End anyway'}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmingEnd(true)}
-              disabled={isEndingCeremony}
-              className="min-h-11 w-full flex items-center justify-center gap-2 py-3 rounded-2xl
-                         bg-white/5 border border-white/10 text-sm font-medium
-                         text-white/60 hover:text-white hover:border-white/25
-                         disabled:opacity-40 transition-colors"
-            >
-              <Flag className="w-4 h-4" />
-              End episode
-              {unresolvedPredictionEvents.length > 0 && (
-                <span
-                  className="ml-1 px-2 py-0.5 rounded-full bg-amber-400/15
-                             text-[11px] font-semibold text-amber-200 tabular-nums"
-                >
-                  {unresolvedPredictionEvents.length} open
-                </span>
-              )}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   )
 }

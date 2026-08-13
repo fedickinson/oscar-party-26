@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronUp, Clock, Info, Scroll, Trophy, X, Clapperboard } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clock, Info, Trophy, X, Clapperboard } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { supabase } from '../../lib/supabase'
 import ChatSection from './ChatSection'
@@ -17,7 +17,7 @@ import NomineeDetailSheet from './NomineeDetailSheet'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
-import type { ScoredPlayer } from '../../lib/scoring'
+import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
 
 interface Props {
   categories: CategoryRow[]
@@ -29,8 +29,6 @@ interface Props {
   isHost: boolean
   showStarted: boolean
   openSpotlight: (categoryId: number) => Promise<void>
-  onEndCeremony: () => Promise<void>
-  isEndingCeremony: boolean
   onFilmLinkTap?: (filmTitle: string) => void
 }
 
@@ -88,7 +86,7 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#0e1230] border-t border-white/10 rounded-t-3xl max-h-[82vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[82vh] flex-col rounded-t-3xl border-t border-white/10 bg-ground"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
@@ -106,9 +104,11 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
             </h2>
           </div>
           <motion.button
+            type="button"
             whileTap={{ scale: 0.88 }}
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0 mt-1"
+            className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8"
+            aria-label="Close category information"
           >
             <X size={16} className="text-white/60" />
           </motion.button>
@@ -224,8 +224,6 @@ function NextUpCard({
   isHost,
   showStarted,
   openSpotlight,
-  onEndCeremony,
-  isEndingCeremony,
 }: Omit<Props, 'leaderboard'>) {
   const { player } = useGame()
   const currentPlayerId = player?.id ?? ''
@@ -235,13 +233,7 @@ function NextUpCard({
   const nextCategory = categories.find((c) => c.winner_id == null)
   if (!nextCategory) {
     return (
-      <div
-        className="rounded-2xl px-4 py-4 space-y-3"
-        style={{
-          background: 'rgba(185,134,63,0.08)',
-          border: '1px solid rgba(185,134,63,0.25)',
-        }}
-      >
+      <div className="space-y-3 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-4">
         <div className="flex items-center gap-2">
           <Trophy size={15} className="text-accent flex-shrink-0" />
           <p className="text-sm font-semibold text-white">The ceremony is complete</p>
@@ -250,26 +242,12 @@ function NextUpCard({
           All {categories.length} categories have been decided.
         </p>
         {isHost ? (
-          <motion.button
-            onClick={onEndCeremony}
-            disabled={isEndingCeremony}
-            whileTap={!isEndingCeremony ? { scale: 0.97 } : undefined}
-            className={[
-              'w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
-              !isEndingCeremony
-                ? 'bg-accent text-ground'
-                : 'bg-white/10 text-white/30 cursor-not-allowed',
-            ].join(' ')}
-          >
-            {isEndingCeremony ? (
-              <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
-            ) : (
-              <>
-                <Scroll size={14} />
-                Reveal Final Results
-              </>
-            )}
-          </motion.button>
+          <div className="flex items-center gap-2 py-2">
+            <Clock size={13} className="text-white/30 flex-shrink-0" />
+            <p className="text-xs text-white/45">
+              Open Events to close the live floor and publish provisional results.
+            </p>
+          </div>
         ) : (
           <div className="flex items-center gap-2 py-2">
             <Clock size={13} className="text-white/30 flex-shrink-0" />
@@ -298,10 +276,14 @@ function NextUpCard({
   )
   const myDraftHere = draftEntities.filter((e) => {
     if (!myEntityIds.has(e.id)) return false
-    return nomineesInCat.some((n) => {
-      if (e.type === 'film') return n.type === 'film' && n.film_name === e.film_name
-      return n.type === 'person' && n.name === e.name
-    })
+    return nomineesInCat.some((nominee) => findDraftPointsForWinner(
+      nextCategory.id,
+      nominee.id,
+      categories,
+      nominees,
+      draftEntities,
+      draftPicks,
+    ).entityId === e.id)
   })
 
   const hasAnything = myNominee || myDraftHere.length > 0
@@ -309,33 +291,36 @@ function NextUpCard({
   return (
     <>
     <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-      {/* Category name row */}
+      {/* Mobile hierarchy: actions share the eyebrow row; the scheduled fact
+          gets the full card width instead of truncating behind two controls. */}
       <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <p className="text-[11px] uppercase tracking-wider text-accent/70 flex-shrink-0">Next up</p>
-          <CategoryIcon categoryName={nextCategory.name} size={14} className="text-white/60 flex-shrink-0" />
-          <p className="text-sm font-bold text-white truncate">{nextCategory.name}</p>
-        </div>
+        <p className="flex-shrink-0 text-[11px] uppercase tracking-wider text-accent/70">Next up</p>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {isHost && showStarted && (
             <motion.button
+              type="button"
               whileTap={{ scale: 0.88 }}
               onClick={() => openSpotlight(nextCategory.id)}
-              className="px-2.5 py-1 rounded-lg bg-accent/15 border border-accent/30 text-accent text-[11px] font-semibold"
+              className="min-h-11 rounded-lg border border-accent/30 bg-accent/15 px-2.5 py-1 text-[11px] font-semibold text-accent"
               aria-label="Open category spotlight"
             >
               Spotlight
             </motion.button>
           )}
           <motion.button
+            type="button"
             whileTap={{ scale: 0.88 }}
             onClick={() => setShowModal(true)}
-            className="w-7 h-7 rounded-full bg-white/8 border border-white/10 flex items-center justify-center"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/8"
             aria-label="Category info"
           >
             <Info size={13} className="text-white/45" />
           </motion.button>
         </div>
+      </div>
+      <div className="mb-3 flex items-start gap-2">
+        <CategoryIcon categoryName={nextCategory.name} size={14} className="mt-0.5 flex-shrink-0 text-white/60" />
+        <p className="min-w-0 text-sm font-bold leading-snug text-white">{nextCategory.name}</p>
       </div>
 
       {hasAnything ? (
@@ -396,7 +381,7 @@ function NextUpCard({
 
 function CollapsibleScores({ leaderboard }: { leaderboard: ScoredPlayer[] }) {
   const { player, room } = useGame()
-  const finished = room?.phase === 'finished'
+  const finished = room?.phase === 'finished' || room?.phase === 'closed'
   const [expanded, setExpanded] = useState(false)
   const currentPlayerId = player?.id ?? ''
 
@@ -485,12 +470,11 @@ export default function LiveHomeView({
   isHost,
   showStarted,
   openSpotlight,
-  onEndCeremony,
-  isEndingCeremony,
   onFilmLinkTap,
 }: Props) {
   const { room } = useGame()
-  const finished = room?.phase === 'finished'
+  const finished = room?.phase === 'finished' || room?.phase === 'closed'
+  const showsScheduledSlate = room?.game_model === 'legacy_ensemble' && categories.length > 0
   return (
     <div className="h-full flex flex-col max-w-md mx-auto overflow-hidden">
       {/* Fixed top: score summary. The Oscars build led with a "Next up"
@@ -498,6 +482,18 @@ export default function LiveHomeView({
           first unresolved seeded event as "next" was a fiction. Events arrive
           when the episode provides them; the chat and feed carry that. */}
       <div className="px-4 pt-4 space-y-3 flex-shrink-0">
+        {showsScheduledSlate && (
+          <NextUpCard
+            categories={categories}
+            nominees={nominees}
+            confidencePicks={confidencePicks}
+            draftPicks={draftPicks}
+            draftEntities={draftEntities}
+            isHost={isHost}
+            showStarted={showStarted}
+            openSpotlight={openSpotlight}
+          />
+        )}
         {finished && (
           <a
             href="/ceremony.html"

@@ -61,7 +61,8 @@ export default function CompanionProfileModal({ companion, onClose }: Props) {
             />
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center"
+              className="absolute top-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur"
+              aria-label="Close companion profile"
             >
               <X size={14} className="text-white/80" />
             </button>

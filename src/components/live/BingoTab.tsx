@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, CheckCircle } from 'lucide-react'
+import { BookOpen, CheckCircle, RotateCcw } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { useBingo } from '../../hooks/useBingo'
 import { useOtherBingoCards } from '../../hooks/useOtherBingoCards'
@@ -58,11 +58,13 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     bingoScore,
     celebrationData,
     isLoading,
+    syncError,
     selectedIndex,
     selectSquare,
     deselectSquare,
     markSquare,
     dismissCelebration,
+    retrySync,
   } = useBingo(roomId, categories, nominees, onSquareApproved)
 
 
@@ -71,7 +73,39 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     () => leaderboard.filter((e) => e.player.id !== player?.id).map((e) => e.player),
     [leaderboard, player?.id],
   )
-  const otherCards = useOtherBingoCards(roomId, otherPlayers)
+  const {
+    cards: otherCards,
+    isLoading: otherCardsLoading,
+    syncError: otherCardsError,
+    retrySync: retryOtherCards,
+  } = useOtherBingoCards(roomId, otherPlayers)
+
+  if (syncError) {
+    return (
+      <div className="px-4 py-6">
+        <section
+          className="material-stone relief-inset rounded-2xl p-4"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p className="font-display text-xs uppercase tracking-widest text-[var(--t-pending)]">
+            Bingo ledger unavailable
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+            {syncError} Marking stays disabled until the room record is current.
+          </p>
+          <button
+            type="button"
+            onClick={retrySync}
+            className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            Try again
+          </button>
+        </section>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -81,16 +115,16 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
     )
   }
 
-  // No card after loading finished — the deal failed (transient network, or
-  // the room state shifted under the app). A silent blank looked exactly like
-  // this during the dogfood reset; a reload re-runs the deal and self-heals.
+  // No card after loading finished — retry the scoped deal without discarding
+  // the rest of the live page.
   if (!card) {
     return (
-      <div className="flex flex-col items-center gap-3 py-16 px-6 text-center">
-        <p className="text-sm text-white/60">Your bingo card didn't deal.</p>
+      <div className="px-4 py-6 text-center">
+        <p className="text-sm text-[var(--t-text-muted)]">Your bingo card did not deal.</p>
         <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2.5 rounded-xl bg-accent/20 border border-accent/50 text-sm font-semibold text-accent"
+          type="button"
+          onClick={retrySync}
+          className="mt-3 min-h-[44px] rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] px-4 text-sm font-bold text-[var(--t-text)]"
         >
           Deal my card
         </button>
@@ -186,11 +220,37 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
             <p className="text-xs text-white/40 uppercase tracking-widest mb-3">
               Other Players
             </p>
+            {otherCardsError && (
+              <div
+                className="mb-3 rounded-xl border border-[var(--t-line)] bg-[var(--t-surface)] p-3"
+                role="status"
+              >
+                <p className="text-xs leading-relaxed text-[var(--t-text-muted)]">
+                  {otherCardsError} Your own card is still live.
+                </p>
+                <button
+                  type="button"
+                  onClick={retryOtherCards}
+                  className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[var(--t-line)] px-3 text-xs font-bold text-[var(--t-text)]"
+                >
+                  <RotateCcw className="h-4 w-4" aria-hidden />
+                  Retry peer cards
+                </button>
+              </div>
+            )}
+            {otherCardsLoading && !otherCardsError && (
+              <p className="mb-3 text-xs text-[var(--t-text-dim)]" role="status">
+                Synchronizing peer cards
+              </p>
+            )}
             <div className="space-y-1">
               {leaderboard
                 .filter((entry) => entry.player.id !== player?.id)
                 .map((entry) => {
-                  const otherCard = otherCards.find((c) => c.player.id === entry.player.id)
+                  const peerCardsReady = !otherCardsLoading && !otherCardsError
+                  const otherCard = peerCardsReady
+                    ? otherCards.find((c) => c.player.id === entry.player.id)
+                    : undefined
                   let peekedBingos = 0
                   let peekedApproved = 0
                   if (otherCard) {

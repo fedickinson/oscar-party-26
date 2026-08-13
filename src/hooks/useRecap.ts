@@ -13,6 +13,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { generateRecapPDF } from '../lib/recap-pdf'
+import { fetchAllRows } from './fetch-all-rows'
 import type { RecapData } from '../lib/recap-pdf'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { PlayerAward, CharacterAward } from '../lib/night-awards'
@@ -67,11 +68,13 @@ export function useRecap({
 
     try {
       // Fetch chat messages (snapshot -- not realtime)
-      const { data: messages } = await supabase
-        .from('messages')
-        .select('id, room_id, player_id, text, created_at')
+      const { data: messages, error: messageError } = await fetchAllRows<MessageRow>((from, to) => supabase
+        .from('messages').select('id, room_id, player_id, text, created_at')
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to))
+      if (messageError) throw messageError
 
       const recapData: RecapData = {
         roomCode,

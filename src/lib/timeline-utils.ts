@@ -11,12 +11,15 @@
 import type {
   CategoryRow,
   ConfidencePickRow,
+  ConvictionPickRow,
   DraftPickRow,
   DraftEntityRow,
   NomineeRow,
   PlayerRow,
+  GameModel,
 } from '../types/database'
 import { findDraftPointsForWinner } from './scoring'
+import { computeConvictionPortfolioScores } from './conviction'
 import type { PlayerScoreDetail, TimelinePoint, TurningPoint, HeadToHead } from '../types/timeline'
 
 export type { PlayerScoreDetail, TimelinePoint, TurningPoint, HeadToHead }
@@ -40,6 +43,8 @@ export function computeScoreTimeline(
   draftEntities: DraftEntityRow[],
   nominees: NomineeRow[],
   players: PlayerRow[],
+  convictionPicks: ConvictionPickRow[] = [],
+  gameModel: GameModel = 'legacy_ensemble',
 ): TimelinePoint[] {
   const announced = categories
     .filter((c) => c.winner_id != null)
@@ -64,10 +69,15 @@ export function computeScoreTimeline(
         (cp) => cp.player_id === player.id && cp.category_id === cat.id,
       )
       const confCorrect = confPick ? (confPick.nominee_id === cat.winner_id || confPick.nominee_id === cat.tie_winner_id) : false
-      const confDelta = confCorrect ? confPick!.confidence : 0
+      const convictionDelta = gameModel === 'conviction_portfolio'
+        ? computeConvictionPortfolioScores(players, convictionPicks, [cat]).get(player.id)?.score ?? 0
+        : null
+      const confDelta = convictionDelta ?? (confCorrect ? confPick!.confidence : 0)
 
       // Draft delta (first winner)
-      const { playerId: draftWinnerId, points: draftPoints } = findDraftPointsForWinner(
+      const { playerId: draftWinnerId, points: draftPoints } = gameModel === 'conviction_portfolio'
+        ? { playerId: null, points: 0 }
+        : findDraftPointsForWinner(
         cat.id,
         cat.winner_id!,
         categories,
@@ -78,7 +88,7 @@ export function computeScoreTimeline(
       let draftDelta = draftWinnerId === player.id ? draftPoints : 0
 
       // Draft delta for tie winner (if any)
-      if (cat.tie_winner_id) {
+      if (gameModel !== 'conviction_portfolio' && cat.tie_winner_id) {
         const tieResult = findDraftPointsForWinner(
           cat.id,
           cat.tie_winner_id,
@@ -411,6 +421,8 @@ export function computeBreakdownTimeline(
   draftPicks: DraftPickRow[],
   draftEntities: DraftEntityRow[],
   nominees: NomineeRow[],
+  convictionPicks: ConvictionPickRow[] = [],
+  gameModel: GameModel = 'legacy_ensemble',
 ): {
   confidence: Array<{ categoryIndex: number; categoryName: string } & Record<string, number>>
   draft: Array<{ categoryIndex: number; categoryName: string } & Record<string, number>>
@@ -450,12 +462,17 @@ export function computeBreakdownTimeline(
         (cp) => cp.player_id === player.id && cp.category_id === cat.id,
       )
       const confCorrect = confPick ? (confPick.nominee_id === cat.winner_id || confPick.nominee_id === cat.tie_winner_id) : false
-      const confDelta = confCorrect ? confPick!.confidence : 0
+      const convictionDelta = gameModel === 'conviction_portfolio'
+        ? computeConvictionPortfolioScores(players, convictionPicks, [cat]).get(player.id)?.score ?? 0
+        : null
+      const confDelta = convictionDelta ?? (confCorrect ? confPick!.confidence : 0)
       confCumulative[player.id] += confDelta
       confRow[player.id] = confCumulative[player.id]
 
       // Draft (first winner)
-      const { playerId: draftWinnerId, points: draftPoints } = findDraftPointsForWinner(
+      const { playerId: draftWinnerId, points: draftPoints } = gameModel === 'conviction_portfolio'
+        ? { playerId: null, points: 0 }
+        : findDraftPointsForWinner(
         cat.id,
         cat.winner_id!,
         categories,
@@ -465,7 +482,7 @@ export function computeBreakdownTimeline(
       )
       let draftDelta = draftWinnerId === player.id ? draftPoints : 0
       // Draft (tie winner)
-      if (cat.tie_winner_id) {
+      if (gameModel !== 'conviction_portfolio' && cat.tie_winner_id) {
         const tieResult = findDraftPointsForWinner(
           cat.id,
           cat.tie_winner_id,

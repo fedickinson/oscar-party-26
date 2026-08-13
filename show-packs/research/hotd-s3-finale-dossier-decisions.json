@@ -1,0 +1,62 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-dossier-decisions",
+  "target": {
+    "pack_id": "hotd-s3e8",
+    "pack_version": 1
+  },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "encyclopedia_sha256": "22b6a033cb7c25b7415c6aa9539328235e1e1762a6287741773f83db4cae4dd4",
+  "approved_entity_legacy_ids": [
+    "05df4715-65bd-2f1c-fe99-2e0a9653fba9",
+    "13da33f8-5825-ad92-054a-5f2215c0bb2b",
+    "188d91ee-63ee-9d0e-1779-3ce613d3f4c9",
+    "1e7ae85e-158a-a679-e8fb-883f08a8b21f",
+    "23358073-19dd-7d87-de02-91d217a63c77",
+    "2395ce7b-d731-6554-93c8-4f2359968ae7",
+    "2de4bab9-cb97-2069-98ec-df7c5088d457",
+    "31c7d058-bdbd-b784-5533-73320a21a65a",
+    "32f57c47-f49c-4003-3748-c120aae7c45a",
+    "45350e4e-503e-9198-4559-2555a68410f4",
+    "4f607aac-7a70-ccd6-164b-e763bc70e47d",
+    "510ec8cb-f91f-cfd3-3339-ddc0aba04ddc",
+    "5267a749-ae90-a398-5677-74efd428a85d",
+    "5555bd93-92e7-8e8b-aefa-1543692307d1",
+    "604d8ab9-48d8-7859-4362-fc92cd46fc05",
+    "68b299e8-92c2-6391-2d4f-629c6a2a85ad",
+    "6d5fc989-7205-b24a-2231-ff3297c0749e",
+    "6d724684-247a-472e-4277-155f6b9b8430",
+    "6fa86c27-9af6-9c83-c8d8-59ee0b6a842d",
+    "7856aa97-db30-7245-784d-984f33d04b4d",
+    "7b5d8800-d5d1-7ecf-1020-d36705de618b",
+    "878797cd-55be-8f5f-d465-12d191a4541c",
+    "9ac3581a-94f5-9fc1-d003-bbc4ed9971e5",
+    "9fa107b0-d130-0e04-8dbe-6a465931b0fd",
+    "a79ee03a-a87b-852b-72be-6c2f748d8347",
+    "aa56f006-abe3-5047-4893-40d08cac7dda",
+    "b3b10757-625e-0013-92ab-7a083d26ce7d",
+    "b57c8ba1-7151-f57b-dfeb-6881ca6e65be",
+    "b6e1eddd-1c9f-23f7-5ba6-50942783d735",
+    "c421be7b-b9eb-3f23-231c-d95f0f918d57",
+    "cba80a2d-cadc-3a59-17ff-f0c7a7ab6c0e",
+    "ccd5ac8c-2e2a-55b5-840f-30e816e0a0fd",
+    "cd978df7-2733-99cf-c9f7-c56c8dde42a5",
+    "d91781d9-64cf-c666-ddb8-4ddd85956404",
+    "df62fafa-0055-c917-50e8-aa130ed43ef4",
+    "efe00b8c-9fe1-0136-54f3-e152d78a8ec4",
+    "f0b703a0-c333-b1fb-2cdd-aced8451e3aa",
+    "ff493811-9199-ddd5-71f1-0ba7cbede994"
+  ],
+  "screen_source": {
+    "id": "season-three-entity-screen-record-through-episode-seven",
+    "kind": "operator_record",
+    "title": "Witnessed House of the Dragon Season 3 Entity States Through Episode 7",
+    "locator": "repo:src/data/westeros-encyclopedia.ts#characters-and-dragons-screen-state"
+  },
+  "sentiment_source": {
+    "id": "season-three-entity-audience-synthesis-through-episode-seven",
+    "kind": "sentiment",
+    "title": "House of the Dragon Season 3 Audience-Reaction Synthesis Through Episode 7",
+    "locator": "repo:src/data/westeros-encyclopedia.ts#characters-and-dragons-audience-reaction"
+  }
+}

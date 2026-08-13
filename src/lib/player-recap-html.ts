@@ -14,10 +14,11 @@
  * identity is gone from the app; this file was the last thing still wearing it.
  *
  * SELF-CONTAINED, NON-NEGOTIABLY
- * Saved to a phone, AirDropped, opened offline. So: no external stylesheets, no
- * webfont requests, no <img>, no scripts. The vellum mottle is an inline SVG
- * turbulence data URI, the fibers are repeating gradients, and the seal, motif
- * bands and house devices are literal inline SVG.
+ * Saved to a phone, AirDropped, opened offline. So: no external stylesheets,
+ * webfont requests, network-dependent images, or scripts. Selected images are
+ * data URIs; the vellum mottle is an inline SVG turbulence data URI, the fibers
+ * are repeating gradients, and the seal, motif bands and house devices are
+ * literal inline SVG.
  *
  * ON THE FONTS
  * The app loads Cinzel and Cormorant Garamond from Google Fonts. A file opened
@@ -176,9 +177,12 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
           return `
       <div class="entry">
         <div class="entry-head">
-          <div>
-            <p class="kicker">${r.kind === 'dragon' ? 'Dragon' : 'Character'} &middot; claimed ${r.pickNumber}</p>
-            <h3>${esc(r.name)}</h3>
+          <div class="entry-identity">
+            ${r.portrait ? `<img class="roster-portrait" src="${esc(r.portrait.src)}" alt="${esc(r.portrait.alt)}">` : ''}
+            <div>
+              <p class="kicker">${r.kind === 'dragon' ? 'Dragon' : 'Character'} &middot; claimed ${r.pickNumber}</p>
+              <h3>${esc(r.name)}</h3>
+            </div>
           </div>
           <div class="pts${r.points > 0 ? '' : ' zero'}">${r.points}</div>
         </div>
@@ -572,6 +576,11 @@ export function renderPlayerRecapHtml(d: PlayerRecapData): string {
   .ledger-head h3 { font-variant-numeric: tabular-nums lining-nums; }
   .entry { padding: 12px 0; border-top: 1px solid rgba(41,34,25,.16); clear: both; }
   .entry-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .entry-identity { display: flex; min-width: 0; align-items: flex-start; gap: 10px; }
+  .roster-portrait {
+    width: 44px; height: 44px; flex: 0 0 44px; object-fit: cover;
+    border: 1px solid rgba(41,34,25,.22); border-radius: 4px;
+  }
   .pts {
     font-family: ${DISPLAY}; font-size: 25px; font-weight: 800; color: ${C.ink};
     font-variant-numeric: tabular-nums lining-nums;

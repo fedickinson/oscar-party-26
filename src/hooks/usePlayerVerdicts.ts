@@ -1,277 +1,352 @@
 /**
- * usePlayerVerdicts — The Reckoning: one written verdict per player.
- *
- * WHO GENERATES
- * The host, once, and nobody else. Every client renders the same rows, which
- * arrive over Realtime. This mirrors the post-show farewell messages on the same
- * page: if all six clients fired the call, the party would pay for six
- * generations and each player would read a different verdict about themselves
- * than the person sitting next to them is reading aloud.
- *
- * FALLING BACK
- * The card is built from two layers. The TITLE and STAT are computed locally by
- * lib/night-awards.ts and always render. The VERDICT is the written passage and
- * is the only part that needs Claude. If the call fails, times out, or returns
- * something unparseable, the cards still show titles and stats — the night never
- * ends on a spinner or an error state. `isGenerating` exists only to soften the
- * arrival of the text, not to gate the section.
- *
- * IDEMPOTENCE
- * Guarded three ways, because the Results page can mount more than once (a
- * reload, a player navigating back) and each mount would otherwise re-bill:
- *   1. A ref, for double-mounts inside one session
- *   2. A read of existing rows before firing
- *   3. Upsert on the (room_id, player_id) primary key, so a genuine race
- *      overwrites instead of erroring
+ * One grounded keepsake verdict per player, published as one room artifact.
+ * Existing complete legacy packets remain readable. An incomplete packet is
+ * never a completion sentinel: the host replaces it through one atomic RPC.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import {
+  groundedVerdictBatch,
+  type GroundingModelRequest,
+} from '../../api/_grounding'
 import {
   assignVerdictAuthors,
   buildVerdictsPrompt,
-  parseVerdictResponse,
 } from '../lib/companion-prompts'
+import { buildVerdictReactionKey } from '../lib/companion-reaction'
 import { collectLineCandidates } from '../lib/player-recap'
-import { getLibraryImage, IMAGE_SLOTS } from '../data/image-library'
+import { fetchAllRows } from './fetch-all-rows'
+import { supabase } from '../lib/supabase'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { PlayerAward } from '../lib/night-awards'
-import type { MessageRow, PlayerRow, PlayerVerdictRow } from '../types/database'
+import type {
+  MessageRow,
+  PlayerRow,
+  PlayerVerdictRow,
+} from '../types/database'
 
 interface Args {
   roomId: string | undefined
+  hostPlayerId: string | undefined
   isHost: boolean
+  operatorCapability: string | null
   playerAwards: PlayerAward[]
   leaderboard: ScoredPlayer[]
-  /** Needed to resolve message authors into names for the candidate lines. */
   players: PlayerRow[]
-  /** Hold generation until scores have settled — a verdict off a half-loaded board is wrong. */
   ready: boolean
+  recordSource: 'live' | 'settled'
 }
 
 export interface PlayerVerdictsState {
-  /** playerId → row. Empty until generation lands; never blocks the UI. */
   verdicts: Map<string, PlayerVerdictRow>
   isGenerating: boolean
 }
 
-export function usePlayerVerdicts({
-  roomId,
-  isHost,
-  playerAwards,
-  leaderboard,
-  players,
-  ready,
-}: Args): PlayerVerdictsState {
+async function callClaude(request: GroundingModelRequest): Promise<string> {
+  const response = await fetch('/api/anthropic/v1/messages', {
+    method: 'POST',
+    headers: {
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: request.model,
+      max_tokens: request.maxTokens,
+      thinking: { type: 'disabled' },
+      output_config: { effort: 'low' },
+      system: [{
+        type: 'text',
+        text: request.system,
+        cache_control: { type: 'ephemeral', ttl: '1h' },
+      }],
+      messages: [{ role: 'user', content: request.user }],
+    }),
+  })
+  if (!response.ok) return ''
+  const data = await response.json()
+  const blocks = (data?.content ?? []) as Array<{ type?: string; text?: string }>
+  return blocks.find((block) => block.type === 'text')?.text ?? ''
+}
+
+function isCompletePlayerSet(rows: PlayerVerdictRow[], playerAwards: PlayerAward[]): boolean {
+  if (rows.length !== playerAwards.length || rows.length === 0) return false
+  const expected = [...playerAwards.map((award) => award.playerId)].sort()
+  const actual = [...new Set(rows.map((row) => row.player_id))].sort()
+  return actual.length === rows.length && JSON.stringify(actual) === JSON.stringify(expected)
+}
+
+export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
   const [verdicts, setVerdicts] = useState<Map<string, PlayerVerdictRow>>(new Map())
   const [isGenerating, setIsGenerating] = useState(false)
-  const firedRef = useRef(false)
+  const stateRef = useRef(options)
+  stateRef.current = options
+  const instanceIdRef = useRef(crypto.randomUUID())
+  const attemptedRoomRef = useRef<string | null>(null)
 
   const upsertLocal = useCallback((row: PlayerVerdictRow) => {
-    setVerdicts((prev) => {
-      const next = new Map(prev)
+    setVerdicts((previous) => {
+      const next = new Map(previous)
       next.set(row.player_id, row)
       return next
     })
   }, [])
 
-  // ── Load whatever already exists ───────────────────────────────────────────
-
+  // Subscribe first. Hydration begins only after the channel is live and is
+  // retried if a database event crosses the fetch window.
   useEffect(() => {
-    if (!roomId) return
-    let cancelled = false
+    const { roomId, recordSource } = options
+    setVerdicts(new Map())
+    attemptedRoomRef.current = null
+    if (!roomId || recordSource === 'settled') return
+    let disposed = false
+    let revision = 0
 
-    supabase
-      .from('player_verdicts')
-      .select()
-      .eq('room_id', roomId)
-      .then(({ data }) => {
-        if (cancelled || !data) return
-        setVerdicts(new Map((data as PlayerVerdictRow[]).map((r) => [r.player_id, r])))
-      })
-
-    return () => { cancelled = true }
-  }, [roomId])
-
-  // ── Realtime: non-host clients receive the host's generation ───────────────
-
-  useEffect(() => {
-    if (!roomId) return
+    const hydrate = async (): Promise<void> => {
+      const startRevision = revision
+      const result = await fetchAllRows<PlayerVerdictRow>((from, to) => supabase
+        .from('player_verdicts')
+        .select()
+        .eq('room_id', roomId)
+        .order('player_id')
+        .range(from, to))
+      if (disposed || result.error) return
+      if (revision !== startRevision) {
+        await hydrate()
+        return
+      }
+      setVerdicts(new Map((result.data ?? []).map((row) => [row.player_id, row])))
+    }
 
     const channel = supabase
       .channel(`player-verdicts:${roomId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'player_verdicts', filter: `room_id=eq.${roomId}` },
-        (payload) => upsertLocal(payload.new as PlayerVerdictRow),
+        (payload) => {
+          revision += 1
+          upsertLocal(payload.new as PlayerVerdictRow)
+        },
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'player_verdicts', filter: `room_id=eq.${roomId}` },
-        (payload) => upsertLocal(payload.new as PlayerVerdictRow),
+        (payload) => {
+          revision += 1
+          upsertLocal(payload.new as PlayerVerdictRow)
+        },
       )
-      .subscribe()
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'player_verdicts', filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          revision += 1
+          const removed = payload.old as Partial<PlayerVerdictRow>
+          if (!removed.player_id) return
+          setVerdicts((previous) => {
+            const next = new Map(previous)
+            next.delete(removed.player_id!)
+            return next
+          })
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') void hydrate()
+      })
 
-    return () => { supabase.removeChannel(channel) }
-  }, [roomId, upsertLocal])
-
-  // ── Host generates, once ───────────────────────────────────────────────────
+    return () => {
+      disposed = true
+      void supabase.removeChannel(channel)
+    }
+  }, [options.roomId, options.recordSource, upsertLocal])
 
   useEffect(() => {
-    if (!roomId || !isHost || !ready) return
-    if (firedRef.current) return
-    if (playerAwards.length === 0) return
+    const {
+      roomId, hostPlayerId, isHost, operatorCapability,
+      ready, recordSource, playerAwards,
+    } = options
+    if (!roomId || !hostPlayerId || !isHost || !operatorCapability
+      || !ready || recordSource === 'settled' ||
+      playerAwards.length === 0 || playerAwards.length > 7) return
+    if (attemptedRoomRef.current === roomId) return
+    attemptedRoomRef.current = roomId
+    let disposed = false
+    const reactionKey = buildVerdictReactionKey()
 
-    firedRef.current = true
+    const stillValid = () => {
+      const current = stateRef.current
+      return !disposed && current.roomId === roomId && current.hostPlayerId === hostPlayerId &&
+        current.isHost && current.ready && current.recordSource === 'live'
+    }
+    const release = async () => {
+      await supabase.rpc('release_browser_companion_reaction_authorized', {
+        p_room_id: roomId,
+        p_reaction_key: reactionKey,
+        p_instance_id: instanceIdRef.current,
+        p_operator_capability: stateRef.current.operatorCapability,
+      })
+    }
 
-    async function generate() {
-      // Someone already ran this — a reload, or the host rejoining.
-      const { count } = await supabase
+    const generate = async (): Promise<'done' | 'retry-ownership'> => {
+      const existing = await fetchAllRows<PlayerVerdictRow>((from, to) => supabase
         .from('player_verdicts')
-        .select('*', { count: 'exact', head: true })
-        .eq('room_id', roomId!)
-      if (count != null && count > 0) return
+        .select()
+        .eq('room_id', roomId)
+        .order('player_id')
+        .range(from, to))
+      if (existing.error) throw existing.error
+      if (isCompletePlayerSet(existing.data ?? [], stateRef.current.playerAwards)) return 'done'
 
+      const { data: claimData, error: claimError } = await supabase.rpc('claim_browser_companion_reaction_authorized', {
+        p_room_id: roomId,
+        p_reaction_key: reactionKey,
+        p_instance_id: instanceIdRef.current,
+        p_lease_seconds: 300,
+        p_operator_capability: stateRef.current.operatorCapability,
+      })
+      if (claimError) throw claimError
+      const ownership = (claimData as Array<{
+        claimed?: boolean
+        active_completed_at?: string | null
+      }> | null)?.[0]
+      if (ownership?.claimed !== true) {
+        return ownership?.active_completed_at == null ? 'retry-ownership' : 'done'
+      }
+
+      let completed = false
       setIsGenerating(true)
       try {
-        // Chat is fetched here rather than threaded down from the page: this is
-        // the only consumer, it is a one-shot read, and the Results page has no
-        // other reason to hold the transcript in state.
-        const { data: msgData } = await supabase
+        if (!stillValid()) return 'done'
+        const messageResult = await fetchAllRows<MessageRow>((from, to) => supabase
           .from('messages')
           .select()
-          .eq('room_id', roomId!)
+          .eq('room_id', roomId)
           .order('created_at')
-        const messages = (msgData ?? []) as MessageRow[]
-
-        const authors = assignVerdictAuthors(playerAwards.map((a) => a.playerId))
-        const candidates = collectLineCandidates(messages, players)
-        const prompt = buildVerdictsPrompt(playerAwards, leaderboard, authors, candidates)
-
-        const response = await fetch('/api/anthropic/v1/messages', {
-          method: 'POST',
-          headers: {
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-5',
-            // ~90 tokens per verdict at 2-3 sentences, times up to 6 players,
-            // with headroom for the JSON envelope.
-            // Roughly triple the passage-only budget: each slot now also
-            // returns a title and up to four highlight ids with notes.
-            max_tokens: 3000,
-            // Thinking off for the same reason as every other companion caller
-            // in this app: on Sonnet 5 max_tokens caps thinking + text together,
-            // so a long think silently truncates the actual verdicts.
-            thinking: { type: 'disabled' },
-            output_config: { effort: 'low' },
-            system: [
-              {
-                type: 'text',
-                text: prompt.system,
-                cache_control: { type: 'ephemeral', ttl: '1h' },
-              },
-            ],
-            messages: [{ role: 'user', content: prompt.user }],
-          }),
-        })
-
-        if (!response.ok) return
-        const data = await response.json()
-        const blocks = (data?.content ?? []) as Array<{ type?: string; text?: string }>
-        const raw = blocks.find((b) => b.type === 'text')?.text ?? ''
-        if (!raw) return
-
-        const parsed = parseVerdictResponse(raw)
-        if (parsed.length === 0) return
-
-        const awardByPlayer = new Map(playerAwards.map((a) => [a.playerId, a]))
-        const validMessageIds = new Set(messages.map((m) => m.id))
-
-        // Titles must be unique across the room. The prompt says so and the
-        // model is shown every player at once, but "check before you answer" is
-        // not a guarantee — so the first claimant keeps a name and anyone who
-        // collides falls back to their computed pool title, which is already
-        // distinct by construction. Case-insensitive because "The Kingmaker"
-        // and "the kingmaker" would read as the same name on two keepsakes.
-        const claimedTitles = new Set<string>()
-
-        const rows = parsed
-          .map((v) => {
-            const playerId = prompt.slots.get(v.slot)
-            if (!playerId) return null
-            const award = awardByPlayer.get(playerId)
-            if (!award) return null
-
-            const proposed = v.title.trim()
-            const key = proposed.toLowerCase()
-            const usable = proposed.length > 0 && proposed.length <= 40 && !claimedTitles.has(key)
-            if (usable) claimedTitles.add(key)
-            const title = usable ? proposed : award.title
-            claimedTitles.add(title.toLowerCase())
-
-            return {
-              room_id: roomId!,
-              player_id: playerId,
-              // Byline comes from our own deterministic assignment, never from
-              // the model — it was told who writes each slot, but a wrong echo
-              // would attribute the passage to the wrong companion forever.
-              companion_id: authors.get(playerId) ?? 'ned',
-              title,
-              verdict: v.text,
-              // Drop any id the model did not actually receive. A hallucinated
-              // id would render as a missing line rather than a wrong one, but
-              // filtering here keeps the stored row honest.
-              highlights: v.highlights
-                .filter((h) => validMessageIds.has(h.messageId))
-                .slice(0, 4)
-                .map((h) => ({ message_id: h.messageId, note: h.note })),
-              // Drop unknown slugs and unknown slots, and keep at most one
-              // image per slot. A hallucinated slug would otherwise be stored
-              // and render as a missing picture in a file somebody keeps.
-              imagery: (() => {
-                const claimed = new Set<string>()
-                return v.imagery
-                  .filter((im) => {
-                    if (!IMAGE_SLOTS.includes(im.slot as (typeof IMAGE_SLOTS)[number])) return false
-                    if (!getLibraryImage(im.slug)) return false
-                    if (claimed.has(im.slot)) return false
-                    claimed.add(im.slot)
-                    return true
-                  })
-                  .map((im) => ({ slot: im.slot, slug: im.slug, note: im.note }))
-              })(),
-            }
-          })
-          .filter((r): r is NonNullable<typeof r> => r !== null)
-
-        if (rows.length === 0) return
-
-        const { error } = await supabase.from('player_verdicts').upsert(rows)
-        if (error) {
-          console.error('Failed to persist verdicts:', error)
-          return
-        }
-
-        // Apply locally rather than waiting on the echo — the host wrote these
-        // and should not watch their own page lag behind everyone else's.
-        rows.forEach((r) =>
-          upsertLocal({ ...r, created_at: new Date().toISOString() } as PlayerVerdictRow),
+          .order('id')
+          .range(from, to))
+        if (messageResult.error) throw messageResult.error
+        const messages = messageResult.data ?? []
+        const current = stateRef.current
+        const authors = assignVerdictAuthors(current.playerAwards.map((award) => award.playerId))
+        const candidates = collectLineCandidates(messages, current.players)
+        const prompt = buildVerdictsPrompt(
+          current.playerAwards,
+          current.leaderboard,
+          authors,
+          candidates,
         )
-      } catch (err) {
-        // Verdicts are an enhancement. Titles and stats already rendered.
-        console.error('Verdict generation failed:', err)
+        const grounded = await groundedVerdictBatch({
+          system: prompt.system,
+          user: prompt.user,
+          facts: prompt.groundingFacts,
+          contracts: prompt.slotContracts,
+          model: 'claude-sonnet-5',
+          maxTokens: 3000,
+          maxRetries: 2,
+          caller: callClaude,
+        })
+        if (grounded.findings.length > 0) {
+          const currentCapability = stateRef.current.operatorCapability
+          if (!currentCapability) return 'done'
+          const { error } = await supabase.rpc('record_companion_grounding_review_authorized', {
+            p_room_id: roomId,
+            p_actor_player_id: hostPlayerId,
+            p_reaction_key: reactionKey,
+            p_surface: 'verdict',
+            p_engine: 'browser',
+            p_facts: prompt.groundingFacts,
+            p_attempted_messages: grounded.attemptedMessages,
+            p_findings: grounded.findings,
+            p_attempts: grounded.attempts,
+            p_model: 'claude-sonnet-5',
+            p_operator_capability: currentCapability,
+          })
+          if (error) console.error('Could not preserve blocked keepsake prose:', error)
+          return 'done'
+        }
+        if (grounded.verdicts.length !== prompt.slotContracts.length || !stillValid()) return 'done'
+
+        const latest = stateRef.current
+        const latestAuthors = assignVerdictAuthors(latest.playerAwards.map((award) => award.playerId))
+        const latestPrompt = buildVerdictsPrompt(
+          latest.playerAwards,
+          latest.leaderboard,
+          latestAuthors,
+          candidates,
+        )
+        if (JSON.stringify(latestPrompt.groundingFacts) !== JSON.stringify(prompt.groundingFacts) ||
+          JSON.stringify(latestPrompt.slotContracts) !== JSON.stringify(prompt.slotContracts)) return 'done'
+
+        const rows = grounded.verdicts.map((verdict, index) => ({
+          player_id: prompt.slotContracts[index].playerId,
+          companion_id: prompt.slotContracts[index].companionId,
+          title: verdict.title,
+          verdict: verdict.text,
+          highlights: verdict.highlights.map((highlight) => ({
+            message_id: highlight.messageId,
+            note: highlight.note,
+          })),
+          imagery: verdict.imagery,
+        }))
+        const { data, error } = await supabase.rpc('complete_grounded_player_verdicts_authorized', {
+          p_room_id: roomId,
+          p_actor_player_id: hostPlayerId,
+          p_reaction_key: reactionKey,
+          p_instance_id: instanceIdRef.current,
+          p_rows: rows,
+          p_facts: prompt.groundingFacts,
+          p_attempts: grounded.attempts,
+          p_model: 'claude-sonnet-5',
+          p_operator_capability: stateRef.current.operatorCapability,
+        })
+        if (error) throw error
+        completed = (data as Array<{ completed?: boolean }> | null)?.[0]?.completed === true
+        if (!completed) return 'done'
+
+        const persisted = await fetchAllRows<PlayerVerdictRow>((from, to) => supabase
+          .from('player_verdicts')
+          .select()
+          .eq('room_id', roomId)
+          .order('player_id')
+          .range(from, to))
+        if (!persisted.error && persisted.data) {
+          setVerdicts(new Map(persisted.data.map((row) => [row.player_id, row])))
+        }
+        return 'done'
       } finally {
+        if (!completed) await release()
         setIsGenerating(false)
       }
     }
 
-    // Let the finale overlay clear and the leaderboard settle first.
-    const timer = setTimeout(generate, 1500)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, isHost, ready, playerAwards.length, players.length])
+    // The old bundle begins its direct write at 1.5 seconds. This brief grace
+    // preserves a complete legacy packet; the atomic path replaces only a
+    // missing or partial one and seals later stale writes after completion.
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
+    const run = () => {
+      void generate().then((result) => {
+        if (result === 'retry-ownership' && stillValid()) {
+          retryTimer = setTimeout(run, 5_000)
+        }
+      }).catch((error) => {
+        console.error('Verdict generation failed:', error)
+        setIsGenerating(false)
+      })
+    }
+    const timer = setTimeout(run, 3_300)
+    return () => {
+      disposed = true
+      clearTimeout(timer)
+      if (retryTimer) clearTimeout(retryTimer)
+    }
+  }, [
+    options.roomId,
+    options.hostPlayerId,
+    options.isHost,
+    options.operatorCapability,
+    options.ready,
+    options.recordSource,
+    options.playerAwards.length,
+  ])
 
   return { verdicts, isGenerating }
 }

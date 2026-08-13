@@ -1,0 +1,41 @@
+{
+  "manifest_version": 1,
+  "artifact": "legacy-signature-batch-decisions",
+  "batch_id": "rhaenyra-mysaria-mirrored-events",
+  "target": { "pack_id": "hotd-s3e8", "pack_version": 1 },
+  "legacy_worksheet_sha256": "a4e6df689cf193882ef1c3240852ac5a514f13293be71d28c50d6e417f732c9f",
+  "decisions": [
+    {
+      "legacy_signature_beat_id": 11,
+      "basis_legacy_entity_ids": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "45350e4e-503e-9198-4559-2555a68410f4"],
+      "condition": "Rhaenyra and Mysaria share an unmistakably romantic or sexual interaction in the present timeline.",
+      "exclusions": ["Political intimacy, private conversation, touch without a romantic or sexual meaning, recap footage, dreams and visions do not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Sapphic Spark accurately names an unmistakably romantic or sexual present-timeline interaction between Rhaenyra and Mysaria." }
+    },
+    {
+      "legacy_signature_beat_id": 29,
+      "basis_legacy_entity_ids": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "45350e4e-503e-9198-4559-2555a68410f4"],
+      "condition": "Rhaenyra and Mysaria share an unmistakably romantic or sexual interaction in the present timeline.",
+      "exclusions": ["Political intimacy, private conversation, touch without a romantic or sexual meaning, recap footage, dreams and visions do not count."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Sapphic Spark accurately names an unmistakably romantic or sexual present-timeline interaction between Rhaenyra and Mysaria." }
+    },
+    {
+      "legacy_signature_beat_id": 12,
+      "basis_legacy_entity_ids": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "45350e4e-503e-9198-4559-2555a68410f4"],
+      "condition": "Rhaenyra explicitly rejects Mysaria's intimacy, removes her from confidence, or tells her their relationship cannot continue.",
+      "exclusions": ["A disagreement, temporary separation, interrupted conversation, or another character predicting a rupture does not count without Rhaenyra's explicit rejection or removal."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Pushes Mysaria Away accurately covers Rhaenyra explicitly rejecting Mysaria's intimacy, confidence or relationship." }
+    },
+    {
+      "legacy_signature_beat_id": 30,
+      "basis_legacy_entity_ids": ["9ac3581a-94f5-9fc1-d003-bbc4ed9971e5", "45350e4e-503e-9198-4559-2555a68410f4"],
+      "condition": "Rhaenyra explicitly rejects Mysaria's intimacy, removes her from confidence, or tells her their relationship cannot continue.",
+      "exclusions": ["A disagreement, temporary separation, interrupted conversation, or another character predicting a rupture does not count without Rhaenyra's explicit rejection or removal."],
+      "adjudication": { "proxies": "do_not_count", "offscreen": "do_not_count", "mentions": "do_not_count" },
+      "title_review": { "status": "approved", "note": "Queen Pushes Away accurately covers Rhaenyra explicitly rejecting Mysaria's intimacy, confidence or relationship." }
+    }
+  ]
+}

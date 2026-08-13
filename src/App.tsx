@@ -32,11 +32,12 @@ import { HallmarkDefs } from './components/ui/Hallmarks'
 import { allegianceForPlayer } from './lib/allegiance'
 import { WifiOff } from 'lucide-react'
 import { GameProvider, useGame } from './context/GameContext'
+import { OperatorAuthorityProvider } from './context/OperatorAuthorityContext'
 import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import Room from './pages/Room'
 import Draft from './pages/Draft'
-import Activate from './pages/Activate'
+import PredictionPhase from './pages/PredictionPhase'
 import Live from './pages/Live'
 import Admin from './pages/Admin'
 import Results from './pages/Results'
@@ -122,7 +123,7 @@ function AppInner() {
             <Route path="/how-it-works" element={<PageWrap><HowItWorks /></PageWrap>} />
             <Route path="/room/:code" element={<PageWrap><Room /></PageWrap>} />
             <Route path="/room/:code/draft" element={<PageWrap><Draft /></PageWrap>} />
-            <Route path="/room/:code/confidence" element={<PageWrap><Activate /></PageWrap>} />
+            <Route path="/room/:code/confidence" element={<PageWrap><PredictionPhase /></PageWrap>} />
             <Route path="/room/:code/live" element={<PageWrap><Live /></PageWrap>} />
             <Route path="/room/:code/admin" element={<PageWrap><Admin /></PageWrap>} />
             <Route path="/room/:code/results" element={<PageWrap><Results /></PageWrap>} />
@@ -145,9 +146,11 @@ function App() {
   return (
     <BrowserRouter>
       <GameProvider>
-        {/* Hallmark <symbol> defs — mounted once so <use> refs resolve anywhere */}
-        <HallmarkDefs />
-        <AppInner />
+        <OperatorAuthorityProvider>
+          {/* Hallmark <symbol> defs — mounted once so <use> refs resolve anywhere */}
+          <HallmarkDefs />
+          <AppInner />
+        </OperatorAuthorityProvider>
       </GameProvider>
     </BrowserRouter>
   )

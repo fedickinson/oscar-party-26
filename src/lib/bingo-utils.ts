@@ -464,6 +464,39 @@ export function checkBingo(
   return { hasBingo: lines.length > 0, lines, newLines }
 }
 
+/**
+ * Whether one approved mark increased the completed-line count at the moment
+ * it entered the room record. Later marks are deliberately excluded so two
+ * engines processing close-together Realtime events in different orders still
+ * derive the same square-versus-line announcement.
+ */
+export function didBingoMarkCompleteLine(
+  target: BingoMarkRow,
+  currentApprovedMarks: BingoMarkRow[],
+): boolean {
+  if (target.status !== 'approved') return false
+
+  const chronological = currentApprovedMarks
+    .filter((mark) => mark.status === 'approved' && Number.isFinite(Date.parse(mark.marked_at)))
+    .sort((left, right) => {
+      const timeDifference = Date.parse(left.marked_at) - Date.parse(right.marked_at)
+      return timeDifference !== 0 ? timeDifference : left.id.localeCompare(right.id)
+    })
+  const targetIndex = chronological.findIndex((mark) => (
+    mark.id === target.id &&
+    mark.square_index === target.square_index &&
+    mark.marked_at === target.marked_at
+  ))
+  if (targetIndex < 0) return false
+
+  const before = new Set(
+    chronological.slice(0, targetIndex).map((mark) => mark.square_index),
+  )
+  const after = new Set(before)
+  after.add(chronological[targetIndex].square_index)
+  return checkBingo(after).lines.length > checkBingo(before).lines.length
+}
+
 // ─── countBingos ─────────────────────────────────────────────────────────────
 
 export function countBingos(lines: number[][]): number {

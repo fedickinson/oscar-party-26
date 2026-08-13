@@ -6,20 +6,102 @@
  * sendMessage writes to the messages table — Realtime delivers it back.
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { MessageRow } from '../types/database'
+import { fetchAllRows } from './fetch-all-rows'
 
 export type { MessageRow }
 
+const CHAT_REALTIME_STABILIZATION_MS = 5_000
+
 export function useChat(roomId: string | undefined, channelKey = 'default') {
   const [messages, setMessages] = useState<MessageRow[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
+  const activeScopeRef = useRef<string | null>(null)
+  const canSendRef = useRef(false)
+
+  const requestedScope = roomId ?? null
+  const isLoading = loadingState || (
+    requestedScope != null && requestedScope !== activeScopeRef.current
+  )
+  const syncError = requestedScope != null && requestedScope === activeScopeRef.current
+    ? syncErrorState
+    : null
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId) {
+      activeScopeRef.current = null
+      canSendRef.current = false
+      setMessages([])
+      setLoadingState(false)
+      setSyncErrorState(null)
+      return
+    }
 
-    // Subscribe first so we don't miss messages inserted between fetch + subscribe
+    activeScopeRef.current = roomId
+    canSendRef.current = false
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+    setMessages([])
+    setLoadingState(true)
+    setSyncErrorState(null)
+
+    const compareMessages = (left: MessageRow, right: MessageRow) => (
+      left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id)
+    )
+    const upsertMessage = (message: MessageRow) => {
+      setMessages((current) => {
+        const index = current.findIndex((candidate) => candidate.id === message.id)
+        const next = index === -1
+          ? [...current, message]
+          : current.map((candidate, candidateIndex) => (
+            candidateIndex === index ? message : candidate
+          ))
+        return next.sort(compareMessages)
+      })
+    }
+
+    const hydrateMessages = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const result = await fetchAllRows<MessageRow>((from, to) => supabase
+            .from('messages')
+            .select('id, room_id, player_id, text, created_at')
+            .eq('room_id', roomId)
+            .order('created_at', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to))
+          if (result.error) throw result.error
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          setMessages((result.data ?? []).sort(compareMessages))
+          canSendRef.current = true
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Chat record load failed:', loadError)
+        setSyncErrorState('The room chat could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
+
     // channelKey disambiguates callers so two useChat instances on the same roomId
     // don't share (and accidentally unsubscribe) the same Supabase channel object.
     const channel = supabase
@@ -33,45 +115,52 @@ export function useChat(roomId: string | undefined, channelKey = 'default') {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const msg = payload.new as MessageRow
-          setMessages((prev) => {
-            // Deduplicate in case the optimistic insert already arrived
-            if (prev.some((m) => m.id === msg.id)) return prev
-            return [...prev, msg]
-          })
+          upsertMessage(msg)
         },
       )
-      .subscribe()
-
-    // Then fetch existing messages — merge with any already-accumulated via Realtime
-    // to avoid overwriting messages that arrived between subscribe and fetch completing.
-    supabase
-      .from('messages')
-      .select('id, room_id, player_id, text, created_at')
-      .eq('room_id', roomId)
-      .order('created_at', { ascending: true })
-      .then(({ data }) => {
-        if (data) {
-          setMessages((prev) => {
-            const fetched = data as MessageRow[]
-            // Merge: keep any subscription-delivered messages not in the fetched snapshot
-            const fetchedIds = new Set(fetched.map((m) => m.id))
-            const extra = prev.filter((m) => !fetchedIds.has(m.id))
-            return [...fetched, ...extra].sort(
-              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-            )
-          })
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateMessages()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateMessages(false)
+          }, CHAT_REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          canSendRef.current = false
+          hydrationRun += 1
+          setSyncErrorState('The room chat feed could not connect to Realtime.')
+          setLoadingState(false)
         }
-        setIsLoading(false)
       })
 
     return () => {
+      disposed = true
+      subscribed = false
+      canSendRef.current = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId, channelKey])
+  }, [roomId, channelKey, retryVersion])
+
+  const retrySync = useCallback(() => {
+    canSendRef.current = false
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setRetryVersion((current) => current + 1)
+  }, [])
 
   async function sendMessage(playerId: string, text: string): Promise<{ error: Error | null }> {
     if (!roomId || !playerId || !text.trim()) return { error: null }
+    if (!canSendRef.current || isLoading || syncError != null) {
+      return { error: new Error('Chat must finish synchronizing before a message can be sent.') }
+    }
     const { error } = await supabase.from('messages').insert({
       room_id: roomId,
       player_id: playerId,
@@ -81,5 +170,5 @@ export function useChat(roomId: string | undefined, channelKey = 'default') {
     return { error: null }
   }
 
-  return { messages, sendMessage, isLoading }
+  return { messages, sendMessage, isLoading, syncError, retrySync }
 }

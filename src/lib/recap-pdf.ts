@@ -18,7 +18,7 @@
 
 import { jsPDF } from 'jspdf'
 import { COMPANION_IDS, getCompanionById } from '../data/ai-companions'
-import type { ScoredPlayer } from './scoring'
+import { findDraftPointsForWinner, type ScoredPlayer } from './scoring'
 import type { PlayerAward, CharacterAward } from './night-awards'
 import type {
   CategoryRow,
@@ -940,7 +940,7 @@ export function generateRecapPDF(data: RecapData): void {
   doc.setFontSize(9.5)
   doc.setFont('helvetica', 'normal')
   setTextColor(WHITE_60)
-  doc.text('Each drafted entity earns its category point value when the nominee wins.', pageWidth / 2, y, { align: 'center' })
+  doc.text('Each roster row uses the same draft payout as the final leaderboard.', pageWidth / 2, y, { align: 'center' })
   y += 14
 
   // Build a per-player draft roster with win info
@@ -982,29 +982,20 @@ export function generateRecapPDF(data: RecapData): void {
       : []
 
     announcedCategories.forEach((cat) => {
-      const catWinnerId = cat.winner_id
-      const catTieWinnerId = cat.tie_winner_id
-
-      let matched = false
-      if (entity.type === 'person') {
-        const nominee = data.nominees.find((n) => n.id === catWinnerId || n.id === catTieWinnerId)
-        if (nominee && nominee.name === entity.name) {
-          const nominatedHere =
-            noms.length === 0 || noms.some((n) => n.category_id === cat.id)
-          if (nominatedHere) matched = true
+      for (const winnerId of [cat.winner_id, cat.tie_winner_id]) {
+        if (!winnerId) continue
+        const result = findDraftPointsForWinner(
+          cat.id,
+          winnerId,
+          data.categories,
+          data.nominees,
+          data.draftEntities,
+          data.draftPicks,
+        )
+        if (result.entityId === entity.id) {
+          won = true
+          pointsEarned += result.points
         }
-      } else {
-        const filmTitle = entity.film_name || entity.name
-        const winNominee = data.nominees.find((n) => n.id === catWinnerId)
-        const tieNominee = catTieWinnerId ? data.nominees.find((n) => n.id === catTieWinnerId) : null
-        const nomFilm1 = winNominee ? (winNominee.film_name || winNominee.name) : null
-        const nomFilm2 = tieNominee ? (tieNominee.film_name || tieNominee.name) : null
-        if (filmTitle === nomFilm1 || filmTitle === nomFilm2) matched = true
-      }
-
-      if (matched) {
-        won = true
-        pointsEarned += cat.points
       }
     })
 

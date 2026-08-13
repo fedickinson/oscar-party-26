@@ -133,6 +133,7 @@
   --t-space-3: 12px;
   --t-space-4: 16px;
   --t-space-5: 24px;
+  --t-conviction-footer-height: 12rem;
   --t-type-tab: 10px;
   --t-type-label: 12px;
   --t-type-body: 14px;
@@ -317,8 +318,6 @@ body::after {
 
 button,
 input {
-  color: inherit;
-  font: inherit;
   transition:
     border-color var(--t-motion-fast) var(--t-ease-standard),
     color var(--t-motion-fast) var(--t-ease-standard),

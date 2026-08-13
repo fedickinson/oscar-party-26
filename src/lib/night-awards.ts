@@ -30,6 +30,7 @@ import type {
   DraftEntityRow,
   DraftPickRow,
   ConfidencePickRow,
+  GameModel,
   PlayerRow,
 } from '../types/database'
 
@@ -438,11 +439,25 @@ export function computeNightAwards(
   draftPicks: DraftPickRow[],
   confidencePicks: ConfidencePickRow[],
   timeline: TimelinePoint[],
+  gameModel: GameModel = 'legacy_ensemble',
 ): NightAwards {
-  const tallies = tallyEntityPoints(categories, nominees, draftEntities, draftPicks, players)
-  const profiles = buildProfiles(leaderboard, categories, confidencePicks, tallies, timeline)
+  const attributedTallies = tallyEntityPoints(categories, nominees, draftEntities, draftPicks, players)
+  const tallies = gameModel === 'legacy_ensemble'
+    ? attributedTallies
+    : new Map([...attributedTallies].map(([id, tally]) => [id, {
+        ...tally,
+        points: 0,
+        wins: [],
+      }]))
+  const profiles = buildProfiles(
+    leaderboard,
+    categories,
+    gameModel === 'legacy_ensemble' ? confidencePicks : [],
+    tallies,
+    timeline,
+  )
   return {
     playerAwards: assignPlayerTitles(profiles),
-    characterAwards: computeCharacterAwards(tallies),
+    characterAwards: gameModel === 'legacy_ensemble' ? computeCharacterAwards(tallies) : [],
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { supabase } from '../lib/supabase'
 import type {
   BeatActivationRow,
@@ -36,36 +37,152 @@ export interface BeatActivationState {
   myRequiredCount: number
   allComplete: boolean
   isLoading: boolean
-  error: string | null
+  syncError: string | null
+  actionError: string | null
+  isAdvancing: boolean
   toggle: (beatId: number) => Promise<void>
   hostAdvance: () => Promise<void>
+  retrySync: () => void
 }
 
+const REALTIME_STABILIZATION_MS = 5_000
+
 export function useBeatActivation(roomId: string | undefined): BeatActivationState {
-  const { player, setRoom } = useGame()
+  const { room, player, setRoom } = useGame()
+  const { capability: operatorCapability, authority: operatorAuthority } = useOperatorAuthority()
   const [picks, setPicks] = useState<DraftPickRow[]>([])
   const [entities, setEntities] = useState<DraftEntityRow[]>([])
   const [beats, setBeats] = useState<SignatureBeatRow[]>([])
   const [players, setPlayers] = useState<PlayerRow[]>([])
   const [activations, setActivations] = useState<BeatActivationRow[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadingState, setLoadingState] = useState(true)
+  const [syncErrorState, setSyncErrorState] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [isAdvancing, setIsAdvancing] = useState(false)
+  const [retryVersion, setRetryVersion] = useState(0)
 
   const activationsRef = useRef<BeatActivationRow[]>([])
   const beatsRef = useRef<SignatureBeatRow[]>([])
   const picksRef = useRef<DraftPickRow[]>([])
   const entitiesRef = useRef<DraftEntityRow[]>([])
   const togglingRef = useRef<Set<number>>(new Set())
-  const deletedDuringLoadRef = useRef<Set<number>>(new Set())
+  const advancingRef = useRef(false)
+  const activeScopeRef = useRef<string | null>(null)
 
   useEffect(() => { activationsRef.current = activations }, [activations])
   useEffect(() => { beatsRef.current = beats }, [beats])
   useEffect(() => { picksRef.current = picks }, [picks])
   useEffect(() => { entitiesRef.current = entities }, [entities])
 
+  const requestedScope = roomId && room?.id === roomId
+    ? `${roomId}:${room.show_pack_id}`
+    : null
+  const isLoading = loadingState || (
+    requestedScope != null && requestedScope !== activeScopeRef.current
+  )
+  const syncError = requestedScope != null && requestedScope === activeScopeRef.current
+    ? syncErrorState
+    : null
+
   useEffect(() => {
-    if (!roomId) return
-    let cancelled = false
+    if (!roomId || !room || room.id !== roomId) {
+      activeScopeRef.current = null
+      activationsRef.current = []
+      beatsRef.current = []
+      picksRef.current = []
+      entitiesRef.current = []
+      setPicks([])
+      setEntities([])
+      setBeats([])
+      setPlayers([])
+      setActivations([])
+      setLoadingState(false)
+      setSyncErrorState(null)
+      setActionError(null)
+      return
+    }
+
+    const currentRoom = room
+    activeScopeRef.current = `${roomId}:${currentRoom.show_pack_id}`
+    let disposed = false
+    let subscribed = false
+    let liveRevision = 0
+    let hydrationRun = 0
+    let stabilizationTimer: ReturnType<typeof setTimeout> | null = null
+
+    activationsRef.current = []
+    beatsRef.current = []
+    picksRef.current = []
+    entitiesRef.current = []
+    setPicks([])
+    setEntities([])
+    setBeats([])
+    setPlayers([])
+    setActivations([])
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setActionError(null)
+
+    const hydrateActivationLedger = async (showLoading = true) => {
+      const run = ++hydrationRun
+      if (showLoading) {
+        setLoadingState(true)
+        setSyncErrorState(null)
+      }
+
+      try {
+        while (!disposed && run === hydrationRun) {
+          const revisionAtStart = liveRevision
+          const [pickRes, entityRes, beatRes, playerRes, activationRes, roomRes] = await Promise.all([
+            supabase.from('draft_picks').select().eq('room_id', roomId),
+            supabase.from('draft_entities').select().eq('show_pack_id', currentRoom.show_pack_id),
+            supabase
+              .from('signature_beats')
+              .select()
+              .eq('show_pack_id', currentRoom.show_pack_id)
+              .order('points', { ascending: false }),
+            supabase.from('players').select().eq('room_id', roomId).order('created_at'),
+            supabase.from('beat_activations').select().eq('room_id', roomId),
+            supabase.from('rooms').select().eq('id', roomId).maybeSingle(),
+          ])
+          const firstError = [
+            pickRes.error,
+            entityRes.error,
+            beatRes.error,
+            playerRes.error,
+            activationRes.error,
+            roomRes.error,
+          ].find(Boolean)
+          if (firstError) throw firstError
+          if (!roomRes.data) throw new Error('The room no longer exists.')
+          if (disposed || run !== hydrationRun) return
+          if (liveRevision !== revisionAtStart) continue
+
+          const nextPicks = (pickRes.data ?? []) as DraftPickRow[]
+          const nextEntities = (entityRes.data ?? []) as DraftEntityRow[]
+          const nextBeats = (beatRes.data ?? []) as SignatureBeatRow[]
+          const nextActivations = (activationRes.data ?? []) as BeatActivationRow[]
+          picksRef.current = nextPicks
+          entitiesRef.current = nextEntities
+          beatsRef.current = nextBeats
+          activationsRef.current = nextActivations
+          setPicks(nextPicks)
+          setEntities(nextEntities)
+          setBeats(nextBeats)
+          setPlayers((playerRes.data ?? []) as PlayerRow[])
+          setActivations(nextActivations)
+          setRoom(roomRes.data as RoomRow)
+          setSyncErrorState(null)
+          setLoadingState(false)
+          return
+        }
+      } catch (loadError) {
+        if (disposed || run !== hydrationRun) return
+        console.error('Beat activation ledger load failed:', loadError)
+        setSyncErrorState('The beat activation ledger could not be synchronized.')
+        setLoadingState(false)
+      }
+    }
 
     const channel = supabase
       .channel(`beat-activation:${roomId}`)
@@ -73,10 +190,16 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'beat_activations', filter: `room_id=eq.${roomId}` },
         (payload) => {
+          if (disposed) return
+          liveRevision += 1
           const row = payload.new as BeatActivationRow
-          deletedDuringLoadRef.current.delete(row.beat_id)
-          setActivations((prev) => {
-            const next = prev.some((a) => a.beat_id === row.beat_id) ? prev : [...prev, row]
+          setActivations((current) => {
+            const index = current.findIndex((activation) => activation.beat_id === row.beat_id)
+            const next = index === -1
+              ? [...current, row]
+              : current.map((activation, candidateIndex) => (
+                candidateIndex === index ? row : activation
+              ))
             activationsRef.current = next
             return next
           })
@@ -86,11 +209,12 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'beat_activations', filter: `room_id=eq.${roomId}` },
         (payload) => {
+          if (disposed) return
           const row = payload.old as Partial<BeatActivationRow>
           if (row.beat_id == null) return
-          deletedDuringLoadRef.current.add(row.beat_id)
-          setActivations((prev) => {
-            const next = prev.filter((a) => a.beat_id !== row.beat_id)
+          liveRevision += 1
+          setActivations((current) => {
+            const next = current.filter((activation) => activation.beat_id !== row.beat_id)
             activationsRef.current = next
             return next
           })
@@ -99,52 +223,47 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        (payload) => setRoom(payload.new as RoomRow),
+        (payload) => {
+          if (disposed) return
+          liveRevision += 1
+          setRoom(payload.new as RoomRow)
+        },
       )
-      .subscribe()
-
-    async function load() {
-      const [pickRes, entityRes, beatRes, playerRes, activationRes, roomRes] = await Promise.all([
-        supabase.from('draft_picks').select().eq('room_id', roomId!),
-        supabase.from('draft_entities').select(),
-        supabase.from('signature_beats').select().order('points', { ascending: false }),
-        supabase.from('players').select().eq('room_id', roomId!).order('created_at'),
-        supabase.from('beat_activations').select().eq('room_id', roomId!),
-        supabase.from('rooms').select().eq('id', roomId!).maybeSingle(),
-      ])
-      if (cancelled) return
-
-      const firstError = [pickRes.error, entityRes.error, beatRes.error, playerRes.error, activationRes.error, roomRes.error]
-        .find(Boolean)
-      if (firstError) setError(firstError.message)
-
-      const fetchedActivations = ((activationRes.data ?? []) as BeatActivationRow[])
-        .filter((row) => !deletedDuringLoadRef.current.has(row.beat_id))
-      setPicks((pickRes.data ?? []) as DraftPickRow[])
-      setEntities((entityRes.data ?? []) as DraftEntityRow[])
-      setBeats((beatRes.data ?? []) as SignatureBeatRow[])
-      setPlayers((playerRes.data ?? []) as PlayerRow[])
-      setActivations((prev) => {
-        const merged = new Map<number, BeatActivationRow>()
-        for (const row of fetchedActivations) merged.set(row.beat_id, row)
-        for (const row of prev) merged.set(row.beat_id, row)
-        const next = [...merged.values()]
-        activationsRef.current = next
-        return next
+      .subscribe((status) => {
+        if (disposed) return
+        if (status === 'SUBSCRIBED') {
+          subscribed = true
+          void hydrateActivationLedger()
+          if (stabilizationTimer) clearTimeout(stabilizationTimer)
+          stabilizationTimer = setTimeout(() => {
+            if (!disposed && subscribed) void hydrateActivationLedger(false)
+          }, REALTIME_STABILIZATION_MS)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          subscribed = false
+          hydrationRun += 1
+          setSyncErrorState('The beat activation feed could not connect to Realtime.')
+          setLoadingState(false)
+        }
       })
-      if (roomRes.data) setRoom(roomRes.data as RoomRow)
-      setIsLoading(false)
-    }
 
-    void load()
     return () => {
-      cancelled = true
+      disposed = true
+      subscribed = false
+      hydrationRun += 1
+      if (stabilizationTimer) clearTimeout(stabilizationTimer)
       supabase.removeChannel(channel)
     }
-  }, [roomId, setRoom])
+  }, [roomId, room?.id, room?.show_pack_id, retryVersion, setRoom])
 
   async function toggle(beatId: number): Promise<void> {
-    if (!roomId || !player || togglingRef.current.has(beatId)) return
+    if (
+      !roomId
+      || !player
+      || isLoading
+      || syncError != null
+      || togglingRef.current.has(beatId)
+    ) return
+
     const beat = beatsRef.current.find((candidate) => candidate.id === beatId)
     if (!beat || beat.partner_entity_id != null) return
 
@@ -155,6 +274,10 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
     if (!entity || entity.type !== 'person' || !myEntityIds.has(entity.id)) return
 
     const existing = activationsRef.current.find((activation) => activation.beat_id === beatId)
+    if (existing && existing.player_id !== player.id) {
+      setActionError('That wager is already owned by another player’s ledger.')
+      return
+    }
     if (!existing) {
       const chosenForCharacter = activationsRef.current.filter((activation) => {
         const activatedBeat = beatsRef.current.find((candidate) => candidate.id === activation.beat_id)
@@ -166,35 +289,43 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
     }
 
     togglingRef.current.add(beatId)
-    setError(null)
-    if (existing) {
-      setActivations((prev) => {
-        const next = prev.filter((activation) => activation.beat_id !== beatId)
-        activationsRef.current = next
-        return next
-      })
-      const { error: deleteError } = await supabase
-        .from('beat_activations')
-        .delete()
-        .eq('room_id', roomId)
-        .eq('beat_id', beatId)
-      if (deleteError) {
-        setActivations((prev) => {
-          const next = prev.some((activation) => activation.beat_id === beatId) ? prev : [...prev, existing]
+    setActionError(null)
+    try {
+      if (existing) {
+        setActivations((current) => {
+          const next = current.filter((activation) => activation.beat_id !== beatId)
           activationsRef.current = next
           return next
         })
-        setError(deleteError.message)
+        const { error: deleteError } = await supabase
+          .from('beat_activations')
+          .delete()
+          .eq('room_id', roomId)
+          .eq('beat_id', beatId)
+          .eq('player_id', player.id)
+        if (deleteError) {
+          setActivations((current) => {
+            const next = current.some((activation) => activation.beat_id === beatId)
+              ? current
+              : [...current, existing]
+            activationsRef.current = next
+            return next
+          })
+          setActionError(deleteError.message)
+        }
+        return
       }
-    } else {
+
       const optimistic: BeatActivationRow = {
         room_id: roomId,
         player_id: player.id,
         beat_id: beatId,
         created_at: new Date().toISOString(),
       }
-      setActivations((prev) => {
-        const next = [...prev, optimistic]
+      setActivations((current) => {
+        const next = current.some((activation) => activation.beat_id === beatId)
+          ? current
+          : [...current, optimistic]
         activationsRef.current = next
         return next
       })
@@ -203,33 +334,78 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
         player_id: player.id,
         beat_id: beatId,
       })
-      if (insertError) {
-        // 23505 = the row already exists — an earlier tap landed but this
-        // client missed the realtime echo (phones suspend sockets in the
-        // background). The beat IS active; rolling back the optimistic state
-        // made the checkbox "instantly un-pick" while the DB disagreed. Keep it.
-        if (insertError.code === '23505') {
-          /* already active — optimistic state is correct */
-        } else {
-          setActivations((prev) => {
-            const next = prev.filter((activation) => activation.beat_id !== beatId)
+      if (!insertError) return
+
+      if (insertError.code === '23505') {
+        const { data: canonical, error: canonicalError } = await supabase
+          .from('beat_activations')
+          .select()
+          .eq('room_id', roomId)
+          .eq('beat_id', beatId)
+          .maybeSingle()
+        if (!canonicalError && canonical?.player_id === player.id) {
+          setActivations((current) => {
+            const next = current.map((activation) => (
+              activation.beat_id === beatId ? canonical as BeatActivationRow : activation
+            ))
             activationsRef.current = next
             return next
           })
-          setError(insertError.message)
+          return
         }
       }
+
+      setActivations((current) => {
+        const next = current.filter((activation) => activation.beat_id !== beatId)
+        activationsRef.current = next
+        return next
+      })
+      setActionError(insertError.message)
+    } finally {
+      togglingRef.current.delete(beatId)
     }
-    togglingRef.current.delete(beatId)
   }
 
   async function hostAdvance(): Promise<void> {
-    if (!roomId || !player?.is_host) return
-    const { error: advanceError } = await supabase
-      .from('rooms')
-      .update({ phase: 'live' })
-      .eq('id', roomId)
-    if (advanceError) setError(advanceError.message)
+    if (
+      !roomId
+      || !room
+      || !player?.is_host
+      || room.phase !== 'confidence'
+      || isLoading
+      || syncError != null
+      || advancingRef.current
+    ) return
+
+    if (!operatorAuthority.enabled || !operatorCapability) {
+      setActionError(operatorAuthority.message ?? 'Current operator authority is required.')
+      return
+    }
+
+    advancingRef.current = true
+    setIsAdvancing(true)
+    setActionError(null)
+    try {
+      const { data, error: advanceError } = await supabase.rpc('open_room_live_authorized', {
+        p_room_id: roomId,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+      })
+      if (advanceError) throw advanceError
+      if (!data) throw new Error('The room phase changed before the show could start. Refresh and try again.')
+    } catch (advanceError) {
+      setActionError(advanceError instanceof Error ? advanceError.message : 'The show could not start.')
+    } finally {
+      advancingRef.current = false
+      setIsAdvancing(false)
+    }
+  }
+
+  function retrySync() {
+    setLoadingState(true)
+    setSyncErrorState(null)
+    setActionError(null)
+    setRetryVersion((current) => current + 1)
   }
 
   const entitiesById = new Map(entities.map((entity) => [entity.id, entity]))
@@ -275,8 +451,11 @@ export function useBeatActivation(roomId: string | undefined): BeatActivationSta
     myRequiredCount: myProgress?.requiredCount ?? characters.length * 3,
     allComplete: progress.length > 0 && progress.every((entry) => entry.activatedCount === entry.requiredCount),
     isLoading,
-    error,
+    syncError,
+    actionError,
+    isAdvancing,
     toggle,
     hostAdvance,
+    retrySync,
   }
 }

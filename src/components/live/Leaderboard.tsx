@@ -22,6 +22,7 @@ import { AnimatePresence, motion, animate } from 'framer-motion'
 import { ChevronDown, Crown } from 'lucide-react'
 import Avatar from '../Avatar'
 import type { ScoredPlayer } from '../../lib/scoring'
+import type { GameModel } from '../../types/database'
 import type { AvatarEmotion } from '../../lib/avatar-utils'
 
 // ─── ScoreDeltaBadge ──────────────────────────────────────────────────────────
@@ -173,9 +174,10 @@ interface Props {
   currentPlayerId: string
   /** Optional per-player emotion derived from recent game events. */
   playerEmotions?: Record<string, AvatarEmotion>
+  gameModel?: GameModel
 }
 
-export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotions }: Props) {
+export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotions, gameModel = 'legacy_ensemble' }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const allBadges = useDeltaBadges(leaderboard)
 
@@ -258,11 +260,17 @@ export default function Leaderboard({ leaderboard, currentPlayerId, playerEmotio
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-3 pb-3 grid grid-cols-3 gap-2">
-                    {[
-                      { label: 'Draft', value: entry.ensembleScore },
-                      { label: 'Bingo', value: entry.bingoScore },
-                    ].map(({ label, value }) => (
+                  <div className={['grid gap-2 px-3 pb-3', gameModel === 'conviction_portfolio' ? 'grid-cols-2' : 'grid-cols-3'].join(' ')}>
+                    {(gameModel === 'conviction_portfolio'
+                      ? [
+                          { label: 'Conviction', value: entry.confidenceScore },
+                          { label: 'Bingo', value: entry.bingoScore },
+                        ]
+                      : [
+                          { label: 'Draft', value: entry.ensembleScore },
+                          { label: 'Picks', value: entry.confidenceScore },
+                          { label: 'Bingo', value: entry.bingoScore },
+                        ]).map(({ label, value }) => (
                       <div
                         key={label}
                         className="bg-white/5 rounded-lg px-2 py-2 text-center"
