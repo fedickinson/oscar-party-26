@@ -230,23 +230,31 @@ if (!shouldApply) {
 }
 if (!serviceKey) throw new Error('applying requires a service-role key for the selected target')
 
-async function insertRows(table: string, rows: unknown[], ignoreDuplicates = false): Promise<void> {
+async function insertRows(
+  table: string,
+  rows: unknown[],
+  conflictResolution: 'error' | 'ignore' | 'merge' = 'merge',
+): Promise<void> {
   if (rows.length === 0) return
   await request(table, {
     method: 'POST',
     headers: {
-      Prefer: `${ignoreDuplicates ? 'resolution=ignore-duplicates,' : 'resolution=merge-duplicates,'}return=minimal`,
+      Prefer: `${conflictResolution === 'error' ? '' : `resolution=${conflictResolution}-duplicates,`}return=minimal`,
     },
     body: JSON.stringify(rows),
   }, serviceKey)
 }
 
 if (existingPack?.status !== 'published') {
-  if (!existingPack) await insertRows('show_packs', [plan.showPack])
+  // The service role may insert a draft registry but deliberately cannot
+  // update it around the atomic publication RPC. Do not express this strict
+  // first insert as an upsert: Postgres would require the revoked UPDATE
+  // privilege even when the deterministic registry ID is absent.
+  if (!existingPack) await insertRows('show_packs', [plan.showPack], 'error')
   await insertRows('nominees?on_conflict=id', nominees)
   await insertRows('draft_entities?on_conflict=id', draftEntities)
   await insertRows('categories?on_conflict=id', categories)
-  await insertRows('category_nominees', categoryNominees, true)
+  await insertRows('category_nominees', categoryNominees, 'ignore')
   await insertRows('signature_beats?on_conflict=id', signatureBeats)
   await insertRows('bingo_squares?on_conflict=id', bingoSquares)
 

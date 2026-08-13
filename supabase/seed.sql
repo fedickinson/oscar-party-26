@@ -713,6 +713,11 @@ on conflict do nothing;
 -- Fail closed rather than publishing a partial local catalog.
 do $$
 begin
+  if (select count(*) from public.signature_beats
+      where show_pack_id = '8f27e9a4-9f6b-4f3a-9c91-a6b862c98101'
+        and public.trigger_contract_is_valid(trigger_contract)) <> 275 then
+    raise exception 'seeded legacy signature-beat doctrine is incomplete' using errcode = '23514';
+  end if;
   if not public.show_pack_is_playable('8f27e9a4-9f6b-4f3a-9c91-a6b862c98101'::uuid) then
     raise exception 'seeded legacy show pack is not playable' using errcode = '23514';
   end if;

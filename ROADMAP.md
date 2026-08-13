@@ -149,18 +149,18 @@ recoverable baseline before expanding the ontology.
 
 - [x] Reconcile the RUNBOOK docket with the actual diff and mark every item as
   implemented, partially implemented or open.
-- [ ] Verify settlement command, show-pack factory, trigger enforcement,
+- [x] Verify settlement command, show-pack factory, trigger enforcement,
   grounded generation, operator UI, witness proposal flow, conviction scoring
   and settlement-drop generation at their real entry points.
 - [x] Run the complete build and unit-test gates.
-- [ ] Run the relevant local database dogfoods, including settlement,
+- [x] Run the relevant local database dogfoods, including settlement,
   conviction, show-pack activation and two-client phase movement.
-- [ ] Check the app at 375 by 812 for every changed player and host surface.
-- [ ] Review the complete diff with fresh eyes against authorization, Realtime,
+- [x] Check the app at 375 by 812 for every changed player and host surface.
+- [x] Review the complete diff with fresh eyes against authorization, Realtime,
   grounding and mixed-version invariants.
-- [ ] Split and land the work in recoverable, explicit commits only when the
+- [x] Split and land the work in recoverable, explicit commits only when the
   user authorizes shipping.
-- [ ] Record the exact verified and unverified surfaces in the RUNBOOK and
+- [x] Record the exact verified and unverified surfaces in the RUNBOOK and
   handoff tracker.
 
 ### P0 verification ledger — 2026-08-12
@@ -168,7 +168,7 @@ recoverable baseline before expanding the ontology.
 Verified on the disposable local stack:
 
 - app type-check, all 636 unit tests and the production build;
-- complete schema migration application through `20260812062600` and
+- complete schema migration application through `20260812062700` and
   `supabase db lint --local` with no findings;
 - room phase authority (24 checks), playback authority (33), atomic legacy
   draft (14), roster synchronization (7), room synchronization (5), chat
@@ -190,20 +190,42 @@ live operator surface. The authenticated phone pass also found three owners of
 one Supabase companion-typing topic; that transport is now shared and
 reference-counted, including React Strict Mode release/reacquire coverage.
 
-Still unverified, so P0 remains open:
+The protected local write pass is now complete:
 
-- settlement, conviction, scheduled-result, show-pack activation and the full
-  backend e2e suites write temporary global `categories`; run them only after
-  explicit confirmation of that protected local mutation and cleanup;
-- one host plus one second client has not completed the full Story Night path;
-- authenticated results, settlement write-back and closed-room surfaces have
-  not received the complete 375-by-812 screen walk.
+- settlement, conviction, scheduled winner, scheduled spotlight, live-floor
+  close and the complete backend suite pass against the disposable local
+  database;
+- the actual show-pack activation command passes dry-run, doubly confirmed
+  apply, exact post-write attestation, room binding and idempotent replay;
+- one host and one guest complete identity draft, whole-board conviction,
+  bingo deal, live declarations, provisional close, settlement write-back and
+  sealed closure through the real commands; and
+- authenticated host and guest provisional results, closed ceremony gate and
+  settled ledger render at 375 by 812 with no horizontal overflow, console
+  errors or runtime exceptions. The player-relative `YOU` marker is correct on
+  both clients.
+
+The two-player cold-worker run did not receive every phase broadcast before
+its bounded wait. Both clients reconciled the canonical provisional and closed
+room states through the same post-subscription fetch path, and a separate run
+did observe the broadcasts. This proves recovery and final convergence, not a
+guarantee that every cold Realtime connection receives every event.
+
+The pass found and fixed three additional foundation defects: the legacy seed
+had 275 reviewed trigger contracts in the canonical authoring artifact but
+published none of them; the activation command's first registry upsert required
+an UPDATE privilege deliberately revoked from the service role; and the broad
+backend harness retained its fake room and players despite having safe cleanup
+authority. The seed now fails closed unless all 275 contracts are installed,
+activation uses a strict first insert before atomic publication, and transient
+harness rooms are deleted.
 
 Clean-install evidence and recovery note: an approved `supabase db reset
---local` now replays every migration through `20260812062600` and loads the
+--local` now replays every migration through `20260812062700` and loads the
 authored catalog successfully. The seed generator temporarily returns the
 legacy pack to draft while loading its immutable catalog, then fails closed
-unless the pack is playable before publishing it again. The resulting local
+unless all 275 signature beats carry valid doctrine and the pack is playable
+before publishing it again. The resulting local
 catalog has 20 categories, 38 nominees, 38 draft entities, 213 category links,
 275 signature beats and 75 bingo squares; rooms and players begin empty.
 `show_pack_is_playable` is true and warning-fatal schema lint reports no

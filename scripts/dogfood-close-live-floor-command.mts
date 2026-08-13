@@ -137,6 +137,11 @@ try {
     'the host cannot close a room before live play',
   )
 
+  const { error: modelError } = await service
+    .from('rooms')
+    .update({ game_model: 'legacy_ensemble' })
+    .eq('id', room.id)
+  if (modelError) throw modelError
   await setLive(room.id)
 
   const legacy = await anon.rpc('close_live_floor', {
@@ -179,10 +184,13 @@ try {
 
   const category = await loadCategory(room.show_pack_id)
   check(category.id > 0, 'loaded one authored category read-only')
-  const { error: openError } = await service
-    .from('rooms')
-    .update({ active_spotlight_category_id: category.id })
-    .eq('id', room.id)
+  const { error: openError } = await anon.rpc('open_scheduled_spotlight_authorized', {
+    p_room_id: room.id,
+    p_category_id: category.id,
+    p_expected_revision: 0,
+    p_actor_player_id: players[0].id,
+    p_operator_capability: capabilityByRoomId.get(room.id) ?? null,
+  })
   if (openError) throw openError
   const opened = await readRoom(room.id)
   check(

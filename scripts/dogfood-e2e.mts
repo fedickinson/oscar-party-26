@@ -192,7 +192,9 @@ async function main() {
   const refereeCapability = createdHostSession.operator_capability as string
   created.roomId = room.id
   check('room and host created atomically', room.host_id === createdHostSession.player.id)
-  check('new room is bound to the published legacy show pack', typeof room.show_pack_id === 'string')
+  check('new room is bound to the published show pack', typeof room.show_pack_id === 'string')
+  check('the room-declared show pack selects the conviction model by default',
+    room.game_model === 'conviction_portfolio')
 
   const names = ['Franky', 'AP', 'Alec']
   const players: any[] = [createdHostSession.player]
@@ -275,7 +277,16 @@ async function main() {
   // dogfood exercises the lobby/countdown commands themselves.
   await db(`rooms?id=eq.${room.id}`, {
     method: 'PATCH',
-    body: JSON.stringify({ phase: 'draft', draft_order: draftOrder, current_pick: 0 }),
+    body: JSON.stringify({
+      // The broad harness proves the older confidence-and-ensemble scoring
+      // chain. The focused conviction dogfood proves the current Story Night
+      // model, so opt this disposable room into legacy while it is still in
+      // the lobby and the game-model guard permits that choice.
+      game_model: 'legacy_ensemble',
+      phase: 'draft',
+      draft_order: draftOrder,
+      current_pick: 0,
+    }),
   }, SERVICE_KEY)
 
   const picks: any[] = []
@@ -518,6 +529,13 @@ async function main() {
     `${predictable.length} predictable, GM events carry 1 nominee each`)
 
   // Every player stakes the SAME fixed budget, 1..N, each value exactly once.
+  // Confidence stakes belong to the scheduled model's confidence phase. This
+  // broad harness has already exercised the live event path, so restore the
+  // disposable legacy room to that write phase for the stake contract and
+  // reopen live immediately after the last player submits.
+  await db(`rooms?id=eq.${room.id}`, {
+    method: 'PATCH', body: JSON.stringify({ phase: 'confidence' }),
+  }, SERVICE_KEY)
   const budget = predictable.length
   const staked = new Map<string, number>()
   for (const [pi, p] of roster.entries()) {
@@ -533,6 +551,9 @@ async function main() {
     await db('confidence_picks', { method: 'POST', body: JSON.stringify(rows) })
     staked.set(p.id, rows.reduce((sum, r) => sum + r.confidence, 0))
   }
+  await db(`rooms?id=eq.${room.id}`, {
+    method: 'PATCH', body: JSON.stringify({ phase: 'live' }),
+  }, SERVICE_KEY)
   const expectedBudget = (budget * (budget + 1)) / 2
   check('every player staked the identical fixed budget',
     [...staked.values()].every((v) => v === expectedBudget),
@@ -555,11 +576,16 @@ async function main() {
 
   const target = predictable[0]
   const winningNom = nomsByCat.get(target.id)![0]
-  await db('room_winners', {
-    method: 'POST',
-    body: JSON.stringify({ room_id: room.id, category_id: target.id, winner_id: winningNom, tie_winner_id: null }),
+  await rpc('declare_scheduled_winner_authorized', {
+    p_room_id: room.id,
+    p_category_id: target.id,
+    p_winner_id: winningNom,
+    p_tie_winner_id: null,
+    p_actor_player_id: players[0].id,
+    p_operator_capability: refereeCapability,
   })
-  // Exactly the two writes confirmSpotlightWinner performs.
+  // Older phones repeat these derived updates after the command; the
+  // projection guard accepts the identical values as harmless no-ops.
   await db(`confidence_picks?room_id=eq.${room.id}&category_id=eq.${target.id}&nominee_id=eq.${winningNom}`,
     { method: 'PATCH', body: JSON.stringify({ is_correct: true }) })
   await db(`confidence_picks?room_id=eq.${room.id}&category_id=eq.${target.id}&nominee_id=neq.${winningNom}`,
@@ -863,9 +889,9 @@ async function main() {
 
   let anonReopenDenied = false
   try {
-  await db(`rooms?id=eq.${room.id}`, {
-    method: 'PATCH', body: JSON.stringify({ phase: 'finished' }),
-  }, SERVICE_KEY)
+    await db(`rooms?id=eq.${room.id}`, {
+      method: 'PATCH', body: JSON.stringify({ phase: 'finished' }),
+    })
   } catch { anonReopenDenied = true }
   check('anon cannot reopen a closed room', anonReopenDenied)
 
@@ -1750,6 +1776,9 @@ async function main() {
     method: 'PATCH',
     body: JSON.stringify({
       host_id: auxiliaryPlayer.id,
+      // Reach the person segment so this assertion exercises pack isolation,
+      // not conviction mode's intentional end after the identity-film round.
+      game_model: 'legacy_ensemble',
       phase: 'draft',
       draft_order: [auxiliaryPlayer.id],
       current_pick: 0,
@@ -2159,24 +2188,7 @@ async function main() {
     JSON.stringify({ correction, struckDeclaration, correctionMessages }))
 }
 
-/**
- * Clears every row this harness can actually delete from a room, leaving the
- * room and its players in place.
- *
- * WHY IT DOES NOT DELETE THE ROOM
- * anon has no DELETE policy on `rooms` or `players` — correctly, since nothing
- * in the app deletes either and a shared anon key that could drop a room
- * mid-party would be a genuine hazard. PostgREST answers a blocked DELETE with
- * 200 and an empty body rather than an error, so the previous version of this
- * teardown reported success while leaving a room and three players behind on
- * every single run. It had been doing that for as long as it has existed; the
- * "no rows left behind" check only ever looked at `categories`, which does have
- * a DELETE policy and really was being cleaned.
- *
- * The fix is not to grant the policy. It is to stop creating a new room each
- * run — see FIXED_CODE — so the residue is one room forever instead of one more
- * every time, and to be honest about what is left.
- */
+/** Clears every transient row this harness created inside one room. */
 async function resetRoomContents(rid: string) {
   await db(`rooms?id=eq.${rid}`, {
     method: 'PATCH', body: JSON.stringify({ active_settlement_id: null, phase: 'lobby' }),
@@ -2198,7 +2210,10 @@ async function resetRoomContents(rid: string) {
 async function cleanup() {
   console.log('\n\x1b[1mCleanup\x1b[0m')
   try {
-    if (created.roomId) await resetRoomContents(created.roomId)
+    if (created.roomId) {
+      await resetRoomContents(created.roomId)
+      await db(`rooms?id=eq.${created.roomId}`, { method: 'DELETE' }, SERVICE_KEY)
+    }
     if (created.raceRoomId) {
       await resetRoomContents(created.raceRoomId)
       await db(`rooms?id=eq.${created.raceRoomId}`, {
@@ -2208,9 +2223,9 @@ async function cleanup() {
       await db(`rooms?id=eq.${created.raceRoomId}`, { method: 'DELETE' }, SERVICE_KEY)
     }
     for (const id of created.categoryIds) {
-      await db(`room_winners?category_id=eq.${id}`, { method: 'DELETE' })
-      await db(`category_nominees?category_id=eq.${id}`, { method: 'DELETE' })
-      await db(`categories?id=eq.${id}`, { method: 'DELETE' })
+      await db(`room_winners?category_id=eq.${id}`, { method: 'DELETE' }, SERVICE_KEY)
+      await db(`category_nominees?category_id=eq.${id}`, { method: 'DELETE' }, SERVICE_KEY)
+      await db(`categories?id=eq.${id}`, { method: 'DELETE' }, SERVICE_KEY)
     }
     if (created.auxiliaryRoomId) {
       await db(`rooms?id=eq.${created.auxiliaryRoomId}`, { method: 'DELETE' }, SERVICE_KEY)
@@ -2231,9 +2246,8 @@ async function cleanup() {
     const left: any[] = await db('categories?select=id&room_id=not.is.null')
     check('no room-scoped dogfood declarations remain', left.length === 0, `${left.length} stray declarations`)
 
-    // Stated, not asserted: this residue is expected and bounded to one room.
     const rooms: any[] = await db('rooms?code=like.DOG*&select=id')
-    console.log(`     \x1b[33m↑ ${rooms.length} harness room(s) remain by design (anon cannot DELETE rooms)\x1b[0m`)
+    check('no disposable backend harness rooms remain', rooms.length === 0, `${rooms.length} stray rooms`)
   } catch (e) {
     console.log(`  \x1b[31mFAIL cleanup:\x1b[0m ${e}`)
     failures++

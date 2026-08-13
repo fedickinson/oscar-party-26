@@ -10,8 +10,8 @@ truth here.
 
 ### P0 proof status — 2026-08-12
 
-The current platform baseline is partially proven, not yet ready to call
-closed. The app type-check, all 636 unit tests, production build, schema lint,
+The current platform baseline has completed its P0 proof pass. The app
+type-check, all 636 unit tests, production build, schema lint,
 show-pack compiler/factory proofs, synthetic settlement-drop generator and the
 room-scoped authority/Realtime dogfoods are green. Those database proofs cover
 room phase authority, shared playback, legacy atomic draft, roster/room/chat
@@ -31,19 +31,41 @@ The phone pass also found three owners of the same companion-typing Realtime
 topic; one shared, reference-counted transport now owns it and is covered for
 React Strict Mode release/reacquire.
 
-Do not erase the remaining boundaries from the record. The settlement,
-conviction, scheduled-result, show-pack activation and full backend suites write
-temporary rows to the global `categories` catalog and still need explicit local
-mutation/cleanup confirmation. A host and second client have not yet completed
-the whole Story Night path through settlement and closure, and authenticated
-results/closed-room surfaces still need the complete phone walk. An approved
-`supabase db reset --local` now replays every migration through
-`20260812062600`, loads the authored legacy pack and finishes with warning-fatal
+The protected local write boundary was explicitly authorized and completed.
+Settlement, conviction, scheduled winner, scheduled spotlight, live-floor
+close and the full backend suite pass. The real activation command passes its
+dry-run, doubly confirmed apply, exact attestation, room bind and idempotent
+replay. A host and guest complete the Story Night path from identity draft and
+convictions through sourced declarations, provisional results, settlement
+write-back and closure. Both identities' provisional, sealed-gate and settled
+results surfaces are clean at 375 by 812 with correct player-relative labeling,
+no horizontal overflow and no browser errors.
+
+Do not erase the remaining boundary from the record: a cold headless Realtime
+connection did not receive every provisional or closed phase event inside its
+bounded wait. Both clients converged through the canonical reconciliation fetch
+that follows subscription, and another run observed the broadcasts. That is
+evidence for recovery and final convergence, not guaranteed delivery timing.
+No production migration, production room, deploy or credential was touched.
+
+The protected pass found three more contract failures and repaired them. The
+canonical authoring artifact held 275 reviewed legacy signature contracts while
+the seeded catalog held none; migration `20260812062700` installs them and both
+seed paths now fail closed unless all 275 are valid. The activation command used
+upsert semantics for its first registry insert, implicitly demanding the UPDATE
+privilege intentionally revoked from service role; it now strictly inserts the
+draft and leaves publication to the atomic RPC. The broad backend harness also
+retained a fake room and players despite using a service cleanup key; it now
+deletes its transient room state.
+
+An approved `supabase db reset --local` replays every migration through
+`20260812062700`, loads the authored legacy pack and finishes with warning-fatal
 lint green. The seed temporarily drafts the immutable pack, loads its catalog,
-then fails closed unless playability succeeds before republishing. The clean
-catalog is 20 categories, 38 nominees, 38 draft entities, 213 category links,
-275 signature beats and 75 bingo squares, with zero rooms and players.
-`ROADMAP.md` owns the checkbox ledger.
+then fails closed unless all trigger doctrine and playability checks succeed
+before republishing. The clean catalog is 20 categories, 38 nominees, 38 draft
+entities, 213 category links, 275 signature beats with 275 valid contracts and
+75 bingo squares, with zero rooms and players. `ROADMAP.md` owns the checkbox
+ledger and P1 is the next implementation boundary.
 
 **Design/visual (Codex lanes — full specs in .private/postop/CODEX-BRIEF.md,
 live status in .private/postop/HANDOFF.md):**
