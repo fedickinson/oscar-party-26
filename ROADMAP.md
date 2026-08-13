@@ -321,15 +321,15 @@ arbitrary one-night story event.
 - [x] Make the identity phase optional and non-scoring by default.
 - [x] Support no identity draft, chosen faction/banner and exclusive identity
   draft without restricting access to convictions.
-- [ ] Keep lonely-bet payout as the first scoring policy; do not add multiple
+- [x] Keep lonely-bet payout as the first scoring policy; do not add multiple
   speculative economies before another live test.
 - [x] Allow the show-pack factory to author and validate all required Story
   Night contract data.
 - [ ] Make every operator action and generated line consume the room-bound pack
   and settled fact record.
-- [ ] Ensure one command can finish the live floor and the researched settlement
+- [x] Ensure one command can finish the live floor and the researched settlement
   command can truthfully close the room.
-- [ ] Generate the complete settlement drop from the receipt, with no hand patch.
+- [x] Generate the complete settlement drop from the receipt, with no hand patch.
 
 **Required loop**
 
@@ -401,6 +401,37 @@ budgets larger than the authored beat board, and chosen faction without two
 authored groups. The filesystem-only factory dogfood proves the contract survives
 the authorization, grounded continuation, compiled output and blocked-retry paths
 without a network or model call.
+
+### P2 implementation ledger — second-property closed loop, 2026-08-13
+
+A synthetic property with no House of the Dragon entities, claims or authored
+propositions now completes the ordinary local production path without application
+code edits. Its schema-v4 pack activates into a new room, copies a two-slot
+whole-board conviction contract, skips identity, deals pack-scoped bingo cards,
+accepts two operator declarations, closes the live floor and settles both facts
+through the researched settlement command. The receipt attests the exact pack,
+settlement and proposition truth authorities; the settlement-drop compiler then
+renders a complete nine-slide ceremony directly from that receipt with no legacy
+property content or HTML patch.
+
+The rehearsal exposed one real composability defect after the database had
+already closed the room: receipt validation still understood the schema-v3
+trigger shape and rejected schema-v4 `truth_authority`. The canonical parser now
+retains each supported authority, rejects unknown values and continues to admit
+historical receipts in which the optional field was not yet recorded.
+
+The original Story scoring policy remains unchanged: each resolved proposition
+pays its authored pot across correct believers, so a lonely correct belief takes
+the full amount. No second economy was added. P0's live-floor and settlement
+command dogfoods, plus this second-property run, prove provisional close and
+researched closure as separate operator actions; receipt-to-ceremony compilation
+is likewise proven at the real command entry point.
+
+The remaining P2 boundary is narrower than its current roadmap wording: generated
+live companion surfaces still use the deployed legacy cast and prompt canon
+rather than a runtime voice projection from the room-bound compiled pack. Pack-
+authored grounded commentary is canonical in the factory, but the reusable live
+cast handoff has not yet replaced those compatibility producers.
 
 **Exit criteria**
 

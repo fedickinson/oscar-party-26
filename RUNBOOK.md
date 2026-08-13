@@ -165,7 +165,16 @@ live status in .private/postop/HANDOFF.md):**
    activation through the phone and database. Story packs may retain the
    exclusive non-scoring entity ceremony, choose a shared non-scoring faction
    from the pack's authored entity groups, or omit identity and move directly
-   from lobby to convictions. Campaign continuity remains fail-closed P4 work
+   from lobby to convictions. Campaign continuity remains fail-closed P4 work.
+   A second-property local rehearsal now proves the complete Story path without
+   application-code edits: activation, no-identity convictions, pack-scoped
+   bingo and declarations, provisional close, researched settlement, canonical
+   receipt and a nine-slide settlement drop. That run found and fixed the final
+   schema-v3 receipt assumption: score-event trigger provenance now retains
+   schema-v4 proposition `truth_authority` while historical receipts without it
+   remain readable. The remaining runtime portability gap is the browser live
+   cast, whose deployed prompts and identities are still the legacy compatibility
+   bundle rather than a projection of the room-bound compiled pack
 5. Live narrative grounding — declared events, approved bingo marks and direct
    human-to-cast mention/ambient replies are implemented locally in browser and
    daemon; browser-originated companion banter is grounded too. Events project
