@@ -192,6 +192,12 @@ live status in .private/postop/HANDOFF.md):**
    too. Keepsake verdicts now use their own strict schema-aware grounding pass,
    exhaustive game/chat/catalog facts, one full-room durable claim and one atomic
    provenance-stamped write; residuals join the same private operator queue
+   The deployed browser and daemon cast is now explicitly a legacy compatibility
+   surface: every producer checks the room's pinned show-pack ID before model
+   work. Only the exact legacy pack may invoke its House-of-the-Dragon prompt
+   canon. Other packs retain human chat, game actions and factory-authored
+   grounded commentary, but live cast generation stays silent until a reusable
+   runtime voice projection is authored rather than borrowing the wrong canon
 6. Operator UI (layer 3) — first read-only lens implemented locally: real
    foreground/background Presence, an authoritative companion-daemon heartbeat,
    and honest cast/fact sequence evidence; its collapsed host control now derives

@@ -36,6 +36,7 @@ import { usePostShowCompanions } from '../hooks/usePostShowCompanions'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import PostCeremonyView from '../components/home/PostCeremonyView'
 import { Hallmark } from '../components/ui/Hallmarks'
+import { resolveRuntimeNarrativeMode } from '../lib/runtime-narrative'
 
 export default function Results() {
   const { code } = useParams<{ code: string }>()
@@ -78,7 +79,8 @@ export default function Results() {
   }, [loading, player, navigate])
 
   const isHost = player?.is_host ?? false
-  const browserGroundingAuthorized = isHost && operatorCapability !== null
+  const legacyLiveCastEnabled = resolveRuntimeNarrativeMode(room?.show_pack_id) === 'legacy_live_cast'
+  const browserGroundingAuthorized = legacyLiveCastEnabled && isHost && operatorCapability !== null
   usePostShowCompanions({
     roomId: room?.id,
     hostPlayerId: room?.host_id,

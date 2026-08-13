@@ -27,6 +27,7 @@ import {
   selectSpokenCompanionIds,
 } from '../src/lib/companion-reaction'
 import { supabaseConfig } from './lib/env.mts'
+import { resolveRuntimeNarrativeMode } from '../src/lib/runtime-narrative'
 import {
   groundedCompanionBatch,
   type GroundingModelCaller,
@@ -95,6 +96,11 @@ const log = (m: string) => console.log(`[cast ${new Date().toLocaleTimeString()}
 const code = process.argv[process.argv.indexOf('--room') + 1] ?? 'WDKH'
 const room = (await get(`rooms?code=eq.${code}&select=id,show_pack_id,host_id`))[0]
 if (!room) { console.error('room not found'); process.exit(1) }
+if (resolveRuntimeNarrativeMode(room.show_pack_id) !== 'legacy_live_cast') {
+  throw new Error(
+    `room ${code} is bound to a pack without a deployed runtime cast; use its factory-authored grounded commentary`,
+  )
+}
 const RID = room.id
 const COMPANIONS = ['ned','cersei','tyrion','joffrey','daenerys','olenna','arya']
 const ENGINE = 'companion_daemon'

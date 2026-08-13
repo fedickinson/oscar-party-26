@@ -433,6 +433,13 @@ rather than a runtime voice projection from the room-bound compiled pack. Pack-
 authored grounded commentary is canonical in the factory, but the reusable live
 cast handoff has not yet replaced those compatibility producers.
 
+That compatibility path now fails closed. Browser event, bingo, chat, milestone,
+farewell and keepsake generation plus the laptop companion daemon may invoke the
+deployed legacy cast only when the room is pinned to the exact legacy pack. A
+missing or different pack binding makes no model call and leaves ordinary human
+chat and game actions alone; new packs use their factory-authored grounded
+commentary until a reusable runtime voice projection is implemented.
+
 **Exit criteria**
 
 1. Players can make calls about any authored character regardless of identity.

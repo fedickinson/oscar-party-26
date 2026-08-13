@@ -36,6 +36,7 @@ import { useOperatorHeartbeat } from '../hooks/useOperatorHeartbeat'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { findDraftPointsForWinner } from '../lib/scoring'
 import { deriveEngineHeartbeat, deriveNarrativeSequence, derivePresenceRows } from '../lib/operator-lens'
+import { resolveRuntimeNarrativeMode } from '../lib/runtime-narrative'
 import { supabase } from '../lib/supabase'
 import TabBar from '../components/live/TabBar'
 import WatchSyncBar from '../components/live/WatchSyncBar'
@@ -75,6 +76,7 @@ export default function Live() {
   const isHost = player?.is_host ?? false
   const currentPlayerId = player?.id ?? ''
   const showStarted = room?.show_started ?? false
+  const legacyLiveCastEnabled = resolveRuntimeNarrativeMode(room?.show_pack_id) === 'legacy_live_cast'
   const {
     capability: operatorCapability,
     isLoading: operatorCapabilityLoading,
@@ -248,7 +250,7 @@ export default function Live() {
     scores.nominees,
     scores.leaderboard,
     scores.categories,
-    isHost && operatorCapability !== null,
+    legacyLiveCastEnabled && isHost && operatorCapability !== null,
     operatorCapability,
   )
   const { predictionsRef } = chatReactivity
@@ -260,7 +262,7 @@ export default function Live() {
     scores.draftPicks,
     scores.draftEntities,
     scores.leaderboard,
-    isHost && operatorCapability !== null,
+    legacyLiveCastEnabled && isHost && operatorCapability !== null,
     operatorCapability,
     predictionsRef,
     showStarted,
