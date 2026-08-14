@@ -18,11 +18,14 @@ only update path. Show-pack wagers, points, bingo, commentary and activation
 remain product-owned here, and live rooms continue to bind an immutable
 published show-pack version rather than reading Fandom Core at runtime.
 
-Schema version 3 adds a required deploy-owned, SHA-sealed raster portrait for
-every entity. Schema version 2 added the pack-owned commentary voice roster and
-full speaker/voice/fact/angle publication stamp. Older inputs are intentionally
-rejected rather than silently losing cast identity or falling back to the
-current show's cast prompt.
+Schema version 4 adds the explicit composable game contract and truth authority
+on every wager. The resumable factory authors that layer from a separately
+sealed contract artifact. Schema version 3 added a required deploy-owned,
+SHA-sealed raster portrait for every entity; schema version 2 added the
+pack-owned commentary voice roster and full speaker/voice/fact/angle publication
+stamp. Older inputs are accepted only through their explicit compatibility lane,
+never by silently losing cast identity or falling back to the current show's
+cast prompt.
 
 The pack also owns the prediction slate, draft entities, signature beats,
 bingo pool, commentary voice roster, and grounded commentary requests. Every wager carries explicit
@@ -579,6 +582,7 @@ predecessor receipt through the commentary boundary:
 ```text
 node --import tsx scripts/run-show-pack-factory.mts \
   --input show-packs/research/hotd-s3e8-authoring.json \
+  --game-contract show-packs/research/hotd-s3e8-game-contract.json \
   --seed show-packs/research/hotd-s3e8-seed.json \
   --receipt settlement-drops/my-show/receipt.json \
   --research show-packs/research/hotd-s3e8-reviewed-research.json \
@@ -589,8 +593,25 @@ node --import tsx scripts/run-show-pack-factory.mts \
 ```
 
 The runner rederives the seed from the exact receipt, exact-rebuilds the optional research chain,
-injects both into the authoring pack, verifies portraits, and reduces the result to one of three
-explicit stages:
+injects both into the authoring pack, applies the required game-contract authoring artifact,
+verifies portraits, and reduces the result to one of three explicit stages. The base authoring
+pack remains schema v3 and must omit `game_contract`; the factory is the only step that upgrades
+it to schema v4 and writes truth authority onto every wager. Start from
+`show-packs/examples/story-night-game-contract.json`, replace its exact target, choose a positive
+budget no larger than the authored beat count, and select one identity pair:
+
+- `none` with scarcity `none`;
+- `chosen_faction` with scarcity `shared` and at least two distinct authored entity groups; or
+- `exclusive_entity_draft` with scarcity `exclusive`.
+
+`truth_authority.default` covers every prediction, signature beat and bingo square. Closed
+`overrides` rows identify one exact wager by `kind` and `id` when a show mixes official results,
+operator declarations and AI proposals with human confirmation. Duplicate or unknown overrides,
+target drift, incomplete contracts, unsupported profiles and undersized beat boards fail before
+commentary planning. The runner prints the resolved contract and seals the exact authoring
+artifact hash in `run.json`.
+
+The three explicit stages are:
 
 - `awaiting_commentary_authorization` writes `working.json`, the exact commentary plan, and a
   self-contained review desk. It prints the bounded call envelope and calls no model.
@@ -627,6 +648,7 @@ completed pack back to the factory rather than compiling it by hand:
 ```text
 node --import tsx scripts/run-show-pack-factory.mts \
   --input show-packs/research/hotd-s3e8-authoring.json \
+  --game-contract show-packs/research/hotd-s3e8-game-contract.json \
   --seed show-packs/research/hotd-s3e8-seed.json \
   --receipt settlement-drops/my-show/receipt.json \
   --continuation .private/show-pack-factory/hotd-s3e8-grounded.json \
@@ -639,7 +661,7 @@ node --import tsx scripts/run-show-pack-factory.mts \
   --output-dir .private/show-pack-factory
 ```
 
-Each continuation must be canonical schema-v3 bytes and may change only commentary publication
+Each continuation must be canonical schema-v4 bytes and may change only commentary publication
 records. It cannot edit facts, sources, wagers, voices, request definitions, or any already-ready
 line. The runner replays the continuation chain from the canonical composition, rebuilds each plan
 against the preceding step, requires the byte-identical `--approved-plan` and matching authorization,
@@ -795,6 +817,77 @@ facts remain in `fact_claim_ids`, while event-specific discourse remains in the
 request's angle lane. Source-material claims are rejected from request angles,
 so the same attitude cannot enter twice. The canonical publisher constructs all four blocks rather
 than letting individual scripts assemble prompts differently.
+
+A voice may also opt into the live daemon through a `runtime` block with an
+explicit `slot` (`narrator` or `rotating`), display `role`, and lowercase mention
+`aliases`. Runtime projection is all-or-nothing: every voice in the pack must
+carry that block, exactly one must be the narrator, and names, IDs and aliases
+must be unambiguous across the cast. A complete projection powers grounded
+declared-fact, bingo and direct-chat reactions from the operator daemon, plus
+pre-show, show-start, spotlight and player-welcome ceremonies from the
+authorized host browser. A partial or ambiguous projection remains
+commentary-only and stops both engines before a model call.
+
+Schema-v4 packs may add a separate `runtime_ceremonies` contract:
+
+```json
+{
+  "runtime_ceremonies": {
+    "milestones": [{
+      "id": "first-turn",
+      "declared_event_count": 3,
+      "voices": [{
+        "voice_id": "archivist",
+        "delay_seconds": 0,
+        "instruction": "Name the checkpoint and judge only the recorded standings."
+      }]
+    }],
+    "identity_change": {
+      "voices": [{
+        "voice_id": "archivist",
+        "instruction": "Judge the public revision without inventing its motive."
+      }]
+    }
+  }
+}
+```
+
+Milestone thresholds and IDs are unique and strictly increasing in authored
+order. Each milestone's voices are unique, its first delay is zero and later
+delays strictly increase. Identity-change voices are unique. Every voice ID must
+belong to the complete runtime cast, and each instruction governs expression
+only; canonical event counts, standings and identity transitions come from the
+room database. Omitting either sub-contract keeps that surface silent.
+
+Post-show generation is a separate explicit opt-in on every runtime voice:
+
+```json
+{
+  "runtime": {
+    "slot": "narrator",
+    "role": "The room's exact closing role",
+    "aliases": ["archivist"],
+    "post_show": {
+      "farewell": {
+        "order": 1,
+        "delay_seconds": 0,
+        "instruction": "Close the room in this voice's authored manner."
+      },
+      "keepsake": {
+        "instruction": "Judge one player's night from the grounded game record."
+      }
+    }
+  }
+}
+```
+
+If one runtime voice supplies `post_show`, every runtime voice must supply it.
+Farewell orders must be contiguous from one. Delays are whole seconds from zero
+through ninety, start at zero and strictly increase in farewell order. A complete
+contract enables grounded provisional farewells and keepsakes using the exact
+authored voice IDs. Keepsake authors rotate deterministically in farewell order.
+Generic keepsake imagery is empty until the show-pack format defines its own
+artwork catalog; it never borrows the legacy property's assets.
 
 Plan a batch without calling a model or writing a working pack:
 

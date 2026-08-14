@@ -1,13 +1,13 @@
 /**
- * Room — the lobby. Everyone waits here until the host starts the draft.
+ * Room — the lobby. Everyone waits here until the host starts the party.
  *
  * REALTIME FLOW (how phase changes drive navigation):
  *
- *   1. Host taps "Start Draft"
- *   2. startDraft() calls the capability-gated begin-draft command
+ *   1. Host taps "Start the Party"
+ *   2. startParty() calls the contract-selected capability-gated command
  *   3. Supabase pushes an UPDATE event over WebSocket to every subscribed client
  *   4. Each client's useRoomSubscription callback fires → setRoom(payload.new)
- *   5. The useEffect watching room?.phase sees 'pre_draft' → show PhaseExplainer overlay
+ *   5. Exclusive identity rooms enter pre-draft; shared/omitted identity rooms enter confidence
  *   6. Player taps "Got it" → their id is appended to ready_players in the room row
  *   7. ReadyUpScreen watches ready_players via Realtime → countdown when all ready
  *   8. Host writes phase='draft' after countdown → all clients navigate to /draft
@@ -26,10 +26,12 @@ import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useRoomSubscription, usePlayersSubscription } from '../hooks/useRoom'
+import { useIdentityChoices } from '../hooks/useIdentityChoices'
 import Avatar from '../components/Avatar'
 import PhaseExplainer from '../components/PhaseExplainer'
 import WatchGroupPanel from '../components/WatchGroupPanel'
 import { namedLocationsWithoutRemote } from '../lib/watch-groups'
+import { resolveLobbyStartMode } from '../lib/game-contract'
 import ReadyUpScreen from '../components/ReadyUpScreen'
 import type { PlayerRow } from '../types/database'
 
@@ -42,12 +44,20 @@ export default function Room() {
   const [copied, setCopied] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
+  const [choiceError, setChoiceError] = useState<string | null>(null)
+  const [isChoosing, setIsChoosing] = useState(false)
 
   // Activate realtime — these hooks subscribe to DB changes and update context.
   // They're called with room?.id (undefined-safe) so they no-op until the
   // session restore has populated room state.
   const roomSync = useRoomSubscription(room?.id)
   const rosterSync = usePlayersSubscription(room?.id)
+  const lobbyStartMode = resolveLobbyStartMode(room?.game_contract)
+  const identityChoices = useIdentityChoices(
+    room?.id,
+    room?.show_pack_id,
+    lobbyStartMode === 'faction_choice',
+  )
 
   // ── Phase-change navigation ────────────────────────────────────────────────
   // Every client (host and guests) navigates here when the room phase changes.
@@ -74,38 +84,74 @@ export default function Room() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  async function startDraft() {
+  async function startParty() {
     if (!room || !player?.is_host) return
     if (!operatorAuthority.enabled || !operatorCapability) {
       setStartError(operatorAuthority.message ?? 'Current operator authority is required.')
       return
     }
     if (roomSync.isLoading || roomSync.syncError != null ||
-        rosterSync.isLoading || rosterSync.syncError != null) {
+        rosterSync.isLoading || rosterSync.syncError != null ||
+        (lobbyStartMode === 'faction_choice'
+          && (identityChoices.isLoading || identityChoices.syncError != null))) {
       setStartError('The shared room and player roster must finish synchronizing before the party can start.')
       return
     }
     if (players.length < 2) return
+    if (lobbyStartMode === 'faction_choice'
+        && players.some((seat) => !identityChoices.selections.some(
+          (selection) => selection.player_id === seat.id,
+        ))) {
+      setStartError('Every player must choose a banner before convictions open.')
+      return
+    }
     setIsStarting(true)
     setStartError(null)
 
-    // Randomize draft order and store it now so it's stable for the whole draft.
-    const shuffled = [...players]
-      .sort(() => Math.random() - 0.5)
-      .map((p) => p.id)
-
-    const { error } = await supabase.rpc('begin_room_draft_authorized', {
-      p_room_id: room.id,
-      p_actor_player_id: player.id,
-      p_operator_capability: operatorCapability,
-      p_draft_order: shuffled,
-    })
+    let error: { message: string } | null
+    if (lobbyStartMode === 'convictions' || lobbyStartMode === 'faction_choice') {
+      const result = await supabase.rpc('begin_room_convictions_authorized', {
+        p_room_id: room.id,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+      })
+      error = result.error
+    } else if (lobbyStartMode === 'identity_draft') {
+      // Randomize draft order and store it now so it is stable for the ceremony.
+      const shuffled = [...players]
+        .sort(() => Math.random() - 0.5)
+        .map((p) => p.id)
+      const result = await supabase.rpc('begin_room_draft_authorized', {
+        p_room_id: room.id,
+        p_actor_player_id: player.id,
+        p_operator_capability: operatorCapability,
+        p_draft_order: shuffled,
+      })
+      error = result.error
+    } else {
+      error = { message: 'This room has no supported identity ceremony.' }
+    }
 
     if (error) {
       setStartError(error.message)
       setIsStarting(false)
     }
-    // On success: all clients see 'pre_draft' via Realtime → show PhaseExplainer overlay.
+    // On success every client follows the canonical phase through Realtime.
+  }
+
+  async function chooseIdentity(choiceKey: string) {
+    if (!player || isChoosing) return
+    setIsChoosing(true)
+    setChoiceError(null)
+    try {
+      await identityChoices.choose(player.id, choiceKey)
+    } catch (choiceFailure) {
+      setChoiceError(choiceFailure instanceof Error
+        ? choiceFailure.message
+        : 'The shared identity choice could not be saved.')
+    } finally {
+      setIsChoosing(false)
+    }
   }
 
   // Called when a player taps "Got it" on the draft explainer.
@@ -194,7 +240,8 @@ export default function Room() {
 
   // ─── Loading & null guards ───────────────────────────────────────────────────
 
-  if (loading || roomSync.isLoading || rosterSync.isLoading) {
+  if (loading || roomSync.isLoading || rosterSync.isLoading
+      || (lobbyStartMode === 'faction_choice' && identityChoices.isLoading)) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <div className="w-8 h-8 border-2 border-[var(--t-pending)] border-t-transparent rounded-full animate-spin" />
@@ -208,8 +255,19 @@ export default function Room() {
   const hasEnoughPlayers = players.length >= 2
   const roomHealthy = roomSync.syncError == null
   const rosterHealthy = rosterSync.syncError == null
-  const sharedStateHealthy = roomHealthy && rosterHealthy
+  const identityHealthy = lobbyStartMode !== 'faction_choice' || identityChoices.syncError == null
+  const sharedStateHealthy = roomHealthy && rosterHealthy && identityHealthy
+  const startMode = lobbyStartMode
+  const everyPlayerChoseIdentity = startMode !== 'faction_choice' || players.every((seat) => (
+    identityChoices.selections.some((selection) => selection.player_id === seat.id)
+  ))
   const canStart = hasEnoughPlayers && sharedStateHealthy && operatorAuthority.enabled
+    && startMode !== 'unsupported' && everyPlayerChoseIdentity
+  const hasIdentityDraft = startMode === 'identity_draft'
+  const hasFactionChoice = startMode === 'faction_choice'
+  const currentIdentity = identityChoices.selections.find(
+    (selection) => selection.player_id === player.id,
+  )?.choice_key
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -267,6 +325,9 @@ export default function Room() {
                   key={p.id}
                   player={p}
                   isCurrentPlayer={p.id === player.id}
+                  identityChoice={hasFactionChoice
+                    ? identityChoices.selections.find((selection) => selection.player_id === p.id)?.choice_key
+                    : undefined}
                 />
               ))}
             </AnimatePresence>
@@ -323,16 +384,74 @@ export default function Room() {
           {/* People assume a lobby means "everyone has to be here right now" and
               try to coordinate a simultaneous join. They do not: the room and the
               code persist, and identity is kept in localStorage, so anyone can
-              join hours early, close the tab and come back. Only the draft needs
-              everybody present, because it is turn-based with a 45s auto-skip. */}
+              join hours early, close the tab and come back. */}
           <div className="relief-glass mt-4 p-4 rounded-xl">
             <p className="text-xs text-[var(--t-text-dim)] leading-relaxed">
               Send the code whenever — people can join now and come back later, and the
-              room keeps their spot. Everyone only needs to be here at the same time for
-              the <span className="text-[var(--t-text-muted)]">draft</span>, since it goes in turns.
+              room keeps their spot. {hasIdentityDraft
+                ? <>Everyone only needs to be here together for the <span className="text-[var(--t-text-muted)]">identity draft</span>, since it goes in turns.</>
+                : hasFactionChoice
+                  ? <>Choose any banner before the show starts. Choices are shared, so friends may stand together.</>
+                : <>This room opens directly into the shared conviction board, with no identity draft.</>}
             </p>
           </div>
         </section>
+
+        {hasFactionChoice && (
+          <section className="relief-glass rounded-2xl p-5 min-w-0">
+            <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-[0.16em]">Your banner</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-[var(--t-text)]">
+              Where do you stand?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+              This is allegiance, not ownership. More than one player may make the same choice,
+              and it does not change scoring.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {identityChoices.options.map((option) => {
+                const selected = option === currentIdentity
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => void chooseIdentity(option)}
+                    disabled={isChoosing}
+                    className={[
+                      'min-h-[48px] rounded-xl border px-4 py-3 text-left font-semibold transition-colors',
+                      selected
+                        ? 'relief-raised border-[var(--t-ornament)] bg-[var(--t-pending-soft)] text-[var(--t-text)]'
+                        : 'border-[var(--t-line-soft)] bg-[var(--t-surface)] text-[var(--t-text-muted)]',
+                    ].join(' ')}
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span>{option}</span>
+                      {selected && <Check size={17} className="flex-shrink-0 text-[var(--t-ornament)]" />}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-3 text-xs text-[var(--t-text-dim)]">
+              {identityChoices.selections.filter((selection) => (
+                players.some((seat) => seat.id === selection.player_id)
+              )).length} of {players.length} players have chosen
+            </p>
+            {choiceError && <p className="mt-2 text-sm text-[var(--t-negative)]">{choiceError}</p>}
+            {identityChoices.syncError && (
+              <div className="mt-3 rounded-xl border border-[var(--t-pending)] bg-[var(--t-pending-soft)] p-3">
+                <p className="text-sm text-[var(--t-pending)]">{identityChoices.syncError}</p>
+                <button
+                  type="button"
+                  onClick={identityChoices.retrySync}
+                  className="mt-2 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--t-pending)]"
+                >
+                  <RefreshCw size={14} />
+                  Retry identity synchronization
+                </button>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Game Settings — mode selection (host interactive, guests read-only) */}
         {/* ModeSelectPanel removed. Its two controls were Oscars-only: prestige_mode
@@ -364,6 +483,18 @@ export default function Room() {
                 <p className="text-[var(--t-pending)] text-sm">{operatorAuthority.message}</p>
               )}
 
+              {startMode === 'unsupported' && (
+                <p className="text-[var(--t-negative)] text-sm">
+                  This room's game contract has no supported opening ceremony.
+                </p>
+              )}
+
+              {hasFactionChoice && sharedStateHealthy && !everyPlayerChoseIdentity && (
+                <p className="text-[var(--t-text-dim)] text-sm">
+                  Waiting for every player to choose a banner.
+                </p>
+              )}
+
               {canStart && watchSetupIncomplete && !overrodeWatchSetup && (
                 <div className="rounded-xl border px-3 py-2.5" style={{ backgroundColor: 'var(--t-pending-soft)', borderColor: 'var(--t-pending)' }}>
                   {locationsWithoutRemote.length > 0 && (
@@ -384,7 +515,7 @@ export default function Room() {
               )}
 
               <motion.button
-                onClick={startDraft}
+                onClick={startParty}
                 disabled={!canStart || isStarting || (watchSetupIncomplete && !overrodeWatchSetup)}
                 whileTap={canStart ? { scale: 0.97 } : undefined}
                 className={[
@@ -409,6 +540,10 @@ export default function Room() {
                   <span className="flex items-center justify-center gap-2">
                     <Flame size={18} /> Start the Party
                   </span>
+                ) : startMode === 'unsupported' ? (
+                  'Unsupported opening ceremony'
+                ) : hasFactionChoice && !everyPlayerChoseIdentity ? (
+                  'Waiting on banner choices'
                 ) : (
                   `Need ${2 - players.length} more player${2 - players.length === 1 ? '' : 's'}`
                 )}
@@ -464,9 +599,11 @@ export default function Room() {
 function PlayerCard({
   player,
   isCurrentPlayer,
+  identityChoice,
 }: {
   player: PlayerRow
   isCurrentPlayer: boolean
+  identityChoice?: string
 }) {
   return (
     <motion.li
@@ -501,6 +638,11 @@ function PlayerCard({
             {isCurrentPlayer && (
               <span className="text-xs text-[var(--t-text-dim)] px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ backgroundColor: 'var(--t-surface)' }}>
                 You
+              </span>
+            )}
+            {identityChoice && (
+              <span className="truncate text-xs text-[var(--t-text-muted)]">
+                {identityChoice}
               </span>
             )}
           </div>

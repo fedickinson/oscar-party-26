@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONVICTION_BUDGET, computeConvictionPortfolioScores } from './conviction'
+import { computeConvictionPortfolioScores, resolveConvictionBudget } from './conviction'
 import { computeScoreTimeline } from './timeline-utils'
 import type { CategoryRow, ConvictionPickRow, PlayerRow } from '../types/database'
 
@@ -38,8 +38,28 @@ const declaredBeat = (
 })
 
 describe('conviction portfolio scoring', () => {
-  it('preserves the former four-characters by three-beats decision budget', () => {
-    expect(CONVICTION_BUDGET).toBe(12)
+  it('reads the portfolio budget only from an open-conviction contract', () => {
+    expect(resolveConvictionBudget({
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 8,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    })).toBe(8)
+    expect(resolveConvictionBudget(undefined)).toBeNull()
+    expect(resolveConvictionBudget({
+      version: 1,
+      commitment: 'confidence_allocation',
+      conviction_budget: null,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+      scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+      visibility: 'sealed_until_lock',
+      cadence: 'immediate_per_outcome',
+      continuity: 'no_carryover',
+    })).toBeNull()
   })
 
   it('pays the full authored pot to a correct lonely believer', () => {

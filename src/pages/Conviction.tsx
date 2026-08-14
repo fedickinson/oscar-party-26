@@ -6,7 +6,6 @@ import Avatar from '../components/Avatar'
 import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useConvictionPortfolio } from '../hooks/useConvictionPortfolio'
-import { CONVICTION_BUDGET } from '../lib/conviction'
 import type { SignatureBeatRow } from '../types/database'
 
 function BeatChoice({
@@ -118,7 +117,7 @@ export default function Conviction() {
     )
   }
 
-  const full = portfolio.myChosenCount === CONVICTION_BUDGET
+  const full = portfolio.myChosenCount === portfolio.budget
   const missingCount = portfolio.progress.reduce((sum, entry) => sum + Math.max(0, entry.required - entry.chosen), 0)
 
   return (
@@ -127,7 +126,7 @@ export default function Conviction() {
         <p className="mb-1 text-xs uppercase tracking-[0.2em] text-[var(--t-personal-text)]">Conviction portfolio</p>
         <h1 className="font-display text-2xl font-extrabold text-[var(--t-text)]">What do you believe?</h1>
         <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
-          Choose exactly {CONVICTION_BUDGET} beats from the whole board. A hit pays its full pot when you stand alone; every believer makes the split smaller.
+          Choose exactly {portfolio.budget} beats from the whole board. A hit pays its full pot when you stand alone; every believer makes the split smaller.
         </p>
       </header>
 
@@ -161,7 +160,7 @@ export default function Conviction() {
       <footer className="relief-glass fixed bottom-0 left-0 right-0 z-20 mx-auto min-h-[var(--t-conviction-footer-height)] max-w-md rounded-b-none px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0rem)+12px)]">
         <div className="mb-3 flex items-center justify-between gap-3">
           <span className="text-sm font-semibold text-[var(--t-text)]">Your portfolio</span>
-          <span className={['font-display text-sm font-bold tabular-nums', full ? 'text-[var(--t-personal-text)]' : 'text-[var(--t-text-muted)]'].join(' ')}>{portfolio.myChosenCount} of {CONVICTION_BUDGET}</span>
+          <span className={['font-display text-sm font-bold tabular-nums', full ? 'text-[var(--t-personal-text)]' : 'text-[var(--t-text-muted)]'].join(' ')}>{portfolio.myChosenCount} of {portfolio.budget}</span>
         </div>
         <div className="mb-3 flex flex-nowrap gap-2 overflow-x-auto">
           {portfolio.progress.filter((entry) => entry.player.id !== player.id).map((entry) => (

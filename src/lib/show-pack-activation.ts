@@ -1,7 +1,10 @@
 import {
   compileShowPack,
+  deriveGameModel,
+  summarizeGameContract,
   type EntityKind,
   type ShowPack,
+  type ShowPackGameContract,
   type TriggerContract,
 } from './show-pack'
 
@@ -23,6 +26,7 @@ export interface ShowPackActivationPlan {
     property: string
     installment: string
     fact_source: ShowPack['pack']['fact_source']
+    game_contract: ShowPackGameContract
     manifest_sha256: string
     compiled_bundle: ShowPack
     status: 'draft'
@@ -134,6 +138,11 @@ export interface ShowPackActivationAttestation {
 export interface ShowPackActivationAssessment {
   state: 'planned' | 'draft-partial' | 'draft-ready' | 'published-attested'
   attestation: ShowPackActivationAttestation
+}
+
+export interface ShowPackRuntimeContract {
+  gameModel: ReturnType<typeof deriveGameModel>
+  summary: string
 }
 
 /** Closed JSON payload consumed by the atomic database publication command. */
@@ -307,6 +316,7 @@ export function buildTriggerContract(
 ): CatalogTriggerContract {
   return {
     title: trigger.title,
+    ...(trigger.truth_authority ? { truth_authority: trigger.truth_authority } : {}),
     condition: trigger.condition,
     exclusions: [...trigger.exclusions],
     adjudication: {
@@ -329,6 +339,49 @@ export function buildTriggerContract(
  */
 export function assertActivatableShowPack(pack: ShowPack): void {
   const issues: string[] = []
+  const contract = pack.game_contract
+  if (!contract) {
+    issues.push('an activatable compiled show pack needs an explicit game contract')
+  } else if (contract.commitment === 'confidence_allocation') {
+    if (contract.conviction_budget !== null
+      || contract.identity.selection !== 'exclusive_entity_draft'
+      || contract.identity.scoring !== 'ensemble'
+      || contract.scarcity.commitments !== 'ranked_allocation'
+      || contract.scarcity.identity !== 'exclusive'
+      || contract.visibility !== 'sealed_until_lock'
+      || contract.cadence !== 'immediate_per_outcome'
+      || contract.continuity !== 'no_carryover') {
+      issues.push('the current confidence engine requires the Results Night contract profile')
+    }
+  } else if (contract.commitment === 'open_conviction') {
+    const identityProfileIsExecutable = contract.identity.scoring === 'none' && (
+      (contract.identity.selection === 'exclusive_entity_draft'
+        && contract.scarcity.identity === 'exclusive')
+      || (contract.identity.selection === 'chosen_faction'
+        && contract.scarcity.identity === 'shared')
+      || (contract.identity.selection === 'none'
+        && contract.scarcity.identity === 'none')
+    )
+    if (!identityProfileIsExecutable
+      || contract.scarcity.commitments !== 'fixed_budget'
+      || contract.visibility !== 'open_counts'
+      || contract.cadence !== 'immediate_facts_and_event_close'
+      || contract.continuity !== 'canon_write_back') {
+      issues.push('the current conviction engine requires the proven Story Night contract profile')
+    }
+    const beatCount = new Set(pack.signature_beats.map((beat) => beat.id)).size
+    if (contract.conviction_budget != null && contract.conviction_budget > beatCount) {
+      issues.push(`conviction budget ${contract.conviction_budget} exceeds the ${beatCount} authored beats`)
+    }
+    if (contract.identity.selection === 'chosen_faction') {
+      const authoredGroups = new Set(pack.entities.map((entity) => entity.group.trim()))
+      if (authoredGroups.size < 2) {
+        issues.push('chosen-faction identity needs at least two authored entity groups')
+      }
+    }
+  } else {
+    issues.push(`commitment ${contract.commitment} has no executable room model yet`)
+  }
   const draftableIds = new Set(
     pack.entities.filter((entity) => entity.draftable).map((entity) => entity.id),
   )
@@ -347,6 +400,14 @@ export function assertActivatableShowPack(pack: ShowPack): void {
     }
   }
   if (issues.length > 0) throw new Error(issues.join('\n'))
+}
+
+export function describeShowPackRuntime(pack: ShowPack): ShowPackRuntimeContract {
+  if (!pack.game_contract) throw new Error('compiled show pack has no explicit game contract')
+  return {
+    gameModel: deriveGameModel(pack.game_contract),
+    summary: summarizeGameContract(pack.game_contract),
+  }
 }
 
 /**
@@ -488,6 +549,7 @@ export async function buildShowPackActivationPlan(
       property: compiled.pack.property,
       installment: compiled.pack.installment,
       fact_source: compiled.pack.fact_source,
+      game_contract: compiled.game_contract!,
       manifest_sha256: manifestSha256,
       compiled_bundle: compiled,
       status: 'draft',

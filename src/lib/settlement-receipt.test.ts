@@ -97,6 +97,7 @@ function receiptInput(): SettlementReceipt {
 const trigger = {
   source_signature_beat_id: 42,
   contract: {
+    truth_authority: 'operator_declaration' as const,
     title: 'The Wolf finds the path',
     condition: 'The Wolf must visibly find and enter the hidden path.',
     exclusions: ['A map alone does not count.'],
@@ -262,6 +263,36 @@ describe('settlement receipt', () => {
 
     expect(parsed.score_events[0].trigger).toEqual(trigger)
     expect(serializeSettlementReceipt(parsed)).toContain('source_signature_beat_id')
+    expect(parsed.score_events[0].trigger?.contract.truth_authority)
+      .toBe('operator_declaration')
+  })
+
+  it('rejects an unknown proposition truth authority without breaking legacy trigger receipts', () => {
+    for (const authority of [
+      'official_result',
+      'operator_declaration',
+      'ai_proposal_human_confirmation',
+    ] as const) {
+      const supported = receiptInput()
+      supported.score_events[0].trigger = structuredClone(trigger)
+      supported.score_events[0].trigger!.contract.truth_authority = authority
+      expect(parseSettlementReceipt(JSON.stringify(supported))
+        .score_events[0].trigger?.contract.truth_authority).toBe(authority)
+    }
+
+    const invalid = receiptInput()
+    invalid.score_events[0].trigger = structuredClone(trigger)
+    ;(invalid.score_events[0].trigger!.contract as unknown as Record<string, unknown>)
+      .truth_authority = 'model_decides'
+    expect(() => parseSettlementReceipt(JSON.stringify(invalid))).toThrow(
+      'trigger contract truth_authority must be an explicit supported authority',
+    )
+
+    const legacy = receiptInput()
+    legacy.score_events[0].trigger = structuredClone(trigger)
+    delete legacy.score_events[0].trigger!.contract.truth_authority
+    expect(parseSettlementReceipt(JSON.stringify(legacy)).score_events[0].trigger?.contract)
+      .not.toHaveProperty('truth_authority')
   })
 
   it('permits trigger provenance only on character drafts and conviction predictions', () => {

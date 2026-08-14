@@ -43,6 +43,7 @@ import type {
   DraftPickRow,
   DraftEntityRow,
   BingoMarkRow,
+  PlayerIdentitySelectionRow,
 } from '../types/database'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { StoredPrediction } from '../lib/chat-reactivity-utils'
@@ -57,9 +58,26 @@ import {
   buildSpotlightReactionKey,
   buildTeamChangeReactionKey,
   buildWelcomeReactionKey,
+  buildRuntimePreShowArrivalReactionKey,
+  buildRuntimeMilestoneReactionKey,
+  buildIdentityChangeReactionKey,
   isMilestoneScoreboardReady,
   selectSpokenCompanionIds,
 } from '../lib/companion-reaction'
+import {
+  buildRuntimePreShowPrompt,
+  buildRuntimeShowStartedPrompt,
+  buildRuntimeSpotlightPrompt,
+  buildRuntimeWelcomePrompt,
+  buildRuntimeMilestonePrompt,
+  buildRuntimeIdentityChangePrompt,
+} from '../lib/runtime-narrative-prompts'
+import {
+  buildRuntimePreShowArrivalSchedule,
+  selectRuntimeIdentityChangeVoice,
+  selectRuntimeEventCast,
+  type PackRuntimeNarrativeCast,
+} from '../lib/runtime-narrative'
 import { didBingoMarkCompleteLine } from '../lib/bingo-utils'
 import { addPendingCompanion, removePendingCompanion, clearPendingCompanions } from './companionTypingStore'
 import {
@@ -79,6 +97,9 @@ export function useAICompanions(
   predictionsRef?: React.MutableRefObject<StoredPrediction[]>,
   showStarted?: boolean,
   narrativeDataReady = false,
+  runtimeCast?: PackRuntimeNarrativeCast | null,
+  identitySelections: PlayerIdentitySelectionRow[] = [],
+  identityDataReady = false,
 ): { isGenerating: boolean } {
   const { room, players } = useGame()
   const roomIdForBingo = room?.id
@@ -88,6 +109,22 @@ export function useAICompanions(
   operatorCapabilityRef.current = operatorCapability
   const narrativeDataReadyRef = useRef(narrativeDataReady)
   narrativeDataReadyRef.current = narrativeDataReady
+  const runtimeCastRef = useRef(runtimeCast ?? null)
+  runtimeCastRef.current = runtimeCast ?? null
+  const identitySelectionsRef = useRef(identitySelections)
+  identitySelectionsRef.current = identitySelections
+  const identityDataReadyRef = useRef(identityDataReady)
+  identityDataReadyRef.current = identityDataReady
+  const packCeremony = runtimeCast != null
+
+  useEffect(() => {
+    if (isHost) return
+    pendingTimeoutsRef.current.forEach(clearTimeout)
+    pendingTimeoutsRef.current = []
+    welcomeTimersRef.current.forEach(clearTimeout)
+    welcomeTimersRef.current.clear()
+    clearPendingCompanions()
+  }, [isHost])
   const reactionInstanceRef = useRef(crypto.randomUUID())
 
   // Tracks delayed companion message timeouts so they can be cancelled on unmount
@@ -126,6 +163,12 @@ export function useAICompanions(
   const previousWinnersRef = useRef<Set<number>>(new Set())
   const milestoneFiredRef = useRef<Set<string>>(new Set())
   const dataInitializedRef = useRef(false)
+
+  useEffect(() => {
+    previousWinnersRef.current = new Set()
+    milestoneFiredRef.current = new Set()
+    dataInitializedRef.current = false
+  }, [room?.id])
 
   // Data refs — always current regardless of when async callbacks execute
   const categoriesRef = useRef(categories)
@@ -207,7 +250,7 @@ export function useAICompanions(
     },
     maxTokens: number,
     reactionKey: string,
-    surface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'show_start' | 'pre_show' | 'spotlight',
+    surface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'identity_change' | 'show_start' | 'pre_show' | 'spotlight',
     legacyPlayerId?: string,
     stillValid?: () => boolean,
   ): Promise<CompanionMessage[] | null> {
@@ -239,6 +282,9 @@ export function useAICompanions(
         model: 'claude-sonnet-5',
         maxTokens,
         maxRetries: 2,
+        ...(runtimeCastRef.current
+          ? { allowedCompanionIds: runtimeCastRef.current.voices.map((voice) => voice.id) }
+          : {}),
         expectedCompanionIds: prompt.expectedCompanionIds,
         expectedDelaySeconds: prompt.expectedDelaySeconds,
         allowEmptyBatch: surface === 'bingo',
@@ -433,7 +479,7 @@ export function useAICompanions(
     },
     maxTokens = 600,
     reactionKey?: string,
-    groundingSurface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'show_start' | 'pre_show' | 'spotlight' = 'event',
+    groundingSurface: 'event' | 'bingo' | 'milestone' | 'welcome' | 'team_change' | 'identity_change' | 'show_start' | 'pre_show' | 'spotlight' = 'event',
     legacyPlayerId?: string,
     stillValid?: () => boolean,
   ) {
@@ -441,11 +487,14 @@ export function useAICompanions(
     // The delay-0 message gates all perceived latency: during the pre-show the
     // chat IS the show and generation takes seconds. Show the narrator typing
     // the moment the call goes out — the wait reads as typing, not dead air.
-    addPendingCompanion(NARRATOR.id)
-    void broadcastChannelRef.current?.send({ id: NARRATOR.id, typing: true })
+    const narratorId = prompt.expectedCompanionIds?.[0]
+      ?? runtimeCastRef.current?.narrator.id
+      ?? NARRATOR.id
+    addPendingCompanion(narratorId)
+    void broadcastChannelRef.current?.send({ id: narratorId, typing: true })
     const clearNarratorTyping = () => {
-      removePendingCompanion(NARRATOR.id)
-      void broadcastChannelRef.current?.send({ id: NARRATOR.id, typing: false })
+      removePendingCompanion(narratorId)
+      void broadcastChannelRef.current?.send({ id: narratorId, typing: false })
     }
     try {
       let messages: CompanionMessage[]
@@ -480,7 +529,7 @@ export function useAICompanions(
           clearNarratorTyping()
           return
         }
-        messages = parseCompanionResponse(raw)
+        messages = parseCompanionResponse(raw, runtimeCastRef.current == null)
       }
       clearNarratorTyping()
       // Ungrounded decoration still uses client timers, so cap its tail inside
@@ -543,6 +592,7 @@ export function useAICompanions(
 
   useEffect(() => {
     if (!room?.id || !isHost || !narrativeDataReady) return
+    const packCast = runtimeCast
     const scheduledRoomId = room.id
     let disposed = false
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -565,22 +615,44 @@ export function useAICompanions(
         .from('messages')
         .select('player_id,text,created_at')
         .eq('room_id', scheduledRoomId)
-        .in('player_id', PRE_SHOW_COMPANIONS.map((companion) => companion.id))
+        .in('player_id', packCast
+          ? packCast.voices.map((voice) => voice.id)
+          : PRE_SHOW_COMPANIONS.map((companion) => companion.id))
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(6)
       if (recentError || disposed) return
 
+      const prompt = packCast
+        ? buildRuntimePreShowPrompt(
+            packCast,
+            packCast.voices.find((voice) => voice.id === companionId)!,
+            {
+              playerNames: playersRef.current.map((player) => player.name),
+              draftRosters: playersRef.current.map((player) => ({
+                playerName: player.name,
+                entityNames: draftPicksRef.current
+                  .filter((pick) => pick.player_id === player.id)
+                  .map((pick) => draftEntitiesRef.current
+                    .find((entity) => entity.id === pick.entity_id)?.name)
+                  .filter((name): name is string => !!name),
+              })),
+              recentMessages: [...(recent ?? [])].reverse(),
+            },
+          )
+        : buildPreCeremonyPrompt(
+            companionId,
+            playersRef.current,
+            draftPicksRef.current,
+            draftEntitiesRef.current,
+            [...(recent ?? [])].reverse(),
+          )
       await fireCompanionMessages(
-        buildPreCeremonyPrompt(
-          companionId,
-          playersRef.current,
-          draftPicksRef.current,
-          draftEntitiesRef.current,
-          [...(recent ?? [])].reverse(),
-        ),
+        prompt,
         700,
-        buildPreShowArrivalReactionKey(companionId),
+        packCast
+          ? buildRuntimePreShowArrivalReactionKey(companionId)
+          : buildPreShowArrivalReactionKey(companionId),
         'pre_show',
         companionId,
       )
@@ -593,12 +665,19 @@ export function useAICompanions(
         .from('messages')
         .select('player_id')
         .eq('room_id', scheduledRoomId)
-        .in('player_id', PRE_SHOW_COMPANIONS.map((companion) => companion.id))
+        .in('player_id', packCast
+          ? packCast.voices.map((voice) => voice.id)
+          : PRE_SHOW_COMPANIONS.map((companion) => companion.id))
       if (error || disposed) return
 
-      const schedule = buildPreShowArrivalSchedule(
-        (existing ?? []).map((message) => message.player_id),
-      )
+      const present = (existing ?? []).map((message) => message.player_id)
+      const schedule = packCast
+        ? buildRuntimePreShowArrivalSchedule(packCast, present)
+          .map((arrival) => ({
+            companionId: arrival.voiceId,
+            delaySeconds: arrival.delaySeconds,
+          }))
+        : buildPreShowArrivalSchedule(present)
       for (const arrival of schedule) {
         const timer = setTimeout(
           () => void fireArrival(arrival.companionId).catch(() => undefined),
@@ -614,7 +693,7 @@ export function useAICompanions(
       timers.forEach(clearTimeout)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room?.id, isHost, narrativeDataReady])
+  }, [room?.id, isHost, narrativeDataReady, runtimeCast])
 
   // ── Effect 1b: "Show Started" — divider + companion reaction ────────────────
   // The room phase is canonical. Stable database claims make competing host
@@ -630,15 +709,22 @@ export function useAICompanions(
         'Show Started',
       )
       if (!shouldReact) return
+      const packCast = runtimeCastRef.current
       await fireCompanionMessages(
-        buildShowStartedPrompt(playersRef.current),
+        packCast
+          ? buildRuntimeShowStartedPrompt(
+              packCast,
+              selectRuntimeEventCast(packCast),
+              playersRef.current.map((player) => player.name),
+            )
+          : buildShowStartedPrompt(playersRef.current),
         1000,
         buildShowStartedReactionKey('reaction'),
         'show_start',
       )
     })().catch(() => undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showStarted, isHost, room?.id])
+  }, [showStarted, isHost, room?.id, runtimeCast])
 
   // ── Effect 1c: Player welcomes ──────────────────────────────────────────────
   //
@@ -656,13 +742,27 @@ export function useAICompanions(
   const nextWelcomeAtRef = useRef(0)
   const lastGreeterRef = useRef<string | null>(null)
 
+  useEffect(() => {
+    nextWelcomeAtRef.current = 0
+    lastGreeterRef.current = null
+    return () => {
+      welcomeTimersRef.current.forEach(clearTimeout)
+      welcomeTimersRef.current.clear()
+    }
+  }, [room?.id])
+
   async function spokenCompanionIds(): Promise<string[]> {
+    const castIds = runtimeCastRef.current?.voices.map((voice) => voice.id)
+      ?? [...COMPANION_IDS]
     const { data } = await supabase
       .from('messages')
       .select('player_id')
       .eq('room_id', roomRef.current?.id ?? '')
-      .in('player_id', [...COMPANION_IDS])
-    return selectSpokenCompanionIds((data ?? []).map((message) => message.player_id as string))
+      .in('player_id', castIds)
+    const authorIds = (data ?? []).map((message) => message.player_id as string)
+    return runtimeCastRef.current
+      ? [...new Set(authorIds.filter((id) => castIds.includes(id)))]
+      : selectSpokenCompanionIds(authorIds)
   }
 
   useEffect(() => {
@@ -712,7 +812,8 @@ export function useAICompanions(
             .map((dp) => draftEntitiesRef.current.find((e) => e.id === dp.entity_id)?.name)
             .filter((n): n is string => !!n)
 
-          // The greeter is chosen BY HOUSE: the player's sigil is treated as
+          const packCast = runtimeCastRef.current
+          // The legacy greeter is chosen BY HOUSE: the player's sigil is treated as
           // their house, and whoever at the table has the sharpest personal
           // angle on that house is the one who looks up — Ned takes the
           // Arryns (fostered in the Vale), Olenna the Hightowers, Daenerys
@@ -720,7 +821,9 @@ export function useAICompanions(
           // the house is unknown or nobody with an angle is on stage yet.
           const houseId = current.avatar_id
           const banner = getAvatarById(houseId)
-          const angle = pickGreeterForHouse(houseId, spoken, lastGreeterRef.current)
+          const angle = packCast
+            ? null
+            : pickGreeterForHouse(houseId, spoken, lastGreeterRef.current)
           let greeter: string
           let house: { name: string; hook?: string } | undefined = banner
             ? { name: banner.name }
@@ -737,7 +840,16 @@ export function useAICompanions(
           lastGreeterRef.current = greeter
 
           await fireCompanionMessages(
-            buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster, house),
+            packCast
+              ? buildRuntimeWelcomePrompt(
+                  packCast,
+                  packCast.voices.find((voice) => voice.id === greeter)!,
+                  {
+                    playerName: current.name,
+                    rosterNames: roster,
+                  },
+                )
+              : buildPlayerWelcomePrompt(greeter, current.name, current.team ?? null, roster, house),
             400,
             buildWelcomeReactionKey(p.id),
             'welcome',
@@ -749,14 +861,7 @@ export function useAICompanions(
       welcomeTimersRef.current.set(p.id, setTimeout(fire, at - Date.now()))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [players, isHost, room?.id])
-
-  useEffect(() => {
-    return () => {
-      welcomeTimersRef.current.forEach(clearTimeout)
-      welcomeTimersRef.current.clear()
-    }
-  }, [])
+  }, [players, isHost, room?.id, runtimeCast])
 
   // ── Effect 1d: Team declarations and defections ─────────────────────────────
   //
@@ -776,7 +881,7 @@ export function useAICompanions(
   }, [room?.id])
 
   useEffect(() => {
-    if (!isHost || !players.length) return
+    if (!isHost || !players.length || packCeremony) return
     for (const p of players) {
       const revision = p.team_revision ?? 0
       const processedRevision = processedTeamRevisionsRef.current.get(p.id) ?? 0
@@ -820,9 +925,85 @@ export function useAICompanions(
       pendingTimeoutsRef.current.push(tid)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [players, isHost])
+  }, [players, isHost, packCeremony])
 
-  // ── Effect 1e: Bingo declarations ───────────────────────────────────────────
+  // ── Effect 1e: Pack-authored identity revisions ────────────────────────────
+  // The selection row is the fact. Revision zero is a silent initial banner;
+  // only an exact live transition with a retained prior choice enters ceremony.
+  const processedIdentityRevisionsRef = useRef<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    processedIdentityRevisionsRef.current.clear()
+  }, [room?.id])
+
+  useEffect(() => {
+    const packCast = runtimeCastRef.current
+    if (!isHost || !packCast?.identityChange || !identityDataReady
+      || !narrativeDataReady) return
+    for (const selection of identitySelections) {
+      const revision = selection.revision ?? 0
+      const processed = processedIdentityRevisionsRef.current.get(selection.player_id) ?? 0
+      if (revision <= processed) continue
+      if (revision < 1 || selection.changed_in_phase !== 'live'
+        || !selection.previous_choice_key
+        || selection.previous_choice_key === selection.choice_key) continue
+
+      const player = playersRef.current.find((candidate) => candidate.id === selection.player_id)
+      const voice = selectRuntimeIdentityChangeVoice(packCast, selection.player_id, revision)
+      if (!player || !voice) continue
+      processedIdentityRevisionsRef.current.set(selection.player_id, revision)
+      const stillCurrent = () => {
+        const current = identitySelectionsRef.current.find(
+          (candidate) => candidate.player_id === selection.player_id,
+        )
+        return isHostRef.current && identityDataReadyRef.current
+          && narrativeDataReadyRef.current
+          && roomRef.current?.phase === 'live'
+          && current?.revision === revision
+          && current.choice_key === selection.choice_key
+          && current.previous_choice_key === selection.previous_choice_key
+      }
+
+      void (async () => {
+        const shouldReact = await insertClaimedSystemDivider(
+          buildIdentityChangeReactionKey(selection.player_id, revision, 'announcement'),
+          `${player.name} changes from ${selection.previous_choice_key} to ${selection.choice_key}`,
+          undefined,
+          undefined,
+          stillCurrent,
+        )
+        if (!shouldReact || !stillCurrent()) return
+        const roster = draftPicksRef.current
+          .filter((pick) => pick.player_id === selection.player_id)
+          .map((pick) => draftEntitiesRef.current.find((entity) => entity.id === pick.entity_id)?.name)
+          .filter((name): name is string => !!name)
+        await fireCompanionMessages(
+          buildRuntimeIdentityChangePrompt(packCast, voice, {
+            playerName: player.name,
+            previousChoice: selection.previous_choice_key!,
+            choice: selection.choice_key,
+            revision,
+            rosterNames: roster,
+          }),
+          400,
+          buildIdentityChangeReactionKey(selection.player_id, revision, 'reaction'),
+          'identity_change',
+          undefined,
+          stillCurrent,
+        )
+      })().catch(() => undefined)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    identitySelections,
+    identityDataReady,
+    narrativeDataReady,
+    isHost,
+    runtimeCast,
+    room?.id,
+  ])
+
+  // ── Effect 1f: Bingo declarations ───────────────────────────────────────────
   //
   // The design principle for the whole night: nobody narrates the episode.
   // The GAME's declarations are the event stream — a GM-logged beat is one
@@ -839,7 +1020,13 @@ export function useAICompanions(
   const bingoSquaresCacheRef = useRef<Map<number, string> | null>(null)
 
   useEffect(() => {
-    if (!roomIdForBingo || !isHost) return
+    processedMarkIdsRef.current = new Set()
+    lastSquareReactionAtRef.current = 0
+    bingoSquaresCacheRef.current = null
+  }, [room?.id])
+
+  useEffect(() => {
+    if (!roomIdForBingo || !isHost || packCeremony) return
 
     async function squareText(id: number): Promise<string | null> {
       if (!bingoSquaresCacheRef.current) {
@@ -950,14 +1137,14 @@ export function useAICompanions(
       .subscribe()
     return () => { supabase.removeChannel(channel) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomIdForBingo, isHost])
+  }, [roomIdForBingo, isHost, packCeremony])
 
   // ── Effect 2: Winner reactions ────────────────────────────────────────────────
   // First meaningful data load: initialize seen set without firing reactions.
   // Subsequent updates: fire for genuinely new winners only.
 
   useEffect(() => {
-    if (!isHost || !categories.length) return
+    if (!isHost || !categories.length || packCeremony) return
 
     if (!dataInitializedRef.current) {
       // Mark all currently-announced categories as already seen
@@ -1063,7 +1250,7 @@ export function useAICompanions(
       // render branch in ChatSection stays for any rows already in the table.
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories, isHost])
+  }, [categories, isHost, packCeremony])
 
   // ── Effect 3: Grounded spotlight opening ─────────────────────────────────────
   // The database revision distinguishes close/reopen cycles. A short grace lets
@@ -1111,14 +1298,38 @@ export function useAICompanions(
           spotlightStillCurrent,
         )
         if (!shouldReact) return
+        const packCast = runtimeCastRef.current
         await fireCompanionMessages(
-          buildPreCategoryPrompt(
-            category,
-            spotlightRevision,
-            categoryNominees,
-            confidencePicksRef.current,
-            playersRef.current,
-          ),
+          packCast
+            ? buildRuntimeSpotlightPrompt(
+                packCast,
+                selectRuntimeEventCast(packCast),
+                {
+                  revision: spotlightRevision,
+                  label: category.name,
+                  candidates: categoryNominees.map((nominee) => nominee.name),
+                  wagers: confidencePicksRef.current
+                    .filter((pick) => pick.category_id === category.id)
+                    .flatMap((pick) => {
+                      const player = playersRef.current
+                        .find((candidate) => candidate.id === pick.player_id)
+                      const outcome = categoryNominees
+                        .find((candidate) => candidate.id === pick.nominee_id)
+                      return player && outcome ? [{
+                        playerName: player.name,
+                        outcomeName: outcome.name,
+                        conviction: pick.confidence,
+                      }] : []
+                    }),
+                },
+              )
+            : buildPreCategoryPrompt(
+                category,
+                spotlightRevision,
+                categoryNominees,
+                confidencePicksRef.current,
+                playersRef.current,
+              ),
           700,
           buildSpotlightReactionKey(spotlightRevision, 'reaction'),
           'spotlight',
@@ -1137,12 +1348,13 @@ export function useAICompanions(
     room?.spotlight_opened_at,
     isHost,
     narrativeDataReady,
+    runtimeCast,
   ])
 
   // ── Effect 5: Milestone reactions (halfway / final stretch) ───────────────────
 
   useEffect(() => {
-    if (!isHost) return
+    if (!isHost || !narrativeDataReady) return
     const count = categories.filter((c) => c.winner_id != null).length
 
     // Milestones fire on absolute event counts, NOT on progress toward a total.
@@ -1162,6 +1374,27 @@ export function useAICompanions(
     // half-scored leaderboard. Room-authored events have no attached picks and
     // pass immediately.
     if (!isMilestoneScoreboardReady(categories, confidencePicks)) return
+
+    const authoredCast = runtimeCastRef.current
+    if (authoredCast) {
+      for (const milestone of authoredCast.milestones) {
+        if (count < milestone.declaredEventCount
+          || milestoneFiredRef.current.has(milestone.id)) continue
+        milestoneFiredRef.current.add(milestone.id)
+        void fireCompanionMessages(
+          buildRuntimeMilestonePrompt(
+            authoredCast,
+            milestone,
+            count,
+            leaderboardRef.current,
+          ),
+          700,
+          buildRuntimeMilestoneReactionKey(milestone.id),
+          'milestone',
+        )
+      }
+      return
+    }
 
     if (count >= 6 && !milestoneFiredRef.current.has('halfway')) {
       milestoneFiredRef.current.add('halfway')
@@ -1183,7 +1416,14 @@ export function useAICompanions(
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories, confidencePicks, isHost])
+  }, [
+    categories,
+    confidencePicks,
+    isHost,
+    packCeremony,
+    runtimeCast,
+    narrativeDataReady,
+  ])
 
   return { isGenerating: false }
 }

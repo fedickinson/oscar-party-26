@@ -15,6 +15,7 @@
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
+import { LEGACY_SHOW_PACK_ID } from '../lib/catalog-scope'
 
 const TEAMS = [
   {
@@ -38,8 +39,8 @@ const TEAMS = [
 ]
 
 export default function TeamPicker({ compact = false }: { compact?: boolean }) {
-  const { player, players, setPlayers } = useGame()
-  if (!player) return null
+  const { room, player, players, setPlayers } = useGame()
+  if (!player || room?.show_pack_id !== LEGACY_SHOW_PACK_ID) return null
 
   const current = players.find((p) => p.id === player.id)?.team ?? null
 

@@ -20,6 +20,9 @@ import { AI_COMPANIONS, COMPANION_IDS, NARRATOR, PRE_SHOW_COMPANIONS, getCompani
 import { getAvatarById } from '../../lib/avatar-utils'
 import { usePendingCompanions, addPendingCompanion, removePendingCompanion } from '../../hooks/companionTypingStore'
 import { acquireCompanionTypingChannel } from '../../hooks/companionTypingChannel'
+import { useRuntimeNarrativeCast } from '../../hooks/useRuntimeNarrativeCast'
+import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
+import { LEGACY_SHOW_PACK_ID } from '../../lib/catalog-scope'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -96,9 +99,19 @@ function TypingDots({ color }: { color: string }) {
   )
 }
 
-function SingleCompanionTyping({ companionId, onProfile }: { companionId: string; onProfile: (id: string) => void }) {
+function SingleCompanionTyping({
+  companionId,
+  onProfile,
+  voice,
+}: {
+  companionId: string
+  onProfile: (id: string) => void
+  voice?: RuntimeNarrativeVoice
+}) {
   const c = INTRO_COMPANIONS.find((x) => x.id === companionId)
-  if (!c) return null
+  if (!c && !voice) return null
+  const name = voice?.name ?? c!.name
+  const color = voice ? 'var(--t-accent)' : c!.color
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -107,20 +120,26 @@ function SingleCompanionTyping({ companionId, onProfile }: { companionId: string
       transition={{ duration: 0.2 }}
       className="flex gap-2 items-end py-1"
     >
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.92 }}
-        onClick={() => onProfile(c.id)}
-        className="flex-shrink-0 mb-0.5"
-        aria-label={`Open ${c.name} profile`}
-      >
-        <CompanionAvatar companionId={c.id} size="xl" />
-      </motion.button>
+      {c && !voice ? (
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.92 }}
+          onClick={() => onProfile(c.id)}
+          className="flex-shrink-0 mb-0.5"
+          aria-label={`Open ${c.name} profile`}
+        >
+          <CompanionAvatar companionId={c.id} size="xl" />
+        </motion.button>
+      ) : (
+        <div className="flex-shrink-0 mb-0.5" aria-hidden>
+          <CompanionAvatar companionId={companionId} size="xl" voice={voice} />
+        </div>
+      )}
       <div className="flex flex-col gap-0.5">
-        <span className="text-[13px] px-1 font-medium" style={{ color: c.color }}>
-          {c.name}
+        <span className="text-[13px] px-1 font-medium" style={{ color }}>
+          {name}
         </span>
-        <TypingDots color={c.color} />
+        <TypingDots color={color} />
       </div>
     </motion.div>
   )
@@ -157,6 +176,10 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   // a fresh open should always show the room talking.
   const [collapsed, setCollapsed] = useState(false)
   const { room, player, players } = useGame()
+  const runtimeNarrative = useRuntimeNarrativeCast(room?.show_pack_id)
+  const runtimeVoiceById = new Map(
+    (runtimeNarrative.cast?.voices ?? []).map((voice) => [voice.id, voice]),
+  )
   const { messages, sendMessage, isLoading, syncError, retrySync } = useChat(room?.id)
   const [input, setInput] = useState('')
   const [sendError, setSendError] = useState<string | null>(null)
@@ -194,10 +217,14 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   // then the intro companion if not already covered, deduplicated.
   const typingCompanionIds = isLoading || syncError
     ? []
-    : [
-        ...INTRO_COMPANION_IDS.filter((id) => pendingCompanionIds.includes(id)),
-        ...(nextTypingCompanionId && !pendingCompanionIds.includes(nextTypingCompanionId) ? [nextTypingCompanionId] : []),
-      ]
+    : runtimeNarrative.cast
+      ? runtimeNarrative.cast.voices
+        .map((voice) => voice.id)
+        .filter((id) => pendingCompanionIds.includes(id))
+      : [
+          ...INTRO_COMPANION_IDS.filter((id) => pendingCompanionIds.includes(id)),
+          ...(nextTypingCompanionId && !pendingCompanionIds.includes(nextTypingCompanionId) ? [nextTypingCompanionId] : []),
+        ]
 
   const profileCompanion = profileCompanionId ? getCompanionById(profileCompanionId) : null
 
@@ -333,13 +360,17 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
               )
             }
 
-            const isCompanion = COMPANION_IDS.has(msg.player_id)
+            const runtimeVoice = runtimeVoiceById.get(msg.player_id) as RuntimeNarrativeVoice | undefined
+            const isCompanion = runtimeVoice === undefined
+              && room?.show_pack_id === LEGACY_SHOW_PACK_ID
+              && COMPANION_IDS.has(msg.player_id)
             const companion = isCompanion ? getCompanionById(msg.player_id) : undefined
-            const isMine = !isCompanion && msg.player_id === player?.id
-            const sender = !isCompanion ? players.find((p) => p.id === msg.player_id) : undefined
-            const senderName = sender?.name ?? (isCompanion ? (companion?.name ?? 'AI') : 'Unknown')
+            const isCast = isCompanion || runtimeVoice !== undefined
+            const isMine = !isCast && msg.player_id === player?.id
+            const sender = !isCast ? players.find((p) => p.id === msg.player_id) : undefined
+            const senderName = sender?.name ?? companion?.name ?? runtimeVoice?.name ?? 'Unknown'
             const avatarId = sender?.avatar_id ?? ''
-            const avatarColor = !isCompanion && !isMine && avatarId
+            const avatarColor = !isCast && !isMine && avatarId
               ? (getAvatarById(avatarId)?.colorPrimary ?? null)
               : null
 
@@ -352,21 +383,25 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                 className={[
                   'flex gap-2 items-end',
                   isMine ? 'flex-row-reverse' : 'flex-row',
-                  isCompanion ? 'mb-3' : '',
+                  isCast ? 'mb-3' : '',
                 ].join(' ')}
               >
                 {/* Avatar — companion icon or player avatar (hidden on own messages) */}
                 {!isMine && (
                   <div className="flex-shrink-0 mb-0.5">
-                    {isCompanion ? (
+                    {companion ? (
                       <motion.button
                         type="button"
                         whileTap={{ scale: 0.92 }}
                         onClick={() => setProfileCompanionId(msg.player_id)}
                         aria-label={`Open ${senderName} profile`}
                       >
-                        <CompanionAvatar companionId={msg.player_id} size="xl" />
+                        <CompanionAvatar companionId={msg.player_id} size="xl" voice={runtimeVoice} />
                       </motion.button>
+                    ) : runtimeVoice ? (
+                      <div aria-hidden>
+                        <CompanionAvatar companionId={msg.player_id} size="xl" voice={runtimeVoice} />
+                      </div>
                     ) : (
                       <motion.button
                         type="button"
@@ -385,15 +420,21 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   {/* Sender name */}
                   {!isMine && (
                     <span className="text-[13px] px-1 font-medium flex items-baseline gap-1">
-                      <span style={companion ? { color: companion.colorPrimary } : { color: 'rgba(255,255,255,0.45)' }}>
+                      <span style={
+                        companion
+                          ? { color: companion.colorPrimary }
+                          : runtimeVoice
+                            ? { color: 'var(--t-accent)' }
+                            : { color: 'var(--t-text-dim)' }
+                      }>
                         {senderName}
                       </span>
-                      {companion && companion.role && (
+                      {(companion?.role || runtimeVoice?.role) && (
                         <span
                           className="text-[11px] font-normal"
-                          style={{ color: companion.colorPrimary, opacity: 0.5 }}
+                          style={{ color: companion?.colorPrimary ?? 'var(--t-accent)', opacity: 0.5 }}
                         >
-                          ({companion.role})
+                          ({companion?.role ?? runtimeVoice?.role})
                         </span>
                       )}
                     </span>
@@ -402,9 +443,11 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
                   {/* Bubble — three materials, three kinds of speaker (v7):
                       companions on parchment (history), self on faction-edged
                       glass, other players on glass with their avatar color. */}
-                  {isCompanion && companion ? (
+                  {isCast ? (
                     (() => {
-                      const bubbleStyle = COMPANION_BUBBLE_STYLES[companion.id] ?? COMPANION_BUBBLE_STYLES[NARRATOR.id]
+                      const bubbleStyle = companion
+                        ? COMPANION_BUBBLE_STYLES[companion.id] ?? COMPANION_BUBBLE_STYLES[NARRATOR.id]
+                        : { borderLeft: '3px solid var(--t-accent)' }
                       return (
                         <div
                           className="ai-parchment material-vellum text-sm leading-relaxed"
@@ -446,6 +489,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
               key={id}
               companionId={id}
               onProfile={setProfileCompanionId}
+              voice={runtimeVoiceById.get(id)}
             />
           ))}
         </AnimatePresence>

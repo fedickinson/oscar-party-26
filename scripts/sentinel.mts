@@ -20,6 +20,7 @@ import {
   type OperatorSentinelState,
 } from '../src/lib/operator-sentinel'
 import { createOperatorRoomReader } from './lib/operator-room-read.mts'
+import { LEGACY_SHOW_PACK_ID } from '../src/lib/catalog-scope'
 
 interface SentinelArgs {
   room: string
@@ -92,7 +93,13 @@ async function main(): Promise<void> {
         false,
         observation.observed_at_ms,
       ),
-      narrative_sequence: deriveNarrativeSequence(observation.messages, false),
+      narrative_sequence: deriveNarrativeSequence(
+        observation.messages,
+        false,
+        observation.room.show_pack_id === LEGACY_SHOW_PACK_ID
+          ? undefined
+          : observation.runtime_cast_ids,
+      ),
       review_queues: {
         grounding: deriveOperatorReviewQueue(
           observation.grounding_queue.count,

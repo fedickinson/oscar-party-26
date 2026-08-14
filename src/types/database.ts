@@ -1,3 +1,5 @@
+import type { ShowPackGameContract } from './game-contract'
+
 export type RoomPhase =
   | 'lobby'
   | 'pre_draft'
@@ -66,6 +68,8 @@ export interface RoomRow {
   show_pack_id: string
   /** Legacy character ownership or the show-neutral open belief portfolio. */
   game_model?: GameModel
+  /** Immutable resolved behavior contract copied from the bound show pack. */
+  game_contract?: ShowPackGameContract
   /** Realtime invalidation counter for the private host witness queue. */
   witness_revision?: number
   /** Realtime invalidation counter for blocked companion prose reviews. */
@@ -111,6 +115,7 @@ export interface RoomInsert {
   active_settlement_id?: string | null
   show_pack_id?: string
   game_model?: GameModel
+  game_contract?: ShowPackGameContract
   operator_capability_revision?: number
 }
 
@@ -151,6 +156,7 @@ export interface RoomUpdate {
   active_settlement_id?: string | null
   show_pack_id?: string
   game_model?: GameModel
+  game_contract?: ShowPackGameContract
   operator_capability_revision?: number
 }
 
@@ -164,6 +170,7 @@ export interface ShowPackRow {
   property: string
   installment: string
   fact_source: 'scheduled' | 'room_declared' | 'ai_witnessed'
+  game_contract: ShowPackGameContract | null
   manifest_sha256: string | null
   compiled_bundle: unknown | null
   status: ShowPackStatus
@@ -179,6 +186,7 @@ export interface ShowPackInsert {
   property: string
   installment: string
   fact_source: ShowPackRow['fact_source']
+  game_contract?: ShowPackGameContract | null
   manifest_sha256?: string | null
   compiled_bundle?: unknown | null
   status?: ShowPackStatus
@@ -190,6 +198,7 @@ export type ShowPackUpdate = Partial<ShowPackInsert>
 
 /** Structured authoring evidence retained beside each normalized wager row. */
 export interface TriggerContractRow {
+  truth_authority?: 'official_result' | 'operator_declaration' | 'ai_proposal_human_confirmation'
   title: string
   condition: string
   exclusions: string[]
@@ -263,6 +272,35 @@ export interface PlayerUpdate {
   /** The one person per watch group who controls playback. */
   is_remote_holder?: boolean
 }
+
+// ─── player_identity_selections ─────────────────────────────────────────────
+
+/** Pack-authored, shared, non-scoring identity selected by one occupied seat. */
+export interface PlayerIdentitySelectionRow {
+  player_id: string
+  room_id: string
+  show_pack_id: string
+  choice_key: string
+  previous_choice_key: string | null
+  revision: number
+  changed_in_phase: RoomPhase | null
+  changed_at: string | null
+  selected_at: string
+}
+
+export interface PlayerIdentitySelectionInsert {
+  player_id: string
+  room_id: string
+  show_pack_id: string
+  choice_key: string
+  previous_choice_key?: string | null
+  revision?: number
+  changed_in_phase?: RoomPhase | null
+  changed_at?: string | null
+  selected_at?: string
+}
+
+export type PlayerIdentitySelectionUpdate = Partial<PlayerIdentitySelectionInsert>
 
 // ─── categories ──────────────────────────────────────────────────────────────
 
@@ -730,8 +768,8 @@ export interface AvatarUpdate {
 export interface MessageRow {
   id: string
   room_id: string
-  // UUID for human players, or a companion id from data/ai-companions.ts for AI
-  // companions, or 'system' / 'winner-divider' / 'film-link' for synthetic rows.
+  // UUID for human players, or a room pack's authored commentary voice ID for
+  // cast messages, or 'system' / 'winner-divider' / 'film-link' for synthetic rows.
   // The FK was dropped in migration precisely to allow these non-UUID authors.
   player_id: string
   text: string
@@ -1010,6 +1048,7 @@ export interface Database {
       rooms: { Row: RoomRow; Insert: RoomInsert; Update: RoomUpdate }
       show_packs: { Row: ShowPackRow; Insert: ShowPackInsert; Update: ShowPackUpdate }
       players: { Row: PlayerRow; Insert: PlayerInsert; Update: PlayerUpdate }
+      player_identity_selections: { Row: PlayerIdentitySelectionRow; Insert: PlayerIdentitySelectionInsert; Update: PlayerIdentitySelectionUpdate }
       categories: { Row: CategoryRow; Insert: CategoryInsert; Update: CategoryUpdate }
       nominees: { Row: NomineeRow; Insert: NomineeInsert; Update: NomineeUpdate }
       category_nominees: { Row: CategoryNomineeRow; Insert: CategoryNomineeInsert; Update: CategoryNomineeUpdate }

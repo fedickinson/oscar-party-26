@@ -77,6 +77,30 @@ describe('deriveNarrativeSequence', () => {
     })
   })
 
+  it('accepts room-pack cast ids supplied by the canonical runtime projection', () => {
+    const messages = [
+      message('fact-one', 'winner-divider', '2026-08-10T20:01:00.000Z'),
+      message('cast-one', 'archivist', '2026-08-10T20:02:00.000Z'),
+    ]
+
+    expect(deriveNarrativeSequence(messages, false, ['archivist'])).toMatchObject({
+      status: 'activity_after_fact',
+      last_cast_at: '2026-08-10T20:02:00.000Z',
+    })
+  })
+
+  it('does not let a legacy cast id count as activity when a generic room supplies its cast', () => {
+    const messages = [
+      message('fact-one', 'winner-divider', '2026-08-10T20:01:00.000Z'),
+      message('wrong-canon', 'cersei', '2026-08-10T20:02:00.000Z'),
+    ]
+
+    expect(deriveNarrativeSequence(messages, false, ['archivist'])).toMatchObject({
+      status: 'quiet_after_fact',
+      last_cast_at: null,
+    })
+  })
+
   it('counts every declared fact newer than the last cast activity', () => {
     const messages = [
       message('cast-old', 'arya', '2026-08-10T20:00:00.000Z'),

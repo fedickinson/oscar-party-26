@@ -59,7 +59,7 @@ retained a fake room and players despite using a service cleanup key; it now
 deletes its transient room state.
 
 An approved `supabase db reset --local` replays every migration through
-`20260812062700`, loads the authored legacy pack and finishes with warning-fatal
+`20260813000100`, loads the authored legacy pack and finishes with warning-fatal
 lint green. The seed temporarily drafts the immutable pack, loads its catalog,
 then fails closed unless all trigger doctrine and playability checks succeed
 before republishing. The clean catalog is 20 categories, 38 nominees, 38 draft
@@ -123,7 +123,8 @@ live status in .private/postop/HANDOFF.md):**
 2. Show-pack factory — room-bound activation and resumable grounded prose now
    exist locally; the complete legacy catalog now has a deterministic local-only
    migration worksheet, proven 38/38 identity/portrait coverage and a checked,
-   SHA-bound path from explicit human decisions to schema-v3 authoring; its
+   SHA-bound path from explicit human decisions through compatible schema-v3
+   authoring into sealed schema-v4 publication; its
    read-only status ledger now enumerates every filled and open research lane;
    the real authoring worksheet now owns its target identity/cutoff, all 38
    entity kinds, all 20 candidate sets and prediction contracts, all 38 entity
@@ -150,7 +151,31 @@ live status in .private/postop/HANDOFF.md):**
    boundaries: every new-pack wager retains its screen rule, exclusions,
    proxy/off-screen/mention decisions, claim provenance and title approval;
    Postgres rejects privileged seed writes that omit or weaken the contract
-4. Live narrative grounding — declared events, approved bingo marks and direct
+4. Composable game contract — schema-v4 packs explicitly own commitment,
+   conviction budget, identity, scarcity, visibility, settlement cadence and
+   continuity. Truth authority lives on each prediction, signature beat and
+   bingo trigger, so official results, operator declarations and AI proposals
+   can coexist. `fact_source` remains compatibility metadata; room binding
+   copies the exact contract and derives the compatibility `game_model` from
+   commitment. Historical packs and rooms are backfilled from recorded
+   behavior. Room contracts freeze with commitment-dependent state, and the
+   activation command prints the profile before any write. Publication
+   currently executes only the two proven Results Night and Story Night
+   profiles; Story Night conviction budgets are pack-owned and enforced from
+   activation through the phone and database. Story packs may retain the
+   exclusive non-scoring entity ceremony, choose a shared non-scoring faction
+   from the pack's authored entity groups, or omit identity and move directly
+   from lobby to convictions. Campaign continuity remains fail-closed P4 work.
+   A second-property local rehearsal now proves the complete Story path without
+   application-code edits: activation, no-identity convictions, pack-scoped
+   bingo and declarations, provisional close, researched settlement, canonical
+   receipt and a nine-slide settlement drop. That run found and fixed the final
+   schema-v3 receipt assumption: score-event trigger provenance now retains
+   schema-v4 proposition `truth_authority` while historical receipts without it
+   remain readable. The remaining runtime portability gap is the browser live
+   cast, whose deployed prompts and identities are still the legacy compatibility
+   bundle rather than a projection of the room-bound compiled pack
+5. Live narrative grounding — declared events, approved bingo marks and direct
    human-to-cast mention/ambient replies are implemented locally in browser and
    daemon; browser-originated companion banter is grounded too. Events project
    the GM fact, dossier and game state; bingo projects its honor-system live
@@ -161,13 +186,26 @@ live status in .private/postop/HANDOFF.md):**
    browser producers prove the current room capability before model work and
    again at publication, while the phone-independent daemon writes with its
    service authority.
-   Six/twelve-event milestones, per-player welcomes, revisioned team changes,
+   Six/twelve-event legacy milestones, pack-authored generic milestones,
+   per-player welcomes, revisioned team changes,
    pre-show arrivals, the show-start ceremony, revisioned spotlight openings and
    the full-cast post-show farewell are grounded and durably owned in the browser
    too. Keepsake verdicts now use their own strict schema-aware grounding pass,
    exhaustive game/chat/catalog facts, one full-room durable claim and one atomic
    provenance-stamped write; residuals join the same private operator queue
-5. Operator UI (layer 3) — first read-only lens implemented locally: real
+   The deployed browser and daemon cast is now explicitly a legacy compatibility
+   surface: every producer checks the room's pinned show-pack ID before model
+   work. Only the exact legacy pack may invoke its House-of-the-Dragon prompt
+   canon. A complete pack-owned runtime voice projection now powers the
+   daemon's declared-fact, bingo and direct-chat reactions plus the browser's
+   pre-show, show-start, spotlight and player-welcome ceremonies. Partial
+   metadata still fails closed before model work. A separate pack-authored
+   runtime ceremony contract now owns generic milestone thresholds, voice order
+   and delays plus shared-identity-change voices and instructions. A separate
+   complete pack-authored post-show contract owns
+   generic farewell cadence and keepsake voice; packs without it stay silent
+   rather than borrowing the wrong canon
+6. Operator UI (layer 3) — first read-only lens implemented locally: real
    foreground/background Presence, an authoritative companion-daemon heartbeat,
    and honest cast/fact sequence evidence; its collapsed host control now derives
    one restrictive whole-room status (`Checking`, `Ready`, or one check per
@@ -201,9 +239,10 @@ live status in .private/postop/HANDOFF.md):**
    room-pack card per seat, and a seat may atomically set or clear only its own
    non-center marks; direct browser card and mark writes fail closed. These
    validate public seat handles and database
-   state; they do not turn an anonymous player id into authenticated caller
-   identity
-6. AI witness ladder (layer 4) — the one-frame proposal rung now exists locally:
+state; they do not turn an anonymous player id into authenticated caller
+identity. P1's explicit composable contract is now implemented locally; P2's
+reusable Story Night options are the next implementation boundary
+7. AI witness ladder (layer 4) — the one-frame proposal rung now exists locally:
    explicit operator send, private reference manifest, structured IDs only,
    exact model-time candidate seal, durable review queue and atomic one-tap
    confirmation. Review now requires a service-issued 256-bit room operator
@@ -218,11 +257,11 @@ live status in .private/postop/HANDOFF.md):**
    explicitly choose an evidenced side; the immutable root observation stays
    intact and the chosen entity is recorded separately. Confidence-gated
    auto-declare remains a later rung
-7. Conviction-portfolio redesign ("The conviction question") — implemented
-   locally: one dragon identity each, 12 open authored-beat beliefs, shared-bet
+8. Conviction-portfolio redesign ("The conviction question") — implemented
+   locally: one dragon identity each, a pack-sized open authored-beat portfolio, shared-bet
    integer splits, Realtime portfolio board, full score/timeline/settlement
-   evidence, operator recovery and fact-source-derived room models
-8. Ceremony engine — the reusable settlement-drop compiler now owns the
+   evidence, operator recovery and contract-derived room models
+9. Ceremony engine — the reusable settlement-drop compiler now owns the
    acts/beats grammar, beat-weight tiers, mobile navigation, impact-ranked tiered
    muster, dedicated curtain threshold, grounded pundit desk, character drawers,
    personal-edition gate, honest no-card callouts and the betrayal death-tier/ember
@@ -717,12 +756,18 @@ characters to CONVICTION. Tiny identity draft stays (your dragon, your
 banner). Main game: fixed prediction budget staked across ANY beats on the
 board pre-episode — budget scarcity forces a portfolio that IS your read.
 Twist that restores differentiation: lonely bets pay full, crowded bets split.
-Right-and-alone is the jackpot. The implemented contract is 12 equal-weight
-slots per player across any authored signature beat, collisions included. A
+Right-and-alone is the jackpot. The implemented contract uses the positive
+integer budget copied from the room-bound show-pack contract, with equal-weight
+slots per player across any authored signature beat, collisions included.
+Activation requires the pack to author at least that many distinct beats. A
 struck beat pays `floor(authored points / believer count)` to each believer;
 the integer remainder is burned. The identity draft is one dragon per player
-and carries no passive score. Scheduled fact-stream packs retain the legacy
-confidence game; room-declared and AI-witnessed packs select conviction when
+and carries no passive score; a pack may instead select no identity or a shared
+faction/banner derived from its authored entity groups. Shared choices live in
+a separate room-and-pack-bound seat ledger, may overlap, freeze after the lobby
+and create no ownership rows. The capability-gated lobby command opens
+convictions only after every occupied seat has chosen. Scheduled fact-stream
+packs retain the legacy confidence game; room-declared and AI-witnessed packs select conviction when
 bound. Historical rooms stay legacy. The declaration board, banners, cast and
 witness remain the fact spine; score, timelines, results, receipts, settlement
 preflight, authoring worksheets and operator snapshots all consume the same
@@ -876,6 +921,15 @@ pick on a resolved category has left its null scoring state before freezing the
 leaderboard; room-authored events with no attached picks pass immediately.
 The daemon does not originate milestone reactions.
 
+Generic Story milestones use the same browser ownership and grounding path but
+have no implicit six/twelve thresholds or borrowed cast. The bound schema-v4
+pack must author each checkpoint ID, increasing declared-event threshold, exact
+runtime voice order, delay and expression instruction under
+`runtime_ceremonies.milestones`. The prompt projects the observed canonical
+event count and complete computed standings. Its durable key is
+`milestone:pack:<authored-id>`, so a host reload recovers a crossed checkpoint
+and racing tabs converge. Missing or invalid authorship means silence.
+
 Player welcomes now follow the contract in the browser. A capability-bearing
 current host claims `players.welcomed_at` through one atomic command; the winner
 then owns `welcome:<player-id>` for atomic output. The freshest player name,
@@ -903,6 +957,18 @@ residuals under `team_change`; it may not invent a screen event or a reason for
 the player's choice. First declarations before the scheduled welcome remain
 folded into that welcome, and rapid later toggles retain the existing cooldown.
 The daemon does not originate team-change reactions.
+
+A chosen-faction Story room uses an independent pack-owned version of this
+doctrine. `player_identity_selections` retains the current authored group, exact
+prior group, monotonic revision, transition phase and time. Revision zero is
+the first silent selection. Lobby changes remain silent, conviction phases
+freeze the choice, and only a later revision recorded during `live` enters the
+runtime ceremony. The neutral system divider states the exact from/to change;
+one eligible voice is chosen deterministically from
+`runtime_ceremonies.identity_change`, and its authored instruction shapes
+expression without establishing motive. Announcement and reaction keys include
+player ID and revision. Packs without that voice contract stay silent, and the
+legacy `players.team` path remains pinned to the exact legacy show pack.
 
 Pre-show arrivals now follow the contract in the browser. The authored
 Ned/Tyrion/Cersei/Daenerys/Olenna/Arya order and eight-minute offsets live in one
@@ -972,6 +1038,14 @@ remain game labels rather than screen claims. The batch enforces all seven speak
 at 0/6/16/30/38/46/54 seconds, suppresses settled records and degraded data, and
 preserves residuals under `post_show`. The daemon does not originate this ceremony.
 
+For a non-legacy pack, the same primitive is enabled only when every runtime
+voice has a `post_show` block. That block owns a contiguous farewell order, an
+exact delay (zero first, then strictly increasing), a farewell instruction and a
+keepsake instruction. The prompt, parser and scheduler require the authored
+voice IDs and delays exactly; the fact block projects the provisional room,
+players, declarations, standings and commitments without importing the legacy
+property vocabulary. A missing or partial contract makes no post-show model call.
+
 Keepsake verdict generation now follows the same doctrine without pretending its
 schema is a chat batch. `buildVerdictsPrompt` projects an exhaustive numbered GAME
 RECORD for each slot, qualified candidate CHAT RECORD chunks, and a complete
@@ -989,6 +1063,14 @@ receipt onto every row, completes the claim atomically, and seals later ordinary
 direct writes. Settled records remain suppressed. All current generated prose
 surfaces are therefore behind the grounding doctrine; emoji rejection remains a
 separate character-policy check, never evidence of factual grounding.
+
+Generic keepsakes assign players deterministically across the authored farewell
+order and resolve pack voice names on the result surface. Their strict prompt
+uses only game and qualified chat records, and imagery is always empty: the
+legacy artwork library is not a portable canon. The atomic generic completion
+command revalidates the published room-bound post-show contract, preserves each
+exact authored companion ID and then seals the same durable claim. Pack-authored
+artwork is future contract work, not an inferred fallback.
 
 ## The two-canons rule (from the Maelor incident, 8/10)
 
@@ -1314,13 +1396,19 @@ research. Exact commands and candidate shape live in `show-packs/README.md`.
 
 The deterministic factory handoffs now have one resumable operator action:
 `scripts/run-show-pack-factory.mts`. It rebuilds the receipt-to-seed and optional reviewed-research
-chains, composes the working pack, verifies deploy-owned portraits and writes one immutable run
+chains, composes the working pack, applies the separately sealed Story game-contract authoring
+artifact, verifies deploy-owned portraits and writes one immutable run
 directory. Pending prose produces the exact plan and self-contained review desk without a model
 call; residual findings produce a blocked run unless a human explicitly requests a separately
 budgeted retry; fully ready prose crosses the ordinary compiler into `compiled.json`. Continuations
 may change only commentary publication records, may never replace an already-ready line, and replay
 every step from the canonical composition through its exact reviewed plan and matching authorization
-for a changed source-order job prefix. Each run manifest seals authority flags plus input and artifact hashes but
+for a changed source-order job prefix. The contract artifact targets the exact pack/version,
+chooses budget plus one of the three executable identity profiles, assigns a default truth
+authority to every wager and permits only exact per-wager overrides. The factory rejects target
+drift, unknown or duplicate overrides, unsupported contract combinations, an oversized budget and
+chosen faction without two authored groups before it plans commentary. Each run manifest seals
+the contract artifact hash, authority flags and input/output hashes but
 omits local paths. Exact invocation
 syntax and the authorization-to-continuation loop live in `show-packs/README.md`; `--generate`
 remains the separate human-reviewed model and spend boundary.

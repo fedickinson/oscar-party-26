@@ -72,6 +72,7 @@ function latestMessage(messages: MessageRow[]): MessageRow | null {
 export function deriveNarrativeSequence(
   messages: MessageRow[],
   isLoading: boolean,
+  runtimeCastIds?: readonly string[],
 ): NarrativeSequence {
   if (isLoading) {
     return {
@@ -83,7 +84,12 @@ export function deriveNarrativeSequence(
   }
 
   const facts = messages.filter((message) => message.player_id === 'winner-divider')
-  const cast = messages.filter((message) => isCompanionId(message.player_id))
+  const runtimeIds = runtimeCastIds === undefined ? null : new Set(runtimeCastIds)
+  const cast = messages.filter((message) => (
+    runtimeIds === null
+      ? isCompanionId(message.player_id)
+      : runtimeIds.has(message.player_id)
+  ))
   const latestFact = latestMessage(facts)
   const latestCast = latestMessage(cast)
   if (!latestFact) {

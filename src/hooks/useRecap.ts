@@ -42,6 +42,8 @@ interface UseRecapArgs {
   playerAwards?: PlayerAward[]
   characterAwards?: CharacterAward[]
   verdicts?: Map<string, PlayerVerdictRow>
+  castIds?: string[]
+  castIdentityReady?: boolean
 }
 
 export function useRecap({
@@ -58,11 +60,13 @@ export function useRecap({
   playerAwards,
   characterAwards,
   verdicts,
+  castIds,
+  castIdentityReady = true,
 }: UseRecapArgs) {
   const [isGenerating, setIsGenerating] = useState(false)
 
   async function downloadRecap() {
-    if (!roomId || !roomCode || isGenerating) return
+    if (!roomId || !roomCode || isGenerating || !castIdentityReady) return
 
     setIsGenerating(true)
 
@@ -90,6 +94,7 @@ export function useRecap({
         playerAwards,
         characterAwards,
         verdicts,
+        castIds,
       }
 
       generateRecapPDF(recapData)
@@ -100,5 +105,5 @@ export function useRecap({
     }
   }
 
-  return { downloadRecap, isGenerating }
+  return { downloadRecap, isGenerating, isReady: castIdentityReady }
 }

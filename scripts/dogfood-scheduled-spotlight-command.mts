@@ -10,6 +10,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig } from './lib/env.mts'
+import { bindResultsNightDogfoodPack } from './lib/results-night-dogfood-pack.mts'
 
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 if (target !== 'local') throw new Error('scheduled spotlight dogfood is local-only')
@@ -87,7 +88,7 @@ function closeSpotlight(
   })
 }
 
-async function createRoom(label: string): Promise<{ room: Room; players: Player[] }> {
+async function createRoom(label: string, resultsNight = false): Promise<{ room: Room; players: Player[] }> {
   const code = `${label}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
   const { data: room, error: roomError } = await service
     .from('rooms')
@@ -96,6 +97,7 @@ async function createRoom(label: string): Promise<{ room: Room; players: Player[
     .single()
   if (roomError) throw roomError
   roomIds.push(room.id)
+  if (resultsNight) bindResultsNightDogfoodPack(code)
 
   const { data: players, error: playerError } = await service
     .from('players')
@@ -119,7 +121,8 @@ async function createRoom(label: string): Promise<{ room: Room; players: Player[
   const capability = (issuance as { capability?: string } | null)?.capability
   if (!capability) throw new Error('operator capability issuance returned no token')
   capabilityByRoomId.set(room.id, capability)
-  return { room, players }
+  const boundRoom = await readRoom(room.id)
+  return { room: boundRoom, players }
 }
 
 async function readRoom(roomId: string): Promise<Room> {
@@ -133,7 +136,7 @@ async function readRoom(roomId: string): Promise<Room> {
 }
 
 try {
-  const { room, players } = await createRoom('ASP')
+  const { room, players } = await createRoom('ASP', true)
   check(
     room.active_spotlight_category_id == null
       && room.spotlight_revision === 0
@@ -149,11 +152,8 @@ try {
   })
   check(legacy.error != null, 'the host-id-only spotlight primitive is not browser executable')
 
-  const { error: legacyError } = await service
-    .from('rooms')
-    .update({ game_model: 'legacy_ensemble' })
-    .eq('id', room.id)
-  if (legacyError) throw legacyError
+  check(room.game_model === 'legacy_ensemble',
+    'explicit Results Night commitment selects the scheduled runtime')
 
   const { data: categories, error: categoryError } = await service
     .from('categories')

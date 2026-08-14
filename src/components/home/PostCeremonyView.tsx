@@ -27,6 +27,7 @@ import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
+import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
 
 interface Props {
   /** The live floor is provisional; only settlement may name a final record. */
@@ -56,6 +57,7 @@ interface Props {
   /** Enables per-player keepsake links inside The Reckoning. */
   roomCode?: string
   gameModel?: GameModel
+  runtimeVoices?: RuntimeNarrativeVoice[]
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -87,6 +89,7 @@ export default function PostCeremonyView({
   onSharePlayerCard,
   roomCode,
   gameModel = 'legacy_ensemble',
+  runtimeVoices,
 }: Props) {
   const settled = recordSource === 'settled'
   const confettiFired = useRef(false)
@@ -692,6 +695,7 @@ export default function PostCeremonyView({
           onSharePlayerCard={onSharePlayerCard}
           isCopied={isCopied}
           roomCode={roomCode}
+          runtimeVoices={runtimeVoices}
         />
       </div>
 

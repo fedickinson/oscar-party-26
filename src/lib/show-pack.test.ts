@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  compatibilityGameContract,
   compileShowPack,
+  deriveGameModel,
   parseShowPack,
+  summarizeGameContract,
   type ShowPack,
 } from './show-pack'
 
@@ -206,6 +209,119 @@ function validPack(): ShowPack {
 }
 
 describe('parseShowPack', () => {
+  it('upgrades a legacy pack to an explicit contract without changing its behavior', () => {
+    const compiled = compileShowPack(validPack())
+
+    expect(compiled.schema_version).toBe(4)
+    expect(compiled.game_contract).toEqual({
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    })
+    expect(deriveGameModel(compiled.game_contract!)).toBe('conviction_portfolio')
+    expect(compiled.predictions[0].truth_authority).toBe('operator_declaration')
+    expect(compiled.signature_beats[0].truth_authority).toBe('operator_declaration')
+    expect(compiled.bingo_squares[0].truth_authority).toBe('operator_declaration')
+  })
+
+  it('preserves scheduled legacy packs as Results Night contracts', () => {
+    const pack = validPack()
+    pack.pack.fact_source = 'scheduled'
+    const compiled = compileShowPack(pack)
+
+    expect(deriveGameModel(compiled.game_contract!)).toBe('legacy_ensemble')
+    expect(compiled.game_contract).toEqual({
+      version: 1,
+      commitment: 'confidence_allocation',
+      conviction_budget: null,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+      scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+      visibility: 'sealed_until_lock',
+      cadence: 'immediate_per_outcome',
+      continuity: 'no_carryover',
+    })
+    expect(compiled.predictions[0].truth_authority).toBe('official_result')
+    expect(compiled.signature_beats[0].truth_authority).toBe('official_result')
+    expect(compiled.bingo_squares[0].truth_authority).toBe('official_result')
+  })
+
+  it('requires a complete contract and truth authority on newly authored packs', () => {
+    const pack = structuredClone(validPack()) as unknown as Record<string, any>
+    pack.schema_version = 4
+    pack.game_contract = {
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    }
+    for (const wager of [...pack.predictions, ...pack.signature_beats, ...pack.bingo_squares]) {
+      wager.truth_authority = 'operator_declaration'
+    }
+    expect(parseShowPack(JSON.stringify(pack)).game_contract).toEqual(pack.game_contract)
+
+    const missingDimension = structuredClone(pack)
+    delete missingDimension.game_contract.visibility
+    expect(() => parseShowPack(JSON.stringify(missingDimension)))
+      .toThrow('show pack game_contract visibility is invalid')
+
+    const missingAuthority = structuredClone(pack)
+    delete missingAuthority.signature_beats[0].truth_authority
+    expect(() => parseShowPack(JSON.stringify(missingAuthority)))
+      .toThrow('signature beat sunfyre-protects-aegon truth_authority is required by schema 4')
+  })
+
+  it('lets a new pack select play independently from its compatibility fact source', () => {
+    const pack = structuredClone(validPack()) as unknown as Record<string, any>
+    pack.schema_version = 4
+    pack.pack.fact_source = 'scheduled'
+    pack.game_contract = {
+      version: 1,
+      commitment: 'open_conviction',
+      conviction_budget: 12,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+      scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+      visibility: 'open_counts',
+      cadence: 'immediate_facts_and_event_close',
+      continuity: 'canon_write_back',
+    }
+    for (const [index, wager] of [...pack.predictions, ...pack.signature_beats, ...pack.bingo_squares].entries()) {
+      wager.truth_authority = index === 0 ? 'official_result' : 'operator_declaration'
+    }
+
+    const parsed = parseShowPack(JSON.stringify(pack))
+    expect(deriveGameModel(parsed.game_contract!)).toBe('conviction_portfolio')
+    expect(new Set([
+      ...parsed.predictions,
+      ...parsed.signature_beats,
+      ...parsed.bingo_squares,
+    ].map((wager) => wager.truth_authority))).toEqual(new Set([
+      'official_result',
+      'operator_declaration',
+    ]))
+    expect(summarizeGameContract(parsed.game_contract!)).toBe(
+      'Open convictions (12) | Exclusive entity draft, identity only | Open belief counts | Immediate facts plus event close | Canon write-back',
+    )
+  })
+
+  it('describes an omitted identity ceremony without inventing an identity mode', () => {
+    const contract = compatibilityGameContract('room_declared')
+    contract.identity = { selection: 'none', scoring: 'none' }
+    contract.scarcity.identity = 'none'
+
+    expect(summarizeGameContract(contract)).toBe(
+      'Open convictions (12) | No identity selection | Open belief counts | Immediate facts plus event close | Canon write-back',
+    )
+  })
+
   it('requires a SHA-sealed deploy-owned raster portrait for every entity', () => {
     const migrated = structuredClone(validPack()) as unknown as Record<string, any>
     migrated.schema_version = 3
@@ -249,6 +365,198 @@ describe('parseShowPack', () => {
       commentary_voices: Array<{ id: string }>
     }
     expect(parsed.commentary_voices.map((voice) => voice.id)).toEqual(['daenerys'])
+  })
+
+  it('accepts and compiles explicit runtime identity for a pack-owned voice', () => {
+    const pack = validPack()
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+    }
+
+    const compiled = compileShowPack(pack)
+
+    expect(compiled.commentary_voices[0].runtime).toEqual({
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+    })
+  })
+
+  it('accepts and compiles an explicit pack-owned post-show voice contract', () => {
+    const pack = validPack()
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+      post_show: {
+        farewell: {
+          order: 1,
+          delay_seconds: 0,
+          instruction: 'Close the room with sincere precision.',
+        },
+        keepsake: {
+          instruction: 'Judge the player by the commitments they actually made.',
+        },
+      },
+    }
+
+    expect(compileShowPack(pack).commentary_voices[0].runtime?.post_show).toEqual({
+      farewell: {
+        order: 1,
+        delay_seconds: 0,
+        instruction: 'Close the room with sincere precision.',
+      },
+      keepsake: {
+        instruction: 'Judge the player by the commitments they actually made.',
+      },
+    })
+  })
+
+  it('rejects partial or non-canonical post-show voice contracts', () => {
+    const partial = validPack()
+    partial.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+      post_show: {
+        farewell: { order: 1, delay_seconds: 0, instruction: 'Close the room.' },
+        keepsake: { instruction: 'Judge the player.' },
+      },
+    }
+    partial.commentary_voices.push({
+      id: 'cersei', name: 'Cersei', instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Verdict', aliases: [] },
+    })
+    expect(() => compileShowPack(partial))
+      .toThrow('post-show metadata must be present on every runtime voice or none')
+
+    const badCadence = validPack()
+    badCadence.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+      post_show: {
+        farewell: { order: 2, delay_seconds: 4, instruction: 'Close the room.' },
+        keepsake: { instruction: 'Judge the player.' },
+      },
+    }
+    expect(() => compileShowPack(badCadence))
+      .toThrow('post-show farewell order must be contiguous from one')
+    expect(() => compileShowPack(badCadence))
+      .toThrow('post-show farewell delays must start at zero')
+  })
+
+  it('accepts and compiles pack-authored milestone cadence and identity-change voice', () => {
+    const pack = compileShowPack(validPack())
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['dragon queen'],
+    }
+    pack.runtime_ceremonies = {
+      milestones: [{
+        id: 'first-turn',
+        declared_event_count: 3,
+        voices: [{
+          voice_id: 'daenerys', delay_seconds: 0,
+          instruction: 'Name the exact checkpoint, then judge the standings.',
+        }],
+      }],
+      identity_change: {
+        voices: [{
+          voice_id: 'daenerys',
+          instruction: 'Judge the change as a public revision, not a private motive.',
+        }],
+      },
+    }
+
+    expect(compileShowPack(pack).runtime_ceremonies).toEqual(pack.runtime_ceremonies)
+  })
+
+  it('rejects ambiguous runtime ceremony thresholds, cadence, and voice references', () => {
+    const pack = compileShowPack(validPack()) as unknown as Record<string, any>
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+    }
+    pack.runtime_ceremonies = {
+      milestones: [{
+        id: 'first-turn', declared_event_count: 3,
+        voices: [{ voice_id: 'missing-voice', delay_seconds: 2, instruction: 'Judge it.' }],
+      }],
+      identity_change: { voices: [] },
+    }
+
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime milestone first-turn first delay must be zero')
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime milestone first-turn references unknown runtime voice missing-voice')
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime identity_change voices must contain one through seven entries')
+  })
+
+  it('rejects malformed runtime voice identity instead of guessing', () => {
+    const malformed = validPack() as unknown as {
+      commentary_voices: Array<Record<string, unknown>>
+    }
+    malformed.commentary_voices[0].runtime = {
+      slot: 'lead',
+      role: '',
+      aliases: ['Dragon Queen', 'Dragon Queen'],
+    }
+
+    expect(() => parseShowPack(JSON.stringify(malformed)))
+      .toThrow('commentary voice daenerys runtime slot is invalid')
+  })
+
+  it('rejects a partial or ambiguous runtime cast at authoring time', () => {
+    const partial = validPack()
+    partial.commentary_voices.push({
+      id: 'cersei',
+      name: 'Cersei',
+      instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Verdict', aliases: [] },
+    })
+    expect(() => compileShowPack(partial))
+      .toThrow('runtime cast metadata must be present on every commentary voice or none')
+
+    const ambiguous = validPack()
+    ambiguous.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['queen'],
+    }
+    ambiguous.commentary_voices.push({
+      id: 'cersei',
+      name: 'Cersei',
+      instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'narrator', role: 'The Verdict', aliases: ['queen'] },
+    })
+    expect(() => compileShowPack(ambiguous))
+      .toThrow('runtime cast must define exactly one narrator')
+    expect(() => compileShowPack(ambiguous))
+      .toThrow('runtime mention terms queen and queen overlap across daenerys and cersei')
+
+    const nested = validPack()
+    nested.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['queen'],
+    }
+    nested.commentary_voices.push({
+      id: 'court-witness',
+      name: 'The Queen',
+      instruction: 'Judge old vows.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Memory', aliases: [] },
+    })
+    expect(() => compileShowPack(nested))
+      .toThrow('runtime mention terms queen and the queen overlap')
+  })
+
+  it('rejects a runtime voice id owned by a synthetic message surface', () => {
+    const reserved = validPack()
+    reserved.commentary_voices[0].id = 'system'
+    reserved.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+    }
+
+    expect(() => compileShowPack(reserved))
+      .toThrow('runtime voice system conflicts with a reserved message author')
   })
 
   it('accepts the complete authoring contract', () => {

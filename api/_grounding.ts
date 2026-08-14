@@ -27,6 +27,7 @@ const INVALID_VERDICT_BATCH_FINDING = 'Generator response was not a valid comple
 function isValidCompanionBatch(
   messages: CompanionMessage[],
   rawMessageCount: number | null,
+  allowedCompanionIds: ReadonlySet<string>,
   expectedCompanionIds: readonly string[] | undefined,
   expectedDelaySeconds: readonly number[] | undefined,
 ): boolean {
@@ -35,7 +36,7 @@ function isValidCompanionBatch(
     rawMessageCount <= 7 &&
     messages.length === rawMessageCount &&
     messages.every((message, index) =>
-      COMPANION_IDS.has(message.companion_id) &&
+      allowedCompanionIds.has(message.companion_id) &&
       message.text.trim().length >= 1 &&
       message.text.trim().length <= 2000 &&
       Number.isInteger(message.delay_seconds) &&
@@ -77,6 +78,7 @@ export async function groundedCompanionBatch(opts: {
   model?: GroundingModelRequest['model']
   maxTokens?: number
   maxRetries?: number
+  allowedCompanionIds?: string[]
   expectedCompanionIds?: string[]
   expectedDelaySeconds?: number[]
   allowEmptyBatch?: boolean
@@ -89,6 +91,7 @@ export async function groundedCompanionBatch(opts: {
     model = 'claude-sonnet-5',
     maxTokens = 700,
     maxRetries = 2,
+    allowedCompanionIds,
     expectedCompanionIds,
     expectedDelaySeconds,
     allowEmptyBatch = false,
@@ -101,11 +104,18 @@ export async function groundedCompanionBatch(opts: {
   if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 2) {
     throw new Error('live grounding maxRetries must be an integer from 0 through 2')
   }
+  const allowedIds = allowedCompanionIds ?? [...COMPANION_IDS]
+  if (allowedIds.length < 1 || allowedIds.length > 7 ||
+    new Set(allowedIds).size !== allowedIds.length ||
+    allowedIds.some((companionId) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(companionId))) {
+    throw new Error('allowed companion ids must name one to seven unique slug ids')
+  }
+  const allowedIdSet = new Set(allowedIds)
   if (expectedCompanionIds != null && (
     expectedCompanionIds.length < 1 ||
       expectedCompanionIds.length > 7 ||
     new Set(expectedCompanionIds).size !== expectedCompanionIds.length ||
-    expectedCompanionIds.some((companionId) => !COMPANION_IDS.has(companionId))
+    expectedCompanionIds.some((companionId) => !allowedIdSet.has(companionId))
   )) {
     throw new Error('expected companion ids must name one to seven unique cast members')
   }
@@ -135,12 +145,13 @@ export async function groundedCompanionBatch(opts: {
       maxTokens,
     })
     const rawMessageCount = companionResponseMessageCount(raw)
-    messages = parseCompanionResponse(raw)
+    messages = parseCompanionResponse(raw, allowedCompanionIds == null)
     if (allowEmptyBatch && isExactEmptyCompanionResponse(raw)) {
       return { messages: [], attempts: attempt, findings: [] }
     } else if (!isValidCompanionBatch(
       messages,
       rawMessageCount,
+      allowedIdSet,
       expectedCompanionIds,
       expectedDelaySeconds,
     )) {

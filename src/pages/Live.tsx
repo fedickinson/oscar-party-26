@@ -36,6 +36,12 @@ import { useOperatorHeartbeat } from '../hooks/useOperatorHeartbeat'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { findDraftPointsForWinner } from '../lib/scoring'
 import { deriveEngineHeartbeat, deriveNarrativeSequence, derivePresenceRows } from '../lib/operator-lens'
+import {
+  resolveBrowserRuntimeNarrativePolicy,
+  resolveRuntimeNarrativeMode,
+} from '../lib/runtime-narrative'
+import { useRuntimeNarrativeCast } from '../hooks/useRuntimeNarrativeCast'
+import { useIdentityChoices } from '../hooks/useIdentityChoices'
 import { supabase } from '../lib/supabase'
 import TabBar from '../components/live/TabBar'
 import WatchSyncBar from '../components/live/WatchSyncBar'
@@ -75,6 +81,19 @@ export default function Live() {
   const isHost = player?.is_host ?? false
   const currentPlayerId = player?.id ?? ''
   const showStarted = room?.show_started ?? false
+  const legacyLiveCastEnabled = resolveRuntimeNarrativeMode(room?.show_pack_id) === 'legacy_live_cast'
+  const runtimeNarrative = useRuntimeNarrativeCast(room?.show_pack_id)
+  const chosenFactionIdentity = room?.phase === 'live'
+    && room.game_contract?.identity.selection === 'chosen_faction'
+  const identityChoices = useIdentityChoices(
+    roomId,
+    room?.show_pack_id,
+    chosenFactionIdentity,
+  )
+  const browserNarrative = resolveBrowserRuntimeNarrativePolicy(
+    room?.show_pack_id,
+    runtimeNarrative.cast,
+  )
   const {
     capability: operatorCapability,
     isLoading: operatorCapabilityLoading,
@@ -130,8 +149,23 @@ export default function Live() {
     [players, presence.metas, presence.isSynced, rosterSync.isLoading, rosterSync.syncError],
   )
   const narrativeSequence = useMemo(
-    () => deriveNarrativeSequence(messages, messagesLoading || messagesSyncError != null),
-    [messages, messagesLoading, messagesSyncError],
+    () => deriveNarrativeSequence(
+      messages,
+      messagesLoading || messagesSyncError != null ||
+        runtimeNarrative.isLoading || runtimeNarrative.error != null,
+      legacyLiveCastEnabled
+        ? undefined
+        : runtimeNarrative.cast?.voices.map((voice) => voice.id) ?? [],
+    ),
+    [
+      messages,
+      messagesLoading,
+      messagesSyncError,
+      runtimeNarrative.cast,
+      runtimeNarrative.isLoading,
+      runtimeNarrative.error,
+      legacyLiveCastEnabled,
+    ],
   )
   const engineHeartbeat = useMemo(
     () => deriveEngineHeartbeat(heartbeat.heartbeat, heartbeat.isLoading, heartbeat.nowMs),
@@ -248,10 +282,12 @@ export default function Live() {
     scores.nominees,
     scores.leaderboard,
     scores.categories,
-    isHost && operatorCapability !== null,
+    browserNarrative.chat && isHost && operatorCapability !== null,
     operatorCapability,
   )
   const { predictionsRef } = chatReactivity
+  const browserCeremonyEnabled = browserNarrative.ceremony
+    && isHost && operatorCapability !== null
 
   useAICompanions(
     scores.categories,
@@ -260,13 +296,16 @@ export default function Live() {
     scores.draftPicks,
     scores.draftEntities,
     scores.leaderboard,
-    isHost && operatorCapability !== null,
+    browserCeremonyEnabled,
     operatorCapability,
     predictionsRef,
     showStarted,
     !scores.isLoading && scores.recordError == null &&
       !roomSync.isLoading && roomSync.syncError == null &&
       !rosterSync.isLoading && rosterSync.syncError == null,
+    runtimeNarrative.cast,
+    identityChoices.selections,
+    !identityChoices.isLoading && identityChoices.syncError == null,
   )
 
   const {
@@ -835,6 +874,7 @@ export default function Live() {
                     players={players}
                     signatureBeats={signatureBeats}
                     beatActivations={beatActivations}
+                    identityChoices={chosenFactionIdentity ? identityChoices : undefined}
                     onSwitchToBingo={() => selectTab(1)}
                   />
                 </div>

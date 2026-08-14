@@ -4,6 +4,9 @@ import {
   buildCompanionReactionKey,
   buildMilestoneReactionKey,
   buildPreShowArrivalReactionKey,
+  buildRuntimePreShowArrivalReactionKey,
+  buildRuntimeMilestoneReactionKey,
+  buildIdentityChangeReactionKey,
   buildPostShowReactionKey,
   buildVerdictReactionKey,
   buildSpotlightReactionKey,
@@ -46,6 +49,17 @@ describe('companion reaction identity', () => {
     expect(buildMilestoneReactionKey('final_stretch')).toBe('milestone:final_stretch')
   })
 
+  it('gives authored milestones and identity revisions separate durable keys', () => {
+    expect(buildRuntimeMilestoneReactionKey('First-Turn'))
+      .toBe('milestone:pack:first-turn')
+    expect(buildIdentityChangeReactionKey('PLAYER-123', 2, 'announcement'))
+      .toBe('identity:player-123:2:announcement')
+    expect(buildIdentityChangeReactionKey('PLAYER-123', 2, 'reaction'))
+      .toBe('identity:player-123:2:reaction')
+    expect(() => buildIdentityChangeReactionKey('player-123', 0, 'reaction'))
+      .toThrow('positive integer')
+  })
+
   it('gives each player one stable welcome ownership key', () => {
     expect(buildWelcomeReactionKey('PLAYER-123')).toBe('welcome:player-123')
     expect(() => buildWelcomeReactionKey('player:123'))
@@ -64,6 +78,8 @@ describe('companion reaction identity', () => {
       .toBe('ceremony:pre_show:olenna')
     expect(() => buildPreShowArrivalReactionKey('joffrey'))
       .toThrow('pre-show companion')
+    expect(buildRuntimePreShowArrivalReactionKey('Lantern-Archivist'))
+      .toBe('ceremony:pre_show:lantern-archivist')
   })
 
   it('gives repeated spotlight openings revisioned divider and reaction keys', () => {

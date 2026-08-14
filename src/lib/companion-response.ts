@@ -39,7 +39,10 @@ export function isExactEmptyCompanionResponse(raw: string): boolean {
   }
 }
 
-export function parseCompanionResponse(raw: string): CompanionMessage[] {
+export function parseCompanionResponse(
+  raw: string,
+  normalizeLegacyAliases = true,
+): CompanionMessage[] {
   try {
     if (containsDisallowedEmoji(raw)) return []
     const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
@@ -54,7 +57,9 @@ export function parseCompanionResponse(raw: string): CompanionMessage[] {
           typeof (message as CompanionMessage).delay_seconds === 'number',
       )
       .map((message: CompanionMessage) => {
-        const normalized = COMPANION_ID_ALIASES[message.companion_id.toLowerCase()]
+        const normalized = normalizeLegacyAliases
+          ? COMPANION_ID_ALIASES[message.companion_id.toLowerCase()]
+          : undefined
         return normalized ? { ...message, companion_id: normalized } : message
       })
       .filter((message: CompanionMessage) => {

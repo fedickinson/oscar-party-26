@@ -1,12 +1,20 @@
 import { useEffect, useRef } from 'react'
 import { groundedCompanionBatch, type GroundingModelRequest } from '../../api/_grounding'
 import { buildPostShowPrompt } from '../lib/companion-prompts'
+import {
+  buildRuntimePostShowPrompt,
+  projectRuntimePostShowContext,
+} from '../lib/runtime-narrative-prompts'
 import { buildPostShowReactionKey } from '../lib/companion-reaction'
+import type { PackRuntimeNarrativeCast } from '../lib/runtime-narrative'
 import { supabase } from '../lib/supabase'
 import type { ScoredPlayer } from '../lib/scoring'
 import type {
   CategoryRow,
   ConfidencePickRow,
+  ConvictionPickRow,
+  GameModel,
+  NomineeRow,
   PlayerRow,
 } from '../types/database'
 
@@ -21,6 +29,10 @@ interface PostShowCompanionOptions {
   players: PlayerRow[]
   categories: CategoryRow[]
   confidencePicks: ConfidencePickRow[]
+  convictionPicks: ConvictionPickRow[]
+  nominees: NomineeRow[]
+  gameModel: GameModel
+  runtimeCast?: PackRuntimeNarrativeCast | null
 }
 
 async function callClaude(request: GroundingModelRequest): Promise<string> {
@@ -147,12 +159,15 @@ export function usePostShowCompanions(options: PostShowCompanionOptions): void {
       try {
         if (!stillValid()) return
         const current = stateRef.current
-        const prompt = buildPostShowPrompt(
-          current.leaderboard,
-          current.players,
-          current.categories,
-          current.confidencePicks,
-        )
+        const prompt = current.runtimeCast?.postShow
+          ? buildRuntimePostShowPrompt(current.runtimeCast, projectRuntimePostShowContext(current))
+          : buildPostShowPrompt(
+              current.leaderboard,
+              current.players,
+              current.categories,
+              current.confidencePicks,
+            )
+        if (!prompt.expectedDelaySeconds) return
         const grounded = await groundedCompanionBatch({
           system: prompt.system,
           user: prompt.user,
@@ -160,6 +175,9 @@ export function usePostShowCompanions(options: PostShowCompanionOptions): void {
           model: 'claude-sonnet-5',
           maxTokens: 1800,
           maxRetries: 2,
+          ...(current.runtimeCast
+            ? { allowedCompanionIds: current.runtimeCast.voices.map((voice) => voice.id) }
+            : {}),
           expectedCompanionIds: prompt.expectedCompanionIds,
           expectedDelaySeconds: prompt.expectedDelaySeconds,
           caller: callClaude,
@@ -183,14 +201,16 @@ export function usePostShowCompanions(options: PostShowCompanionOptions): void {
           if (error) console.error('Could not preserve blocked post-show prose:', error)
           return
         }
-        if (grounded.messages.length !== 7 || !stillValid()) return
+        if (grounded.messages.length !== prompt.expectedCompanionIds.length || !stillValid()) return
         const latest = stateRef.current
-        const latestPrompt = buildPostShowPrompt(
-          latest.leaderboard,
-          latest.players,
-          latest.categories,
-          latest.confidencePicks,
-        )
+        const latestPrompt = latest.runtimeCast?.postShow
+          ? buildRuntimePostShowPrompt(latest.runtimeCast, projectRuntimePostShowContext(latest))
+          : buildPostShowPrompt(
+              latest.leaderboard,
+              latest.players,
+              latest.categories,
+              latest.confidencePicks,
+            )
         if (JSON.stringify(latestPrompt.groundingFacts) !== JSON.stringify(prompt.groundingFacts)) return
         const { data, error } = await supabase.rpc('schedule_browser_companion_reaction_authorized', {
           p_room_id: roomId,
@@ -240,6 +260,7 @@ export function usePostShowCompanions(options: PostShowCompanionOptions): void {
     options.operatorCapability,
     options.ready,
     options.provisional,
+    options.runtimeCast,
   ])
 
   useEffect(() => () => {

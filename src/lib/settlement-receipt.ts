@@ -145,7 +145,15 @@ function parseTriggerContract(value: unknown, label: string): TriggerContractRow
     'adjudication',
     'title_review',
     'basis_claim_ids',
-  ], [], label)
+  ], ['truth_authority'], label)
+  const truthAuthority = value.truth_authority
+  if (truthAuthority !== undefined && ![
+    'official_result',
+    'operator_declaration',
+    'ai_proposal_human_confirmation',
+  ].includes(truthAuthority as string)) {
+    throw new Error(`${label} truth_authority must be an explicit supported authority`)
+  }
   if (!isRecord(value.adjudication)) throw new Error(`${label} adjudication must be an object`)
   const adjudicationValue = value.adjudication
   assertKeys(adjudicationValue, ['proxies', 'offscreen', 'mentions'], [], `${label} adjudication`)
@@ -162,6 +170,9 @@ function parseTriggerContract(value: unknown, label: string): TriggerContractRow
     throw new Error(`${label} title_review.status must be approved`)
   }
   return {
+    ...(truthAuthority === undefined ? {} : {
+      truth_authority: truthAuthority as NonNullable<TriggerContractRow['truth_authority']>,
+    }),
     title: requiredString(value.title, `${label} title`),
     condition: requiredString(value.condition, `${label} condition`),
     exclusions: parseStringList(value.exclusions, `${label} exclusions`),

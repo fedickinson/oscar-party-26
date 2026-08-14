@@ -16,6 +16,7 @@ import {
   attestShowPackActivation,
   buildShowPackCatalogManifest,
   buildShowPackActivationPlan,
+  describeShowPackRuntime,
   type InstalledShowPackCatalog,
 } from '../src/lib/show-pack-activation'
 import { supabaseConfig } from './lib/env.mts'
@@ -66,6 +67,7 @@ const {
 } = plan
 verifyShowPackPortraitAssets(compiled)
 const catalogManifest = buildShowPackCatalogManifest(plan)
+const runtime = describeShowPackRuntime(compiled)
 
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 const readKey = anonKey
@@ -104,13 +106,24 @@ async function requestAll<Row>(path: string, key = readKey): Promise<Row[]> {
   }
 }
 
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${canonicalJson(entry)}`)
+      .join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
 type InstalledRegistry = NonNullable<InstalledShowPackCatalog['showPack']>
 
 async function readInstalledCatalog(key: string): Promise<InstalledShowPackCatalog> {
   const registryPath = 'show_packs?' + [
     `pack_key=eq.${encodeURIComponent(compiled.pack.id)}`,
     `version=eq.${compiled.pack.version}`,
-    'select=id,pack_key,version,title,property,installment,fact_source,manifest_sha256,compiled_bundle,status,published_at',
+    'select=id,pack_key,version,title,property,installment,fact_source,game_contract,manifest_sha256,compiled_bundle,status,published_at',
   ].join('&')
   const scope = `show_pack_id=eq.${showPackId}`
   const [registries, nominees, categories, draftEntities, signatureBeats, bingoSquares] = await Promise.all([
@@ -215,6 +228,8 @@ console.log(`[show-pack-activation] room=${roomCode} pack=${packRef} id=${showPa
 console.log(`[show-pack-activation] sha256=${manifestSha256}`)
 console.log(`[show-pack-activation] predictions=${categories.length} entities=${draftEntities.length} beats=${signatureBeats.length} bingo=${bingoSquares.length}`)
 console.log(`[show-pack-activation] portraits=${nominees.length} verified=true`)
+console.log(`[show-pack-activation] contract=${runtime.summary}`)
+console.log(`[show-pack-activation] runtime_model=${runtime.gameModel} fact_source=${compiled.pack.fact_source}`)
 if (assessment.state === 'planned') {
   console.log('[show-pack-activation] catalog=planned')
 } else if (assessment.state === 'published-attested' || assessment.state === 'draft-ready') {
@@ -271,15 +286,14 @@ if (binding?.room_id !== room.id || binding.show_pack_id !== showPackId) {
   throw new Error('atomic publication returned an unexpected room or show-pack id')
 }
 const [boundRoom] = await request(
-  `rooms?id=eq.${room.id}&select=id,show_pack_id,game_model`,
+  `rooms?id=eq.${room.id}&select=id,show_pack_id,game_model,game_contract`,
   {},
   serviceKey,
-) as Array<{ id: string; show_pack_id: string; game_model: string }>
-const expectedGameModel = compiled.pack.fact_source === 'scheduled'
-  ? 'legacy_ensemble'
-  : 'conviction_portfolio'
-if (boundRoom?.show_pack_id !== showPackId || boundRoom.game_model !== expectedGameModel) {
-  throw new Error(`bound room did not select ${expectedGameModel} for ${compiled.pack.fact_source}`)
+) as Array<{ id: string; show_pack_id: string; game_model: string; game_contract: unknown }>
+if (boundRoom?.show_pack_id !== showPackId
+  || boundRoom.game_model !== runtime.gameModel
+  || canonicalJson(boundRoom.game_contract) !== canonicalJson(compiled.game_contract)) {
+  throw new Error(`bound room did not select the attested ${runtime.gameModel} contract`)
 }
 requireExactCatalog(await readInstalledCatalog(serviceKey))
-console.log(`[show-pack-activation] bound ${roomCode} to ${packRef} model=${expectedGameModel}`)
+console.log(`[show-pack-activation] bound ${roomCode} to ${packRef} model=${runtime.gameModel}`)

@@ -1,8 +1,27 @@
 import { groundedLinePromptContractSha256 } from './grounded-line-contract'
+import {
+  normalizeRuntimeMentionTerm,
+  isReservedRuntimeVoiceId,
+  runtimeMentionTermsOverlap,
+} from './message-authors'
+import type { ShowPackGameContract } from '../types/game-contract'
 
-export const SHOW_PACK_SCHEMA_VERSION = 3 as const
+export type { ShowPackGameContract } from '../types/game-contract'
+
+export const SHOW_PACK_SCHEMA_VERSION = 4 as const
+export const LEGACY_SHOW_PACK_SCHEMA_VERSION = 3 as const
+
+export type ShowPackSchemaVersion =
+  | typeof LEGACY_SHOW_PACK_SCHEMA_VERSION
+  | typeof SHOW_PACK_SCHEMA_VERSION
 
 export type ShowFactSource = 'scheduled' | 'room_declared' | 'ai_witnessed'
+export type TruthAuthority =
+  | 'official_result'
+  | 'operator_declaration'
+  | 'ai_proposal_human_confirmation'
+export type GameModel = 'legacy_ensemble' | 'conviction_portfolio'
+
 export type ShowPackSourceKind =
   | 'screen'
   | 'operator_record'
@@ -55,6 +74,7 @@ export interface ShowPackEntity {
 }
 
 export interface TriggerContract {
+  truth_authority?: TruthAuthority
   condition: string
   exclusions: string[]
   adjudication: TriggerAdjudication
@@ -120,6 +140,39 @@ export interface ShowPackCommentaryVoice {
   name: string
   instruction: string
   attitude_claim_ids: string[]
+  runtime?: {
+    slot: 'narrator' | 'rotating'
+    role: string
+    aliases: string[]
+    post_show?: {
+      farewell: {
+        order: number
+        delay_seconds: number
+        instruction: string
+      }
+      keepsake: {
+        instruction: string
+      }
+    }
+  }
+}
+
+export interface ShowPackRuntimeCeremonies {
+  milestones?: Array<{
+    id: string
+    declared_event_count: number
+    voices: Array<{
+      voice_id: string
+      delay_seconds: number
+      instruction: string
+    }>
+  }>
+  identity_change?: {
+    voices: Array<{
+      voice_id: string
+      instruction: string
+    }>
+  }
 }
 
 export interface ShowPackCommentaryRequest {
@@ -132,7 +185,8 @@ export interface ShowPackCommentaryRequest {
 }
 
 export interface ShowPack {
-  schema_version: typeof SHOW_PACK_SCHEMA_VERSION
+  schema_version: ShowPackSchemaVersion
+  game_contract?: ShowPackGameContract
   pack: {
     id: string
     version: number
@@ -155,6 +209,7 @@ export interface ShowPack {
   bingo_squares: ShowPackBingoSquare[]
   commentary_voices: ShowPackCommentaryVoice[]
   commentary_requests: ShowPackCommentaryRequest[]
+  runtime_ceremonies?: ShowPackRuntimeCeremonies
 }
 
 export interface ShowPackCommentaryContext {
@@ -218,6 +273,31 @@ const SOURCE_KINDS = new Set<ShowPackSourceKind>([
   'authoring_record',
 ])
 const FACT_SOURCES = new Set<ShowFactSource>(['scheduled', 'room_declared', 'ai_witnessed'])
+const TRUTH_AUTHORITIES = new Set<TruthAuthority>([
+  'official_result', 'operator_declaration', 'ai_proposal_human_confirmation',
+])
+const COMMITMENTS = new Set<ShowPackGameContract['commitment']>([
+  'confidence_allocation', 'open_conviction', 'season_thesis',
+])
+const IDENTITY_SELECTIONS = new Set<ShowPackGameContract['identity']['selection']>([
+  'none', 'exclusive_entity_draft', 'chosen_faction',
+])
+const IDENTITY_SCORING = new Set<ShowPackGameContract['identity']['scoring']>(['none', 'ensemble'])
+const COMMITMENT_SCARCITY = new Set<ShowPackGameContract['scarcity']['commitments']>([
+  'none', 'ranked_allocation', 'fixed_budget',
+])
+const IDENTITY_SCARCITY = new Set<ShowPackGameContract['scarcity']['identity']>([
+  'none', 'shared', 'exclusive',
+])
+const VISIBILITY = new Set<ShowPackGameContract['visibility']>([
+  'open_counts', 'sealed_until_lock', 'hidden_until_resolution',
+])
+const CADENCE = new Set<ShowPackGameContract['cadence']>([
+  'immediate_per_outcome', 'immediate_facts_and_event_close', 'installment_and_season_close',
+])
+const CONTINUITY = new Set<ShowPackGameContract['continuity']>([
+  'no_carryover', 'canon_write_back', 'cumulative_standings_and_canon',
+])
 const SHA256 = /^[a-f0-9]{64}$/
 const CLAIM_CANONS = new Set<ClaimCanon>(['screen', 'discourse', 'source_material', 'authoring'])
 const CLAIM_STATUSES = new Set<ClaimStatus>(['verified', 'recap', 'unverifiable', 'attitude_only'])
@@ -284,6 +364,133 @@ function checkExactKeys(
   }
 }
 
+function validateGameContract(value: unknown, issues: string[]): value is ShowPackGameContract {
+  if (!isRecord(value)) {
+    issues.push('show pack game_contract is required by schema 4')
+    return false
+  }
+  checkExactKeys(value, [
+    'version', 'commitment', 'conviction_budget', 'identity', 'scarcity',
+    'visibility', 'cadence', 'continuity',
+  ], 'show pack game_contract', issues)
+  if (value.version !== 1) issues.push('show pack game_contract version must be 1')
+  if (!COMMITMENTS.has(value.commitment as ShowPackGameContract['commitment'])) {
+    issues.push('show pack game_contract commitment is invalid')
+  }
+  if (value.conviction_budget !== null && !isPositiveInteger(value.conviction_budget)) {
+    issues.push('show pack game_contract conviction_budget must be null or a positive integer')
+  }
+  if (value.commitment === 'open_conviction' && !isPositiveInteger(value.conviction_budget)) {
+    issues.push('show pack game_contract open convictions require a positive conviction_budget')
+  }
+  if (value.commitment !== 'open_conviction' && value.conviction_budget !== null) {
+    issues.push('show pack game_contract conviction_budget applies only to open convictions')
+  }
+  if (!isRecord(value.identity)) {
+    issues.push('show pack game_contract identity is required')
+  } else {
+    checkExactKeys(value.identity, ['selection', 'scoring'], 'show pack game_contract identity', issues)
+    if (!IDENTITY_SELECTIONS.has(value.identity.selection as ShowPackGameContract['identity']['selection'])) {
+      issues.push('show pack game_contract identity selection is invalid')
+    }
+    if (!IDENTITY_SCORING.has(value.identity.scoring as ShowPackGameContract['identity']['scoring'])) {
+      issues.push('show pack game_contract identity scoring is invalid')
+    }
+  }
+  if (!isRecord(value.scarcity)) {
+    issues.push('show pack game_contract scarcity is required')
+  } else {
+    checkExactKeys(value.scarcity, ['commitments', 'identity'], 'show pack game_contract scarcity', issues)
+    if (!COMMITMENT_SCARCITY.has(
+      value.scarcity.commitments as ShowPackGameContract['scarcity']['commitments'],
+    )) issues.push('show pack game_contract commitment scarcity is invalid')
+    if (!IDENTITY_SCARCITY.has(
+      value.scarcity.identity as ShowPackGameContract['scarcity']['identity'],
+    )) issues.push('show pack game_contract identity scarcity is invalid')
+  }
+  if (!VISIBILITY.has(value.visibility as ShowPackGameContract['visibility'])) {
+    issues.push('show pack game_contract visibility is invalid')
+  }
+  if (!CADENCE.has(value.cadence as ShowPackGameContract['cadence'])) {
+    issues.push('show pack game_contract cadence is invalid')
+  }
+  if (!CONTINUITY.has(value.continuity as ShowPackGameContract['continuity'])) {
+    issues.push('show pack game_contract continuity is invalid')
+  }
+  return true
+}
+
+function compatibilityTruthAuthority(factSource: ShowFactSource): TruthAuthority {
+  return factSource === 'scheduled' ? 'official_result' : 'operator_declaration'
+}
+
+export function compatibilityGameContract(factSource: ShowFactSource): ShowPackGameContract {
+  if (factSource === 'scheduled') {
+    return {
+      version: 1,
+      commitment: 'confidence_allocation',
+      conviction_budget: null,
+      identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+      scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+      visibility: 'sealed_until_lock',
+      cadence: 'immediate_per_outcome',
+      continuity: 'no_carryover',
+    }
+  }
+  return {
+    version: 1,
+    commitment: 'open_conviction',
+    conviction_budget: 12,
+    identity: { selection: 'exclusive_entity_draft', scoring: 'none' },
+    scarcity: { commitments: 'fixed_budget', identity: 'exclusive' },
+    visibility: 'open_counts',
+    cadence: 'immediate_facts_and_event_close',
+    continuity: 'canon_write_back',
+  }
+}
+
+export function resolveGameContract(pack: ShowPack): ShowPackGameContract {
+  return pack.game_contract ?? compatibilityGameContract(pack.pack.fact_source)
+}
+
+export function deriveGameModel(contract: ShowPackGameContract): GameModel {
+  if (contract.commitment === 'confidence_allocation') return 'legacy_ensemble'
+  if (contract.commitment === 'open_conviction') return 'conviction_portfolio'
+  throw new Error(`commitment ${contract.commitment} has no executable room model yet`)
+}
+
+export function summarizeGameContract(contract: ShowPackGameContract): string {
+  const commitment = contract.commitment === 'confidence_allocation'
+    ? 'Confidence allocation'
+    : contract.commitment === 'open_conviction'
+      ? `Open convictions (${contract.conviction_budget})`
+      : 'Season thesis'
+  const selection = contract.identity.selection === 'none'
+    ? 'No identity selection'
+    : contract.identity.selection === 'exclusive_entity_draft'
+      ? 'Exclusive entity draft'
+      : 'Chosen faction'
+  const identity = contract.identity.selection === 'none'
+    ? selection
+    : `${selection}, ${contract.identity.scoring === 'none' ? 'identity only' : 'ensemble scoring'}`
+  const visibility = contract.visibility === 'open_counts'
+    ? 'Open belief counts'
+    : contract.visibility === 'sealed_until_lock'
+      ? 'Sealed until lock'
+      : 'Hidden until resolution'
+  const cadence = contract.cadence === 'immediate_per_outcome'
+    ? 'Immediate per outcome'
+    : contract.cadence === 'immediate_facts_and_event_close'
+      ? 'Immediate facts plus event close'
+      : 'Installment plus season close'
+  const continuity = contract.continuity === 'no_carryover'
+    ? 'No carryover'
+    : contract.continuity === 'canon_write_back'
+      ? 'Canon write-back'
+      : 'Cumulative standings and canon'
+  return [commitment, identity, visibility, cadence, continuity].join(' | ')
+}
+
 function checkTextArray(value: unknown, label: string, issues: string[], requireOne = false): value is string[] {
   if (!Array.isArray(value)) {
     issues.push(`${label} must be an array`)
@@ -321,6 +528,7 @@ function validateWagerDoctrine(
   issues: string[],
   variantFields: readonly string[],
   allowAuthoringBasis = false,
+  requireTruthAuthority = false,
 ): raw is ShowPackWagerDoctrine {
   if (!isRecord(raw)) {
     issues.push(`${kind} must be an object`)
@@ -329,11 +537,16 @@ function validateWagerDoctrine(
   const id = hasText(raw.id) ? raw.id : '(missing-id)'
   checkExactKeys(raw, [
     'id', 'title', 'condition', 'exclusions', 'adjudication',
-    'title_review', 'basis_claim_ids', ...variantFields,
+    'title_review', 'basis_claim_ids', 'truth_authority', ...variantFields,
   ], `${kind} ${id}`, issues)
   if (!isSlug(raw.id)) issues.push(`${kind} ${id} id must be a kebab-case slug`)
   if (!hasText(raw.title)) issues.push(`${kind} ${id} title is required`)
   if (!hasText(raw.condition)) issues.push(`${kind} ${id} condition is required`)
+  if (raw.truth_authority === undefined) {
+    if (requireTruthAuthority) issues.push(`${kind} ${id} truth_authority is required by schema 4`)
+  } else if (!TRUTH_AUTHORITIES.has(raw.truth_authority as TruthAuthority)) {
+    issues.push(`${kind} ${id} truth_authority is invalid`)
+  }
   checkTextArray(raw.exclusions, `${kind} ${id} exclusions`, issues, true)
 
   if (!isRecord(raw.adjudication)) {
@@ -394,6 +607,7 @@ function validateTrigger(
   kind: 'signature beat' | 'bingo square',
   claims: ReadonlyMap<string, ShowPackClaim>,
   issues: string[],
+  requireTruthAuthority: boolean,
 ): raw is ShowPackTriggerBase {
   const variantFields = kind === 'signature beat'
     ? ['probability_pct', 'likelihood_tier', 'entity_ids', 'points', 'pitch']
@@ -405,6 +619,7 @@ function validateTrigger(
     issues,
     variantFields,
     kind === 'bingo square',
+    requireTruthAuthority,
   ) || !isRecord(raw)) return false
   const id = String(raw.id)
   if (!Number.isInteger(raw.probability_pct)
@@ -429,12 +644,21 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   const issues: string[] = []
   if (!isRecord(value)) return [{ message: 'show pack must be an object' }]
   checkExactKeys(value, [
-    'schema_version', 'pack', 'sources', 'claims', 'entities',
+    'schema_version', 'game_contract', 'pack', 'sources', 'claims', 'entities',
     'predictions', 'signature_beats', 'bingo_squares',
-    'commentary_voices', 'commentary_requests',
+    'commentary_voices', 'commentary_requests', 'runtime_ceremonies',
   ], 'show pack', issues)
-  if (value.schema_version !== SHOW_PACK_SCHEMA_VERSION) {
-    issues.push(`show pack schema_version must be ${SHOW_PACK_SCHEMA_VERSION}`)
+  const schemaVersion = value.schema_version
+  if (schemaVersion !== LEGACY_SHOW_PACK_SCHEMA_VERSION
+    && schemaVersion !== SHOW_PACK_SCHEMA_VERSION) {
+    issues.push(
+      `show pack schema_version must be ${LEGACY_SHOW_PACK_SCHEMA_VERSION} or ${SHOW_PACK_SCHEMA_VERSION}`,
+    )
+  }
+  if (schemaVersion === SHOW_PACK_SCHEMA_VERSION) {
+    validateGameContract(value.game_contract, issues)
+  } else if (value.game_contract !== undefined) {
+    issues.push(`show pack schema ${LEGACY_SHOW_PACK_SCHEMA_VERSION} cannot declare game_contract`)
   }
 
   if (!isRecord(value.pack)) {
@@ -639,7 +863,7 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
     const id = hasText(raw.id) ? raw.id : '(missing-id)'
     checkExactKeys(
       raw,
-      ['id', 'name', 'instruction', 'attitude_claim_ids'],
+      ['id', 'name', 'instruction', 'attitude_claim_ids', 'runtime'],
       `commentary voice ${id}`,
       issues,
     )
@@ -667,13 +891,313 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
         }
       }
     }
+    let runtime: ShowPackCommentaryVoice['runtime']
+    if (raw.runtime !== undefined) {
+      if (!isRecord(raw.runtime)) {
+        issues.push(`commentary voice ${id} runtime must be an object`)
+      } else {
+        checkExactKeys(
+          raw.runtime,
+          ['slot', 'role', 'aliases', 'post_show'],
+          `commentary voice ${id} runtime`,
+          issues,
+        )
+        if (raw.runtime.slot !== 'narrator' && raw.runtime.slot !== 'rotating') {
+          issues.push(`commentary voice ${id} runtime slot is invalid`)
+        }
+        if (!hasText(raw.runtime.role)) {
+          issues.push(`commentary voice ${id} runtime role is required`)
+        }
+        const aliasesValid = checkTextArray(
+          raw.runtime.aliases,
+          `commentary voice ${id} runtime aliases`,
+          issues,
+        )
+        const aliases = aliasesValid ? raw.runtime.aliases as string[] : []
+        if (aliasesValid) {
+          const normalizedAliases = aliases.map(normalizeRuntimeMentionTerm)
+          pushDuplicateValues(
+            normalizedAliases,
+            `commentary voice ${id} runtime has duplicate aliases`,
+            issues,
+          )
+          if (normalizedAliases.some((alias) => alias.length > 80)) {
+            issues.push(`commentary voice ${id} runtime aliases must be at most 80 characters`)
+          }
+        }
+        let postShow: NonNullable<ShowPackCommentaryVoice['runtime']>['post_show']
+        if (raw.runtime.post_show !== undefined) {
+          if (!isRecord(raw.runtime.post_show)) {
+            issues.push(`commentary voice ${id} runtime post_show must be an object`)
+          } else {
+            checkExactKeys(
+              raw.runtime.post_show,
+              ['farewell', 'keepsake'],
+              `commentary voice ${id} runtime post_show`,
+              issues,
+            )
+            const farewell = raw.runtime.post_show.farewell
+            const keepsake = raw.runtime.post_show.keepsake
+            if (!isRecord(farewell)) {
+              issues.push(`commentary voice ${id} runtime post_show farewell must be an object`)
+            } else {
+              checkExactKeys(
+                farewell,
+                ['order', 'delay_seconds', 'instruction'],
+                `commentary voice ${id} runtime post_show farewell`,
+                issues,
+              )
+              if (!Number.isInteger(farewell.order) || (farewell.order as number) < 1) {
+                issues.push(`commentary voice ${id} runtime post_show farewell order must be a positive integer`)
+              }
+              if (!Number.isInteger(farewell.delay_seconds) ||
+                (farewell.delay_seconds as number) < 0 ||
+                (farewell.delay_seconds as number) > 90) {
+                issues.push(`commentary voice ${id} runtime post_show farewell delay_seconds must be an integer from zero through ninety`)
+              }
+              if (!hasText(farewell.instruction)) {
+                issues.push(`commentary voice ${id} runtime post_show farewell instruction is required`)
+              }
+            }
+            if (!isRecord(keepsake)) {
+              issues.push(`commentary voice ${id} runtime post_show keepsake must be an object`)
+            } else {
+              checkExactKeys(
+                keepsake,
+                ['instruction'],
+                `commentary voice ${id} runtime post_show keepsake`,
+                issues,
+              )
+              if (!hasText(keepsake.instruction)) {
+                issues.push(`commentary voice ${id} runtime post_show keepsake instruction is required`)
+              }
+            }
+            if (isRecord(farewell) && isRecord(keepsake) &&
+              Number.isInteger(farewell.order) && (farewell.order as number) >= 1 &&
+              Number.isInteger(farewell.delay_seconds) &&
+              (farewell.delay_seconds as number) >= 0 &&
+              (farewell.delay_seconds as number) <= 90 &&
+              hasText(farewell.instruction) && hasText(keepsake.instruction)) {
+              postShow = {
+                farewell: {
+                  order: farewell.order as number,
+                  delay_seconds: farewell.delay_seconds as number,
+                  instruction: farewell.instruction.trim(),
+                },
+                keepsake: { instruction: keepsake.instruction.trim() },
+              }
+            }
+          }
+        }
+        if ((raw.runtime.slot === 'narrator' || raw.runtime.slot === 'rotating')
+          && hasText(raw.runtime.role)
+          && aliasesValid) {
+          runtime = {
+            slot: raw.runtime.slot,
+            role: raw.runtime.role.trim(),
+            aliases: aliases.map(normalizeRuntimeMentionTerm),
+            ...(postShow ? { post_show: postShow } : {}),
+          }
+        }
+      }
+    }
     if (isSlug(raw.id) && hasText(raw.name) && hasText(raw.instruction) && attitudeClaimsValid) {
       voiceById.set(raw.id, {
         id: raw.id,
         name: raw.name,
         instruction: raw.instruction,
         attitude_claim_ids: [...attitudeClaimIds],
+        ...(runtime ? { runtime } : {}),
       })
+    }
+  }
+
+  const runtimeVoices = [...voiceById.values()].filter((voice) => voice.runtime !== undefined)
+  if (runtimeVoices.length > 0) {
+    if (runtimeVoices.length !== voiceById.size) {
+      issues.push('runtime cast metadata must be present on every commentary voice or none')
+    }
+    const narratorCount = runtimeVoices.filter((voice) => voice.runtime?.slot === 'narrator').length
+    if (narratorCount !== 1) issues.push('runtime cast must define exactly one narrator')
+    if (runtimeVoices.length > 7) issues.push('runtime cast must contain at most seven voices')
+    const postShowVoices = runtimeVoices.filter((voice) => voice.runtime?.post_show !== undefined)
+    if (postShowVoices.length > 0) {
+      if (postShowVoices.length !== runtimeVoices.length) {
+        issues.push('post-show metadata must be present on every runtime voice or none')
+      }
+      const ordered = [...postShowVoices].sort((left, right) =>
+        left.runtime!.post_show!.farewell.order - right.runtime!.post_show!.farewell.order)
+      if (ordered.some((voice, index) =>
+        voice.runtime!.post_show!.farewell.order !== index + 1)) {
+        issues.push('post-show farewell order must be contiguous from one')
+      }
+      const delays = ordered.map((voice) => voice.runtime!.post_show!.farewell.delay_seconds)
+      if (delays[0] !== 0) issues.push('post-show farewell delays must start at zero')
+      if (delays.some((delay, index) => index > 0 && delay <= delays[index - 1])) {
+        issues.push('post-show farewell delays must strictly increase in farewell order')
+      }
+    }
+    const termOwners: Array<{ term: string; voiceId: string }> = []
+    for (const voice of runtimeVoices) {
+      if (isReservedRuntimeVoiceId(voice.id)) {
+        issues.push(`runtime voice ${voice.id} conflicts with a reserved message author`)
+      }
+      const terms = [voice.id, voice.name, ...(voice.runtime?.aliases ?? [])]
+        .map(normalizeRuntimeMentionTerm)
+      for (const term of new Set(terms)) {
+        const owner = termOwners.find((entry) => (
+          entry.voiceId !== voice.id && runtimeMentionTermsOverlap(entry.term, term)
+        ))
+        if (owner) {
+          issues.push(`runtime mention terms ${owner.term} and ${term} overlap across ${owner.voiceId} and ${voice.id}`)
+        }
+        termOwners.push({ term, voiceId: voice.id })
+      }
+    }
+  }
+
+  if (value.runtime_ceremonies !== undefined) {
+    if (schemaVersion !== SHOW_PACK_SCHEMA_VERSION) {
+      issues.push(`show pack schema ${LEGACY_SHOW_PACK_SCHEMA_VERSION} cannot declare runtime_ceremonies`)
+    }
+    if (!isRecord(value.runtime_ceremonies)) {
+      issues.push('show pack runtime_ceremonies must be an object')
+    } else {
+      const ceremonies = value.runtime_ceremonies
+      checkExactKeys(
+        ceremonies,
+        ['milestones', 'identity_change'],
+        'show pack runtime_ceremonies',
+        issues,
+      )
+      if (runtimeVoices.length !== voiceById.size || runtimeVoices.length === 0) {
+        issues.push('runtime_ceremonies require a complete runtime commentary cast')
+      }
+      const runtimeVoiceIds = new Set(runtimeVoices.map((voice) => voice.id))
+      if (ceremonies.milestones !== undefined) {
+        if (!Array.isArray(ceremonies.milestones)
+          || ceremonies.milestones.length < 1
+          || ceremonies.milestones.length > 8) {
+          issues.push('runtime milestones must contain one through eight checkpoints')
+        } else {
+          const milestoneIds: string[] = []
+          const eventCounts: number[] = []
+          for (const rawMilestone of ceremonies.milestones) {
+            if (!isRecord(rawMilestone)) {
+              issues.push('runtime milestone must be an object')
+              continue
+            }
+            const id = hasText(rawMilestone.id) ? rawMilestone.id : '(missing-id)'
+            checkExactKeys(
+              rawMilestone,
+              ['id', 'declared_event_count', 'voices'],
+              `runtime milestone ${id}`,
+              issues,
+            )
+            if (!isSlug(rawMilestone.id)) issues.push(`runtime milestone ${id} id must be a kebab-case slug`)
+            if (!isPositiveInteger(rawMilestone.declared_event_count)) {
+              issues.push(`runtime milestone ${id} declared_event_count must be a positive integer`)
+            }
+            if (isSlug(rawMilestone.id)) milestoneIds.push(rawMilestone.id)
+            if (isPositiveInteger(rawMilestone.declared_event_count)) {
+              eventCounts.push(rawMilestone.declared_event_count)
+            }
+            if (!Array.isArray(rawMilestone.voices)
+              || rawMilestone.voices.length < 1
+              || rawMilestone.voices.length > 7) {
+              issues.push(`runtime milestone ${id} voices must contain one through seven entries`)
+              continue
+            }
+            const speakerIds: string[] = []
+            const delays: number[] = []
+            for (const rawSpeaker of rawMilestone.voices) {
+              if (!isRecord(rawSpeaker)) {
+                issues.push(`runtime milestone ${id} voice must be an object`)
+                continue
+              }
+              checkExactKeys(
+                rawSpeaker,
+                ['voice_id', 'delay_seconds', 'instruction'],
+                `runtime milestone ${id} voice`,
+                issues,
+              )
+              if (!isSlug(rawSpeaker.voice_id)) {
+                issues.push(`runtime milestone ${id} voice_id must be a kebab-case slug`)
+              } else {
+                speakerIds.push(rawSpeaker.voice_id)
+                if (!runtimeVoiceIds.has(rawSpeaker.voice_id)) {
+                  issues.push(`runtime milestone ${id} references unknown runtime voice ${rawSpeaker.voice_id}`)
+                }
+              }
+              if (!Number.isInteger(rawSpeaker.delay_seconds)
+                || (rawSpeaker.delay_seconds as number) < 0
+                || (rawSpeaker.delay_seconds as number) > 90) {
+                issues.push(`runtime milestone ${id} delay_seconds must be an integer from zero through ninety`)
+              } else {
+                delays.push(rawSpeaker.delay_seconds as number)
+              }
+              if (!hasText(rawSpeaker.instruction)) {
+                issues.push(`runtime milestone ${id} voice instruction is required`)
+              }
+            }
+            pushDuplicateValues(speakerIds, `runtime milestone ${id} has duplicate voice ids`, issues)
+            if (delays[0] !== 0) issues.push(`runtime milestone ${id} first delay must be zero`)
+            if (delays.some((delay, index) => index > 0 && delay <= delays[index - 1])) {
+              issues.push(`runtime milestone ${id} delays must strictly increase`)
+            }
+          }
+          pushDuplicateValues(milestoneIds, 'runtime milestones have duplicate ids', issues)
+          pushDuplicateValues(eventCounts.map(String), 'runtime milestones have duplicate declared_event_count values', issues)
+          if (eventCounts.some((count, index) => index > 0 && count <= eventCounts[index - 1])) {
+            issues.push('runtime milestone declared_event_count values must strictly increase')
+          }
+        }
+      }
+      if (ceremonies.identity_change !== undefined) {
+        if (!isRecord(ceremonies.identity_change)) {
+          issues.push('runtime identity_change must be an object')
+        } else {
+          checkExactKeys(
+            ceremonies.identity_change,
+            ['voices'],
+            'runtime identity_change',
+            issues,
+          )
+          const speakers = ceremonies.identity_change.voices
+          if (!Array.isArray(speakers) || speakers.length < 1 || speakers.length > 7) {
+            issues.push('runtime identity_change voices must contain one through seven entries')
+          } else {
+            const speakerIds: string[] = []
+            for (const rawSpeaker of speakers) {
+              if (!isRecord(rawSpeaker)) {
+                issues.push('runtime identity_change voice must be an object')
+                continue
+              }
+              checkExactKeys(
+                rawSpeaker,
+                ['voice_id', 'instruction'],
+                'runtime identity_change voice',
+                issues,
+              )
+              if (!isSlug(rawSpeaker.voice_id)) {
+                issues.push('runtime identity_change voice_id must be a kebab-case slug')
+              } else {
+                speakerIds.push(rawSpeaker.voice_id)
+                if (!runtimeVoiceIds.has(rawSpeaker.voice_id)) {
+                  issues.push(`runtime identity_change references unknown runtime voice ${rawSpeaker.voice_id}`)
+                }
+              }
+              if (!hasText(rawSpeaker.instruction)) {
+                issues.push('runtime identity_change voice instruction is required')
+              }
+            }
+            pushDuplicateValues(speakerIds, 'runtime identity_change has duplicate voice ids', issues)
+          }
+        }
+      }
+      if (ceremonies.milestones === undefined && ceremonies.identity_change === undefined) {
+        issues.push('runtime_ceremonies must author milestones or identity_change')
+      }
     }
   }
 
@@ -739,6 +1263,8 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
       claimById,
       issues,
       ['points', 'tier', 'candidate_entity_ids'],
+      false,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
     ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!isPositiveInteger(raw.points)) issues.push(`prediction ${id} points must be a positive integer`)
@@ -756,7 +1282,13 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   }
 
   for (const raw of signatureBeats) {
-    if (!validateTrigger(raw, 'signature beat', claimById, issues) || !isRecord(raw)) continue
+    if (!validateTrigger(
+      raw,
+      'signature beat',
+      claimById,
+      issues,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
+    ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!checkTextArray(raw.entity_ids, `signature beat ${id} entity_ids`, issues, true)) continue
     pushDuplicateValues(raw.entity_ids, `signature beat ${id} has duplicate entity_ids`, issues)
@@ -768,7 +1300,13 @@ export function validateShowPack(value: unknown): ShowPackIssue[] {
   }
 
   for (const raw of bingoSquares) {
-    if (!validateTrigger(raw, 'bingo square', claimById, issues) || !isRecord(raw)) continue
+    if (!validateTrigger(
+      raw,
+      'bingo square',
+      claimById,
+      issues,
+      schemaVersion === SHOW_PACK_SCHEMA_VERSION,
+    ) || !isRecord(raw)) continue
     const id = String(raw.id)
     if (!hasText(raw.why_it_is_fun)) issues.push(`bingo square ${id} why_it_is_fun is required`)
     checkTextArray(raw.storyline_tags, `bingo square ${id} storyline_tags`, issues, true)
@@ -991,6 +1529,19 @@ function copyTitleReview(value: TriggerTitleReview): TriggerTitleReview {
   return { status: value.status, note: value.note }
 }
 
+function copyGameContract(value: ShowPackGameContract): ShowPackGameContract {
+  return {
+    version: value.version,
+    commitment: value.commitment,
+    conviction_budget: value.conviction_budget,
+    identity: { ...value.identity },
+    scarcity: { ...value.scarcity },
+    visibility: value.visibility,
+    cadence: value.cadence,
+    continuity: value.continuity,
+  }
+}
+
 /**
  * Produces the stable, publishable bundle. Pending or refutation-blocked prose
  * is never allowed to cross this boundary.
@@ -1022,9 +1573,12 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       settlement_version: pack.pack.predecessor.settlement_version,
     }
   }
+  const gameContract = resolveGameContract(pack)
+  const truthAuthority = compatibilityTruthAuthority(pack.pack.fact_source)
 
   return {
-    schema_version: pack.schema_version,
+    schema_version: SHOW_PACK_SCHEMA_VERSION,
+    game_contract: copyGameContract(gameContract),
     pack: metadata,
     sources: pack.sources.map((source) => ({
       id: source.id,
@@ -1062,6 +1616,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((prediction) => ({
         id: prediction.id,
         title: prediction.title,
+        truth_authority: prediction.truth_authority ?? truthAuthority,
         condition: prediction.condition,
         exclusions: [...prediction.exclusions],
         adjudication: copyAdjudication(prediction.adjudication),
@@ -1076,6 +1631,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((beat) => ({
         id: beat.id,
         title: beat.title,
+        truth_authority: beat.truth_authority ?? truthAuthority,
         condition: beat.condition,
         exclusions: [...beat.exclusions],
         adjudication: copyAdjudication(beat.adjudication),
@@ -1092,6 +1648,7 @@ export function compileShowPack(pack: ShowPack): ShowPack {
       .map((square) => ({
         id: square.id,
         title: square.title,
+        truth_authority: square.truth_authority ?? truthAuthority,
         condition: square.condition,
         exclusions: [...square.exclusions],
         adjudication: copyAdjudication(square.adjudication),
@@ -1109,6 +1666,23 @@ export function compileShowPack(pack: ShowPack): ShowPack {
         name: voice.name,
         instruction: voice.instruction,
         attitude_claim_ids: [...voice.attitude_claim_ids],
+        ...(voice.runtime
+          ? {
+              runtime: {
+                slot: voice.runtime.slot,
+                role: voice.runtime.role,
+                aliases: [...voice.runtime.aliases].sort(),
+                ...(voice.runtime.post_show
+                  ? {
+                      post_show: {
+                        farewell: { ...voice.runtime.post_show.farewell },
+                        keepsake: { ...voice.runtime.post_show.keepsake },
+                      },
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       }))
       .sort(byId),
     commentary_requests: pack.commentary_requests
@@ -1138,5 +1712,27 @@ export function compileShowPack(pack: ShowPack): ShowPack {
         },
       }))
       .sort(byId),
+    ...(pack.runtime_ceremonies
+      ? {
+          runtime_ceremonies: {
+            ...(pack.runtime_ceremonies.milestones
+              ? {
+                  milestones: pack.runtime_ceremonies.milestones.map((milestone) => ({
+                    id: milestone.id,
+                    declared_event_count: milestone.declared_event_count,
+                    voices: milestone.voices.map((voice) => ({ ...voice })),
+                  })),
+                }
+              : {}),
+            ...(pack.runtime_ceremonies.identity_change
+              ? {
+                  identity_change: {
+                    voices: pack.runtime_ceremonies.identity_change.voices.map((voice) => ({ ...voice })),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
   }
 }

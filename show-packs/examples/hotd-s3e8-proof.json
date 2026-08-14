@@ -230,7 +230,24 @@
       "instruction": "Judge power with clipped contempt and political precision.",
       "attitude_claim_ids": [
         "source-chronicle-dragon-bonds"
-      ]
+      ],
+      "runtime": {
+        "slot": "narrator",
+        "role": "The Verdict",
+        "aliases": [
+          "queen"
+        ],
+        "post_show": {
+          "farewell": {
+            "order": 1,
+            "delay_seconds": 0,
+            "instruction": "Close the room with clipped judgment and one earned note of respect."
+          },
+          "keepsake": {
+            "instruction": "Judge the player by the commitments in their ledger, not by rank alone."
+          }
+        }
+      }
     }
   ],
   "commentary_requests": []

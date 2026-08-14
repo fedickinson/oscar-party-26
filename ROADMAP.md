@@ -62,7 +62,7 @@ The reusable foundation is already substantially implemented locally:
 - room-bound show packs and a resumable authoring factory;
 - trigger-authoring doctrine and grounded generation;
 - operator lens, review queues and the AI witness proposal rung;
-- a twelve-slot whole-board conviction portfolio with lonely-bet payouts;
+- a pack-sized whole-board conviction portfolio with lonely-bet payouts;
 - an optional one-dragon identity draft for the current story pack; and
 - a reusable settlement-drop ceremony compiler.
 
@@ -245,20 +245,56 @@ findings.
 **Goal:** stop deriving all play behavior from `fact_source` and stop treating
 Results Night versus Story Night as an indivisible binary.
 
-- [ ] Define a versioned show-pack game contract covering commitment,
+- [x] Define a versioned show-pack game contract covering commitment,
   conviction budget, identity, scarcity, visibility, cadence and continuity.
-- [ ] Put truth authority on each authored proposition or trigger so one show
+- [x] Put truth authority on each authored proposition or trigger so one show
   can mix official, operator-declared and AI-proposed facts.
-- [ ] Preserve `fact_source` as compatibility metadata until every consumer uses
+- [x] Preserve `fact_source` as compatibility metadata until every consumer uses
   the new canonical contract.
-- [ ] Replace the automatic `fact_source -> game_model` binding for new packs
+- [x] Replace the automatic `fact_source -> game_model` binding for new packs
   with contract-driven room configuration.
-- [ ] Keep all historical rooms on their recorded behavior.
-- [ ] Make room configuration immutable once commitments begin.
-- [ ] Validate contract completeness in the show-pack compiler and at atomic
+- [x] Keep all historical rooms on their recorded behavior.
+- [x] Make room configuration immutable once commitments begin.
+- [x] Validate contract completeness in the show-pack compiler and at atomic
   publication.
-- [ ] Expose an operator-readable summary of the selected contract before a room
+- [x] Expose an operator-readable summary of the selected contract before a room
   starts.
+
+### P1 implementation ledger — 2026-08-13
+
+Schema-v3 packs remain accepted as compatibility inputs and compile into sealed
+schema-v4 bundles. New schema-v4 packs must declare every game-contract
+dimension and a truth authority on every prediction, signature beat and bingo
+trigger. The activation command prints the selected contract before it can
+write, atomic publication attests it, and room binding copies it before deriving
+the compatibility `game_model` from commitment rather than `fact_source`.
+
+The database backfills existing packs from their historical `fact_source` and
+existing rooms from their recorded `game_model`; it does not recompute a room's
+history. Room contracts and compatibility models can change only as part of a
+lobby show-pack rebind and are frozen once any commitment-dependent state
+exists.
+
+The contract vocabulary intentionally runs ahead of the current execution
+engine. Publication currently accepts the proven Results Night profile and the
+Story Night profile with a positive pack-owned conviction budget plus exclusive
+draft, shared faction or omitted identity. Campaign continuity remains P4 work
+and fails closed rather than claiming to work.
+
+Verification on the disposable local stack: clean migration replay through
+`20260813000100` plus authored seed; warning-level schema lint; 641 unit tests
+and production build; 22 offline factory checks; 12 real activation checks with
+scheduled compatibility metadata deliberately paired to an explicit Story
+contract; and 35 scheduled-winner checks using an explicit Results contract
+whose compatibility metadata is deliberately room-declared. The scheduled
+spotlight suite passes all canonical state and authority assertions, but a cold
+local Realtime observer missed its bounded opening event on two runs and
+received it on one immediate rerun. Preserve the P0 delivery-timing caveat.
+
+The broad `dogfood-e2e.mts` still creates two impossible hybrid fixtures by
+changing `game_model` without changing the room contract. Its covered Story and
+Results behaviors pass in the focused contract-consistent suites above; migrate
+those legacy setup sections before restoring the broad harness as a P1 gate.
 
 **Initial contract defaults**
 
@@ -280,20 +316,26 @@ Results Night versus Story Night as an indivisible binary.
 **Goal:** make the whole-cast prestige experience the reliable default for an
 arbitrary one-night story event.
 
-- [ ] Retain the fixed whole-board portfolio; make its budget pack-configurable
+- [x] Retain the fixed whole-board portfolio; make its budget pack-configurable
   instead of a hard-coded twelve.
-- [ ] Make the identity phase optional and non-scoring by default.
-- [ ] Support no identity draft, chosen faction/banner and exclusive identity
+- [x] Make the identity phase optional and non-scoring by default.
+- [x] Support no identity draft, chosen faction/banner and exclusive identity
   draft without restricting access to convictions.
-- [ ] Keep lonely-bet payout as the first scoring policy; do not add multiple
+- [x] Keep lonely-bet payout as the first scoring policy; do not add multiple
   speculative economies before another live test.
-- [ ] Allow the show-pack factory to author and validate all required Story
+- [x] Allow the show-pack factory to author and validate all required Story
   Night contract data.
-- [ ] Make every operator action and generated line consume the room-bound pack
-  and settled fact record.
-- [ ] Ensure one command can finish the live floor and the researched settlement
+- [x] Make every operator action and generated line consume the room-bound pack
+  and settled fact record. The daemon's declared-fact, bingo and direct-chat
+  reactions and the browser's pre-show, show-start, spotlight and player-welcome
+  ceremonies now consume a complete authored pack cast. Pack-authored post-show
+  cadence and voice instructions likewise power provisional farewells and
+  keepsakes. Runtime milestones now consume authored thresholds, speakers,
+  instructions and exact stagger; live shared-identity changes consume the
+  revisioned pack-owned from/to record and authored response voice.
+- [x] Ensure one command can finish the live floor and the researched settlement
   command can truthfully close the room.
-- [ ] Generate the complete settlement drop from the receipt, with no hand patch.
+- [x] Generate the complete settlement drop from the receipt, with no hand patch.
 
 **Required loop**
 
@@ -308,6 +350,132 @@ Create show pack
 -> generate recap and ceremony
 -> close
 ```
+
+### P2 implementation ledger — variable conviction budget, 2026-08-13
+
+The room-bound `game_contract.conviction_budget` is now the single portfolio
+size authority. Activation accepts positive Story Night budgets only when the
+pack authors at least that many distinct beats. The conviction page, peer
+readiness ledger and optimistic tap guard all read the copied room contract;
+Postgres independently enforces the same value under the player lock, including
+concurrent final-slot taps. The lonely-bet payout and exclusive identity draft
+are unchanged in this slice.
+
+Focused verification uses a one-slot Story pack with two authored beats: the
+activation command publishes and binds it, the room copies its budget, the
+first anonymous belief succeeds and the second is rejected by the database.
+This budget remains independent from either supported identity opening.
+
+### P2 implementation ledger — optional identity, 2026-08-13
+
+Story Night now has three executable opening profiles: an exclusive,
+non-scoring entity draft, shared faction/banner choice or no identity
+selection. A no-identity pack moves the canonical room phase directly from
+lobby to convictions through a capability-gated
+database command, so every subscribed phone follows the same update. It creates
+no draft order, ready roster or ownership rows. The database rejects both an
+older client trying to open a draft in that room and a direct-convictions command
+against an identity-draft room.
+
+For chosen faction, the immutable show pack's authored `entities[].group`
+values are the option catalog. Each seat writes to a distinct room-and-pack-bound
+selection ledger; options are shared, non-scoring and never ownership. Initial
+choices and lobby revisions remain ceremony-silent; after convictions, choices
+freeze until the live room, where an exact change records its prior choice,
+monotonic revision, phase and timestamp. The database requires every occupied
+seat to choose before convictions open and prevents an unselected late join.
+This deliberately does not reuse the property-specific Black/Green allegiance
+columns.
+
+The lobby derives its action, readiness and explanatory copy from the room-bound
+contract and fails closed for missing or future identity forms. The chosen-faction
+proof runs through two players, option validation, cross-client synchronization,
+conviction write, live open and provisional finish; the explicit no-identity and
+original exclusive-draft paths remain green.
+
+### P2 implementation ledger — factory-owned Story contract, 2026-08-13
+
+The resumable show-pack factory now requires one closed game-contract authoring
+artifact alongside the next-show content. It targets an exact pack/version,
+selects the complete Story contract and assigns a default truth authority to
+every wager with explicit overrides for mixed-authority shows. The factory—not
+a hand edit to compiled JSON—upgrades the composed schema-v3 authoring pack to
+schema v4 before commentary planning and seals the exact artifact hash in the
+immutable run record.
+
+All three executable identity profiles pass the same authoring gate. It rejects
+target drift, duplicate or unknown overrides, unsupported contract combinations,
+budgets larger than the authored beat board, and chosen faction without two
+authored groups. The filesystem-only factory dogfood proves the contract survives
+the authorization, grounded continuation, compiled output and blocked-retry paths
+without a network or model call.
+
+### P2 implementation ledger — second-property closed loop, 2026-08-13
+
+A synthetic property with no House of the Dragon entities, claims or authored
+propositions now completes the ordinary local production path without application
+code edits. Its schema-v4 pack activates into a new room, copies a two-slot
+whole-board conviction contract, skips identity, deals pack-scoped bingo cards,
+accepts two operator declarations, closes the live floor and settles both facts
+through the researched settlement command. The receipt attests the exact pack,
+settlement and proposition truth authorities; the settlement-drop compiler then
+renders a complete nine-slide ceremony directly from that receipt with no legacy
+property content or HTML patch.
+
+The rehearsal exposed one real composability defect after the database had
+already closed the room: receipt validation still understood the schema-v3
+trigger shape and rejected schema-v4 `truth_authority`. The canonical parser now
+retains each supported authority, rejects unknown values and continues to admit
+historical receipts in which the optional field was not yet recorded.
+
+The original Story scoring policy remains unchanged: each resolved proposition
+pays its authored pot across correct believers, so a lonely correct belief takes
+the full amount. No second economy was added. P0's live-floor and settlement
+command dogfoods, plus this second-property run, prove provisional close and
+researched closure as separate operator actions; receipt-to-ceremony compilation
+is likewise proven at the real command entry point.
+
+### P2 implementation ledger — pack-owned runtime and post-show voice, 2026-08-13
+
+A complete runtime voice roster in the room-bound compiled pack now powers the
+daemon's declared-fact, bingo and direct-chat reactions and the browser's
+pre-show, show-start, spotlight and player-welcome ceremonies. Chat, recap and
+operator lenses resolve those authored identities without adding a new hard-coded
+property cast. Missing, partial or ambiguous runtime metadata fails closed before
+model work; the exact legacy pack retains its compatibility behavior.
+
+Post-show voice is a separate explicit opt-in within that runtime roster. Every
+voice must author a farewell order, exact delay, farewell instruction and
+keepsake instruction. Orders are contiguous, delays begin at zero and strictly
+increase, and a partial contract disables both generic surfaces. The grounded
+farewell uses the exact authored cadence. Keepsakes assign authors deterministically
+in that order and persist exact pack IDs through an atomic capability-gated
+command that revalidates the published room-bound contract. Generic keepsakes
+offer no legacy artwork: imagery stays empty until the pack format owns its own
+artwork catalog and selection rules.
+
+### P2 implementation ledger — milestone cadence and identity-change voice, 2026-08-13
+
+Schema-v4 packs may now opt into `runtime_ceremonies`. Each named milestone owns
+an increasing declared-event threshold and an exact ordered list of runtime
+voices, delays and expression-only instructions. Unknown voices, duplicate
+thresholds, nonzero first delays and ambiguous ordering fail publication. The
+authorized host browser projects the canonical event count and complete scored
+standings, then uses a durable pack-and-milestone reaction key so reloads and
+racing host tabs cannot duplicate the batch. Packs without an authored
+milestone contract remain silent; the exact legacy room retains its six/twelve
+compatibility cadence.
+
+The same opt-in may author the eligible voices and instruction for a shared
+identity change. A pack's existing entity groups remain the only vocabulary.
+The player-owned command now permits changes in the lobby or live room, rejects
+conviction and post-show phases, treats a repeated choice as an idempotent read,
+and records the latest transition's prior choice, revision, phase and time.
+Revision zero is the silent first selection; only a later revision recorded in
+`live` may produce ceremony. Voice selection is deterministic by player and
+revision, while separate durable announcement and reaction keys preserve exact
+replay ownership. Generic screens render the pack's real choices and the legacy
+Black/Green picker self-hides outside its pinned historical pack.
 
 **Exit criteria**
 
