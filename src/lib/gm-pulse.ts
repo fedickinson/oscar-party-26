@@ -43,6 +43,7 @@ interface GmPulseInput {
   messages: GmPulseMessage[]
   cards: GmPulseCard[]
   marks: GmPulseMark[]
+  castIds?: string[]
 }
 
 function compareChronology(left: GmPulseMessage, right: GmPulseMessage): number {
@@ -95,7 +96,12 @@ export function deriveGmPulseReport(input: GmPulseInput): GmPulseReport {
   const facts = input.messages
     .filter((message) => message.player_id === 'winner-divider' || message.player_id === 'system')
     .sort(compareChronology)
-  const lastCompanion = latest(input.messages.filter((message) => isCompanionId(message.player_id)))
+  const runtimeIds = input.castIds === undefined ? null : new Set(input.castIds)
+  const lastCompanion = latest(input.messages.filter((message) => (
+    runtimeIds === null
+      ? isCompanionId(message.player_id)
+      : runtimeIds.has(message.player_id)
+  )))
 
   return {
     players,

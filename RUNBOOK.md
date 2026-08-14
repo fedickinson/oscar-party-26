@@ -186,7 +186,8 @@ live status in .private/postop/HANDOFF.md):**
    browser producers prove the current room capability before model work and
    again at publication, while the phone-independent daemon writes with its
    service authority.
-   Six/twelve-event milestones, per-player welcomes, revisioned team changes,
+   Six/twelve-event legacy milestones, pack-authored generic milestones,
+   per-player welcomes, revisioned team changes,
    pre-show arrivals, the show-start ceremony, revisioned spotlight openings and
    the full-cast post-show farewell are grounded and durably owned in the browser
    too. Keepsake verdicts now use their own strict schema-aware grounding pass,
@@ -195,9 +196,15 @@ live status in .private/postop/HANDOFF.md):**
    The deployed browser and daemon cast is now explicitly a legacy compatibility
    surface: every producer checks the room's pinned show-pack ID before model
    work. Only the exact legacy pack may invoke its House-of-the-Dragon prompt
-   canon. Other packs retain human chat, game actions and factory-authored
-   grounded commentary, but live cast generation stays silent until a reusable
-   runtime voice projection is authored rather than borrowing the wrong canon
+   canon. A complete pack-owned runtime voice projection now powers the
+   daemon's declared-fact, bingo and direct-chat reactions plus the browser's
+   pre-show, show-start, spotlight and player-welcome ceremonies. Partial
+   metadata still fails closed before model work. A separate pack-authored
+   runtime ceremony contract now owns generic milestone thresholds, voice order
+   and delays plus shared-identity-change voices and instructions. A separate
+   complete pack-authored post-show contract owns
+   generic farewell cadence and keepsake voice; packs without it stay silent
+   rather than borrowing the wrong canon
 6. Operator UI (layer 3) — first read-only lens implemented locally: real
    foreground/background Presence, an authoritative companion-daemon heartbeat,
    and honest cast/fact sequence evidence; its collapsed host control now derives
@@ -914,6 +921,15 @@ pick on a resolved category has left its null scoring state before freezing the
 leaderboard; room-authored events with no attached picks pass immediately.
 The daemon does not originate milestone reactions.
 
+Generic Story milestones use the same browser ownership and grounding path but
+have no implicit six/twelve thresholds or borrowed cast. The bound schema-v4
+pack must author each checkpoint ID, increasing declared-event threshold, exact
+runtime voice order, delay and expression instruction under
+`runtime_ceremonies.milestones`. The prompt projects the observed canonical
+event count and complete computed standings. Its durable key is
+`milestone:pack:<authored-id>`, so a host reload recovers a crossed checkpoint
+and racing tabs converge. Missing or invalid authorship means silence.
+
 Player welcomes now follow the contract in the browser. A capability-bearing
 current host claims `players.welcomed_at` through one atomic command; the winner
 then owns `welcome:<player-id>` for atomic output. The freshest player name,
@@ -941,6 +957,18 @@ residuals under `team_change`; it may not invent a screen event or a reason for
 the player's choice. First declarations before the scheduled welcome remain
 folded into that welcome, and rapid later toggles retain the existing cooldown.
 The daemon does not originate team-change reactions.
+
+A chosen-faction Story room uses an independent pack-owned version of this
+doctrine. `player_identity_selections` retains the current authored group, exact
+prior group, monotonic revision, transition phase and time. Revision zero is
+the first silent selection. Lobby changes remain silent, conviction phases
+freeze the choice, and only a later revision recorded during `live` enters the
+runtime ceremony. The neutral system divider states the exact from/to change;
+one eligible voice is chosen deterministically from
+`runtime_ceremonies.identity_change`, and its authored instruction shapes
+expression without establishing motive. Announcement and reaction keys include
+player ID and revision. Packs without that voice contract stay silent, and the
+legacy `players.team` path remains pinned to the exact legacy show pack.
 
 Pre-show arrivals now follow the contract in the browser. The authored
 Ned/Tyrion/Cersei/Daenerys/Olenna/Arya order and eight-minute offsets live in one
@@ -1010,6 +1038,14 @@ remain game labels rather than screen claims. The batch enforces all seven speak
 at 0/6/16/30/38/46/54 seconds, suppresses settled records and degraded data, and
 preserves residuals under `post_show`. The daemon does not originate this ceremony.
 
+For a non-legacy pack, the same primitive is enabled only when every runtime
+voice has a `post_show` block. That block owns a contiguous farewell order, an
+exact delay (zero first, then strictly increasing), a farewell instruction and a
+keepsake instruction. The prompt, parser and scheduler require the authored
+voice IDs and delays exactly; the fact block projects the provisional room,
+players, declarations, standings and commitments without importing the legacy
+property vocabulary. A missing or partial contract makes no post-show model call.
+
 Keepsake verdict generation now follows the same doctrine without pretending its
 schema is a chat batch. `buildVerdictsPrompt` projects an exhaustive numbered GAME
 RECORD for each slot, qualified candidate CHAT RECORD chunks, and a complete
@@ -1027,6 +1063,14 @@ receipt onto every row, completes the claim atomically, and seals later ordinary
 direct writes. Settled records remain suppressed. All current generated prose
 surfaces are therefore behind the grounding doctrine; emoji rejection remains a
 separate character-policy check, never evidence of factual grounding.
+
+Generic keepsakes assign players deterministically across the authored farewell
+order and resolve pack voice names on the result surface. Their strict prompt
+uses only game and qualified chat records, and imagery is always empty: the
+legacy artwork library is not a portable canon. The atomic generic completion
+command revalidates the published room-bound post-show contract, preserves each
+exact authored companion ID and then seals the same durable claim. Pack-authored
+artwork is future contract work, not an inferred fallback.
 
 ## The two-canons rule (from the Maelor incident, 8/10)
 

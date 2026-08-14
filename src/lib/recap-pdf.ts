@@ -17,7 +17,8 @@
  */
 
 import { jsPDF } from 'jspdf'
-import { COMPANION_IDS, getCompanionById } from '../data/ai-companions'
+import { getCompanionById } from '../data/ai-companions'
+import { isNonHumanMessageAuthor } from './message-authors'
 import { findDraftPointsForWinner, type ScoredPlayer } from './scoring'
 import type { PlayerAward, CharacterAward } from './night-awards'
 import type {
@@ -74,6 +75,8 @@ export interface RecapData {
   playerAwards?: PlayerAward[]
   characterAwards?: CharacterAward[]
   verdicts?: Map<string, PlayerVerdictRow>
+  /** Room-pack voice IDs excluded from the human-chat highlight lane. */
+  castIds?: string[]
 }
 
 export interface RecapHighlights {
@@ -1232,10 +1235,9 @@ export function generateRecapPDF(data: RecapData): void {
   // Non-human message authors: the companions plus the synthetic divider rows
   // the host inserts. Derived from the cast so a recast can't silently leak
   // companion chatter into the "human messages only" section.
-  const AI_IDS = new Set<string>([
-    'system', 'winner-divider', 'film-link', ...COMPANION_IDS,
-  ])
-  const humanMessages = data.messages.filter((m) => !AI_IDS.has(m.player_id))
+  const humanMessages = data.messages.filter((message) => (
+    !isNonHumanMessageAuthor(message.player_id, data.castIds)
+  ))
 
   if (humanMessages.length === 0) {
     doc.setFontSize(10)

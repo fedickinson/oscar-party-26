@@ -247,6 +247,21 @@ function buildLanternWatchProof() {
     name: 'The Archivist',
     instruction: 'Judge public promises with calm precision.',
     attitude_claim_ids: ['chronicle-treats-signals-seriously'],
+    runtime: {
+      slot: 'narrator',
+      role: 'The Record',
+      aliases: ['archive'],
+      post_show: {
+        farewell: {
+          order: 1,
+          delay_seconds: 0,
+          instruction: 'Close the record with calm precision.',
+        },
+        keepsake: {
+          instruction: 'Judge each player by the promises they kept and broke.',
+        },
+      },
+    },
   }]
   authored.commentary_requests = []
   const compiled = compileShowPack(authored)
@@ -588,6 +603,23 @@ async function main(): Promise<void> {
     proof.game_contract!.identity = { selection: 'chosen_faction', scoring: 'none' }
     proof.game_contract!.scarcity.identity = 'shared'
     proof.entities[1].group = 'The Blacks'
+    proof.runtime_ceremonies = {
+      milestones: [{
+        id: 'first-turn',
+        declared_event_count: 1,
+        voices: [{
+          voice_id: proof.commentary_voices[0].id,
+          delay_seconds: 0,
+          instruction: 'Mark the first turn and judge only the current standings.',
+        }],
+      }],
+      identity_change: {
+        voices: [{
+          voice_id: proof.commentary_voices[0].id,
+          instruction: 'Judge the public revision without inventing its motive.',
+        }],
+      },
+    }
     const plan = await buildShowPackActivationPlan(proof)
     const inputPath = join(workspace, 'activation-pack.json')
     writeFileSync(inputPath, `${JSON.stringify(proof, null, 2)}\n`, 'utf8')
@@ -820,8 +852,8 @@ async function main(): Promise<void> {
       p_actor_player_id: session.player.id,
       p_choice_key: 'The Greens',
     })
-    check(frozenChoice.error?.message.includes('frozen after the lobby'),
-      'identity choices freeze when the room leaves the lobby')
+    check(frozenChoice.error?.message.includes('only in the lobby or live room'),
+      'identity choices remain frozen during the conviction ceremony')
 
     const lateSeat = await browser.from('players').insert({
       room_id: roomId,
@@ -862,6 +894,29 @@ async function main(): Promise<void> {
     check(live.data.phase === 'live',
       'the chosen-faction room opens live play after convictions')
 
+    const liveRevision = await browser.rpc('set_player_identity_choice', {
+      p_room_id: roomId,
+      p_actor_player_id: session.player.id,
+      p_choice_key: 'The Greens',
+    })
+    if (liveRevision.error) throw liveRevision.error
+    check(liveRevision.data.choice_key === 'The Greens'
+      && liveRevision.data.previous_choice_key === 'The Blacks'
+      && liveRevision.data.revision === 2
+      && liveRevision.data.changed_in_phase === 'live'
+      && typeof liveRevision.data.changed_at === 'string',
+    'a live identity change preserves the exact prior choice, phase, time, and revision')
+
+    const liveReplay = await browser.rpc('set_player_identity_choice', {
+      p_room_id: roomId,
+      p_actor_player_id: session.player.id,
+      p_choice_key: 'The Greens',
+    })
+    if (liveReplay.error) throw liveReplay.error
+    check(liveReplay.data.revision === 2
+      && liveReplay.data.previous_choice_key === 'The Blacks',
+    'repeating the current live identity is an idempotent replay')
+
     const finished = await browser.rpc('close_live_floor_authorized', {
       p_room_id: roomId,
       p_actor_player_id: session.player.id,
@@ -870,6 +925,14 @@ async function main(): Promise<void> {
     if (finished.error) throw finished.error
     check(finished.data.phase === 'finished',
       'the chosen-faction room finishes normally with no draft ownership')
+
+    const postShowChoice = await browser.rpc('set_player_identity_choice', {
+      p_room_id: roomId,
+      p_actor_player_id: session.player.id,
+      p_choice_key: 'The Blacks',
+    })
+    check(postShowChoice.error?.message.includes('only in the lobby or live room'),
+      'identity choices freeze again after the live floor closes')
 
     const { error: mutationError } = await service
       .from('rooms')

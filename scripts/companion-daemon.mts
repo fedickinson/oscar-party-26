@@ -27,7 +27,17 @@ import {
   selectSpokenCompanionIds,
 } from '../src/lib/companion-reaction'
 import { supabaseConfig } from './lib/env.mts'
-import { resolveRuntimeNarrativeMode } from '../src/lib/runtime-narrative'
+import {
+  buildRoomRuntimeNarrativeCast,
+  detectRuntimeVoiceMentions,
+  resolveRuntimeNarrativeMode,
+  selectRuntimeEventCast,
+} from '../src/lib/runtime-narrative'
+import {
+  buildRuntimeBingoPrompt,
+  buildRuntimeChatPrompt,
+  buildRuntimeEventPrompt,
+} from '../src/lib/runtime-narrative-prompts'
 import {
   groundedCompanionBatch,
   type GroundingModelCaller,
@@ -96,13 +106,23 @@ const log = (m: string) => console.log(`[cast ${new Date().toLocaleTimeString()}
 const code = process.argv[process.argv.indexOf('--room') + 1] ?? 'WDKH'
 const room = (await get(`rooms?code=eq.${code}&select=id,show_pack_id,host_id`))[0]
 if (!room) { console.error('room not found'); process.exit(1) }
-if (resolveRuntimeNarrativeMode(room.show_pack_id) !== 'legacy_live_cast') {
+const [showPackRow] = await get(
+  `show_packs?id=eq.${room.show_pack_id}&status=eq.published&select=pack_key,version,compiled_bundle`,
+)
+const runtimeCast = showPackRow?.compiled_bundle == null
+  ? null
+  : buildRoomRuntimeNarrativeCast(room.show_pack_id, showPackRow)
+const narrativeMode = resolveRuntimeNarrativeMode(room.show_pack_id, runtimeCast)
+if (narrativeMode === 'pack_commentary_only') {
   throw new Error(
     `room ${code} is bound to a pack without a deployed runtime cast; use its factory-authored grounded commentary`,
   )
 }
 const RID = room.id
-const COMPANIONS = ['ned','cersei','tyrion','joffrey','daenerys','olenna','arya']
+const COMPANIONS = runtimeCast
+  ? runtimeCast.voices.map((voice) => voice.id)
+  : ['ned','cersei','tyrion','joffrey','daenerys','olenna','arya']
+const runtimeVoiceById = new Map(runtimeCast?.voices.map((voice) => [voice.id, voice]) ?? [])
 const ENGINE = 'companion_daemon'
 const INSTANCE_ID = randomUUID()
 let shuttingDown = false
@@ -111,7 +131,10 @@ async function spokenCompanionIds(): Promise<string[]> {
   const rows = await get(
     `messages?room_id=eq.${RID}&player_id=in.(${COMPANIONS.join(',')})&select=player_id`,
   ) as Array<{ player_id: string }>
-  return selectSpokenCompanionIds(rows.map((message) => message.player_id))
+  const ids = rows.map((message) => message.player_id)
+  return runtimeCast
+    ? [...new Set(ids.filter((id) => runtimeVoiceById.has(id)))]
+    : selectSpokenCompanionIds(ids)
 }
 
 async function claimChatReaction(reactionKey: string): Promise<boolean> {
@@ -263,10 +286,18 @@ function runWatcher(name: string, watcher: () => Promise<void>): void {
   })
 }
 
+const existingWinnerIds = (await get(`room_winners?room_id=eq.${RID}&select=category_id`))
+  .map((winner: {category_id:number}) => winner.category_id)
+// Legacy rooms predate durable per-event ownership, so historical declarations
+// stay baselined. In a generic room the daemon is the only event producer: feed
+// existing rows back through the durable claim so completed work deduplicates
+// and interrupted work recovers after a daemon restart.
 const seen = new Set<number>(
-  (await get(`room_winners?room_id=eq.${RID}&select=category_id`)).map((w: {category_id:number}) => w.category_id),
+  narrativeMode === 'legacy_live_cast' ? existingWinnerIds : [],
 )
-log(`watching ${code} — ${seen.size} events already reacted-or-past; lease ${INSTANCE_ID.slice(0, 8)} live`)
+log(narrativeMode === 'legacy_live_cast'
+  ? `watching ${code} — ${seen.size} legacy events baselined; lease ${INSTANCE_ID.slice(0, 8)} live`
+  : `watching ${code} — ${existingWinnerIds.length} generic events queued for durable recovery; lease ${INSTANCE_ID.slice(0, 8)} live`)
 
 async function react(categoryId: number) {
   const [cat] = await get(`categories?id=eq.${categoryId}&select=*`)
@@ -275,12 +306,16 @@ async function react(categoryId: number) {
   const [nominee] = await get(`nominees?id=eq.${win.winner_id}&select=*`)
   if (!nominee) return
 
-  // Host-tab dedup: if a companion already spoke since this was declared, skip.
-  const declaredAt = win.created_at ?? new Date(Date.now() - 60_000).toISOString()
-  const recent = await get(`messages?room_id=eq.${RID}&select=player_id,created_at&order=created_at.desc&limit=8`)
-  if (recent.some((m: {player_id:string; created_at:string}) => COMPANIONS.includes(m.player_id) && m.created_at > declaredAt)) {
-    log(`cat ${categoryId}: host tab reacted — standing down`)
-    return
+  // The timestamp heuristic exists only for the unkeyed legacy browser bundle.
+  // Generic event ownership is daemon-only: a concurrent welcome or spotlight
+  // line must never be mistaken for this declaration's reaction.
+  if (narrativeMode === 'legacy_live_cast') {
+    const declaredAt = win.created_at ?? new Date(Date.now() - 60_000).toISOString()
+    const recent = await get(`messages?room_id=eq.${RID}&select=player_id,created_at&order=created_at.desc&limit=8`)
+    if (recent.some((m: {player_id:string; created_at:string}) => COMPANIONS.includes(m.player_id) && m.created_at > declaredAt)) {
+      log(`cat ${categoryId}: host tab reacted — standing down`)
+      return
+    }
   }
 
   const reactionKey = `event:${categoryId}:winner`
@@ -304,15 +339,31 @@ async function react(categoryId: number) {
 
   let completed = false
   try {
-    const players = await get(`players?room_id=eq.${RID}&select=*`)
-    const picks = await get(`draft_picks?room_id=eq.${RID}&select=*`)
-    const ents = await get(`draft_entities?show_pack_id=eq.${room.show_pack_id}&select=*`)
     const eventsSoFar = seen.size
-
-    const prompt = buildWinnerReactionPrompt(
-      cat, nominee, players, [nominee], [], picks, ents, [], undefined, undefined,
-      buildCategoryContext(cat.name, nominee.name), eventsSoFar,
-    )
+    const prompt = runtimeCast
+      ? buildRuntimeEventPrompt(
+          runtimeCast,
+          selectRuntimeEventCast(runtimeCast),
+          {
+            declarationTitle: cat.name,
+            outcomeName: nominee.name,
+            eventCount: eventsSoFar,
+          },
+        )
+      : buildWinnerReactionPrompt(
+          cat,
+          nominee,
+          await get(`players?room_id=eq.${RID}&select=*`),
+          [nominee],
+          [],
+          await get(`draft_picks?room_id=eq.${RID}&select=*`),
+          await get(`draft_entities?show_pack_id=eq.${room.show_pack_id}&select=*`),
+          [],
+          undefined,
+          undefined,
+          buildCategoryContext(cat.name, nominee.name),
+          eventsSoFar,
+        )
     const grounded = await groundedCompanionBatch({
       system: prompt.system,
       user: prompt.user,
@@ -320,7 +371,9 @@ async function react(categoryId: number) {
       model: 'claude-sonnet-5',
       maxTokens: 700,
       maxRetries: 2,
+      ...(runtimeCast ? { allowedCompanionIds: COMPANIONS } : {}),
       expectedCompanionIds: prompt.expectedCompanionIds,
+      expectedDelaySeconds: prompt.expectedDelaySeconds,
       caller: groundingCaller,
     })
     if (grounded.findings.length > 0) {
@@ -369,12 +422,17 @@ async function watchEvents() {
       for (const w of winners) {
         if (seen.has(w.category_id)) continue
         seen.add(w.category_id)
-        // grace: let a live host tab go first
+        // Only the legacy pack has a browser producer. A generic pack's daemon
+        // owns live voice projection and should not wait for an engine that is
+        // intentionally disabled.
+        const browserGraceMs = narrativeMode === 'legacy_live_cast' ? 45_000 : 0
         setTimeout(() => {
           void react(w.category_id)
             .catch((error) => log(`reaction failed: ${String(error).slice(0, 100)}`))
-        }, 45_000)
-        log(`new declaration cat ${w.category_id} — reacting in 45s unless host tab does`)
+        }, browserGraceMs)
+        log(narrativeMode === 'legacy_live_cast'
+          ? `new declaration cat ${w.category_id} — reacting in 45s unless host tab does`
+          : `new declaration cat ${w.category_id} — pack cast reacting now`)
       }
     } catch (e) { log(`transient: ${String(e).slice(0, 80)}`) }
   }
@@ -476,15 +534,26 @@ async function watchBingo() {
     }
     lastSquareReaction = Date.now()
     const spoken = await spokenCompanionIds()
-    if (spoken.length === 0) return
-    const who = spoken[Math.floor(Math.random() * spoken.length)]
+    const eligible = spoken.length > 0
+      ? spoken
+      : runtimeCast ? [runtimeCast.narrator.id] : []
+    if (eligible.length === 0) return
+    const who = eligible[Math.floor(Math.random() * eligible.length)]
     const reactionKey = buildBingoReactionKey(mark.id, 'reaction')
     let claimed = false
     let completed = false
     try {
       claimed = await claimChatReaction(reactionKey)
       if (!claimed) return
-      const prompt = buildBingoReactionPrompt(who, player.name, text, isLine ? 'line' : 'square')
+      const prompt = runtimeCast
+        ? buildRuntimeBingoPrompt(
+            runtimeCast,
+            runtimeVoiceById.get(who)!,
+            player.name,
+            text,
+            isLine ? 'line' : 'square',
+          )
+        : buildBingoReactionPrompt(who, player.name, text, isLine ? 'line' : 'square')
       const grounded = await groundedCompanionBatch({
         system: prompt.system,
         user: prompt.user,
@@ -492,7 +561,9 @@ async function watchBingo() {
         model: 'claude-sonnet-5',
         maxTokens: 400,
         maxRetries: 2,
+        ...(runtimeCast ? { allowedCompanionIds: COMPANIONS } : {}),
         expectedCompanionIds: prompt.expectedCompanionIds,
+        expectedDelaySeconds: prompt.expectedDelaySeconds,
         allowEmptyBatch: true,
         caller: groundingCaller,
       })
@@ -538,8 +609,8 @@ async function watchChat() {
   const seenMsgs = new Set<string>(
     (await get(`messages?room_id=eq.${RID}&select=id`)).map((m: { id: string }) => m.id),
   )
-  const players: { id: string; name: string }[] = await get(`players?room_id=eq.${RID}&select=id,name`)
-  const playerIds = new Set(players.map((p) => p.id))
+  let players: { id: string; name: string }[] = []
+  let playerIds = new Set<string>()
   const lastReply = new Map<string, number>()
   let lastAmbient = 0
   const recent: { player_id: string; text: string }[] = []
@@ -548,6 +619,8 @@ async function watchChat() {
   for (;;) {
     await new Promise((r) => setTimeout(r, 5_000))
     try {
+      players = await get(`players?room_id=eq.${RID}&select=id,name`)
+      playerIds = new Set(players.map((player) => player.id))
       const msgs = await get(`messages?room_id=eq.${RID}&select=id,player_id,text,created_at&order=created_at.desc&limit=12`)
       for (const m of [...msgs].reverse()) {
         if (seenMsgs.has(m.id)) continue
@@ -557,15 +630,18 @@ async function watchChat() {
         if (!playerIds.has(m.player_id)) continue // humans only
         const sender = players.find((p) => p.id === m.player_id)!
 
-        const mentioned = detectMentions(m.text)
+        const mentioned = runtimeCast
+          ? detectRuntimeVoiceMentions(m.text, runtimeCast)
+          : detectMentions(m.text)
         let target: string | null = null
         let kind: 'mention' | 'ambient' = 'mention'
         if (mentioned.length) {
           target = mentioned.find((id) => Date.now() - (lastReply.get(id) ?? 0) > 20_000) ?? null
-        } else {
+        } else if (!runtimeCast) {
           const trig = detectAmbientTrigger(m.text)
           if (trig && Date.now() - lastAmbient > 60_000 && shouldFireAmbient(trig)) {
-            target = trig.companions[Math.floor(Math.random() * trig.companions.length)]
+            const pool = trig.companions
+            target = pool[Math.floor(Math.random() * pool.length)]
             kind = 'ambient'
             lastAmbient = Date.now()
           }
@@ -584,10 +660,19 @@ async function watchChat() {
           claimed = await claimChatReaction(reactionKey)
           if (!claimed) continue
 
-          const prompt = buildChatReactivePrompt(
-            target, { messageId: m.id, playerName: sender.name, text: m.text },
-            recent as never, { leaderboard: [], announcedCount: seen.size }, kind,
-          )
+          const prompt = runtimeCast
+            ? buildRuntimeChatPrompt(
+                runtimeCast,
+                runtimeVoiceById.get(target)!,
+                { messageId: m.id, playerName: sender.name, text: m.text },
+                recent.slice(0, -1),
+                seen.size,
+                kind,
+              )
+            : buildChatReactivePrompt(
+                target, { messageId: m.id, playerName: sender.name, text: m.text },
+                recent as never, { leaderboard: [], announcedCount: seen.size }, kind,
+              )
           const grounded = await groundedCompanionBatch({
             system: prompt.system,
             user: prompt.user,
@@ -595,7 +680,9 @@ async function watchChat() {
             model: 'claude-haiku-4-5',
             maxTokens: 200,
             maxRetries: 1,
+            ...(runtimeCast ? { allowedCompanionIds: COMPANIONS } : {}),
             expectedCompanionIds: [target],
+            expectedDelaySeconds: prompt.expectedDelaySeconds,
             allowEmptyBatch: true,
             caller: groundingCaller,
           })

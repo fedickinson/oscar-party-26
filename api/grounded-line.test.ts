@@ -182,6 +182,63 @@ describe('canonical grounded companion batch', () => {
     expect(result.findings[0]).toMatchObject({ companion_id: 'batch' })
   })
 
+  it('accepts an exact pack-owned cast without admitting arbitrary speaker ids', async () => {
+    const result = await groundedCompanionBatch({
+      system: 'Return the pack cast.',
+      user: 'React to the bell.',
+      facts: ['The bell rang.'],
+      allowedCompanionIds: ['archivist', 'lamplighter'],
+      expectedCompanionIds: ['archivist', 'lamplighter'],
+      expectedDelaySeconds: [0, 6],
+      maxRetries: 0,
+      caller: async (request) => request.system.includes('strict factual auditor')
+        ? '{"violations":[]}'
+        : JSON.stringify({
+            messages: [
+              { companion_id: 'archivist', text: 'The bell rang.', delay_seconds: 0 },
+              { companion_id: 'lamplighter', text: 'At last.', delay_seconds: 6 },
+            ],
+          }),
+    })
+
+    expect(result.findings).toEqual([])
+    expect(result.messages.map((message) => message.companion_id))
+      .toEqual(['archivist', 'lamplighter'])
+
+    const rejected = await groundedCompanionBatch({
+      system: 'Return the pack cast.',
+      user: 'React to the bell.',
+      facts: ['The bell rang.'],
+      allowedCompanionIds: ['archivist'],
+      maxRetries: 0,
+      caller: async () => JSON.stringify({
+        messages: [{ companion_id: 'intruder', text: 'I arrived.', delay_seconds: 0 }],
+      }),
+    })
+    expect(rejected.messages).toEqual([])
+    expect(rejected.findings[0]).toMatchObject({ companion_id: 'batch' })
+  })
+
+  it('does not rewrite a pack-owned id through the legacy cast alias map', async () => {
+    const result = await groundedCompanionBatch({
+      system: 'Return the pack cast.',
+      user: 'React to the bell.',
+      facts: ['The bell rang.'],
+      allowedCompanionIds: ['queen'],
+      expectedCompanionIds: ['queen'],
+      expectedDelaySeconds: [0],
+      maxRetries: 0,
+      caller: async (request) => request.system.includes('strict factual auditor')
+        ? '{"violations":[]}'
+        : JSON.stringify({
+            messages: [{ companion_id: 'queen', text: 'The bell rang.', delay_seconds: 0 }],
+          }),
+    })
+
+    expect(result.findings).toEqual([])
+    expect(result.messages[0]?.companion_id).toBe('queen')
+  })
+
   it('blocks a valid ordered batch when it changes an authored exact cadence', async () => {
     const result = await groundedCompanionBatch({
       system: 'Return the show-start cast.',

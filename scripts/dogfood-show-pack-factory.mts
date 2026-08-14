@@ -211,6 +211,10 @@ async function main(): Promise<void> {
       && firstWorking.game_contract?.conviction_budget === 2
       && firstWorking.game_contract.identity.selection === 'none',
     'factory authors the selected Story contract before commentary')
+    check(firstWorking.commentary_voices[0].runtime?.slot === 'narrator',
+      'factory working pack retains authored runtime cast identity')
+    check(firstWorking.commentary_voices[0].runtime?.post_show?.farewell.order === 1,
+      'factory working pack retains authored post-show cadence')
     check(firstWorking.predictions[0].truth_authority === 'ai_proposal_human_confirmation'
       && firstWorking.signature_beats.every((beat) => beat.truth_authority === 'operator_declaration')
       && firstWorking.bingo_squares.every((square) => square.truth_authority === 'operator_declaration'),
@@ -250,6 +254,12 @@ async function main(): Promise<void> {
     check(parseShowPack(readFileSync(join(readyRun, 'compiled.json'), 'utf8'))
       .commentary_requests[0].publication.status === 'ready',
     'compiled artifact retains grounded ready commentary')
+    check(parseShowPack(readFileSync(join(readyRun, 'compiled.json'), 'utf8'))
+      .commentary_voices[0].runtime?.role === 'The Verdict',
+    'compiled artifact retains runtime cast identity')
+    check(parseShowPack(readFileSync(join(readyRun, 'compiled.json'), 'utf8'))
+      .commentary_voices[0].runtime?.post_show?.keepsake.instruction.includes('commitments'),
+    'compiled artifact retains the post-show keepsake voice contract')
 
     const drifted = structuredClone(ready)
     drifted.pack.title = 'A drifted pack title'

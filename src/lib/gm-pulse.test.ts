@@ -76,4 +76,28 @@ describe('deriveGmPulseReport', () => {
       'fact-2', 'fact-3', 'fact-4', 'fact-5', 'fact-6', 'fact-7',
     ])
   })
+
+  it('reports a room-pack voice as cast activity', () => {
+    const report = deriveGmPulseReport({
+      players: [],
+      messages: [message('cast', 'archivist', 'The record opens.', 1)],
+      cards: [],
+      marks: [],
+      castIds: ['archivist'],
+    })
+
+    expect(report.last_companion_at).toBe('2026-08-11T12:00:01.000Z')
+  })
+
+  it('ignores legacy cast activity when a generic room supplies its exact cast', () => {
+    const report = deriveGmPulseReport({
+      players: [],
+      messages: [message('legacy', 'cersei', 'Wrong room.', 1)],
+      cards: [],
+      marks: [],
+      castIds: ['archivist'],
+    })
+
+    expect(report.last_companion_at).toBeNull()
+  })
 })

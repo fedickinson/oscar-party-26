@@ -24,6 +24,7 @@ import { checkBingo, countBingos, FREE_CENTER_INDEX } from './bingo-utils'
 import { getCompanionById, isCompanionId } from '../data/ai-companions'
 import { companionImage, getLibraryImage } from '../data/image-library'
 import type { VerdictLineCandidate } from './companion-prompts'
+import type { RuntimeNarrativeVoice } from './runtime-narrative'
 import type { ScoredPlayer } from './scoring'
 import type { TimelinePoint } from '../types/timeline'
 import type {
@@ -198,8 +199,10 @@ function mentionsName(text: string, name: string): boolean {
 export function collectLineCandidates(
   messages: MessageRow[],
   players: PlayerRow[],
+  runtimeVoices: readonly RuntimeNarrativeVoice[] = [],
 ): Map<string, VerdictLineCandidate[]> {
   const playerNames = new Map(players.map((p) => [p.id, p.name]))
+  const runtimeVoiceNames = new Map(runtimeVoices.map((voice) => [voice.id, voice.name]))
   const out = new Map<string, VerdictLineCandidate[]>()
   for (const p of players) out.set(p.id, [])
 
@@ -209,6 +212,7 @@ export function collectLineCandidates(
     if (!text || m.player_id === 'system' || !SPEAKABLE.test(text)) continue
 
     const authorName = playerNames.get(m.player_id)
+      ?? runtimeVoiceNames.get(m.player_id)
       ?? (isCompanionId(m.player_id) ? getCompanionById(m.player_id)?.name ?? m.player_id : null)
     if (!authorName) continue
 

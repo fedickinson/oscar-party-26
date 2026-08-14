@@ -367,6 +367,198 @@ describe('parseShowPack', () => {
     expect(parsed.commentary_voices.map((voice) => voice.id)).toEqual(['daenerys'])
   })
 
+  it('accepts and compiles explicit runtime identity for a pack-owned voice', () => {
+    const pack = validPack()
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+    }
+
+    const compiled = compileShowPack(pack)
+
+    expect(compiled.commentary_voices[0].runtime).toEqual({
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+    })
+  })
+
+  it('accepts and compiles an explicit pack-owned post-show voice contract', () => {
+    const pack = validPack()
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator',
+      role: 'The Witness',
+      aliases: ['dragon queen'],
+      post_show: {
+        farewell: {
+          order: 1,
+          delay_seconds: 0,
+          instruction: 'Close the room with sincere precision.',
+        },
+        keepsake: {
+          instruction: 'Judge the player by the commitments they actually made.',
+        },
+      },
+    }
+
+    expect(compileShowPack(pack).commentary_voices[0].runtime?.post_show).toEqual({
+      farewell: {
+        order: 1,
+        delay_seconds: 0,
+        instruction: 'Close the room with sincere precision.',
+      },
+      keepsake: {
+        instruction: 'Judge the player by the commitments they actually made.',
+      },
+    })
+  })
+
+  it('rejects partial or non-canonical post-show voice contracts', () => {
+    const partial = validPack()
+    partial.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+      post_show: {
+        farewell: { order: 1, delay_seconds: 0, instruction: 'Close the room.' },
+        keepsake: { instruction: 'Judge the player.' },
+      },
+    }
+    partial.commentary_voices.push({
+      id: 'cersei', name: 'Cersei', instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Verdict', aliases: [] },
+    })
+    expect(() => compileShowPack(partial))
+      .toThrow('post-show metadata must be present on every runtime voice or none')
+
+    const badCadence = validPack()
+    badCadence.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+      post_show: {
+        farewell: { order: 2, delay_seconds: 4, instruction: 'Close the room.' },
+        keepsake: { instruction: 'Judge the player.' },
+      },
+    }
+    expect(() => compileShowPack(badCadence))
+      .toThrow('post-show farewell order must be contiguous from one')
+    expect(() => compileShowPack(badCadence))
+      .toThrow('post-show farewell delays must start at zero')
+  })
+
+  it('accepts and compiles pack-authored milestone cadence and identity-change voice', () => {
+    const pack = compileShowPack(validPack())
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['dragon queen'],
+    }
+    pack.runtime_ceremonies = {
+      milestones: [{
+        id: 'first-turn',
+        declared_event_count: 3,
+        voices: [{
+          voice_id: 'daenerys', delay_seconds: 0,
+          instruction: 'Name the exact checkpoint, then judge the standings.',
+        }],
+      }],
+      identity_change: {
+        voices: [{
+          voice_id: 'daenerys',
+          instruction: 'Judge the change as a public revision, not a private motive.',
+        }],
+      },
+    }
+
+    expect(compileShowPack(pack).runtime_ceremonies).toEqual(pack.runtime_ceremonies)
+  })
+
+  it('rejects ambiguous runtime ceremony thresholds, cadence, and voice references', () => {
+    const pack = compileShowPack(validPack()) as unknown as Record<string, any>
+    pack.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+    }
+    pack.runtime_ceremonies = {
+      milestones: [{
+        id: 'first-turn', declared_event_count: 3,
+        voices: [{ voice_id: 'missing-voice', delay_seconds: 2, instruction: 'Judge it.' }],
+      }],
+      identity_change: { voices: [] },
+    }
+
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime milestone first-turn first delay must be zero')
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime milestone first-turn references unknown runtime voice missing-voice')
+    expect(() => compileShowPack(pack as never))
+      .toThrow('runtime identity_change voices must contain one through seven entries')
+  })
+
+  it('rejects malformed runtime voice identity instead of guessing', () => {
+    const malformed = validPack() as unknown as {
+      commentary_voices: Array<Record<string, unknown>>
+    }
+    malformed.commentary_voices[0].runtime = {
+      slot: 'lead',
+      role: '',
+      aliases: ['Dragon Queen', 'Dragon Queen'],
+    }
+
+    expect(() => parseShowPack(JSON.stringify(malformed)))
+      .toThrow('commentary voice daenerys runtime slot is invalid')
+  })
+
+  it('rejects a partial or ambiguous runtime cast at authoring time', () => {
+    const partial = validPack()
+    partial.commentary_voices.push({
+      id: 'cersei',
+      name: 'Cersei',
+      instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Verdict', aliases: [] },
+    })
+    expect(() => compileShowPack(partial))
+      .toThrow('runtime cast metadata must be present on every commentary voice or none')
+
+    const ambiguous = validPack()
+    ambiguous.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['queen'],
+    }
+    ambiguous.commentary_voices.push({
+      id: 'cersei',
+      name: 'Cersei',
+      instruction: 'Judge the compromise.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'narrator', role: 'The Verdict', aliases: ['queen'] },
+    })
+    expect(() => compileShowPack(ambiguous))
+      .toThrow('runtime cast must define exactly one narrator')
+    expect(() => compileShowPack(ambiguous))
+      .toThrow('runtime mention terms queen and queen overlap across daenerys and cersei')
+
+    const nested = validPack()
+    nested.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: ['queen'],
+    }
+    nested.commentary_voices.push({
+      id: 'court-witness',
+      name: 'The Queen',
+      instruction: 'Judge old vows.',
+      attitude_claim_ids: [],
+      runtime: { slot: 'rotating', role: 'The Memory', aliases: [] },
+    })
+    expect(() => compileShowPack(nested))
+      .toThrow('runtime mention terms queen and the queen overlap')
+  })
+
+  it('rejects a runtime voice id owned by a synthetic message surface', () => {
+    const reserved = validPack()
+    reserved.commentary_voices[0].id = 'system'
+    reserved.commentary_voices[0].runtime = {
+      slot: 'narrator', role: 'The Witness', aliases: [],
+    }
+
+    expect(() => compileShowPack(reserved))
+      .toThrow('runtime voice system conflicts with a reserved message author')
+  })
+
   it('accepts the complete authoring contract', () => {
     expect(parseShowPack(JSON.stringify(validPack())).pack.id)
       .toBe('house-of-the-dragon-s3e8')

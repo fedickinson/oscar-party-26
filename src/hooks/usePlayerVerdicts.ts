@@ -13,6 +13,11 @@ import {
   assignVerdictAuthors,
   buildVerdictsPrompt,
 } from '../lib/companion-prompts'
+import { buildRuntimeVerdictsPrompt } from '../lib/runtime-narrative-prompts'
+import {
+  assignRuntimeKeepsakeAuthors,
+  type PackRuntimeNarrativeCast,
+} from '../lib/runtime-narrative'
 import { buildVerdictReactionKey } from '../lib/companion-reaction'
 import { collectLineCandidates } from '../lib/player-recap'
 import { fetchAllRows } from './fetch-all-rows'
@@ -35,6 +40,7 @@ interface Args {
   players: PlayerRow[]
   ready: boolean
   recordSource: 'live' | 'settled'
+  runtimeCast?: PackRuntimeNarrativeCast | null
 }
 
 export interface PlayerVerdictsState {
@@ -226,14 +232,29 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
         if (messageResult.error) throw messageResult.error
         const messages = messageResult.data ?? []
         const current = stateRef.current
-        const authors = assignVerdictAuthors(current.playerAwards.map((award) => award.playerId))
-        const candidates = collectLineCandidates(messages, current.players)
-        const prompt = buildVerdictsPrompt(
-          current.playerAwards,
-          current.leaderboard,
-          authors,
-          candidates,
+        const playerIds = current.playerAwards.map((award) => award.playerId)
+        const authors = current.runtimeCast?.postShow
+          ? assignRuntimeKeepsakeAuthors(playerIds, current.runtimeCast)
+          : assignVerdictAuthors(playerIds)
+        const candidates = collectLineCandidates(
+          messages,
+          current.players,
+          current.runtimeCast?.voices,
         )
+        const prompt = current.runtimeCast?.postShow
+          ? buildRuntimeVerdictsPrompt(
+              current.runtimeCast,
+              current.playerAwards,
+              current.leaderboard,
+              authors,
+              candidates,
+            )
+          : buildVerdictsPrompt(
+              current.playerAwards,
+              current.leaderboard,
+              authors,
+              candidates,
+            )
         const grounded = await groundedVerdictBatch({
           system: prompt.system,
           user: prompt.user,
@@ -266,13 +287,24 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
         if (grounded.verdicts.length !== prompt.slotContracts.length || !stillValid()) return 'done'
 
         const latest = stateRef.current
-        const latestAuthors = assignVerdictAuthors(latest.playerAwards.map((award) => award.playerId))
-        const latestPrompt = buildVerdictsPrompt(
-          latest.playerAwards,
-          latest.leaderboard,
-          latestAuthors,
-          candidates,
-        )
+        const latestPlayerIds = latest.playerAwards.map((award) => award.playerId)
+        const latestAuthors = latest.runtimeCast?.postShow
+          ? assignRuntimeKeepsakeAuthors(latestPlayerIds, latest.runtimeCast)
+          : assignVerdictAuthors(latestPlayerIds)
+        const latestPrompt = latest.runtimeCast?.postShow
+          ? buildRuntimeVerdictsPrompt(
+              latest.runtimeCast,
+              latest.playerAwards,
+              latest.leaderboard,
+              latestAuthors,
+              candidates,
+            )
+          : buildVerdictsPrompt(
+              latest.playerAwards,
+              latest.leaderboard,
+              latestAuthors,
+              candidates,
+            )
         if (JSON.stringify(latestPrompt.groundingFacts) !== JSON.stringify(prompt.groundingFacts) ||
           JSON.stringify(latestPrompt.slotContracts) !== JSON.stringify(prompt.slotContracts)) return 'done'
 
@@ -287,7 +319,10 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
           })),
           imagery: verdict.imagery,
         }))
-        const { data, error } = await supabase.rpc('complete_grounded_player_verdicts_authorized', {
+        const completionRpc = latest.runtimeCast?.postShow
+          ? 'complete_grounded_runtime_player_verdicts_authorized'
+          : 'complete_grounded_player_verdicts_authorized'
+        const { data, error } = await supabase.rpc(completionRpc, {
           p_room_id: roomId,
           p_actor_player_id: hostPlayerId,
           p_reaction_key: reactionKey,
@@ -346,6 +381,7 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
     options.ready,
     options.recordSource,
     options.playerAwards.length,
+    options.runtimeCast,
   ])
 
   return { verdicts, isGenerating }

@@ -22,6 +22,7 @@ import { getCompanionById } from '../../data/ai-companions'
 import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { PlayerVerdictRow } from '../../types/database'
 import type { PlayerRow } from '../../types/database'
+import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
 
 interface Props {
   playerAwards: PlayerAward[]
@@ -36,6 +37,7 @@ interface Props {
   isCopied?: boolean
   /** Room code. Present only where the per-player keepsake is linkable. */
   roomCode?: string
+  runtimeVoices?: RuntimeNarrativeVoice[]
 }
 
 const CHARACTER_AWARD_ICONS = {
@@ -79,6 +81,7 @@ export default function TheReckoning({
   onSharePlayerCard,
   isCopied,
   roomCode,
+  runtimeVoices = [],
 }: Props) {
   if (playerAwards.length === 0) return null
 
@@ -96,6 +99,9 @@ export default function TheReckoning({
         {playerAwards.map((award, i) => {
           const verdict = verdicts.get(award.playerId)
           const companion = verdict ? getCompanionById(verdict.companion_id) : null
+          const runtimeVoice = verdict
+            ? runtimeVoices.find((voice) => voice.id === verdict.companion_id)
+            : undefined
           const isMe = currentPlayerId === award.playerId
           const deviceId = houseDeviceId(avatarFor(award.playerId))
 
@@ -195,9 +201,13 @@ export default function TheReckoning({
                         {verdict.verdict}
                       </p>
                       <div className="flex items-center gap-1.5 mt-2">
-                        <CompanionAvatar companionId={verdict.companion_id} size="sm" />
+                        <CompanionAvatar
+                          companionId={verdict.companion_id}
+                          size="sm"
+                          voice={runtimeVoice}
+                        />
                         <span className="text-xs text-[var(--t-ink-muted)]">
-                          {companion?.name ?? verdict.companion_id}
+                          {runtimeVoice?.name ?? companion?.name ?? verdict.companion_id}
                         </span>
                       </div>
                     </div>

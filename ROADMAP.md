@@ -325,8 +325,14 @@ arbitrary one-night story event.
   speculative economies before another live test.
 - [x] Allow the show-pack factory to author and validate all required Story
   Night contract data.
-- [ ] Make every operator action and generated line consume the room-bound pack
-  and settled fact record.
+- [x] Make every operator action and generated line consume the room-bound pack
+  and settled fact record. The daemon's declared-fact, bingo and direct-chat
+  reactions and the browser's pre-show, show-start, spotlight and player-welcome
+  ceremonies now consume a complete authored pack cast. Pack-authored post-show
+  cadence and voice instructions likewise power provisional farewells and
+  keepsakes. Runtime milestones now consume authored thresholds, speakers,
+  instructions and exact stagger; live shared-identity changes consume the
+  revisioned pack-owned from/to record and authored response voice.
 - [x] Ensure one command can finish the live floor and the researched settlement
   command can truthfully close the room.
 - [x] Generate the complete settlement drop from the receipt, with no hand patch.
@@ -373,9 +379,11 @@ against an identity-draft room.
 
 For chosen faction, the immutable show pack's authored `entities[].group`
 values are the option catalog. Each seat writes to a distinct room-and-pack-bound
-selection ledger; options are shared, changeable only in the lobby, non-scoring
-and never ownership. The database requires every occupied seat to choose before
-convictions open and prevents an unselected late join after that transition.
+selection ledger; options are shared, non-scoring and never ownership. Initial
+choices and lobby revisions remain ceremony-silent; after convictions, choices
+freeze until the live room, where an exact change records its prior choice,
+monotonic revision, phase and timestamp. The database requires every occupied
+seat to choose before convictions open and prevents an unselected late join.
 This deliberately does not reuse the property-specific Black/Green allegiance
 columns.
 
@@ -427,18 +435,47 @@ command dogfoods, plus this second-property run, prove provisional close and
 researched closure as separate operator actions; receipt-to-ceremony compilation
 is likewise proven at the real command entry point.
 
-The remaining P2 boundary is narrower than its current roadmap wording: generated
-live companion surfaces still use the deployed legacy cast and prompt canon
-rather than a runtime voice projection from the room-bound compiled pack. Pack-
-authored grounded commentary is canonical in the factory, but the reusable live
-cast handoff has not yet replaced those compatibility producers.
+### P2 implementation ledger — pack-owned runtime and post-show voice, 2026-08-13
 
-That compatibility path now fails closed. Browser event, bingo, chat, milestone,
-farewell and keepsake generation plus the laptop companion daemon may invoke the
-deployed legacy cast only when the room is pinned to the exact legacy pack. A
-missing or different pack binding makes no model call and leaves ordinary human
-chat and game actions alone; new packs use their factory-authored grounded
-commentary until a reusable runtime voice projection is implemented.
+A complete runtime voice roster in the room-bound compiled pack now powers the
+daemon's declared-fact, bingo and direct-chat reactions and the browser's
+pre-show, show-start, spotlight and player-welcome ceremonies. Chat, recap and
+operator lenses resolve those authored identities without adding a new hard-coded
+property cast. Missing, partial or ambiguous runtime metadata fails closed before
+model work; the exact legacy pack retains its compatibility behavior.
+
+Post-show voice is a separate explicit opt-in within that runtime roster. Every
+voice must author a farewell order, exact delay, farewell instruction and
+keepsake instruction. Orders are contiguous, delays begin at zero and strictly
+increase, and a partial contract disables both generic surfaces. The grounded
+farewell uses the exact authored cadence. Keepsakes assign authors deterministically
+in that order and persist exact pack IDs through an atomic capability-gated
+command that revalidates the published room-bound contract. Generic keepsakes
+offer no legacy artwork: imagery stays empty until the pack format owns its own
+artwork catalog and selection rules.
+
+### P2 implementation ledger — milestone cadence and identity-change voice, 2026-08-13
+
+Schema-v4 packs may now opt into `runtime_ceremonies`. Each named milestone owns
+an increasing declared-event threshold and an exact ordered list of runtime
+voices, delays and expression-only instructions. Unknown voices, duplicate
+thresholds, nonzero first delays and ambiguous ordering fail publication. The
+authorized host browser projects the canonical event count and complete scored
+standings, then uses a durable pack-and-milestone reaction key so reloads and
+racing host tabs cannot duplicate the batch. Packs without an authored
+milestone contract remain silent; the exact legacy room retains its six/twelve
+compatibility cadence.
+
+The same opt-in may author the eligible voices and instruction for a shared
+identity change. A pack's existing entity groups remain the only vocabulary.
+The player-owned command now permits changes in the lobby or live room, rejects
+conviction and post-show phases, treats a repeated choice as an idempotent read,
+and records the latest transition's prior choice, revision, phase and time.
+Revision zero is the silent first selection; only a later revision recorded in
+`live` may produce ceremony. Voice selection is deterministic by player and
+revision, while separate durable announcement and reaction keys preserve exact
+replay ownership. Generic screens render the pack's real choices and the legacy
+Black/Green picker self-hides outside its pinned historical pack.
 
 **Exit criteria**
 

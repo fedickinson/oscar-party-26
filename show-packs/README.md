@@ -809,6 +809,77 @@ request's angle lane. Source-material claims are rejected from request angles,
 so the same attitude cannot enter twice. The canonical publisher constructs all four blocks rather
 than letting individual scripts assemble prompts differently.
 
+A voice may also opt into the live daemon through a `runtime` block with an
+explicit `slot` (`narrator` or `rotating`), display `role`, and lowercase mention
+`aliases`. Runtime projection is all-or-nothing: every voice in the pack must
+carry that block, exactly one must be the narrator, and names, IDs and aliases
+must be unambiguous across the cast. A complete projection powers grounded
+declared-fact, bingo and direct-chat reactions from the operator daemon, plus
+pre-show, show-start, spotlight and player-welcome ceremonies from the
+authorized host browser. A partial or ambiguous projection remains
+commentary-only and stops both engines before a model call.
+
+Schema-v4 packs may add a separate `runtime_ceremonies` contract:
+
+```json
+{
+  "runtime_ceremonies": {
+    "milestones": [{
+      "id": "first-turn",
+      "declared_event_count": 3,
+      "voices": [{
+        "voice_id": "archivist",
+        "delay_seconds": 0,
+        "instruction": "Name the checkpoint and judge only the recorded standings."
+      }]
+    }],
+    "identity_change": {
+      "voices": [{
+        "voice_id": "archivist",
+        "instruction": "Judge the public revision without inventing its motive."
+      }]
+    }
+  }
+}
+```
+
+Milestone thresholds and IDs are unique and strictly increasing in authored
+order. Each milestone's voices are unique, its first delay is zero and later
+delays strictly increase. Identity-change voices are unique. Every voice ID must
+belong to the complete runtime cast, and each instruction governs expression
+only; canonical event counts, standings and identity transitions come from the
+room database. Omitting either sub-contract keeps that surface silent.
+
+Post-show generation is a separate explicit opt-in on every runtime voice:
+
+```json
+{
+  "runtime": {
+    "slot": "narrator",
+    "role": "The room's exact closing role",
+    "aliases": ["archivist"],
+    "post_show": {
+      "farewell": {
+        "order": 1,
+        "delay_seconds": 0,
+        "instruction": "Close the room in this voice's authored manner."
+      },
+      "keepsake": {
+        "instruction": "Judge one player's night from the grounded game record."
+      }
+    }
+  }
+}
+```
+
+If one runtime voice supplies `post_show`, every runtime voice must supply it.
+Farewell orders must be contiguous from one. Delays are whole seconds from zero
+through ninety, start at zero and strictly increase in farewell order. A complete
+contract enables grounded provisional farewells and keepsakes using the exact
+authored voice IDs. Keepsake authors rotate deterministically in farewell order.
+Generic keepsake imagery is empty until the show-pack format defines its own
+artwork catalog; it never borrows the legacy property's assets.
+
 Plan a batch without calling a model or writing a working pack:
 
 ```text

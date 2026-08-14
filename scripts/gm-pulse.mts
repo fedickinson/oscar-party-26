@@ -13,6 +13,7 @@ import {
   type OperatorReviewQueueSignal,
 } from '../src/lib/operator-lens'
 import { createOperatorRoomReader } from './lib/operator-room-read.mts'
+import { LEGACY_SHOW_PACK_ID } from '../src/lib/catalog-scope'
 
 function roomCode(argv: string[]): string {
   if (argv.length === 0) return 'WDKH'
@@ -38,7 +39,15 @@ function queueLabel(signal: OperatorReviewQueueSignal, singular: string, plural:
 
 const observation = await reader.read(code)
 const { room, players, messages, cards, marks } = observation
-const report = deriveGmPulseReport({ players, messages, cards, marks })
+const report = deriveGmPulseReport({
+  players,
+  messages,
+  cards,
+  marks,
+  castIds: room.show_pack_id === LEGACY_SHOW_PACK_ID
+    ? undefined
+    : observation.runtime_cast_ids,
+})
 
 const groundingSignal = deriveOperatorReviewQueue(
   observation.grounding_queue.count, false, observation.grounding_queue.error,

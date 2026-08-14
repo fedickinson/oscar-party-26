@@ -29,9 +29,11 @@ import {
   signatureBeatWasHit,
 } from '../../lib/signature-beat-status'
 import Avatar from '../Avatar'
+import PackIdentityPicker from '../PackIdentityPicker'
 import TeamPicker from '../TeamPicker'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { ScoredPlayer } from '../../lib/scoring'
+import type { IdentityChoicesState } from '../../hooks/useIdentityChoices'
 import type {
   BeatActivationRow,
   CategoryRow,
@@ -58,6 +60,7 @@ interface Props {
   players: PlayerRow[]
   signatureBeats: SignatureBeatRow[]
   beatActivations: BeatActivationRow[]
+  identityChoices?: IdentityChoicesState
   onSwitchToBingo: () => void
 }
 
@@ -115,6 +118,7 @@ export default function MyPicksTab({
   players,
   signatureBeats,
   beatActivations,
+  identityChoices,
   onSwitchToBingo,
 }: Props) {
   const myConfidencePicks = confidencePicks
@@ -155,11 +159,36 @@ export default function MyPicksTab({
         return [{ beat, believers, hit, payout: Math.floor(beat.points / Math.max(1, believers)) }]
       })
       .sort((left, right) => Number(right.hit) - Number(left.hit) || right.payout - left.payout)
-    const identity = selectedDraftEntities.find((entity) => entity.type === 'film')
+    const draftedIdentity = selectedDraftEntities.find((entity) => entity.type === 'film')
+    const selectedIdentity = identityChoices?.selections
+      .find((selection) => selection.player_id === rosterPlayerId)?.choice_key
 
     return (
       <div className="flex flex-col gap-5 py-2">
-        <TeamPicker compact />
+        {identityChoices ? (
+          identityChoices.isLoading
+            ? <p className="py-3 text-center text-sm text-[var(--t-text-dim)]">Loading the authored banners…</p>
+            : identityChoices.syncError
+              ? (
+                  <button
+                    type="button"
+                    onClick={identityChoices.retrySync}
+                    className="min-h-11 rounded-xl border border-[var(--t-pending)] px-3 text-sm font-semibold text-[var(--t-pending)]"
+                  >
+                    Retry banner synchronization
+                  </button>
+                )
+              : (
+                  <PackIdentityPicker
+                    compact
+                    options={identityChoices.options}
+                    currentChoice={identityChoices.selections.find(
+                      (selection) => selection.player_id === currentPlayerId,
+                    )?.choice_key ?? null}
+                    onChoose={(choice) => identityChoices.choose(currentPlayerId, choice)}
+                  />
+                )
+        ) : <TeamPicker compact />}
         {myScore && rank > 0 && (
           <section className="relief-glass rounded-2xl border-l-4! border-l-[var(--t-personal-device)]! p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -195,7 +224,13 @@ export default function MyPicksTab({
               </button>
             ))}
           </div>
-          {identity && <p className="mb-3 text-sm text-[var(--t-text-muted)]">Banner: <span className="font-semibold text-[var(--t-text)]">{identity.name}</span></p>}
+          {(selectedIdentity || draftedIdentity) && (
+            <p className="mb-3 text-sm text-[var(--t-text-muted)]">
+              Banner: <span className="font-semibold text-[var(--t-text)]">
+                {selectedIdentity ?? draftedIdentity?.name}
+              </span>
+            </p>
+          )}
           <div className="space-y-2">
             {selectedBeliefs.map(({ beat, believers, hit, payout }) => (
               <article key={beat.id} className="relief-glass flex min-h-11 items-center gap-3 rounded-xl px-3 py-3">

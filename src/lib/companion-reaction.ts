@@ -64,6 +64,10 @@ export function buildPreShowArrivalReactionKey(companionId: string): string {
   return `ceremony:pre_show:${companion}`
 }
 
+export function buildRuntimePreShowArrivalReactionKey(voiceId: string): string {
+  return `ceremony:pre_show:${assertPart(voiceId, 'runtime voice id')}`
+}
+
 export function buildSpotlightReactionKey(
   spotlightRevision: number,
   kind: 'announcement' | 'reaction',
@@ -83,6 +87,21 @@ export function buildTeamChangeReactionKey(
     throw new Error('team revision must be a positive integer')
   }
   return `team:${assertPart(playerId, 'player id')}:${teamRevision}:${kind}`
+}
+
+export function buildRuntimeMilestoneReactionKey(milestoneId: string): string {
+  return `milestone:pack:${assertPart(milestoneId, 'runtime milestone id')}`
+}
+
+export function buildIdentityChangeReactionKey(
+  playerId: string,
+  revision: number,
+  kind: 'announcement' | 'reaction',
+): string {
+  if (!Number.isInteger(revision) || revision < 1) {
+    throw new Error('identity revision must be a positive integer')
+  }
+  return `identity:${assertPart(playerId, 'player id')}:${revision}:${kind}`
 }
 
 export function isMilestoneScoreboardReady(

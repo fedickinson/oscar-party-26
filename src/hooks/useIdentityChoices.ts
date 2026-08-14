@@ -11,7 +11,8 @@ export interface IdentityChoicesState {
   retrySync: () => void
 }
 
-/** Shared, lobby-only identity choices. Subscribe first, then hydrate. */
+/** Shared pack identity choices. The database admits only lobby or live writes.
+ * Subscribe first, then hydrate so a transition cannot fall between them. */
 export function useIdentityChoices(
   roomId: string | undefined,
   showPackId: string | undefined,

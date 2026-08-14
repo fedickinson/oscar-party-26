@@ -36,13 +36,15 @@ import { usePostShowCompanions } from '../hooks/usePostShowCompanions'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import PostCeremonyView from '../components/home/PostCeremonyView'
 import { Hallmark } from '../components/ui/Hallmarks'
-import { resolveRuntimeNarrativeMode } from '../lib/runtime-narrative'
+import { resolveBrowserRuntimeNarrativePolicy } from '../lib/runtime-narrative'
+import { useRuntimeNarrativeCast } from '../hooks/useRuntimeNarrativeCast'
 
 export default function Results() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
   const { capability: operatorCapability } = useOperatorAuthority()
+  const runtimeNarrative = useRuntimeNarrativeCast(room?.show_pack_id)
 
   const roomSync = useRoomSubscription(room?.id)
   const rosterSync = usePlayersSubscription(room?.id)
@@ -79,12 +81,15 @@ export default function Results() {
   }, [loading, player, navigate])
 
   const isHost = player?.is_host ?? false
-  const legacyLiveCastEnabled = resolveRuntimeNarrativeMode(room?.show_pack_id) === 'legacy_live_cast'
-  const browserGroundingAuthorized = legacyLiveCastEnabled && isHost && operatorCapability !== null
+  const browserNarrative = resolveBrowserRuntimeNarrativePolicy(
+    room?.show_pack_id,
+    runtimeNarrative.cast,
+  )
+  const postShowAuthorized = browserNarrative.postShow && isHost && operatorCapability !== null
   usePostShowCompanions({
     roomId: room?.id,
     hostPlayerId: room?.host_id,
-    isHost: browserGroundingAuthorized,
+    isHost: postShowAuthorized,
     operatorCapability,
     ready: !roomSync.isLoading && roomSync.syncError == null &&
       !rosterSync.isLoading && rosterSync.syncError == null &&
@@ -94,6 +99,10 @@ export default function Results() {
     players,
     categories: scores.categories,
     confidencePicks: scores.confidencePicks,
+    convictionPicks: scores.convictionPicks,
+    nominees: scores.nominees,
+    gameModel: room?.game_model ?? 'legacy_ensemble',
+    runtimeCast: runtimeNarrative.cast,
   })
 
   // Compute timeline data (memoized — only recomputes when scores data changes)
@@ -178,7 +187,7 @@ export default function Results() {
   const { verdicts } = usePlayerVerdicts({
     roomId: room?.id,
     hostPlayerId: player?.id,
-    isHost: browserGroundingAuthorized,
+    isHost: browserNarrative.keepsakes && isHost && operatorCapability !== null,
     operatorCapability,
     playerAwards: awards.playerAwards,
     leaderboard: scores.leaderboard,
@@ -187,11 +196,12 @@ export default function Results() {
       !rosterSync.isLoading && rosterSync.syncError == null &&
       !scores.isLoading && scores.recordError == null && scores.leaderboard.length > 0,
     recordSource: scores.recordSource,
+    runtimeCast: runtimeNarrative.cast,
   })
 
   const { shareResults, sharePlayerCard, isCopied } = useShareResults()
 
-  const { downloadRecap, isGenerating } = useRecap({
+  const { downloadRecap, isGenerating, isReady: recapReady } = useRecap({
     roomId: room?.id,
     roomCode: room?.code,
     leaderboard: scores.leaderboard,
@@ -205,6 +215,8 @@ export default function Results() {
     playerAwards: awards.playerAwards,
     characterAwards: awards.characterAwards,
     verdicts,
+    castIds: runtimeNarrative.cast?.voices.map((voice) => voice.id),
+    castIdentityReady: !runtimeNarrative.isLoading && runtimeNarrative.error == null,
   })
 
   if (loading || roomSync.isLoading || rosterSync.isLoading || scores.isLoading) {
@@ -398,7 +410,7 @@ export default function Results() {
       confidenceData={breakdowns.confidence}
       draftData={breakdowns.draft}
       gameModel={room.game_model ?? 'legacy_ensemble'}
-      onDownloadRecap={scores.recordSource === 'settled' ? downloadRecap : undefined}
+      onDownloadRecap={scores.recordSource === 'settled' && recapReady ? downloadRecap : undefined}
       isGeneratingRecap={isGenerating}
       onShareResults={scores.recordSource === 'settled'
         ? () => shareResults(scores.leaderboard, players, room.code)
@@ -410,6 +422,7 @@ export default function Results() {
       playerAwards={awards.playerAwards}
       characterAwards={awards.characterAwards}
       verdicts={verdicts}
+      runtimeVoices={runtimeNarrative.cast?.voices}
       currentPlayerId={player.id}
       roomCode={scores.recordSource === 'settled' ? room.code : undefined}
       onSharePlayerCard={scores.recordSource === 'settled'

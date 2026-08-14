@@ -281,6 +281,10 @@ export interface PlayerIdentitySelectionRow {
   room_id: string
   show_pack_id: string
   choice_key: string
+  previous_choice_key: string | null
+  revision: number
+  changed_in_phase: RoomPhase | null
+  changed_at: string | null
   selected_at: string
 }
 
@@ -289,6 +293,10 @@ export interface PlayerIdentitySelectionInsert {
   room_id: string
   show_pack_id: string
   choice_key: string
+  previous_choice_key?: string | null
+  revision?: number
+  changed_in_phase?: RoomPhase | null
+  changed_at?: string | null
   selected_at?: string
 }
 
@@ -760,8 +768,8 @@ export interface AvatarUpdate {
 export interface MessageRow {
   id: string
   room_id: string
-  // UUID for human players, or a companion id from data/ai-companions.ts for AI
-  // companions, or 'system' / 'winner-divider' / 'film-link' for synthetic rows.
+  // UUID for human players, or a room pack's authored commentary voice ID for
+  // cast messages, or 'system' / 'winner-divider' / 'film-link' for synthetic rows.
   // The FK was dropped in migration precisely to allow these non-UUID authors.
   player_id: string
   text: string

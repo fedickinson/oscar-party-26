@@ -18,11 +18,13 @@
  */
 
 import { AI_COMPANIONS, isCompanionId } from '../../data/ai-companions'
+import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
 type CompanionSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface Props {
   companionId: string
   size?: CompanionSize
+  voice?: RuntimeNarrativeVoice
 }
 
 // ─── Size map ─────────────────────────────────────────────────────────────────
@@ -65,8 +67,8 @@ const BRANDS: Record<string, CompanionBrand> = Object.fromEntries(
 // things to redraw the next time the cast changes; the initial plus the
 // character's own gradient is already unambiguous at every size we render.
 
-function Monogram({ id, px }: { id: string; px: number }) {
-  const letter = (AI_COMPANIONS.find((c) => c.id === id)?.name ?? '?').charAt(0)
+function Monogram({ id, px, name }: { id: string; px: number; name?: string }) {
+  const letter = (name ?? AI_COMPANIONS.find((c) => c.id === id)?.name ?? '?').charAt(0)
   return <Glyph char={letter} px={px} />
 }
 
@@ -96,14 +98,18 @@ function Glyph({ char, px }: { char: string; px: number }) {
   )
 }
 
-export default function CompanionAvatar({ companionId, size = 'md' }: Props) {
+export default function CompanionAvatar({ companionId, size = 'md', voice }: Props) {
   const px = SIZE_PX[size]
   // Icon container is 60% of circle diameter, centered
   const iconPx = Math.round(px * 0.6)
 
   const isKnown = isCompanionId(companionId)
-  const brand = isKnown ? BRANDS[companionId] : { gradientFrom: '#374151', gradientTo: '#1F2937' }
-  const icon = isKnown ? <Monogram id={companionId} px={px} /> : <FallbackIcon px={px} />
+  const brand = isKnown && !voice
+    ? BRANDS[companionId]
+    : { gradientFrom: 'var(--t-accent)', gradientTo: 'var(--t-ground-deep)' }
+  const icon = isKnown || voice
+    ? <Monogram id={companionId} px={px} name={voice?.name} />
+    : <FallbackIcon px={px} />
 
   // Unique gradient ID per companion + size to avoid SVG defs collisions when
   // multiple CompanionAvatars render simultaneously on the same page.
@@ -117,7 +123,7 @@ export default function CompanionAvatar({ companionId, size = 'md' }: Props) {
         borderRadius: '12px',
         flexShrink: 0,
         position: 'relative',
-        boxShadow: `0 0 0 1.5px ${brand.gradientFrom}33, 0 2px 8px ${brand.gradientFrom}22`,
+        boxShadow: `0 0 0 1.5px color-mix(in srgb, ${brand.gradientFrom} 20%, transparent), 0 2px 8px color-mix(in srgb, ${brand.gradientFrom} 13%, transparent)`,
         overflow: 'hidden',
       }}
     >
