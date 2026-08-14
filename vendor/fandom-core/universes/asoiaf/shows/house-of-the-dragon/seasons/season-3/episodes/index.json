@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "document_type": "episodes",
+  "records": [
+    {
+      "id": "house-of-the-dragon-s3e1",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 1,
+      "title": "Salt and Sea, Fire and Blood",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e2",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 2,
+      "title": "Queen's Landing",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e3",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 3,
+      "title": "Rhaenyra Triumphant",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e4",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 4,
+      "title": "Tumbleton",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e5",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 5,
+      "title": "Unbowed and Unbent",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e6",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 6,
+      "title": "Faceless Men",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e7",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 7,
+      "title": "The Dragon in Winter",
+      "knowledge_status": "screen_canon_recorded"
+    },
+    {
+      "id": "house-of-the-dragon-s3e8",
+      "season_id": "house-of-the-dragon-season-3",
+      "number": 8,
+      "title": null,
+      "knowledge_status": "possibilities_only"
+    }
+  ]
+}

@@ -1,0 +1,317 @@
+{
+  "schema_version": "1.0",
+  "document_type": "entities",
+  "records": [
+    {
+      "id": "sheepstealer",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Sheepstealer",
+      "rider_as_recorded": "Rhaena Targaryen (separated)",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Badly wounded in E7 after fighting Syrax, Seasmoke and Caraxes at once. Daemon deliberately let him escape. Alive, alone, injured.",
+      "audience_reaction": "THE BREAKOUT OF THE SEASON. 'Justice for Sheepstealer' is the dominant meme — viewers treat him as an innocent dragged into Targaryen nonsense who was 'minding his own business taking sheep'. Genuine sadness, not only jokes, about him being set on by three dragons. Widely admired for surviving 3-v-1. He is more sympathetic to the audience than his own rider.",
+      "dossier_claim_ids": [
+        "sheepstealer-screen-state",
+        "sheepstealer-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "sheepstealer"
+      }
+    },
+    {
+      "id": "sunfyre",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Sunfyre",
+      "rider_as_recorded": "Aegon II Targaryen",
+      "faction_id": "the-greens",
+      "status_at_cutoff": "Alive, severely scarred, returned in E7 and killed the Black soldiers confronting Aegon. The show does not explain how he survived.",
+      "audience_reaction": "ENORMOUSLY POPULAR. His return is the crowd-pleaser of the season — 'Sunfyre really saved the episode'. Viewers respond to the mirroring: scarred king, scarred dragon, both wrecked by the same war. Aegon calling him 'his boy' is widely quoted.",
+      "dossier_claim_ids": [
+        "sunfyre-screen-state",
+        "sunfyre-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "sunfyre"
+      }
+    },
+    {
+      "id": "vhagar",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Vhagar",
+      "rider_as_recorded": "Aemond Targaryen",
+      "faction_id": "the-greens",
+      "status_at_cutoff": "Alive. WHEREABOUTS UNKNOWN — deliberately left unclear since E5. Do not place her.",
+      "audience_reaction": "Her absence is one of the season's most-discussed open questions.",
+      "dossier_claim_ids": [
+        "vhagar-screen-state",
+        "vhagar-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "vhagar"
+      }
+    },
+    {
+      "id": "caraxes",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Caraxes",
+      "rider_as_recorded": "Daemon Targaryen",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Alive. Fought Sheepstealer in E7; Daemon chose not to finish him.",
+      "audience_reaction": "Respected. The choice not to kill Sheepstealer earned Daemon credit.",
+      "dossier_claim_ids": [
+        "caraxes-screen-state",
+        "caraxes-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "caraxes"
+      }
+    },
+    {
+      "id": "syrax",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Syrax",
+      "rider_as_recorded": "Rhaenyra Targaryen",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Alive. Took part in the Sheepstealer fight.",
+      "audience_reaction": "Neutral.",
+      "dossier_claim_ids": [
+        "syrax-screen-state",
+        "syrax-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "syrax"
+      }
+    },
+    {
+      "id": "seasmoke",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Seasmoke",
+      "rider_as_recorded": "Addam of Hull",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Alive. Took part in the Sheepstealer fight.",
+      "audience_reaction": "Positive, tied to goodwill toward Addam.",
+      "dossier_claim_ids": [
+        "seasmoke-screen-state",
+        "seasmoke-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "seasmoke"
+      }
+    },
+    {
+      "id": "vermithor",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Vermithor",
+      "rider_as_recorded": "Hugh Hammer",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Alive. The Bronze Fury, one of the largest living dragons — and the reason Hugh matters strategically.",
+      "audience_reaction": "Treated as a looming strategic factor rather than a personality.",
+      "dossier_claim_ids": [
+        "vermithor-screen-state",
+        "vermithor-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "vermithor"
+      }
+    },
+    {
+      "id": "silverwing",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Silverwing",
+      "rider_as_recorded": "Ulf the White",
+      "faction_id": "the-greens",
+      "status_at_cutoff": "Alive. Goes with Ulf to the Greens after his secret defection — Team Black does not know.",
+      "audience_reaction": "Discussed mostly as the asset Ulf is taking with him.",
+      "dossier_claim_ids": [
+        "silverwing-screen-state",
+        "silverwing-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "silverwing"
+      }
+    },
+    {
+      "id": "tessarion",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Tessarion",
+      "rider_as_recorded": "Daeron Targaryen",
+      "faction_id": "the-greens",
+      "status_at_cutoff": "Alive at Tumbleton. Used in the killing of Kat's brother Leo.",
+      "audience_reaction": "Well liked. Viewers respond to Daeron calling her 'his girl' — read as a genuine bond, set against Ormund's purely instrumental view of dragons.",
+      "dossier_claim_ids": [
+        "tessarion-screen-state",
+        "tessarion-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "tessarion"
+      }
+    },
+    {
+      "id": "dreamfyre",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Dreamfyre",
+      "rider_as_recorded": "Helaena Targaryen",
+      "faction_id": "neutral",
+      "status_at_cutoff": "Alive. Appeared in E7 only inside Helaena's VISION — she has not flown into combat.",
+      "audience_reaction": "Big excitement at finally seeing her; a wave of explainers and edits since E7.",
+      "dossier_claim_ids": [
+        "dreamfyre-screen-state",
+        "dreamfyre-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "dreamfyre"
+      }
+    },
+    {
+      "id": "moondancer",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Moondancer",
+      "rider_as_recorded": "Baela Targaryen",
+      "faction_id": "the-blacks",
+      "status_at_cutoff": "Alive.",
+      "audience_reaction": "Neutral to positive.",
+      "dossier_claim_ids": [
+        "moondancer-screen-state",
+        "moondancer-audience-reaction"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "authoring_entity_id": "moondancer"
+      }
+    },
+    {
+      "id": "vermax",
+      "work_id": "house-of-the-dragon",
+      "kind": "creature",
+      "species": "dragon",
+      "name": "Vermax",
+      "profile_scope": "deceased_reference",
+      "status_at_cutoff": "Dead",
+      "death": {
+        "season": 3,
+        "episode": 1,
+        "summary": "Jacaerys' dragon, struck down at the Gullet"
+      },
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      },
+      "origin": {
+        "repository": "https://github.com/fedickinson/oscar-party-26.git",
+        "path": "src/data/westeros-encyclopedia.ts",
+        "export": "theDead"
+      }
+    }
+  ]
+}

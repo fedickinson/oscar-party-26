@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "document_type": "seasons",
+  "records": [
+    {
+      "id": "house-of-the-dragon-season-3",
+      "work_id": "house-of-the-dragon",
+      "number": 3,
+      "description": "Knowledge currently covers screen canon through Episode 7 and possibilities for Episode 8."
+    }
+  ]
+}

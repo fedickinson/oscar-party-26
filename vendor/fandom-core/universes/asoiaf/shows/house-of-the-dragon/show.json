@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "document_type": "works",
+  "records": [
+    {
+      "id": "house-of-the-dragon",
+      "universe_id": "asoiaf",
+      "kind": "television_show",
+      "title": "House of the Dragon"
+    }
+  ]
+}

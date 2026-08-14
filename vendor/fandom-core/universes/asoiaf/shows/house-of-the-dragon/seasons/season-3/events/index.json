@@ -1,0 +1,822 @@
+{
+  "schema_version": "1.0",
+  "document_type": "events",
+  "records": [
+    {
+      "id": "house-of-the-dragon-s3e1-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 1,
+      "summary": "Rhaena bonds with Sheepstealer, which does not reliably obey her",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 2,
+      "summary": "The Battle of the Gullet against the Triarchy",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 3,
+      "summary": "Jace confines Rhaenyra at Dragonstone and flies into battle himself",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 4,
+      "summary": "Jacaerys and Vermax die; Sharako Lohar killed by Alyn; High Tide sacked",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 5,
+      "summary": "Corlys goes overboard, fate initially unknown",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-06",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 6,
+      "summary": "Aegon II and Larys captured while fleeing the capital",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e1-event-07",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e1",
+      "sequence": 7,
+      "summary": "Aemond kisses Alicent, who is visibly distressed",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 1,
+        "note": "This record first becomes visible in Season 3, Episode 1."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 1,
+      "summary": "Corlys found alive; Jace’s body returned to Rhaenyra",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 2,
+      "summary": "Aemond kills Simon Strong and his sons at Harrenhal and is badly wounded",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 3,
+      "summary": "Alys Rivers begins tending Aemond",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 4,
+      "summary": "Jasper Wylde attempts to assault Alicent; Orwyle intervenes",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 5,
+      "summary": "Alicent flips the city defences and Gold Cloaks; the Blacks take King's Landing",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e2-event-06",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e2",
+      "sequence": 6,
+      "summary": "Rhaenyra executes Otto Hightower and takes the Iron Throne",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 2,
+        "note": "This record first becomes visible in Season 3, Episode 2."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e3-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e3",
+      "sequence": 1,
+      "summary": "The treasury is empty; the capital faces food shortages",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 3,
+        "note": "This record first becomes visible in Season 3, Episode 3."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e3-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e3",
+      "sequence": 2,
+      "summary": "Corlys asks Rhaenyra to legitimise Addam and Alyn; she stalls",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 3,
+        "note": "This record first becomes visible in Season 3, Episode 3."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e3-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e3",
+      "sequence": 3,
+      "summary": "The High Septon resists her legitimacy; Rhaenyra hallucinates Jace",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 3,
+        "note": "This record first becomes visible in Season 3, Episode 3."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e3-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e3",
+      "sequence": 4,
+      "summary": "The rat banquet: she humiliates nobles hoarding food",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 3,
+        "note": "This record first becomes visible in Season 3, Episode 3."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e3-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e3",
+      "sequence": 5,
+      "summary": "Ormund seizes Tumbleton and fools Daemon with a fake Daeron",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 3,
+        "note": "This record first becomes visible in Season 3, Episode 3."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e4-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e4",
+      "sequence": 1,
+      "summary": "A Hightower soldier sexually assaults Kat; Ormund orders him maimed",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 4,
+        "note": "This record first becomes visible in Season 3, Episode 4."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e4-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e4",
+      "sequence": 2,
+      "summary": "Ormund forces Daeron to execute Kat’s brother Leo, using Tessarion",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 4,
+        "note": "This record first becomes visible in Season 3, Episode 4."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e4-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e4",
+      "sequence": 3,
+      "summary": "Daemon discovers Rhaena is Sheepstealer’s rider",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 4,
+        "note": "This record first becomes visible in Season 3, Episode 4."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e4-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e4",
+      "sequence": 4,
+      "summary": "Daemon murders and burns a shepherd to fake the rider’s corpse",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 4,
+        "note": "This record first becomes visible in Season 3, Episode 4."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 1,
+      "summary": "Tyland Lannister revealed alive and rejoins Aegon and Larys",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 2,
+      "summary": "Aegon commits to killing Aemond rather than Rhaenyra",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 3,
+      "summary": "Aemond kills men attempting to assault Alys",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 4,
+      "summary": "Vhagar is no longer at Aemond's side; whereabouts deliberately unclear",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 5,
+      "summary": "The Feast for Traitors: murdered Gold Cloaks staged around a table",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-06",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 6,
+      "summary": "Helaena revealed pregnant; refuses Alicent’s attempt to end it",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e5-event-07",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e5",
+      "sequence": 7,
+      "summary": "Alicent and Helaena try to flee; Mysaria catches them",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 5,
+        "note": "This record first becomes visible in Season 3, Episode 5."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 1,
+      "summary": "The Butcher's Ball annihilates Criston Cole's force",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 2,
+      "summary": "Criston Cole killed by three arrows from Alysanne Blackwood",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 3,
+      "summary": "Gwayne reaches Tumbleton; Daeron rejects Ormund’s puppet plan",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 4,
+      "summary": "Daemon humiliates Ulf for drinking against orders",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 5,
+      "summary": "Hugh visits Kat in Tumbleton; she refuses to leave",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-06",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 6,
+      "summary": "Alys shows Aemond a hidden clutch of dragon eggs",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-07",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 7,
+      "summary": "Bold Jon Roxton kidnaps Corlys for Ormund",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e6-event-08",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e6",
+      "sequence": 8,
+      "summary": "Alicent agrees to go to Harrenhal and kill Aemond to protect Helaena",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 6,
+        "note": "This record first becomes visible in Season 3, Episode 6."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-01",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 1,
+      "summary": "Rhaenyra discovers Rhaena is Sheepstealer’s rider",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-02",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 2,
+      "summary": "Sheepstealer fights Syrax, Seasmoke and Caraxes and is badly wounded",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-03",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 3,
+      "summary": "Rhaena returns to the capital; Daemon lets Sheepstealer escape",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-04",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 4,
+      "summary": "Sunfyre is alive and reunites with Aegon, killing the soldiers confronting him",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-05",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 5,
+      "summary": "Larys abandons Aegon and Tyland",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-06",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 6,
+      "summary": "Ormund sends Alyn one of Corlys’s fingers",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-07",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 7,
+      "summary": "Ulf agrees to defect to Ormund, with Silverwing",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-08",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 8,
+      "summary": "Aemond and Alys become sexual; he hallucinates Alicent during it",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-09",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 9,
+      "summary": "Alicent poisons Aemond with nightshade; he collapses, no death shown",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-10",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 10,
+      "summary": "Helaena’s vision shows Dreamfyre; Baela and Rhaena reconcile",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    },
+    {
+      "id": "house-of-the-dragon-s3e7-event-11",
+      "work_id": "house-of-the-dragon",
+      "episode_id": "house-of-the-dragon-s3e7",
+      "sequence": 11,
+      "summary": "Rhaenyra and Mysaria become intimate",
+      "canon_status": "screen",
+      "source_ids": [
+        "season-three-screen-record-through-episode-seven"
+      ],
+      "spoiler_scope": {
+        "work_id": "house-of-the-dragon",
+        "through_season": 3,
+        "through_episode": 7,
+        "note": "Verified screen knowledge ends with Season 3, Episode 7."
+      }
+    }
+  ]
+}

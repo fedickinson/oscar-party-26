@@ -28,6 +28,7 @@
 
 import { AI_COMPANIONS } from './ai-companions'
 import { PLAYER_AVATARS } from './avatar-config'
+import portraitDocument from '../../vendor/fandom-core/universes/asoiaf/shows/house-of-the-dragon/seasons/season-3/assets/portraits.json'
 
 export type ImageKind = 'companion' | 'sigil' | 'character' | 'dragon'
 
@@ -204,9 +205,23 @@ const DRAGON_IMAGES: LibraryImage[] = [
     path: '/avatars/characters/moondancer.jpeg' },
 ]
 
+const CORE_PORTRAIT_PATHS = new Map(
+  portraitDocument.records.map((portrait) => [
+    portrait.entity_id,
+    portrait.origin_path.replace(/^public/, ''),
+  ]),
+)
+
+function bindCorePortrait(image: LibraryImage): LibraryImage {
+  const entityId = image.slug.replace(/^character-/, '')
+  const path = CORE_PORTRAIT_PATHS.get(entityId)
+  if (!path) throw new Error(`Fandom Core snapshot has no portrait for ${entityId}`)
+  return { ...image, path }
+}
+
 export const IMAGE_LIBRARY: LibraryImage[] = [
-  ...CHARACTER_IMAGES,
-  ...DRAGON_IMAGES,
+  ...CHARACTER_IMAGES.map(bindCorePortrait),
+  ...DRAGON_IMAGES.map(bindCorePortrait),
   ...COMPANION_IMAGES,
   ...SIGIL_IMAGES,
 ]

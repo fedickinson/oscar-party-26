@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fedickinson/fandom-core/schemas/fandom-core.schema.json",
+  "title": "Fandom Core records",
+  "description": "Minimal product-neutral record definitions used by Fandom Core.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "spoiler_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["work_id", "through_season", "through_episode"],
+      "properties": {
+        "work_id": { "$ref": "#/$defs/id" },
+        "through_season": { "type": "integer", "minimum": 1 },
+        "through_episode": { "type": "integer", "minimum": 0 },
+        "note": { "type": "string" }
+      }
+    },
+    "universe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      }
+    },
+    "work": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "universe_id", "kind", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "universe_id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["television_show", "film", "book", "game", "other"] },
+        "title": { "type": "string", "minLength": 1 }
+      }
+    },
+    "season": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "number"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "number": { "type": "integer", "minimum": 1 },
+        "description": { "type": "string" }
+      }
+    },
+    "episode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "season_id", "number", "title", "knowledge_status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "season_id": { "$ref": "#/$defs/id" },
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": ["string", "null"] },
+        "knowledge_status": { "enum": ["screen_canon_recorded", "possibilities_only"] }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "required": ["id", "work_id", "kind", "name", "spoiler_scope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["character", "creature", "collective"] },
+        "name": { "type": "string", "minLength": 1 },
+        "faction_id": { "$ref": "#/$defs/id" },
+        "spoiler_scope": { "$ref": "#/$defs/spoiler_scope" }
+      }
+    },
+    "faction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "name", "kind"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["war_alignment", "house", "organization", "other"] },
+        "description": { "type": "string" }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "type", "subject_entity_id", "object_entity_id", "spoiler_scope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "type": { "type": "string", "minLength": 1 },
+        "subject_entity_id": { "$ref": "#/$defs/id" },
+        "object_entity_id": { "$ref": "#/$defs/id" },
+        "label_as_recorded": { "type": "string" },
+        "notes": { "type": "string", "minLength": 1 },
+        "spoiler_scope": { "$ref": "#/$defs/spoiler_scope" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "episode_id", "sequence", "summary", "canon_status", "source_ids", "spoiler_scope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "episode_id": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "canon_status": { "const": "screen" },
+        "source_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "minItems": 1 },
+        "entity_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "category": { "type": "string", "minLength": 1 },
+        "prevalence": { "type": "string", "minLength": 1 },
+        "spoiler_scope": { "$ref": "#/$defs/spoiler_scope" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "title", "locator"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["operator_record", "recap", "sentiment", "source_material", "other"] },
+        "title": { "type": "string", "minLength": 1 },
+        "locator": { "type": "string", "minLength": 1 },
+        "origin_repository": { "type": "string" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "canon", "status", "text", "source_ids", "spoiler_scope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "canon": { "enum": ["screen", "discourse", "source_material"] },
+        "status": { "enum": ["verified", "unverified", "unverifiable"] },
+        "text": { "type": "string", "minLength": 1 },
+        "source_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "minItems": 1 },
+        "entity_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "spoiler_scope": { "$ref": "#/$defs/spoiler_scope" }
+      }
+    },
+    "story_possibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "work_id", "target_episode_id", "title", "condition", "exclusions", "observation_policy", "likelihood", "entity_ids", "basis_claim_ids", "spoiler_scope", "origin"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "work_id": { "$ref": "#/$defs/id" },
+        "target_episode_id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "condition": { "type": "string", "minLength": 1 },
+        "exclusions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "observation_policy": { "type": "object" },
+        "likelihood": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["probability_pct", "tier"],
+          "properties": {
+            "probability_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "tier": { "enum": ["likely", "toss_up", "long_shot", "chaos"] }
+          }
+        },
+        "entity_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "minItems": 1, "uniqueItems": true },
+        "basis_claim_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "minItems": 1, "uniqueItems": true },
+        "title_review": { "type": "object" },
+        "spoiler_scope": { "$ref": "#/$defs/spoiler_scope" },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "path", "legacy_signature_beat_id"],
+          "properties": {
+            "repository": { "type": "string" },
+            "path": { "type": "string" },
+            "legacy_signature_beat_id": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "portrait_asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "entity_id", "path", "media_type", "sha256", "origin_repository", "origin_path", "source_status", "license_status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "entity_id": { "$ref": "#/$defs/id" },
+        "path": { "type": "string", "minLength": 1 },
+        "media_type": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "origin_repository": { "type": "string", "minLength": 1 },
+        "origin_path": { "type": "string", "minLength": 1 },
+        "source_status": { "enum": ["recorded", "unrecorded"] },
+        "license_status": { "enum": ["recorded", "unrecorded"] }
+      }
+    }
+  }
+}
