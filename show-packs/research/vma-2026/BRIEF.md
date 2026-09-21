@@ -256,6 +256,11 @@ interface against a real database, with the cross-phone half of 3 and 4 still re
 Realtime; 2 exercised except the timer skip; 6 and 7 not exercised (no model key here); 10
 still requires the Friday run with real Realtime and a real phone.
 
+Accepted trade: the create form offers the featured show's neutral avatar set, because a
+new room is born bound to the legacy pack by column default and the operator activates the
+VMA pack afterwards. A House of the Dragon room created from this build would therefore have a
+host with a neutral mark; the legacy party is over, so this is recorded rather than fixed.
+
 Left for a between-show day: the seconds-wide race between a join and the host starting the
 draft (proposed additive trigger); the top-confidence badge keyed to a literal 24; the legacy
 share card's noise layer rasterizing black in headless Chromium; identity reads inside two
