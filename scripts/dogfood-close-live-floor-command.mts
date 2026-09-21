@@ -3,13 +3,15 @@
  *
  * This reads one published category, creates disposable rooms, exercises the
  * capability-gated anonymous RPC and blocked direct phase writes, then removes every
- * room-owned row. It never writes catalog tables and refuses a remote target.
+ * room-owned row. The deterministic Results Night proof catalog it binds is
+ * retained between local runs; nothing else is. It refuses a remote target.
  *
  *   npx tsx scripts/dogfood-close-live-floor-command.mts
  */
 
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig } from './lib/env.mts'
+import { bindResultsNightDogfoodPack } from './lib/results-night-dogfood-pack.mts'
 
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 if (target !== 'local') throw new Error('close live floor dogfood is local-only')
@@ -28,6 +30,7 @@ const service = createClient(url, serviceKey, {
 type Room = {
   id: string
   show_pack_id: string
+  game_model: string
   phase: string
   active_spotlight_category_id: number | null
   spotlight_revision: number
@@ -64,15 +67,21 @@ function closeLiveFloor(roomId: string, actorPlayerId: string) {
   })
 }
 
-async function createRoom(label: string): Promise<{ room: Room; players: Player[] }> {
+async function createRoom(
+  label: string,
+  resultsNight = false,
+): Promise<{ room: Room; players: Player[] }> {
   const code = `${label}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
   const { data: room, error: roomError } = await service
     .from('rooms')
     .insert({ code, phase: 'lobby', host_id: null })
-    .select('id,show_pack_id,phase,active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
+    .select('id,show_pack_id,game_model,phase,active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
     .single()
   if (roomError) throw roomError
   roomIds.push(room.id)
+  // A scheduled ceremony room is produced by binding a Results Night pack. The
+  // room contract derives the runtime; game_model is not separately writable.
+  if (resultsNight) bindResultsNightDogfoodPack(code)
 
   const { data: players, error: playerError } = await service
     .from('players')
@@ -96,13 +105,13 @@ async function createRoom(label: string): Promise<{ room: Room; players: Player[
   const capability = (issuance as { capability?: string } | null)?.capability
   if (!capability) throw new Error('operator capability issuance returned no token')
   capabilityByRoomId.set(room.id, capability)
-  return { room: room as Room, players: players as Player[] }
+  return { room: await readRoom(room.id), players: players as Player[] }
 }
 
 async function readRoom(roomId: string): Promise<Room> {
   const { data, error } = await service
     .from('rooms')
-    .select('id,show_pack_id,phase,active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
+    .select('id,show_pack_id,game_model,phase,active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
     .eq('id', roomId)
     .single()
   if (error) throw error
@@ -128,8 +137,10 @@ async function loadCategory(showPackId: string): Promise<Category> {
 }
 
 try {
-  const { room, players } = await createRoom('CLF')
+  const { room, players } = await createRoom('CLF', true)
   check(room.phase === 'lobby', 'a disposable room begins before live play')
+  check(room.game_model === 'legacy_ensemble',
+    'the bound Results Night contract selects the scheduled ceremony runtime')
 
   const beforeLive = await closeLiveFloor(room.id, players[0].id)
   check(
@@ -137,11 +148,6 @@ try {
     'the host cannot close a room before live play',
   )
 
-  const { error: modelError } = await service
-    .from('rooms')
-    .update({ game_model: 'legacy_ensemble' })
-    .eq('id', room.id)
-  if (modelError) throw modelError
   await setLive(room.id)
 
   const legacy = await anon.rpc('close_live_floor', {

@@ -39,6 +39,7 @@ import { buildSettlementInputSnapshot } from '../src/lib/settlement-input'
 import { settlementCharacterPoints, settlementPlayerTotals } from '../src/lib/settlement-receipt'
 import { fetchAllRows } from '../src/hooks/fetch-all-rows'
 import { supabaseConfig } from './lib/env.mts'
+import { bindResultsNightDogfoodPack } from './lib/results-night-dogfood-pack.mts'
 
 // This script writes test facts and retains one immutable fixture, so it is
 // restricted to the local stack and refuses every remote target.
@@ -56,7 +57,21 @@ const dogfoodSupabase = createClient(URL_, KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 })
 
-const LEGACY_PREDICTION_COUNT = 20
+// The broad harness proves the Results Night chain: a scarcity draft, ranked
+// confidence stakes and per-outcome settlement. That runtime is selected by a
+// bound Results Night game contract, never by writing rooms.game_model, so the
+// disposable room binds its own deterministic proof catalog. The catalog is
+// sized for this harness: nine draftable entities fill exactly one three-player
+// film round and two person rounds, and a bingo card needs twenty-four squares.
+const RESULTS_NIGHT_PACK_SHAPE = {
+  packKey: 'results-night-e2e-dogfood-v1',
+  title: 'Results Night End-to-End Dogfood',
+  people: 6,
+  creatures: 3,
+  predictions: 20,
+  bingoSquares: 26,
+} as const
+const LEGACY_PREDICTION_COUNT = RESULTS_NIGHT_PACK_SHAPE.predictions
 const DOGFOOD_PACK_ID = 'd06f0000-0000-4000-8000-000000000001'
 const DOGFOOD_ENTITY_ID = 'd06f0000-0000-4000-8000-000000000002'
 const DOGFOOD_RIVAL_ENTITY_ID = 'd06f0000-0000-4000-8000-000000000007'
@@ -195,6 +210,15 @@ async function main() {
   check('new room is bound to the published show pack', typeof room.show_pack_id === 'string')
   check('the room-declared show pack selects the conviction model by default',
     room.game_model === 'conviction_portfolio')
+  bindResultsNightDogfoodPack(room.code, RESULTS_NIGHT_PACK_SHAPE)
+  const [boundRoom] = await db(
+    `rooms?id=eq.${room.id}&select=show_pack_id,game_model,game_contract`, {}, SERVICE_KEY)
+  check('binding a Results Night pack in the lobby selects the scheduled runtime',
+    boundRoom.game_model === 'legacy_ensemble' &&
+      boundRoom.game_contract?.commitment === 'confidence_allocation',
+    `${boundRoom.game_model} / ${boundRoom.game_contract?.commitment}`)
+  room.show_pack_id = boundRoom.show_pack_id
+  room.game_model = boundRoom.game_model
 
   const names = ['Franky', 'AP', 'Alec']
   const players: any[] = [createdHostSession.player]
@@ -270,7 +294,10 @@ async function main() {
   const entities: any[] = await db(`draft_entities?show_pack_id=eq.${room.show_pack_id}&select=*`)
   const dragons = entities.filter((e) => e.type === 'film')
   const chars = entities.filter((e) => e.type === 'person')
-  check('draft pool seeded', dragons.length === 11 && chars.length === 27, `${dragons.length} dragons / ${chars.length} characters`)
+  check('draft pool seeded',
+    dragons.length === RESULTS_NIGHT_PACK_SHAPE.creatures &&
+      chars.length === RESULTS_NIGHT_PACK_SHAPE.people,
+    `${dragons.length} dragons / ${chars.length} characters`)
 
   const draftOrder = players.map((candidate) => candidate.id)
   // This broad harness begins at the draft ledger; the focused phase-authority
@@ -278,11 +305,6 @@ async function main() {
   await db(`rooms?id=eq.${room.id}`, {
     method: 'PATCH',
     body: JSON.stringify({
-      // The broad harness proves the older confidence-and-ensemble scoring
-      // chain. The focused conviction dogfood proves the current Story Night
-      // model, so opt this disposable room into legacy while it is still in
-      // the lobby and the game-model guard permits that choice.
-      game_model: 'legacy_ensemble',
       phase: 'draft',
       draft_order: draftOrder,
       current_pick: 0,
@@ -1196,8 +1218,13 @@ async function main() {
 
   // ── 13. Room-bound show catalogs ──────────────────────────────────────────
   console.log('\n\x1b[1m13. Room-bound show catalogs\x1b[0m')
-  const triggerContract = (title: string, condition: string) => ({
+  const triggerContract = (
+    title: string,
+    condition: string,
+    truthAuthority = 'operator_declaration',
+  ) => ({
     title,
+    truth_authority: truthAuthority,
     condition,
     exclusions: ['A dialogue-only reference does not count.'],
     adjudication: {
@@ -1247,10 +1274,27 @@ async function main() {
   const witnessDecoyNomineeId = DOGFOOD_WITNESS_DECOY_NOMINEE_ID
   const auxiliaryEntityId = DOGFOOD_ENTITY_ID
   const witnessRivalEntityId = DOGFOOD_RIVAL_ENTITY_ID
+  // One pack, two truth authorities: the operator declares the isolated slate
+  // while the witness-only beat waits on a human-confirmed AI proposal.
   const witnessBeatContract = triggerContract(
     'Witness-only beat',
     'The auxiliary fighter completes the visible witness test on screen.',
+    'ai_proposal_human_confirmation',
   )
+  // The isolated fixture reaches the person sub-draft, so it declares the
+  // Results Night contract and lets the binding derive the runtime. Its
+  // compatibility fact_source deliberately still reads room-declared: the proof
+  // fails if fact_source ever regains authority over room behavior.
+  const auxiliaryGameContract = {
+    version: 1,
+    commitment: 'confidence_allocation',
+    conviction_budget: null,
+    identity: { selection: 'exclusive_entity_draft', scoring: 'ensemble' },
+    scarcity: { commitments: 'ranked_allocation', identity: 'exclusive' },
+    visibility: 'sealed_until_lock',
+    cadence: 'immediate_per_outcome',
+    continuity: 'no_carryover',
+  }
   const auxiliaryShowPack = {
     id: auxiliaryPackId,
     pack_key: 'dogfood-isolation-fixture',
@@ -1259,8 +1303,22 @@ async function main() {
     property: 'Dogfood',
     installment: 'Isolation proof',
     fact_source: 'room_declared',
+    game_contract: auxiliaryGameContract,
     manifest_sha256: 'c'.repeat(64),
-    compiled_bundle: { schema_version: 3, entities: auxiliaryPortraits },
+    compiled_bundle: {
+      schema_version: 4,
+      game_contract: auxiliaryGameContract,
+      entities: auxiliaryPortraits,
+      predictions: [{ id: 'isolated-category', truth_authority: 'operator_declaration' }],
+      signature_beats: [
+        { id: 'auxiliary-beat', truth_authority: 'operator_declaration' },
+        { id: 'witness-only-beat', truth_authority: 'ai_proposal_human_confirmation' },
+      ],
+      bingo_squares: Array.from({ length: 24 }, (_, index) => ({
+        id: `auxiliary-square-${index + 1}`,
+        truth_authority: 'operator_declaration',
+      })),
+    },
     status: 'draft',
     published_at: null,
   }
@@ -1545,9 +1603,13 @@ async function main() {
     {},
     SERVICE_KEY,
   )
+  const [boundAuxiliaryRoom] = await db(
+    `rooms?id=eq.${auxiliaryRoom.id}&select=show_pack_id,game_model`, {}, SERVICE_KEY)
   check('exact catalog attestation and room binding commit together',
     publishedPack.status === 'published' && publishedPack.published_at !== null &&
-      (await db(`rooms?id=eq.${auxiliaryRoom.id}&select=show_pack_id`, {}, SERVICE_KEY))[0].show_pack_id === auxiliaryPackId)
+      boundAuxiliaryRoom.show_pack_id === auxiliaryPackId)
+  check('a two-authority pack binds its own Results Night runtime',
+    boundAuxiliaryRoom.game_model === 'legacy_ensemble', boundAuxiliaryRoom.game_model)
 
   const [auxiliaryCategory] = await db(
     `categories?show_pack_id=eq.${auxiliaryPackId}&pack_key=eq.isolated-category&select=*`,
@@ -1776,9 +1838,6 @@ async function main() {
     method: 'PATCH',
     body: JSON.stringify({
       host_id: auxiliaryPlayer.id,
-      // Reach the person segment so this assertion exercises pack isolation,
-      // not conviction mode's intentional end after the identity-film round.
-      game_model: 'legacy_ensemble',
       phase: 'draft',
       draft_order: [auxiliaryPlayer.id],
       current_pick: 0,
