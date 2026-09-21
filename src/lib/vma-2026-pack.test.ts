@@ -219,9 +219,9 @@ describe('2026 VMA show pack', () => {
     }
   })
 
-  it('projects a complete four-voice runtime cast with post-show order', () => {
+  it('projects a complete five-voice runtime cast with post-show order', () => {
     const voices = authored.commentary_voices
-    expect(voices.map((voice) => voice.id)).toEqual(['tally', 'flare', 'archivum', 'glimmer'])
+    expect(voices.map((voice) => voice.id)).toEqual(['priya', 'jojo', 'dev', 'wren', 'sasha'])
     expect(voices.every((voice) => voice.runtime !== undefined)).toBe(true)
     expect(voices.filter((voice) => voice.runtime?.slot === 'narrator')).toHaveLength(1)
     expect(authored.commentary_requests).toHaveLength(0)
@@ -236,7 +236,7 @@ describe('2026 VMA show pack', () => {
     const farewells = voices
       .map((voice) => voice.runtime!.post_show!.farewell)
       .sort((left, right) => left.order - right.order)
-    expect(farewells.map((farewell) => farewell.order)).toEqual([1, 2, 3, 4])
+    expect(farewells.map((farewell) => farewell.order)).toEqual([1, 2, 3, 4, 5])
     expect(farewells[0].delay_seconds).toBe(0)
     for (let index = 1; index < farewells.length; index += 1) {
       expect(farewells[index].delay_seconds).toBeGreaterThan(farewells[index - 1].delay_seconds)
@@ -245,7 +245,7 @@ describe('2026 VMA show pack', () => {
     expect(milestones.map((milestone) => milestone.declared_event_count)).toEqual([5, 12])
     const runtimeIds = new Set(voices.map((voice) => voice.id))
     for (const milestone of milestones) {
-      expect(milestone.voices).toHaveLength(4)
+      expect(milestone.voices).toHaveLength(5)
       for (const speaker of milestone.voices) expect(runtimeIds.has(speaker.voice_id)).toBe(true)
     }
   })

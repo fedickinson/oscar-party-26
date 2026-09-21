@@ -26,12 +26,12 @@ settlement receipt, the public recap route and the settlement-drop ceremony.
 | D2 | Category slate | Every category MTV names an official winner for, including off-air and the four social categories. Tiered: marquee on-air categories high, genre and craft mid, social low. Off-air winners are declared by the host from MTV's official post at the end of the night. |
 | D3 | Truth authority | `official_result` on every prediction and signature beat. Bingo triggers also carry `official_result` as metadata; the runtime treats bingo as honor-system self-marks. |
 | D4 | Bingo | Live-show moments only, self-marked, 40 to 48 squares, probabilities authored against 2023 to 2025 VMA history. Host-adjudicated bingo is **not** built for this show (see section 8). |
-| D5 | Cast | Four original archetypes, no real people: a plain narrator who reads the record, an openly partisan stan, a critic who remembers every VMA moment since 1984, and one who cares only about outfits and crowd shots. Names are the operator's to choose. |
+| D5 | Cast | Five original fictional people posting to a live feed, no real person: Priya, The Desk (narrator, a fictional results-desk anchor); Jojo, The Superfan (seat 14R, openly partisan); Dev, The Insider (ex-label campaign strategist, explains the mechanism); Wren, The Rocker (frontwoman of a fictional touring band, watches as a musician, carries the long memory; the eliminated rock category is one grievance among many); Sasha, The Carpet (red carpet correspondent). First names only; the title is the prominent label. |
 | D6 | Group | Four to ten players, remote, possibly people the host half knows. |
 | D7 | Viewing | Async is the model. Host declares on the fastest feed. Chat will spoil slower feeds; the invite says so. Players who do not watch still receive full confidence and draft scoring and a recap; they forfeit bingo. |
 | D8 | Draft pricing | Set by simulation (see `SIMULATION.md`): marquee categories 3 draft points, every other category 2. The 8/6 placeholder let draft slot one win 42 percent of six-player nights; 3/2 gives 27 percent, and 31 percent with Taylor Swift absent, with draft at 8 percent of total score. Ranked confidence unchanged. |
 | D9 | Portraits | Generated abstract tiles per artist, committed under `public/`, so the portrait contract is met with nothing rights-encumbered. |
-| D10 | Signature beats | The minimum the activation gate requires, authored as official-result wagers (for example "wins three or more categories"), one to two per draftable entity. Not screen-witnessed events. |
+| D10 | Signature beats | The minimum the activation gate requires, authored as official-result wagers. On Results Night no player-facing surface activates or declares beats, so they are inert and unscored for this show; no player copy may mention beats or activation. Revisit when a Results Night beat surface exists. |
 
 ## 2. Acceptance criteria
 
