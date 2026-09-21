@@ -27,9 +27,10 @@ now: a Docker-free local database for the dogfoods and the activation apply, pho
 screenshots of every route that renders without a database, and an off-air winners declaration
 script so the post-show social dump is a reviewed list rather than fifteen taps at 11 p.m.
 
-**From the phone, now:** send the invite (checklist section 7) with the show time, the Saturday
-evening draft call, and "room link follows Friday". Confirm the draft time on the call is one
-where a present player can take the final pick.
+**From the phone, now:** post the invite (checklist section 7) wherever friends of friends see
+it, take RSVPs to a cap of ten, and send the join link only to those ten on the day. The draft
+is Sunday at 5:00 p.m. ET on a call, picks lock at 7:15; whoever is in the lobby at 5:00 is in
+the game. A present player must take the final pick, because the timer never skips it.
 
 **Friday (or the first day with the laptop), in order:** pull the branch; `supabase start` and
 `supabase db reset --local` (the first real execution of the keepsake migration); checklist
@@ -37,11 +38,12 @@ section 1 with a second phone, allow two hours; land the branch on main and depl
 production room from the phone; decide the keepsake migration (protected); activate the pack
 with `SUPABASE_TARGET=remote` (protected); issue the operator capability; send the room link.
 
-**Saturday:** draft night on a call; daemon and snapshot loop dry run against the real room.
+**Saturday:** a throwaway practice draft with two or three friends in a practice room; daemon
+and snapshot loop dry run against the real room.
 
-**If the laptop only returns Saturday:** rehearsal and production setup Saturday afternoon, draft
-Saturday night, and if that slips, draft Sunday at 6:30 p.m. ET, one hour before the show, with
-the timer on.
+**Sunday:** 5:00 p.m. ET draft on a call, picks by 7:15, lock, show at 7:30. If the laptop only
+returns Saturday, rehearsal and production setup happen Saturday afternoon and the practice
+draft shrinks; the Sunday plan does not move.
 
 ## 1. Decisions (locked)
 

@@ -570,7 +570,15 @@ every time, and Monday's settlement will have no keepsakes in it.
 
 ---
 
-## 3. Saturday: draft night
+## 3. Draft night: Sunday 5:00 p.m. ET, with a Saturday practice draft
+
+The real draft is Sunday at 5:00 p.m. ET on a call: ten players over four snake rounds is
+about forty minutes at the timer's pace, which lands the draft by 5:45 and leaves ninety
+minutes for everyone's picks before the 7:15 lock. One pregame event is easier for strangers
+to commit to than a Saturday session plus a Sunday show. The cost is recovery time, so run a
+throwaway practice draft on Saturday with two or three friends in a practice room; that is
+also the rehearsal your laptop timing forces onto Saturday. Whoever is in the lobby when you
+start the Sunday draft is in the game.
 
 The draft is a live, synchronous event even though the show is not. Put everyone on a call.
 Nothing in this section is a script; it is all the app.
@@ -597,7 +605,7 @@ Nothing in this section is a script; it is all the app.
    walks away, the draft stalls and there is no host button to force it. Before the draft
    starts, tell everyone the last pick belongs to a real person who has to tap it.
 7. **Confidence picks** open as soon as the draft completes. Players rank every category. They
-   can do this any time between Saturday and the Sunday lock — the picks are sealed until lock.
+   can do this any time between the draft and the 7:15 p.m. ET lock — the picks are sealed until lock.
 8. **A player who joins late or lost their phone: seat reclaim.** Entering the *exact* same
    name (case and surrounding spaces ignored) on the join form reclaims the existing seat with
    its original sigil. Two seats with the same exact name refuse automatic reclaim — the app
@@ -611,7 +619,7 @@ Nothing in this section is a script; it is all the app.
    - Do not run `ghost-screen`, any `dogfood-*` script, or `supabase db reset` against
      production. The dogfoods refuse remote targets, but a mis-set `SUPABASE_TARGET` is still
      the fastest way to ruin a real room.
-   - Do not rotate the operator capability after Saturday unless the bearer leaked. Rotation
+   - Do not rotate the operator capability after the practice draft unless the bearer leaked. Rotation
      bumps the room revision and disables the host's controls until the new link is opened.
    - Do not apply a migration. Not before the show, not during it.
 
@@ -1105,7 +1113,7 @@ Paste as is; fill in the three bracketed values.
 > **Join:** [your site link]/join/[CODE] — one tap, the code is already filled in; you just add
 > your name. Or open [your site link], tap Join Room and enter the code **[CODE]** by hand.
 >
-> **Saturday [time]:** draft night on a call. This is the one part we all have to do at the same
+> **Sunday 5:00 p.m. ET:** the draft, on a call. This is the one part we all have to do at the same
 > time — we draft artists in a timed snake draft, 45 seconds a pick, and the draft order is set
 > the moment we start, so be there. After the draft you rank your picks for all 23 categories
 > whenever you like. Picks lock Sunday at 7:15 p.m. ET; anything you have not filled in gets
@@ -1122,7 +1130,7 @@ Paste as is; fill in the three bracketed values.
 > and you get the full recap afterwards. The only thing you miss is bingo, which is self-marked
 > live and cannot be caught up.
 >
-> **About the chat characters:** four commentators will be talking in the chat all night. They
+> **About the chat characters:** five commentators will be talking in the chat all night. They
 > are fictional — invented voices, not real people and not impersonations of anyone.
 >
 > The real scores come the next day: I do a proper pass over the official results and send out a
