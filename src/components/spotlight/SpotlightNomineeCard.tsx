@@ -13,7 +13,7 @@
 
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import { useShowIdentity } from '../../hooks/useShowIdentity'
 import type { NomineeRow } from '../../types/database'
 

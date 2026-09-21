@@ -6198,7 +6198,8 @@
       "exclusions": [
         "An audience reaction shot of her does not count.",
         "A duet performed later in the show, outside the opening number, does not count.",
-        "A pre-taped appearance rather than an on-stage one does not count."
+        "A pre-taped appearance rather than an on-stage one does not count.",
+        "If the show does not open with Madonna's performance, this square does not count."
       ],
       "adjudication": {
         "proxies": "do_not_count",

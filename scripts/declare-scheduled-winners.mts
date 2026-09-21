@@ -93,7 +93,15 @@ function parseArgs(argv: string[]): Options {
     else if (argument === '--input') input = argv[++index] ?? ''
     else if (argument === '--apply') apply = true
     else if (argument === '--confirm-room') confirmRoom = (argv[++index] ?? '').trim().toUpperCase()
-    else if (argument === '--pause-seconds') pauseSeconds = Number(argv[++index] ?? '')
+    else if (argument === '--pause-seconds') {
+      // Number('') is 0, which would silently pass validation and remove the
+      // pacing; a missing value is refused before it can become a number.
+      const raw = argv[++index]
+      if (raw === undefined || raw.trim() === '') {
+        throw new Error('--pause-seconds requires a value (whole seconds, 0 to 600)')
+      }
+      pauseSeconds = Number(raw)
+    }
     else if (argument === '--help' || argument === '-h') throw new Error(usage())
     else throw new Error(`unknown argument ${argument}\n${usage()}`)
   }

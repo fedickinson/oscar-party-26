@@ -1,5 +1,5 @@
 /**
- * film-icons.tsx — maps houses, faction groups and dragons to heraldic icons.
+ * FilmIcon.tsx — maps houses, faction groups and dragons to heraldic icons.
  *
  * Usage:
  *   <FilmIcon filmName="The Blacks" size={16} className="text-accent" />
@@ -23,8 +23,8 @@
 import React from 'react'
 import type { ReactNode } from 'react'
 import { Music } from 'lucide-react'
-import { useShowIdentity } from '../hooks/useShowIdentity'
-import { titleIconKey, type TitleIconKey } from './title-icon-map'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { titleIconKey, type TitleIconKey } from '../../lib/title-icon-map'
 
 
 interface FilmIconProps {

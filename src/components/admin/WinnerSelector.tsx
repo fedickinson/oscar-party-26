@@ -28,13 +28,13 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, Check, User, X } from 'lucide-react'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import { supabase } from '../../lib/supabase'
 import { useGame } from '../../context/GameContext'
 import Avatar from '../Avatar'
 import type { NomineeRow, PlayerRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
-import { CategoryIcon } from '../../lib/category-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
 import { findDraftPointsForWinner } from '../../lib/scoring'
 
 const TIER_LABELS: Record<number, string> = {

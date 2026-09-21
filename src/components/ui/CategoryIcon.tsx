@@ -1,10 +1,10 @@
 /**
- * category-icons.tsx — renders the icon a category asks for.
+ * CategoryIcon.tsx — renders the icon a category asks for.
  *
  * Usage:
  *   <CategoryIcon categoryName={category.name} size={16} className="text-white/50" />
  *
- * The decision lives in `category-icon-map.ts`, which is pure and tested; this
+ * The decision lives in `src/lib/category-icon-map.ts`, which is pure and tested; this
  * file is the key → component table and the identity read. The original map is
  * keyed on Academy Award wording and falls back to a film strip, which is the
  * right answer for exactly one pack; every other pack resolves through the
@@ -51,9 +51,9 @@ import {
   Volume2,
   Wand2,
 } from 'lucide-react'
-import { OscarTrophy } from '../components/ui/Icons'
-import { useShowIdentity } from '../hooks/useShowIdentity'
-import { categoryIconKey, type CategoryIconKey } from './category-icon-map'
+import { OscarTrophy } from './Icons'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { categoryIconKey, type CategoryIconKey } from '../../lib/category-icon-map'
 
 interface CategoryIconProps {
   categoryName: string

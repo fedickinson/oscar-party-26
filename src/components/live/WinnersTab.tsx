@@ -35,8 +35,8 @@ import {
   User,
 } from 'lucide-react'
 import { useAdmin } from '../../hooks/useAdmin'
-import { CategoryIcon } from '../../lib/category-icons'
-import { FilmIcon } from '../../lib/film-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
+import { FilmIcon } from '../ui/FilmIcon'
 import {
   SCHEDULED_UNDO_HINT_WINDOW_MS,
   deriveLiveFloorCloseCard,

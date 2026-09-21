@@ -503,7 +503,8 @@ has already run the exact night once.
   a five-voice runtime cast. Search-summary grade pending round-two sources.
 - [ ] Perform the required source, canon, trigger-title, portrait and grounded
   prose reviews.
-- [ ] Activate the published pack in a local rehearsal room.
+- [x] Activate the published pack in a local rehearsal room. Done 2026-09-21 on
+  the sandbox stack (Docker-free, no Realtime) with a full attestation.
 - [ ] Rehearse with a host and at least one second client at 375 by 812.
 - [ ] Exercise missing players, incomplete portfolios, rapid declarations,
   mistaken declarations, blocked AI prose, host reload and room closure.

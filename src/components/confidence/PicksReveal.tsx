@@ -15,7 +15,7 @@
 
 import type { PlayerRow, ConfidencePickRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
-import { CategoryIcon } from '../../lib/category-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
 import { confidenceTierLabel } from '../../lib/show-identity'
 import { useShowIdentity } from '../../hooks/useShowIdentity'
 

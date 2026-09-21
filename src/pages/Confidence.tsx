@@ -329,6 +329,7 @@ export default function Confidence() {
                         onOpenPicker={() => setPickerCategoryId(category.id)}
                         index={i}
                         isLegacy={showIdentity.isLegacy}
+                        confidenceRange={confidenceRange}
                       />
                     ))}
                   </div>

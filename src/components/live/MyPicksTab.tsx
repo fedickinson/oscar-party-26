@@ -21,9 +21,9 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, Clock, ChevronRight, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CategoryIcon } from '../../lib/category-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
 import { resolveDraftEntityPortrait } from '../../lib/draft-portrait'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import {
   draftEntityHasHitSignatureBeat,
   signatureBeatWasHit,

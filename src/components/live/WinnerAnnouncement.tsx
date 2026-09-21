@@ -18,7 +18,7 @@ import { motion } from 'framer-motion'
 import { Medal, User } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { useShowIdentity } from '../../hooks/useShowIdentity'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import { Hallmark } from '../ui/Hallmarks'
 
 const DISMISS_MS = 8000

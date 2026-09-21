@@ -17,7 +17,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { PlayerRow, SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'

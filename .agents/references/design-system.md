@@ -55,8 +55,9 @@ intercepts taps.
 
 Every icon is an SVG from `lucide-react` (58 files import it) or a custom component in
 `src/components/ui/Icons.tsx`. No emoji in the UI, in code, in comments, or in commit messages.
-`src/lib/category-icons.tsx` and `src/lib/film-icons.tsx` map domain concepts to icons — extend
-those maps rather than inlining a one-off SVG.
+`src/components/ui/CategoryIcon.tsx` and `src/components/ui/FilmIcon.tsx` render domain concepts
+as icons from the pure maps in `src/lib/category-icon-map.ts` and `src/lib/title-icon-map.ts` —
+extend those maps rather than inlining a one-off SVG.
 
 ## Motion
 

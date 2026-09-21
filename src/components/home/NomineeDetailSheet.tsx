@@ -11,7 +11,7 @@
 import { motion } from 'framer-motion'
 import { X, Star, DollarSign, Clock } from 'lucide-react'
 import { filmEncyclopedia } from '../../data/film-encyclopedia'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import type { NomineeRow } from '../../types/database'
 
 interface Props {

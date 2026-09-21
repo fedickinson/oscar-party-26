@@ -10,7 +10,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { ScrollText, Trophy } from 'lucide-react'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import type { RecentResult } from '../../hooks/useScores'
 
 interface Props {

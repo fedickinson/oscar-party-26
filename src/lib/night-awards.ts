@@ -344,6 +344,7 @@ const TITLE_POOL: TitleCandidate[] = [
     strength: (p) => p.lateSurge * 1.5,
     blurb: () => 'Quiet for most of the episode, then took the back third apart.',
     stat: (p) => `${p.lateSurge} pts in the closing stretch`,
+    neutral: { blurb: () => 'Quiet for most of the show, then took the back third apart.' },
   },
   {
     id: 'held_the_line',
@@ -378,6 +379,9 @@ const TITLE_POOL: TitleCandidate[] = [
     strength: (p) => p.entry.correctPickCount * 7,
     blurb: (p) => `Called ${p.entry.correctPickCount} of them right. Read the episode better than it read itself.`,
     stat: (p) => `${p.entry.correctPickCount} correct predictions`,
+    neutral: {
+      blurb: (p) => `Called ${p.entry.correctPickCount} of them right. Read the show better than it read itself.`,
+    },
   },
   {
     id: 'bled_out',

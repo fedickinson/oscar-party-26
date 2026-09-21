@@ -20,7 +20,7 @@
 
 import { motion } from 'framer-motion'
 import { BadgeCheck } from 'lucide-react'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
