@@ -13,14 +13,15 @@
  * Then use --settle-retained and --cleanup-retained around mobile inspection.
  *
  *   npx tsx scripts/dogfood-story-night.mts
- *   npx tsx scripts/dogfood-story-night.mts --retain-provisional --fixture /private/tmp/story-night.json
- *   npx tsx scripts/dogfood-story-night.mts --settle-retained --fixture /private/tmp/story-night.json
- *   npx tsx scripts/dogfood-story-night.mts --cleanup-retained --fixture /private/tmp/story-night.json
+ *   npx tsx scripts/dogfood-story-night.mts --retain-provisional --fixture /tmp/story-night.json
+ *   npx tsx scripts/dogfood-story-night.mts --settle-retained --fixture /tmp/story-night.json
+ *   npx tsx scripts/dogfood-story-night.mts --cleanup-retained --fixture /tmp/story-night.json
  */
 
 import { spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createClient } from '@supabase/supabase-js'
 import { parseSettlementReceipt } from '../src/lib/settlement-receipt'
@@ -70,7 +71,7 @@ function option(name: string, fallback: string): string {
   return index >= 0 ? resolve(process.argv[index + 1] ?? fallback) : fallback
 }
 
-const fixturePath = option('--fixture', '/private/tmp/oscar-story-night-fixture.json')
+const fixturePath = option('--fixture', join(tmpdir(), 'oscar-story-night-fixture.json'))
 const retainProvisional = process.argv.includes('--retain-provisional')
 const settleRetained = process.argv.includes('--settle-retained')
 const cleanupRetained = process.argv.includes('--cleanup-retained')
@@ -426,8 +427,8 @@ async function createStoryNight(): Promise<Fixture> {
 
   const hostTotal = Math.floor(beats[0].points / 2)
   const guestTotal = hostTotal + beats[1].points
-  const manifestPath = `/private/tmp/${code}-story-night-manifest.json`
-  const receiptPath = `/private/tmp/${code}-story-night-receipt.json`
+  const manifestPath = join(tmpdir(), `${code}-story-night-manifest.json`)
+  const receiptPath = join(tmpdir(), `${code}-story-night-receipt.json`)
   const manifest = {
     version: 1,
     title: 'Two-player Story Night proof',

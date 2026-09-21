@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { compileShowPack, parseShowPack } from '../../src/lib/show-pack'
@@ -8,7 +9,7 @@ const repoRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 
 /** Bind the shared deterministic Results Night proof pack to one local lobby. */
 export function bindResultsNightDogfoodPack(roomCode: string): void {
-  const workspace = mkdtempSync('/private/tmp/results-night-dogfood-')
+  const workspace = mkdtempSync(join(tmpdir(), 'results-night-dogfood-'))
   try {
     const pack = compileShowPack(parseShowPack(readFileSync(
       join(repoRoot, 'show-packs/examples/hotd-s3e8-proof.json'),

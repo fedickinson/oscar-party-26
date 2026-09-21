@@ -255,6 +255,9 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
               authors,
               candidates,
             )
+        // A pack room's keepsakes are written by its own projected post-show
+        // voices, so the allowlist is that cast and nothing wider. Without a
+        // pack cast the guard keeps its legacy seven-id default.
         const grounded = await groundedVerdictBatch({
           system: prompt.system,
           user: prompt.user,
@@ -263,6 +266,9 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
           model: 'claude-sonnet-5',
           maxTokens: 3000,
           maxRetries: 2,
+          allowedCompanionIds: current.runtimeCast?.postShow
+            ? current.runtimeCast.postShow.voices.map((voice) => voice.id)
+            : undefined,
           caller: callClaude,
         })
         if (grounded.findings.length > 0) {

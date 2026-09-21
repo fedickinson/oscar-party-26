@@ -367,4 +367,66 @@ describe('canonical grounded keepsake verdict batch', () => {
       expect(result.findings[0]).toMatchObject({ companion_id: 'batch' })
     }
   })
+
+  it('accepts a pack runtime voice only inside the caller-supplied keepsake cast', async () => {
+    const packContracts = [{
+      slot: 1,
+      playerId: 'player-1',
+      companionId: 'archivist',
+      allowedMessageIds: ['message-1'],
+      allowedImageSlugs: [],
+    }]
+    const packOptions = {
+      system: 'Return verdict JSON.',
+      user: 'Write the keepsake.',
+      facts: ['GAME RECORD: the player finished first with fourteen points.'],
+      contracts: packContracts,
+      maxRetries: 0,
+      caller: (async (request) => request.system.includes('strict factual auditor')
+        ? '{"violations":[]}'
+        : JSON.stringify({
+            verdicts: [{
+              slot: 1,
+              title: 'Held the Line',
+              text: 'You held first place with fourteen points.',
+              highlights: [],
+              imagery: [],
+            }],
+          })) as GroundingModelCaller,
+    }
+
+    // The restrictive default still owns the legacy cast.
+    await expect(groundedVerdictBatch(packOptions)).rejects.toThrow(
+      'verdict grounding contracts must define one through seven ordered slots',
+    )
+    // A voice outside the room's projected cast stays rejected.
+    await expect(groundedVerdictBatch({
+      ...packOptions,
+      allowedCompanionIds: ['narrator', 'stylist'],
+    })).rejects.toThrow('verdict grounding contracts must define one through seven ordered slots')
+
+    const result = await groundedVerdictBatch({
+      ...packOptions,
+      allowedCompanionIds: ['narrator', 'archivist', 'stylist'],
+    })
+    expect(result).toMatchObject({ attempts: 1, findings: [] })
+    expect(result.verdicts[0].title).toBe('Held the Line')
+    expect(result.attemptedMessages[0].companion_id).toBe('archivist')
+  })
+
+  it('rejects a keepsake allowlist that is not one to seven unique slug ids', async () => {
+    const options = {
+      system: 'Return verdict JSON.',
+      user: 'Write the keepsake.',
+      facts: ['GAME RECORD: the player finished first.'],
+      contracts,
+      maxRetries: 0,
+      caller: (async () => '{"verdicts":[]}') as GroundingModelCaller,
+    }
+    const invalid = [[], ['a', 'a'], ['Archivist'], ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']]
+    for (const allowedCompanionIds of invalid) {
+      await expect(groundedVerdictBatch({ ...options, allowedCompanionIds }))
+        .rejects.toThrow('allowed keepsake voice ids must name one to seven unique slug ids')
+    }
+  })
 })

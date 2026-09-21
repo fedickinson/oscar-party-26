@@ -232,14 +232,17 @@ function strictVerdictEnvelope(raw: string): boolean {
   }
 }
 
-function validVerdictContracts(contracts: VerdictSlotContract[]): boolean {
+function validVerdictContracts(
+  contracts: VerdictSlotContract[],
+  allowedCompanionIds: ReadonlySet<string>,
+): boolean {
   return contracts.length >= 1 &&
     contracts.length <= 7 &&
     new Set(contracts.map((contract) => contract.playerId)).size === contracts.length &&
     contracts.every((contract, index) =>
       contract.slot === index + 1 &&
       contract.playerId.trim().length > 0 && contract.playerId.length <= 100 &&
-      COMPANION_IDS.has(contract.companionId) &&
+      allowedCompanionIds.has(contract.companionId) &&
       new Set(contract.allowedMessageIds).size === contract.allowedMessageIds.length &&
       contract.allowedMessageIds.every((id) => id.trim().length > 0 && id.length <= 100) &&
       new Set(contract.allowedImageSlugs).size === contract.allowedImageSlugs.length &&
@@ -301,6 +304,13 @@ export async function groundedVerdictBatch(opts: {
   model?: GroundingModelRequest['model']
   maxTokens?: number
   maxRetries?: number
+  /**
+   * The voice ids a contract may name. Omitted, it stays the legacy seven-id
+   * cast, so an older bundle that never sends the field keeps the restrictive
+   * default. A pack caller supplies its room's projected runtime keepsake cast;
+   * any id outside the supplied set is still rejected.
+   */
+  allowedCompanionIds?: string[]
   caller: GroundingModelCaller
 }): Promise<GroundedVerdictBatchResult> {
   const {
@@ -311,6 +321,7 @@ export async function groundedVerdictBatch(opts: {
     model = 'claude-sonnet-5',
     maxTokens = 2000,
     maxRetries = 2,
+    allowedCompanionIds,
     caller,
   } = opts
   if (!system.trim()) throw new Error('verdict grounding system prompt is required')
@@ -321,7 +332,13 @@ export async function groundedVerdictBatch(opts: {
   if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 2) {
     throw new Error('verdict grounding maxRetries must be an integer from 0 through 2')
   }
-  if (!validVerdictContracts(contracts)) {
+  const allowedIds = allowedCompanionIds ?? [...COMPANION_IDS]
+  if (allowedIds.length < 1 || allowedIds.length > 7 ||
+    new Set(allowedIds).size !== allowedIds.length ||
+    allowedIds.some((companionId) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(companionId))) {
+    throw new Error('allowed keepsake voice ids must name one to seven unique slug ids')
+  }
+  if (!validVerdictContracts(contracts, new Set(allowedIds))) {
     throw new Error('verdict grounding contracts must define one through seven ordered slots')
   }
   const normalizedFacts = normalizeGroundingFacts(facts)
