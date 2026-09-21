@@ -222,6 +222,46 @@ Local stack, activated pack, host phone plus one second client at 375 by 812:
 
 Record what was run and what was not in the `verify-change` ledger.
 
+## 7b. Sandbox rehearsal findings, September 21
+
+With no laptop until Friday, the rehearsal ran in the sandbox: a Docker-free Postgres 16 plus
+PostgREST stack with a Realtime stand-in that reaches SUBSCRIBED but never delivers database
+events, so every cross-phone step was a reload. All 65 migrations plus the keepsake migration
+applied cleanly; the VMA pack activated into a local room with a full attestation; the broad
+backend suite passes 145 of 145 checks after its fixtures were moved onto Results Night pack
+bindings; the draft, companion-claims, scheduled-winner, settlement, operator-capability and
+room-phase suites pass. Two suites still stop at their Realtime broadcast assertion.
+
+Walked at 375 by 812 as host and guest through the real interface: landing, join link,
+create, lobby, ready-up, draft, confidence picks and lock, every live tab, spotlight,
+declaration, two-tap undo, close with unresolved categories, provisional results, settlement,
+the public recap and both share cards. Found and fixed on the branch:
+
+- a reloaded or late-joining phone never rendered an open spotlight;
+- the undo button was nested inside the category row button, so a second tap could miss;
+- the Scores feed was filled only by Realtime events and read empty after a reload;
+- the confidence route rendered the Story Night activation screen; the floor could not close
+  with an unresolved category; undo was limited to thirty seconds after an admin-path set;
+- every draft card said "choose 3 of 0" and "up to 0 pts"; bingo tiles clipped mid-word and
+  the two denominators disagreed; the Home tab opened scrolled under the chat;
+- legacy theme leaking into a VMA room: Targaryen sigils as avatars labelled for the Blacks
+  and Greens, faction-tinted colour scheme, dragon hallmarks, film-strip category icons,
+  heraldic shields before song titles, "Roll of Honour" and "Reckoning", Oscars tier names,
+  house heraldry on the share cards, the explainer's pause-the-episode ritual;
+- the ceremony compiler's fallback avatar, sheet close button, bingo label size and sliced
+  reference chips.
+
+Acceptance criteria status after the sandbox: 1, 3, 4, 5, 8 and 9 exercised through the real
+interface against a real database, with the cross-phone half of 3 and 4 still resting on
+Realtime; 2 exercised except the timer skip; 6 and 7 not exercised (no model key here); 10
+still requires the Friday run with real Realtime and a real phone.
+
+Left for a between-show day: the seconds-wide race between a join and the host starting the
+draft (proposed additive trigger); the top-confidence badge keyed to a literal 24; the legacy
+share card's noise layer rasterizing black in headless Chromium; identity reads inside two
+icon modules under `src/lib`; public routes resolving the viewer's identity for the loading
+screen.
+
 ## 8. Deferred (recorded, not forgotten)
 
 - **Host-adjudicated bingo.** The Oscars build had pending marks with host approval; the
