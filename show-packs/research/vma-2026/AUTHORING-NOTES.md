@@ -218,6 +218,23 @@ next to a screen claim, never alone. `likelihood_tier` is derived exactly from
 
 Tier mix: **18 likely, 24 toss_up, 15 long_shot, 7 chaos**. Mean pool probability **44.5**.
 
+A square's `title` is its tile label and nothing else: activation copies it into
+`bingo_squares.short_text`, which is the only text the 5x5 grid renders, while the full
+`condition` is read on tap. A tile is three 11px lines in a 60px cell over a 51.6px text box
+- roughly 22 to 27 characters, and the legacy pack's longest label is 22 - so **every `title`
+is authored to at most 26 characters**, asserted in `src/lib/vma-2026-pack.test.ts`. The
+first pass ran to 43 ("The Vanguard Segment Includes A Performance") and came back from the
+phone truncated with an ellipsis; 48 of the 64 labels were rewritten, preferring three short
+words to abbreviations. The 26-character ceiling is necessary but not sufficient - measured
+in the browser at 375x812, a label only fits when its words also pack into three lines of
+about nine characters, so five-word labels at 25 characters still clipped and were cut to
+three or four words. Measured after the rewrite: 0 of 64 clipped, against 1 of 75 in the
+legacy pool. Only the label changed: ids, conditions, exclusions, probabilities and
+`title_review` notes are untouched, so every table in this file still names the same squares,
+and the two wording-pinned squares keep their on-broadcast reading
+(`an-absent-artist-wins-on-air` as "Absent Winner On Air", `one-artist-wins-three-on-air` as
+"One Act, Three On Air").
+
 #### Why the pool was re-authored from 46 squares to 64
 
 The first pass read the activation gate ("at least 24 squares, every tier deep enough to deal

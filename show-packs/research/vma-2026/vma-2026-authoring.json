@@ -4399,7 +4399,7 @@
     },
     {
       "id": "a-winner-says-the-fandom-name",
-      "title": "A Winner Says The Fandom Name",
+      "title": "A Winner Names A Fandom",
       "truth_authority": "official_result",
       "condition": "A winner says a fandom nickname out loud on the live telecast, for example Swifties or ARMY or BLINKs, rather than only saying 'my fans'.",
       "exclusions": [
@@ -4429,7 +4429,7 @@
     },
     {
       "id": "a-speech-gets-played-off",
-      "title": "A Speech Gets Played Off",
+      "title": "Music Under A Speech",
       "truth_authority": "official_result",
       "condition": "Play-off music starts under an acceptance speech while the winner is still talking on the live telecast.",
       "exclusions": [
@@ -4461,7 +4461,7 @@
     },
     {
       "id": "an-absent-winner-accepts-by-proxy",
-      "title": "An Absent Winner Accepts By Proxy",
+      "title": "Winner Accepts By Proxy",
       "truth_authority": "official_result",
       "condition": "An award is accepted on the live telecast by video message, or by someone accepting on the winner's behalf, because the winner is not in the building.",
       "exclusions": [
@@ -4492,7 +4492,7 @@
     },
     {
       "id": "a-winner-runs-across-the-stage-to-hug",
-      "title": "A Winner Runs Across The Stage To Hug",
+      "title": "A Winner Runs To Hug",
       "truth_authority": "official_result",
       "condition": "A winner visibly runs across the stage to hug someone on the live telecast.",
       "exclusions": [
@@ -4552,7 +4552,7 @@
     },
     {
       "id": "a-wardrobe-incident-on-stage",
-      "title": "A Wardrobe Incident On Stage",
+      "title": "Wardrobe Incident On Stage",
       "truth_authority": "official_result",
       "condition": "A wardrobe failure visibly happens to a performer or presenter on stage during the live telecast.",
       "exclusions": [
@@ -4582,7 +4582,7 @@
     },
     {
       "id": "a-stage-invasion-or-security-moment",
-      "title": "A Stage Invasion Or Security Moment",
+      "title": "Stage Rush Or Security",
       "truth_authority": "official_result",
       "condition": "Someone who is not part of the show reaches the stage, or security visibly intervenes with an audience member, on the live telecast.",
       "exclusions": [
@@ -4612,7 +4612,7 @@
     },
     {
       "id": "a-performance-reads-as-not-fully-live",
-      "title": "A Performance Reads As Not Fully Live",
+      "title": "A Vocal Is Not Fully Live",
       "truth_authority": "official_result",
       "condition": "A performer on the live telecast is visibly out of breath while the vocal stays steady, or the vocal audibly continues while the performer is not singing.",
       "exclusions": [
@@ -4674,7 +4674,7 @@
     },
     {
       "id": "the-host-names-a-feud-or-romance",
-      "title": "The Host Names A Feud Or Romance",
+      "title": "Host: Feud Or Romance",
       "truth_authority": "official_result",
       "condition": "The host names a specific artist's feud or romance out loud on the live telecast.",
       "exclusions": [
@@ -4704,7 +4704,7 @@
     },
     {
       "id": "a-memorial-for-a-deceased-artist",
-      "title": "A Memorial For A Deceased Artist",
+      "title": "A Memorial For An Artist",
       "truth_authority": "official_result",
       "condition": "The live telecast carries a segment memorialising a specific artist who has died, either as a tribute performance or as an in-memoriam package.",
       "exclusions": [
@@ -4734,7 +4734,7 @@
     },
     {
       "id": "the-vanguard-segment-includes-a-performance",
-      "title": "The Vanguard Segment Includes A Performance",
+      "title": "Vanguard Performance Airs",
       "truth_authority": "official_result",
       "condition": "The Michael Jackson Video Vanguard Award segment on the live telecast includes a live musical performance, whether by the honoree, by guests performing the honoree's material, or both.",
       "exclusions": [
@@ -4766,7 +4766,7 @@
     },
     {
       "id": "the-vanguard-performance-runs-six-songs",
-      "title": "The Vanguard Performance Runs Six Songs",
+      "title": "Six Vanguard Songs",
       "truth_authority": "official_result",
       "condition": "The Video Vanguard segment's live performance on the telecast contains six or more distinct songs.",
       "exclusions": [
@@ -4799,7 +4799,7 @@
     },
     {
       "id": "the-vanguard-performance-runs-eight-songs",
-      "title": "The Vanguard Performance Runs Eight Songs",
+      "title": "Eight Vanguard Songs",
       "truth_authority": "official_result",
       "condition": "The Video Vanguard segment's live performance on the telecast contains eight or more distinct songs.",
       "exclusions": [
@@ -4862,7 +4862,7 @@
     },
     {
       "id": "an-artist-arrives-late-or-leaves-early",
-      "title": "An Artist Arrives Late Or Leaves Early",
+      "title": "Late Arrival Or Early Exit",
       "truth_authority": "official_result",
       "condition": "The live telecast states or visibly shows that a named artist arrived after the show started or left before it ended.",
       "exclusions": [
@@ -4892,7 +4892,7 @@
     },
     {
       "id": "the-show-runs-past-its-window",
-      "title": "The Show Runs Past Its Window",
+      "title": "The Show Runs Overtime",
       "truth_authority": "official_result",
       "condition": "The telecast is still on the air after its scheduled 9:30 p.m. ET end time.",
       "exclusions": [
@@ -4923,7 +4923,7 @@
     },
     {
       "id": "a-costume-change-mid-performance",
-      "title": "A Costume Change Mid-Performance",
+      "title": "Costume Change",
       "truth_authority": "official_result",
       "condition": "A performer visibly changes look mid-performance on the live telecast, whether on camera or by returning in a different outfit within the same segment.",
       "exclusions": [
@@ -4953,7 +4953,7 @@
     },
     {
       "id": "a-rights-statement-in-a-speech",
-      "title": "A Rights Statement In A Speech",
+      "title": "Rights Named In A Speech",
       "truth_authority": "official_result",
       "condition": "A winner or honoree uses a speech on the live telecast to make an identity, rights or community statement, for example dedicating the award to a named community or naming discrimination.",
       "exclusions": [
@@ -4983,7 +4983,7 @@
     },
     {
       "id": "an-explicitly-electoral-statement",
-      "title": "An Explicitly Electoral Statement",
+      "title": "An Electoral Statement",
       "truth_authority": "official_result",
       "condition": "A speaker on the live telecast makes an explicitly electoral or party-political statement, for example urging registration or voting, or naming a politician or a party.",
       "exclusions": [
@@ -5042,7 +5042,7 @@
     },
     {
       "id": "a-pregnancy-or-baby-reveal",
-      "title": "A Pregnancy Or Baby Reveal",
+      "title": "A Baby Or Pregnancy",
       "truth_authority": "official_result",
       "condition": "Someone announces or visibly reveals a pregnancy or a new baby on the live telecast.",
       "exclusions": [
@@ -5132,7 +5132,7 @@
     },
     {
       "id": "an-absent-artist-wins-on-air",
-      "title": "An Absent Artist Wins On Air",
+      "title": "Absent Winner On Air",
       "truth_authority": "official_result",
       "condition": "The live telecast announces a winner and the broadcast shows or states that the winner is not present to accept.",
       "exclusions": [
@@ -5163,7 +5163,7 @@
     },
     {
       "id": "one-artist-wins-three-on-air",
-      "title": "One Artist Wins Three On Air",
+      "title": "One Act, Three On Air",
       "truth_authority": "official_result",
       "condition": "One artist is announced as the winner of three or more categories on the live telecast itself.",
       "exclusions": [
@@ -5194,7 +5194,7 @@
     },
     {
       "id": "first-and-last-award-to-one-artist",
-      "title": "First And Last Award To One Artist",
+      "title": "First And Last To One Act",
       "truth_authority": "official_result",
       "condition": "The same artist wins both the first award announced on the telecast and the last award announced on the telecast.",
       "exclusions": [
@@ -5290,7 +5290,7 @@
     },
     {
       "id": "a-project-is-plugged-from-the-stage",
-      "title": "A Project Is Plugged From The Stage",
+      "title": "A Project Is Plugged",
       "truth_authority": "official_result",
       "condition": "A speaker on the live telecast names a forthcoming album, tour, film or project of their own and gives a date, a title or a release window.",
       "exclusions": [
@@ -5320,7 +5320,7 @@
     },
     {
       "id": "a-performance-comes-from-outside-the-room",
-      "title": "A Performance Comes From Outside The Room",
+      "title": "A Remote Performance",
       "truth_authority": "official_result",
       "condition": "The telecast carries a performance that is pre-taped or staged somewhere other than the Peacock Theater.",
       "exclusions": [
@@ -5350,7 +5350,7 @@
     },
     {
       "id": "a-legacy-act-reunites-on-stage",
-      "title": "A Legacy Act Reunites On Stage",
+      "title": "A Legacy Act Reunites",
       "truth_authority": "official_result",
       "condition": "Two or more members of a legacy act appear on stage together on the live telecast, either performing or presenting.",
       "exclusions": [
@@ -5382,7 +5382,7 @@
     },
     {
       "id": "a-k-pop-act-wins-on-the-telecast",
-      "title": "A K-Pop Act Wins On The Telecast",
+      "title": "A K-Pop Act Wins On Air",
       "truth_authority": "official_result",
       "condition": "A K-pop act is announced on the live telecast as the winner of a competitive category.",
       "exclusions": [
@@ -5415,7 +5415,7 @@
     },
     {
       "id": "a-speech-names-therapy-or-mental-health",
-      "title": "A Speech Names Therapy Or Mental Health",
+      "title": "Mental Health In A Speech",
       "truth_authority": "official_result",
       "condition": "A winner names a therapist, therapy or mental health in a speech on the live telecast.",
       "exclusions": [
@@ -5505,7 +5505,7 @@
     },
     {
       "id": "spanish-is-sung-on-the-telecast",
-      "title": "Spanish Is Sung On The Telecast",
+      "title": "Spanish Is Sung On Air",
       "truth_authority": "official_result",
       "condition": "A performance on the live telecast carries substantial Spanish-language or Portuguese vocals.",
       "exclusions": [
@@ -5537,7 +5537,7 @@
     },
     {
       "id": "live-censorship-cuts-the-feed",
-      "title": "Live Censorship Cuts The Feed",
+      "title": "Live Censorship On Air",
       "truth_authority": "official_result",
       "condition": "The live telecast uses an audio bleep, an audio mute, or a sudden camera cutaway to censor something happening on stage.",
       "exclusions": [
@@ -5599,7 +5599,7 @@
     },
     {
       "id": "video-of-the-year-closes-the-show",
-      "title": "Video Of The Year Closes The Show",
+      "title": "Video Of The Year Closes",
       "truth_authority": "official_result",
       "condition": "Video of the Year is the last competitive award announced on the live telecast.",
       "exclusions": [
@@ -5629,7 +5629,7 @@
     },
     {
       "id": "the-monologue-follows-the-opener",
-      "title": "The Monologue Follows The Opener",
+      "title": "Music First, Host Next",
       "truth_authority": "official_result",
       "condition": "The telecast opens with a musical performance and Snoop Dogg's first monologue comes after it rather than before it.",
       "exclusions": [
@@ -5661,7 +5661,7 @@
     },
     {
       "id": "the-first-award-lands-before-eight-eastern",
-      "title": "The First Award Lands Before Eight",
+      "title": "First Award By Eight",
       "truth_authority": "official_result",
       "condition": "The first competitive award of the night is announced on the telecast before 8:00 p.m. ET.",
       "exclusions": [
@@ -5723,7 +5723,7 @@
     },
     {
       "id": "the-1992-performance-is-named-on-air",
-      "title": "The 1992 Performance Is Named",
+      "title": "Nirvana 1992 Is Named",
       "truth_authority": "official_result",
       "condition": "The telecast names or replays Nirvana's 1992 VMA performance, in a montage, an introduction, a presenter's line or an acceptance.",
       "exclusions": [
@@ -5755,7 +5755,7 @@
     },
     {
       "id": "two-surprise-guests-in-one-night",
-      "title": "Two Surprise Guests In One Night",
+      "title": "Two Surprise Guests",
       "truth_authority": "official_result",
       "condition": "Two or more separate performances on the telecast each bring out a guest who was not on the announced bill.",
       "exclusions": [
@@ -5787,7 +5787,7 @@
     },
     {
       "id": "the-artist-director-honors-airs",
-      "title": "The Artist Director Honors Airs",
+      "title": "The Artist Director Honors",
       "truth_authority": "official_result",
       "condition": "The telecast presents an award or segment billed as the Artist Director Honors.",
       "exclusions": [
@@ -5818,7 +5818,7 @@
     },
     {
       "id": "two-categories-back-to-back",
-      "title": "Two Categories Back To Back",
+      "title": "Two Categories In A Row",
       "truth_authority": "official_result",
       "condition": "Two competitive categories are announced back to back on the telecast with no performance, honorary segment or commercial break between them.",
       "exclusions": [
@@ -5849,7 +5849,7 @@
     },
     {
       "id": "a-non-musician-presents-an-award",
-      "title": "A Non-Musician Presents An Award",
+      "title": "A Non-Musician Presents",
       "truth_authority": "official_result",
       "condition": "Someone whose public career is not music - an actor, an athlete, a comedian or a television personality - presents an award on the telecast.",
       "exclusions": [
@@ -5880,7 +5880,7 @@
     },
     {
       "id": "shaboozey-performs-twice",
-      "title": "Shaboozey Performs Twice",
+      "title": "Shaboozey Plays Twice",
       "truth_authority": "official_result",
       "condition": "Shaboozey appears in two separate performance segments on the telecast, one of them with Gunna.",
       "exclusions": [
@@ -5911,7 +5911,7 @@
     },
     {
       "id": "an-archive-montage-of-past-vmas",
-      "title": "An Archive Montage Of Past VMAs",
+      "title": "An Archive VMA Montage",
       "truth_authority": "official_result",
       "condition": "The telecast runs a montage of archival footage from past VMA ceremonies.",
       "exclusions": [
@@ -5941,7 +5941,7 @@
     },
     {
       "id": "a-winner-is-read-without-a-presenter",
-      "title": "A Winner Is Read With No Presenter",
+      "title": "A Winner With No Presenter",
       "truth_authority": "official_result",
       "condition": "A competitive category winner is announced on the telecast as a graphic, a voice-over or a host read, with no presenter on stage for that category.",
       "exclusions": [
@@ -5972,7 +5972,7 @@
     },
     {
       "id": "the-vanguard-segment-closes-the-show",
-      "title": "The Vanguard Closes The Show",
+      "title": "The Vanguard Closes",
       "truth_authority": "official_result",
       "condition": "The Video Vanguard segment is the last content on the telecast, after the final competitive award.",
       "exclusions": [
@@ -6003,7 +6003,7 @@
     },
     {
       "id": "two-honorary-awards-besides-the-vanguard",
-      "title": "Two Honorary Awards Besides The Vanguard",
+      "title": "Two More Honorary Awards",
       "truth_authority": "official_result",
       "condition": "The telecast presents two or more honorary or non-competitive awards besides the Michael Jackson Video Vanguard Award.",
       "exclusions": [
@@ -6035,7 +6035,7 @@
     },
     {
       "id": "a-censor-cut-clips-the-next-word",
-      "title": "A Censor Cut Clips The Next Word",
+      "title": "A Bleep Cuts Too Much",
       "truth_authority": "official_result",
       "condition": "A censor bleep or mute on the telecast over-runs and also removes a word that was not the profanity.",
       "exclusions": [
@@ -6066,7 +6066,7 @@
     },
     {
       "id": "the-host-jokes-about-the-two-hour-window",
-      "title": "The Host Jokes About The Clock",
+      "title": "A Joke About The Clock",
       "truth_authority": "official_result",
       "condition": "Snoop Dogg or a presenter makes a joke on air about the show's two-hour length, the clock, or having to hurry.",
       "exclusions": [
@@ -6098,7 +6098,7 @@
     },
     {
       "id": "a-presenter-pair-visibly-does-not-interact",
-      "title": "A Presenter Pair Does Not Interact",
+      "title": "A Pair Does Not Speak",
       "truth_authority": "official_result",
       "condition": "Two presenters share the stage on the telecast and visibly avoid speaking to or looking at each other.",
       "exclusions": [
@@ -6129,7 +6129,7 @@
     },
     {
       "id": "a-guest-vocalist-fronts-a-nirvana-song",
-      "title": "A Guest Vocalist Fronts A Nirvana Song",
+      "title": "A Guest Fronts Nirvana",
       "truth_authority": "official_result",
       "condition": "A singer other than Nirvana's late frontman performs lead vocal on a Nirvana song on the telecast.",
       "exclusions": [
@@ -6161,7 +6161,7 @@
     },
     {
       "id": "a-performance-happens-away-from-the-main-stage",
-      "title": "A Performance Away From The Main Stage",
+      "title": "Off The Main Stage",
       "truth_authority": "official_result",
       "condition": "A performance on the telecast is staged somewhere other than the main stage - a secondary stage, the crowd floor, the seating bowl or elsewhere inside the venue.",
       "exclusions": [
@@ -6192,7 +6192,7 @@
     },
     {
       "id": "sabrina-carpenter-joins-the-opening-number",
-      "title": "Sabrina Carpenter Joins The Opener",
+      "title": "Sabrina Joins The Opener",
       "truth_authority": "official_result",
       "condition": "Sabrina Carpenter appears on stage as a guest inside Madonna's opening performance.",
       "exclusions": [
@@ -6224,7 +6224,7 @@
     },
     {
       "id": "someone-takes-the-microphone-mid-speech",
-      "title": "Someone Takes The Microphone",
+      "title": "Someone Grabs The Mic",
       "truth_authority": "official_result",
       "condition": "Someone interrupts an acceptance speech on the telecast by taking or speaking into the microphone uninvited.",
       "exclusions": [

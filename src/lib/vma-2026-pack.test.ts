@@ -268,6 +268,20 @@ describe('2026 VMA show pack', () => {
     }
   })
 
+  it('keeps every bingo tile label short enough for the grid', async () => {
+    // short_text is the label the 5x5 grid renders, and nothing else: the full
+    // condition is only read on tap. A tile is three lines of 11px inside 60px,
+    // which holds roughly 22 to 27 characters before line-clamp-3 truncates it
+    // with an ellipsis. The legacy pack's longest label is 22; a VMA square
+    // that ran to 43 came back from the phone as "The Vanguard Segment Inclu...".
+    // 26 is the ceiling that still fits at the narrow end of that range.
+    const plan = await buildShowPackActivationPlan(authored)
+    for (const square of plan.bingoSquares) {
+      expect(square.short_text, square.short_text).toBe(square.title)
+      expect(square.short_text.length, square.short_text).toBeLessThanOrEqual(26)
+    }
+  })
+
   it('seals every portrait against the committed bytes under public/', () => {
     expect(authored.entities).toHaveLength(67)
     for (const entity of authored.entities) {
