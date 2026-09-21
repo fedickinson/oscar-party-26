@@ -173,6 +173,7 @@ Verified in this repository on the current checkout:
 | Schema parity | `npx tsx scripts/schema-diff.mts` | Fingerprints local against production and diffs, object by object. Non-zero exit on drift. |
 | Room dashboard | `npx tsx scripts/gm-pulse.mts --room CODE` | Declares, marks, cast sequence, persisted daemon heartbeat. |
 | Room sentinel | `npx tsx scripts/sentinel.mts --room CODE [--loop 15]` | Read-only exact-room alarms; one-shot exits 0 clear, 2 attention, 1 observer failure. |
+| Scheduled winner batch | `npx tsx scripts/declare-scheduled-winners.mts --room CODE --input winners.json` | Declares post-broadcast results from an authored closed list. Local dry-run table by default; apply requires `--apply --confirm-room CODE` and paces declarations with `--pause-seconds` (default 20). Never opens a spotlight or moves the phase. |
 | DB snapshot | `npx tsx scripts/snapshot-game.mts [--loop 300]` | Atomically seals all 24 public tables plus schema integrity in `.private/snapshots/`. |
 | Room recovery | `npx tsx scripts/restore-room-snapshot.mts --snapshot DIR --room CODE` | Local missing-row dry run by default; apply requires `--apply --confirm-room CODE` and never overwrites or deletes. |
 | AI witness | `npx tsx scripts/witness-once.mts --room CODE --frame FRAME --references REFERENCES.json` | Local plan only by default. `--send-frame --confirm-room CODE` explicitly sends private images to Anthropic and may queue one host-reviewed proposal. |
