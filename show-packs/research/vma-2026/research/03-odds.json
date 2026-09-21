@@ -1,0 +1,299 @@
+{
+  "generated_at": "2026-09-21",
+  "note": "Estimates by a research agent; not bookmaker odds unless a row cites one. See 03-odds.md for reasoning, source URLs and UNCONFIRMED flags. The 'presented' value is also an estimate except for the four social categories, which MTV confirmed. Collaboration candidates are keyed to the primary credited artist so the draft pool stays a pool of artists (brief decision D1).",
+  "categories": [
+    {
+      "category": "Video of the Year",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.46 },
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.24 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.12 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "Tears", "probability": 0.11 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "I Just Might", "probability": 0.05 },
+        { "artist_id": "gener8ion", "artist": "GENER8ION", "work": "STORM starring Yung Lean", "probability": 0.02 }
+      ]
+    },
+    {
+      "category": "Artist of the Year",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "Artist of the Year", "probability": 0.42 },
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Artist of the Year", "probability": 0.25 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "Artist of the Year", "probability": 0.14 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "Artist of the Year", "probability": 0.09 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "Artist of the Year", "probability": 0.06 },
+        { "artist_id": "morgan-wallen", "artist": "Morgan Wallen", "work": "Artist of the Year", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Song of the Year",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "bts", "artist": "BTS", "work": "Swim", "probability": 0.33 },
+        { "artist_id": "huntr-x", "artist": "HUNTR/X: EJAE, Audrey Nuna, REI AMI", "work": "Golden", "probability": 0.19 },
+        { "artist_id": "madonna", "artist": "Madonna & Sabrina Carpenter", "work": "Bring Your Love", "probability": 0.19 },
+        { "artist_id": "raye", "artist": "RAYE", "work": "WHERE IS MY HUSBAND!", "probability": 0.1 },
+        { "artist_id": "olivia-dean", "artist": "Olivia Dean", "work": "Man I Need", "probability": 0.09 },
+        { "artist_id": "pinkpantheress", "artist": "PinkPantheress + Zara Larsson", "work": "Stateside", "probability": 0.06 },
+        { "artist_id": "ella-langley", "artist": "Ella Langley", "work": "Choosin' Texas", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best New Artist",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "cortis", "artist": "CORTIS", "work": "Best New Artist", "probability": 0.33 },
+        { "artist_id": "sienna-spiro", "artist": "Sienna Spiro", "work": "Best New Artist", "probability": 0.18 },
+        { "artist_id": "myles-smith", "artist": "Myles Smith", "work": "Best New Artist", "probability": 0.16 },
+        { "artist_id": "stella-lefty", "artist": "Stella Lefty", "work": "Best New Artist", "probability": 0.14 },
+        { "artist_id": "malcolm-todd", "artist": "Malcolm Todd", "work": "Best New Artist", "probability": 0.09 },
+        { "artist_id": "bella-kay", "artist": "Bella Kay", "work": "Best New Artist", "probability": 0.06 },
+        { "artist_id": "magnus-ferrell", "artist": "Magnus Ferrell", "work": "Best New Artist", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best Collaboration",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna & Sabrina Carpenter", "work": "Bring Your Love", "probability": 0.34 },
+        { "artist_id": "shakira", "artist": "Shakira & Burna Boy", "work": "Dai Dai", "probability": 0.21 },
+        { "artist_id": "clipse", "artist": "Clipse, Kendrick Lamar, Pusha T & Malice", "work": "Chains & Whips", "probability": 0.2 },
+        { "artist_id": "pinkpantheress", "artist": "PinkPantheress + Zara Larsson", "work": "Stateside", "probability": 0.13 },
+        { "artist_id": "teyana-taylor", "artist": "Teyana Taylor & Lucky Daye", "work": "Hard Part", "probability": 0.07 },
+        { "artist_id": "french-montana", "artist": "French Montana x Max B", "work": "Ever Since U Left Me", "probability": 0.05 }
+      ]
+    },
+    {
+      "category": "Best Pop",
+      "presented": "on_air_expected",
+      "candidates": [
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.37 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "House Tour", "probability": 0.16 },
+        { "artist_id": "lisa", "artist": "LISA", "work": "Dream feat. Kentaro Sakaguchi", "probability": 0.15 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.14 },
+        { "artist_id": "olivia-rodrigo", "artist": "Olivia Rodrigo", "work": "drop dead", "probability": 0.09 },
+        { "artist_id": "tate-mcrae", "artist": "Tate McRae", "work": "Nobody's Girl", "probability": 0.05 },
+        { "artist_id": "charli-xcx", "artist": "Charli xcx", "work": "SS26", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best Hip-Hop",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "drake", "artist": "Drake", "work": "Janice STFU", "probability": 0.28 },
+        { "artist_id": "cardi-b", "artist": "Cardi B featuring Kehlani", "work": "Safe", "probability": 0.22 },
+        { "artist_id": "megan-thee-stallion", "artist": "Megan Thee Stallion", "work": "LOVER GIRL", "probability": 0.19 },
+        { "artist_id": "travis-scott", "artist": "Travis Scott", "work": "DUMBO", "probability": 0.13 },
+        { "artist_id": "tyler-the-creator", "artist": "Tyler, The Creator", "work": "SUGAR ON MY TONGUE", "probability": 0.12 },
+        { "artist_id": "don-toliver", "artist": "Don Toliver", "work": "E85", "probability": 0.06 }
+      ]
+    },
+    {
+      "category": "Best R&B",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "I Just Might", "probability": 0.28 },
+        { "artist_id": "justin-bieber", "artist": "Justin Bieber", "work": "YUKON", "probability": 0.21 },
+        { "artist_id": "kehlani", "artist": "Kehlani", "work": "Folded", "probability": 0.18 },
+        { "artist_id": "chris-brown", "artist": "Chris Brown", "work": "It Depends/Obvious", "probability": 0.17 },
+        { "artist_id": "mariah-the-scientist", "artist": "Mariah the Scientist & Kali Uchis", "work": "Is It a Crime", "probability": 0.09 },
+        { "artist_id": "dave", "artist": "Dave & Tems", "work": "Raindance", "probability": 0.07 }
+      ]
+    },
+    {
+      "category": "Best Alternative",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "olivia-rodrigo", "artist": "Olivia Rodrigo", "work": "the cure", "probability": 0.34 },
+        { "artist_id": "twenty-one-pilots", "artist": "twenty one pilots", "work": "Drag Path", "probability": 0.22 },
+        { "artist_id": "sombr", "artist": "sombr", "work": "Homewrecker", "probability": 0.16 },
+        { "artist_id": "tame-impala", "artist": "Tame Impala", "work": "Dracula", "probability": 0.1 },
+        { "artist_id": "noah-kahan", "artist": "Noah Kahan", "work": "The Great Divide", "probability": 0.08 },
+        { "artist_id": "mgk", "artist": "mgk & Fred Durst", "work": "FIX UR FACE", "probability": 0.06 },
+        { "artist_id": "geese", "artist": "Geese", "work": "Taxes", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best Dance",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.32 },
+        { "artist_id": "lady-gaga", "artist": "Lady Gaga & Doechii", "work": "RUNAWAY", "probability": 0.22 },
+        { "artist_id": "harry-styles", "artist": "Harry Styles", "work": "Aperture", "probability": 0.17 },
+        { "artist_id": "pinkpantheress", "artist": "PinkPantheress + Zara Larsson", "work": "Stateside", "probability": 0.11 },
+        { "artist_id": "tate-mcrae", "artist": "Tate McRae", "work": "Nobody's Girl", "probability": 0.09 },
+        { "artist_id": "bebe-rexha", "artist": "Bebe Rexha & Faithless", "work": "New Religion", "probability": 0.05 },
+        { "artist_id": "slayyyter", "artist": "Slayyyter", "work": "DANCE...", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best Country",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "ella-langley", "artist": "Ella Langley", "work": "Choosin' Texas", "probability": 0.32 },
+        { "artist_id": "shaboozey", "artist": "Shaboozey", "work": "Cowgirl", "probability": 0.28 },
+        { "artist_id": "lainey-wilson", "artist": "Lainey Wilson", "work": "Somewhere Over Laredo", "probability": 0.12 },
+        { "artist_id": "luke-combs", "artist": "Luke Combs", "work": "Back in the Saddle", "probability": 0.11 },
+        { "artist_id": "kacey-musgraves", "artist": "Kacey Musgraves", "work": "Dry Spell", "probability": 0.08 },
+        { "artist_id": "tucker-wetmore", "artist": "Tucker Wetmore", "work": "Brunette", "probability": 0.05 },
+        { "artist_id": "stella-lefty", "artist": "Stella Lefty", "work": "Boston", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best Latin",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "bad-bunny", "artist": "Bad Bunny", "work": "Nuevayol", "probability": 0.31 },
+        { "artist_id": "karol-g", "artist": "KAROL G", "work": "Papasito", "probability": 0.22 },
+        { "artist_id": "shakira", "artist": "Shakira & Burna Boy", "work": "Dai Dai", "probability": 0.19 },
+        { "artist_id": "anitta", "artist": "Anitta & Shakira", "work": "Choka Choka", "probability": 0.11 },
+        { "artist_id": "fuerza-regida", "artist": "Fuerza Regida", "work": "Tu Sancho", "probability": 0.08 },
+        { "artist_id": "rauw-alejandro", "artist": "Rauw Alejandro & Yahritza y su Esencia", "work": "La Perla (credit UNCONFIRMED)", "probability": 0.05 },
+        { "artist_id": "ryan-castro", "artist": "Ryan Castro", "work": "LA VILLA", "probability": 0.04 }
+      ]
+    },
+    {
+      "category": "Best K-Pop",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "bts", "artist": "BTS", "work": "Swim", "probability": 0.38 },
+        { "artist_id": "blackpink", "artist": "BLACKPINK", "work": "JUMP", "probability": 0.22 },
+        { "artist_id": "lisa", "artist": "LISA", "work": "Dream feat. Kentaro Sakaguchi", "probability": 0.16 },
+        { "artist_id": "katseye", "artist": "KATSEYE", "work": "PINKY UP", "probability": 0.11 },
+        { "artist_id": "le-sserafim", "artist": "LE SSERAFIM (feat. j-hope of BTS)", "work": "SPAGHETTI", "probability": 0.08 },
+        { "artist_id": "cortis", "artist": "CORTIS", "work": "RedRed", "probability": 0.05 }
+      ]
+    },
+    {
+      "category": "Best Direction",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.38 },
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "Opalite", "probability": 0.22 },
+        { "artist_id": "gener8ion", "artist": "GENER8ION", "work": "STORM starring Yung Lean", "probability": 0.15 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "House Tour", "probability": 0.1 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.09 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "I Just Might", "probability": 0.06 }
+      ]
+    },
+    {
+      "category": "Best Choreography",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.26 },
+        { "artist_id": "gener8ion", "artist": "GENER8ION", "work": "STORM starring Yung Lean", "probability": 0.24 },
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.18 },
+        { "artist_id": "tate-mcrae", "artist": "Tate McRae", "work": "Nobody's Girl", "probability": 0.14 },
+        { "artist_id": "katseye", "artist": "KATSEYE", "work": "PINKY UP", "probability": 0.1 },
+        { "artist_id": "harry-styles", "artist": "Harry Styles", "work": "Dance No More", "probability": 0.08 }
+      ]
+    },
+    {
+      "category": "Best Cinematography",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.32 },
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.2 },
+        { "artist_id": "lisa", "artist": "LISA", "work": "Dream feat. Kentaro Sakaguchi", "probability": 0.15 },
+        { "artist_id": "asap-rocky", "artist": "A$AP Rocky", "work": "PUNK ROCKY", "probability": 0.14 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.11 },
+        { "artist_id": "shaboozey", "artist": "Shaboozey", "work": "Cowgirl", "probability": 0.08 }
+      ]
+    },
+    {
+      "category": "Best Editing",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.3 },
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.18 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "House Tour", "probability": 0.16 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.14 },
+        { "artist_id": "lisa", "artist": "LISA", "work": "Dream feat. Kentaro Sakaguchi", "probability": 0.12 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "I Just Might", "probability": 0.1 }
+      ]
+    },
+    {
+      "category": "Best Visual Effects",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.32 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.27 },
+        { "artist_id": "pinkpantheress", "artist": "PinkPantheress + Zara Larsson", "work": "Stateside", "probability": 0.22 },
+        { "artist_id": "jisoo", "artist": "JISOO X ZAYN", "work": "Eyes Closed", "probability": 0.19 }
+      ]
+    },
+    {
+      "category": "Best Art Direction",
+      "presented": "preshow_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.28 },
+        { "artist_id": "charli-xcx", "artist": "Charli xcx", "work": "SS26", "probability": 0.18 },
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Fate of Ophelia", "probability": 0.17 },
+        { "artist_id": "lady-gaga", "artist": "Lady Gaga & Doechii", "work": "RUNAWAY", "probability": 0.16 },
+        { "artist_id": "pinkpantheress", "artist": "PinkPantheress + Zara Larsson", "work": "Stateside", "probability": 0.12 },
+        { "artist_id": "sombr", "artist": "sombr", "work": "My Body Isn't Ready", "probability": 0.09 }
+      ]
+    },
+    {
+      "category": "Best Group",
+      "presented": "social_expected",
+      "candidates": [
+        { "artist_id": "bts", "artist": "BTS", "work": "Best Group", "probability": 0.45 },
+        { "artist_id": "blackpink", "artist": "BLACKPINK", "work": "Best Group", "probability": 0.27 },
+        { "artist_id": "katseye", "artist": "KATSEYE", "work": "Best Group", "probability": 0.1 },
+        { "artist_id": "twenty-one-pilots", "artist": "twenty one pilots", "work": "Best Group", "probability": 0.07 },
+        { "artist_id": "cortis", "artist": "CORTIS", "work": "Best Group", "probability": 0.05 },
+        { "artist_id": "fuerza-regida", "artist": "Fuerza Regida", "work": "Best Group", "probability": 0.03 },
+        { "artist_id": "flo", "artist": "FLO", "work": "Best Group", "probability": 0.02 },
+        { "artist_id": "geese", "artist": "Geese", "work": "Best Group", "probability": 0.01 }
+      ]
+    },
+    {
+      "category": "Best Long Form Video",
+      "presented": "social_expected",
+      "candidates": [
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II - The Film", "probability": 0.55 },
+        { "artist_id": "charli-xcx", "artist": "Charli xcx", "work": "Music, Fashion, Film", "probability": 0.2 },
+        { "artist_id": "ella-langley", "artist": "Ella Langley", "work": "Choosin' Texas", "probability": 0.14 },
+        { "artist_id": "gener8ion", "artist": "GENER8ION", "work": "STORM starring Yung Lean", "probability": 0.11 }
+      ]
+    },
+    {
+      "category": "Best Album",
+      "presented": "social_expected",
+      "candidates": [
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "The Life of a Showgirl", "probability": 0.42 },
+        { "artist_id": "madonna", "artist": "Madonna", "work": "Confessions II", "probability": 0.18 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "Man's Best Friend", "probability": 0.13 },
+        { "artist_id": "harry-styles", "artist": "Harry Styles", "work": "Kiss All the Time. Disco, Occasionally", "probability": 0.07 },
+        { "artist_id": "olivia-rodrigo", "artist": "Olivia Rodrigo", "work": "You Seem Pretty Sad for a Girl So in Love", "probability": 0.06 },
+        { "artist_id": "drake", "artist": "Drake", "work": "Iceman", "probability": 0.05 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "The Romantic", "probability": 0.04 },
+        { "artist_id": "ella-langley", "artist": "Ella Langley", "work": "Dandelion", "probability": 0.03 },
+        { "artist_id": "olivia-dean", "artist": "Olivia Dean", "work": "The Art of Loving", "probability": 0.02 }
+      ]
+    },
+    {
+      "category": "Song of Summer",
+      "presented": "social_expected",
+      "candidates": [
+        { "artist_id": "taylor-swift", "artist": "Taylor Swift", "work": "I Knew It, I Knew You", "probability": 0.3 },
+        { "artist_id": "ariana-grande", "artist": "Ariana Grande", "work": "hate that i made you love me", "probability": 0.13 },
+        { "artist_id": "katseye", "artist": "KATSEYE", "work": "Hootie Fruity (title UNCONFIRMED)", "probability": 0.1 },
+        { "artist_id": "olivia-rodrigo", "artist": "Olivia Rodrigo", "work": "Stupid Song", "probability": 0.09 },
+        { "artist_id": "sabrina-carpenter", "artist": "Sabrina Carpenter", "work": "House Tour (title UNCONFIRMED)", "probability": 0.09 },
+        { "artist_id": "morgan-wallen", "artist": "Morgan Wallen", "work": "Been By Now", "probability": 0.07 },
+        { "artist_id": "olivia-dean", "artist": "Olivia Dean", "work": "So Easy (To Fall in Love)", "probability": 0.05 },
+        { "artist_id": "bruno-mars", "artist": "Bruno Mars", "work": "Risk It All", "probability": 0.04 },
+        { "artist_id": "sombr", "artist": "sombr", "work": "UNCONFIRMED", "probability": 0.04 },
+        { "artist_id": "latto", "artist": "Latto featuring Doja Cat", "work": "Okayyy", "probability": 0.02 },
+        { "artist_id": "charli-xcx", "artist": "Charli xcx", "work": "Camera", "probability": 0.02 },
+        { "artist_id": "tame-impala", "artist": "Tame Impala & JENNIE", "work": "UNCONFIRMED", "probability": 0.02 },
+        { "artist_id": "ella-langley", "artist": "Ella Langley", "work": "Choosin' Texas", "probability": 0.01 },
+        { "artist_id": "stella-lefty", "artist": "Stella Lefty", "work": "UNCONFIRMED", "probability": 0.01 },
+        { "artist_id": "slayyyter", "artist": "Slayyyter", "work": "UNCONFIRMED", "probability": 0.01 }
+      ]
+    }
+  ]
+}
