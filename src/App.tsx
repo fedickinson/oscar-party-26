@@ -118,6 +118,12 @@ function AppInner() {
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrap><Home /></PageWrap>} />
+            {/* Join deep link. An invite carries one tappable URL — /join/CODE,
+                or /?join=CODE for anything that mangles paths — and both land
+                on the same landing page, in its join state, with the code
+                prefilled and looked up. It is NOT a room route: there is no
+                seat yet, so it must never redirect the way /room/:code does. */}
+            <Route path="/join/:code" element={<PageWrap><Home /></PageWrap>} />
             {/* Public pregame explainer — sent as a link before anyone has joined,
                 so it must render with no room and no player. */}
             <Route path="/how-it-works" element={<PageWrap><HowItWorks /></PageWrap>} />

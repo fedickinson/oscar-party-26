@@ -577,8 +577,13 @@ Nothing in this section is a script; it is all the app.
 
 1. **Before anyone joins**, confirm the room still reads `phase lobby` and the VMA identity is
    on screen. `npx tsx scripts/gm-pulse.mts --room CODE` (production, read-only).
-2. **Share the site link and the four-letter code** — not a `/room/CODE` deep link. A player
-   with no seat who opens `/room/CODE` is bounced to the landing page.
+2. **Share the join link, or the site link and the four-letter code.** The join link is your site
+   link with `/join/CODE` on the end (`/?join=CODE` also works, for anything that mangles paths).
+   It opens the landing page already in the join state with the code filled in and the room
+   looked up; the player still types a name and taps join, so a tap can never seat somebody by
+   accident. Still **not** a `/room/CODE` link: a player with no seat who opens that one is
+   bounced to the landing page. A phone that already has a seat in a different room is asked
+   which room it wants rather than being redirected away from your link.
 3. **Wait for everyone.** The draft order is randomized the instant the host taps **Start the
    Party**, from exactly the players seated at that moment. Someone who joins afterward is not
    in the draft at all. Count heads on the call first.
@@ -609,6 +614,74 @@ Nothing in this section is a script; it is all the app.
    - Do not rotate the operator capability after Saturday unless the bearer leaked. Rotation
      bumps the room revision and disables the host's controls until the new link is opened.
    - Do not apply a migration. Not before the show, not during it.
+
+### Who is in the game
+
+**One thing is genuinely broken, and it is a race of a few seconds.** If someone taps the final
+**Join Room** button at the same moment you tap **Start the Party**, their seat can land in a room
+that has already frozen its draft order. The app checks the phase and then inserts, and nothing
+between those two steps holds the room still (`src/hooks/useRoom.ts:157` reads the phase,
+`src/hooks/useRoom.ts:168` writes the seat). The draft order was fixed from exactly the players
+seated at the instant you started (`supabase/migrations/20260813000300_optional_identity_ceremony.sql:232`
+— "draft order must contain every room player exactly once"), so that seat is not in it. What you
+get is a half-player: they are on the roster and in the head count, they can chat, they get a
+bingo card and they show on the leaderboard, but they never get a turn in the draft and end with
+no artists at all. Worse, while the room is in pre-draft the countdown waits for *everyone* on the
+roster to tap **Got it** (`src/pages/Room.tsx:209`), so if that phone wanders off, the draft never
+starts and there is no host override. **Practical protection: count heads on the call, tell people
+to be joined and idle before you start, and look at the "N joined" number one more time as you tap
+Start.** If it does happen, the room is recoverable — see 6.2 — but the cleanest live answer is to
+have that person reclaim their seat by name after the draft and accept that they have no roster.
+
+The smallest fix, not implemented: one additive migration adding a `before insert` trigger on
+`players` that refuses a new seat when the room's phase is past `lobby`, modelled on
+`guard_chosen_faction_player_join` (`20260813000300_optional_identity_ceremony.sql:160-186`), with
+`service_role` exempt for repair. It would make the database enforce what the app already refuses,
+and it cannot affect seat reclaim, because reclaim adopts an existing row and never inserts. Before
+landing it, re-run `dogfood-show-pack-activation.mts` and `dogfood-roster-sync.mts`: both insert
+post-lobby seats on purpose and assert the current error text.
+
+Everything below is the ordinary behavior, and it is safe to paste into the invite.
+
+**Before the draft starts (room in the lobby):** anyone with the code or the join link is in. They
+pick a name and a sigil, and their seat is waiting whenever they come back.
+
+**After you tap Start the Party — through the draft, the confidence picks and the whole live
+show:** a *new* person cannot join. The app looks the room up and shows the join form as usual, so
+the link still works, but it says "This room is underway. Enter the exact name you used before"
+and the button becomes **Find My Seat** (`src/pages/Home.tsx:820`). A name nobody in the room is
+using is refused outright with "This game has already started. To reclaim your seat, join with the
+exact name you used before" (`src/hooks/useRoom.ts:157`). No player row is written. They get no
+draft roster, no confidence picks, no bingo card, no leaderboard row, and they are not in the
+chat. They can still watch the room from the outside only after the show, through the public recap
+link.
+
+**Someone who was already in and lost their phone:** they type the *exact* name they used, and the
+app adopts their existing seat with its sigil, draft roster, picks and bingo card intact
+(`src/hooks/useRoom.ts:137-155`). Case and surrounding spaces are ignored. Two seats sharing one
+exact name refuse automatic reclaim and tell them to ask you which is theirs
+(`src/hooks/useRoom.ts:145`).
+
+**What the database would allow, which is why the head count matters.** The refusal above is the
+app's, not the database's. `players` accepts any insert (`supabase/migrations/00000000000000_baseline.sql:463`,
+`players_insert ... with check (true)`), and the only insert trigger that blocks a post-lobby seat
+applies to shared-banner rooms, which this VMA room is not — its contract is
+`exclusive_entity_draft` (`20260813000300_optional_identity_ceremony.sql:174-177`). The other
+trigger, `guard_closed_players`, only bites after settlement
+(`20260810190300_freeze_closed_score_inputs.sql:35`). So a seat that does get in late by the race
+above behaves like this: draft picks are rejected because the seat is not in the frozen order
+(`20260810192100_atomic_draft_pick.sql:108`); confidence picks work and your lock auto-fills them
+at random rather than stalling (`src/hooks/useConfidence.ts:370`); a bingo card is dealt normally,
+since dealing is allowed in every phase up to the close of the live floor
+(`20260812062000_bingo_seat_authority.sql:62-69`); chat is fully open; and they appear on the
+leaderboard, because it is computed over the roster rather than over who drafted
+(`src/lib/scoring.ts:255`).
+
+**There is no player cap anywhere.** Not a column on `rooms`, not an RLS policy, not a line of
+lobby copy — the lobby only counts up ("N joined") and only enforces a *minimum* of two
+(`src/pages/Room.tsx:255`). The ten in "four to ten players" is a limit of the offline simulator
+and of the post-show keepsake packet, not of the room. Nothing stops an eleventh person joining;
+what happens to them is untested.
 
 ---
 
@@ -1029,7 +1102,8 @@ Paste as is; fill in the three bracketed values.
 >
 > We are playing a live game during the VMAs. Everything happens on your phone.
 >
-> **Join:** [your site link] — tap Join Room and enter the code **[CODE]**.
+> **Join:** [your site link]/join/[CODE] — one tap, the code is already filled in; you just add
+> your name. Or open [your site link], tap Join Room and enter the code **[CODE]** by hand.
 >
 > **Saturday [time]:** draft night on a call. This is the one part we all have to do at the same
 > time — we draft artists in a timed snake draft, 45 seconds a pick, and the draft order is set
