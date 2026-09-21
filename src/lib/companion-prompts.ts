@@ -1121,8 +1121,8 @@ export function buildVerdictsPrompt(
   groundingFacts: string[]
   slotContracts: VerdictSlotContract[]
 } {
-  if (awards.length < 1 || awards.length > 7) {
-    throw new Error('verdict generation requires one through seven player awards')
+  if (awards.length < 1 || awards.length > 10) {
+    throw new Error('verdict generation requires one through ten player awards')
   }
   if (new Set(awards.map((award) => award.playerId)).size !== awards.length) {
     throw new Error('verdict player awards must be unique')

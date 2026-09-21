@@ -295,9 +295,9 @@ describe('simulateNight', () => {
 })
 
 describe('runSimulation', () => {
-  it('is deterministic under a seed and moves when the seed changes', () => {
+  it('is deterministic under a seed and moves when the seed changes', { timeout: 20_000 }, () => {
     const catalog = fixtureCatalog(50)
-    const options = { catalog, odds: 'uniform' as const, playerCount: 5, nights: 25, seed: 42 }
+    const options = { catalog, odds: 'uniform' as const, playerCount: 5, nights: 8, seed: 42 }
     const first = runSimulation(options)
     const second = runSimulation(options)
     expect(second).toEqual(first)

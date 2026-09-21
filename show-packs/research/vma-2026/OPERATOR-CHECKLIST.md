@@ -75,6 +75,23 @@ Proves it worked: the next command in 1.3 prints `target: local  http://127.0.0.
 `[show-pack-activation] catalog=planned` — that is, the reset database has no VMA catalog rows
 left over from an earlier rehearsal.
 
+**Database: local. Not protected.** The reset replays every migration, including
+`20260921000100_ten_player_keepsake_verdicts.sql`, which raises the post-show keepsake packet
+from seven rows to ten. This room seats up to ten, so run the keepsake dogfood against the
+freshly reset database before anything else touches it:
+
+```sh
+npx tsx scripts/dogfood-companion-claims.mts
+```
+
+Proves it worked: `target: local  http://127.0.0.1:54321` at the top, then a final `PASS` line
+with no `FAIL` above it. The lines that matter for this room are the full-room keepsake packet
+ones — the racing-host election, `a losing host tab cannot write any keepsake row`, and
+`every durable keepsake row carries the exact grounding provenance`. If instead you see
+`keepsake verdicts require one through seven bounded rows`, the local database is running an
+older schema: the reset did not replay the new migration. Stop and fix that before Friday,
+because production will behave the same way.
+
 ### 1.2 Gate the build and compile the pack
 
 **Database: none. Not protected.**
@@ -497,6 +514,41 @@ REVIEW QUEUES:
 `NOT RUNNING` is correct on Friday. The two `CLEAR` lines are the real check here: they prove
 the laptop's `.private/operator-capabilities/CODE.token` is the current bearer. If either says
 `UNAVAILABLE`, the token on the laptop is stale — re-run 2.5 and re-open the link on the phone.
+
+### 2.8 Apply the ten-player keepsake migration
+
+**Database: production. PROTECTED — this applies a migration to the live project. Ask the user
+and get an explicit yes before running it. Do not run it on a day a room is live.**
+
+Skip this entirely if the room will seat seven or fewer. Above seven it is not optional: the
+keepsake command demands the *complete* room player set, so with eight or more players every
+attempt is rejected and the room finishes with no keepsake at all rather than a partial one.
+
+`supabase/migrations/20260921000100_ten_player_keepsake_verdicts.sql` is additive — it only
+relaxes the row bound on `complete_grounded_player_verdicts` from seven to ten and its packet
+ceiling from 30000 to 45000 bytes. It adds no column, changes no signature, and every packet
+the old definition accepted the new one still accepts.
+
+Check first what is actually pending, and confirm the target line says PRODUCTION:
+
+```sh
+npx tsx scripts/schema-diff.mts
+```
+
+Then, only after the user has said yes:
+
+```sh
+supabase db push
+```
+
+Proves it worked: `supabase db push` lists
+`20260921000100_ten_player_keepsake_verdicts.sql` as applied and exits 0, and a re-run of
+`npx tsx scripts/schema-diff.mts` reports no drift between local and production.
+
+If you decide not to apply it, say so out loud and cap the room at seven players. A bundle
+deployed in 2.1 against an unmigrated database is safe — a ten-player room simply fails with
+the old, readable `keepsake verdicts require one through seven bounded rows` — but it fails
+every time, and Monday's settlement will have no keepsakes in it.
 
 ---
 

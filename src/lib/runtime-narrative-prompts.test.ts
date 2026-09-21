@@ -213,6 +213,40 @@ describe('pack runtime narrative prompts', () => {
     expect(prompt.system).toContain('End with delighted danger and one warm note.')
   })
 
+  it('covers ten seats from a smaller post-show cast and refuses an eleventh', () => {
+    const seats = (count: number) => Array.from({ length: count }, (_, index) => ({
+      playerId: `player-${index + 1}`,
+      playerName: `Player ${index + 1}`,
+      title: `Held Position ${index + 1}`,
+      blurb: 'Held the line.',
+      stat: `${10 - index} points`,
+    }))
+    const standings = (count: number) => seats(count).map((seat, index) => ({
+      player: { id: seat.playerId, name: seat.playerName }, rank: index + 1,
+      totalScore: 10 - index, confidenceScore: 10 - index, ensembleScore: 0,
+      bingoScore: 0, correctPickCount: 1, topCorrectPick: 2,
+    } as never))
+    const voiceIds = cast.postShow!.voices.map((voice) => voice.id)
+    const authors = (count: number) => new Map(
+      seats(count).map((seat, index) => [seat.playerId, voiceIds[index % voiceIds.length]]),
+    )
+
+    const prompt = buildRuntimeVerdictsPrompt(
+      cast, seats(10), standings(10), authors(10), new Map(),
+    )
+    expect(prompt.slotContracts).toHaveLength(10)
+    expect(prompt.slotContracts.map((contract) => contract.slot))
+      .toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    // Every byline still resolves inside the pack's own post-show cast.
+    expect(prompt.slotContracts.every((contract) => voiceIds.includes(contract.companionId)))
+      .toBe(true)
+    expect(prompt.groundingFacts.length).toBeLessThanOrEqual(100)
+
+    expect(() => buildRuntimeVerdictsPrompt(
+      cast, seats(11), standings(11), authors(11), new Map(),
+    )).toThrow('runtime keepsake generation requires one through ten player awards')
+  })
+
   it('builds generic keepsake slots from pack voices with no legacy artwork authority', () => {
     const authors = new Map([['player-a', 'lamplighter']])
     const prompt = buildRuntimeVerdictsPrompt(

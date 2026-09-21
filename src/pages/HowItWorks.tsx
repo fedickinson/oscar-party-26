@@ -453,14 +453,27 @@ export default function HowItWorks() {
         transition={{ duration: 0.4, delay: 0.08, ease: [0.2, 0.8, 0.2, 1] }}
         className="material-vellum deckled px-6 py-7"
       >
-        <p
-          className="text-[18px] leading-[1.5] font-semibold"
-          style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
-        >
-          To the lords and ladies of the realm, and to you in particular: you are
-          summoned to the last hour of the Dance. We watch it together tonight, though we
-          sit in different halls, and a game runs beneath the episode.
-        </p>
+        {/* The summons is written in the Dance's own voice, so it belongs to
+            that identity only. Every other show gets the same promise in plain
+            language rather than a realm it is not set in. */}
+        {isLegacy ? (
+          <p
+            className="text-[18px] leading-[1.5] font-semibold"
+            style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+          >
+            To the lords and ladies of the realm, and to you in particular: you are
+            summoned to the last hour of the Dance. We watch it together tonight, though we
+            sit in different halls, and a game runs beneath the episode.
+          </p>
+        ) : (
+          <p
+            className="text-[18px] leading-[1.5] font-semibold"
+            style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+          >
+            You are invited: we watch tonight together, though we sit in different
+            rooms, and a game runs beneath the show.
+          </p>
+        )}
         <p
           className="text-[18px] leading-[1.5] font-semibold mt-4"
           style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
@@ -524,8 +537,11 @@ export default function HowItWorks() {
         </P>
 
         <div className="flex flex-col gap-3">
-          {/* Draft — Signature Beats. The system is locked; the beat lists are
-              still being loaded, hence the draftBeatsLive note at the bottom. */}
+          {/* Draft. Both identities render this card: the legacy summary
+              describes Signature Beats, whose system is locked while the beat
+              lists are still being loaded — hence the draftBeatsLive note in
+              the legacy-only rows below — and every other identity gets the
+              plain roster summary instead. */}
           <GameCard
             icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>}
             title="Before — you draft"

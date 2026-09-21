@@ -172,7 +172,7 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
     } = options
     if (!roomId || !hostPlayerId || !isHost || !operatorCapability
       || !ready || recordSource === 'settled' ||
-      playerAwards.length === 0 || playerAwards.length > 7) return
+      playerAwards.length === 0 || playerAwards.length > 10) return
     if (attemptedRoomRef.current === roomId) return
     attemptedRoomRef.current = roomId
     let disposed = false
@@ -264,7 +264,18 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
           facts: prompt.groundingFacts,
           contracts: prompt.slotContracts,
           model: 'claude-sonnet-5',
-          maxTokens: 3000,
+          // One keepsake costs about 430 output tokens at the contract's
+          // ceiling: a 2-4 word title, a 2-3 sentence passage, up to four
+          // highlight notes of 240 characters and up to two imagery notes. The
+          // seven-player budget of 3000 was that figure times seven, so ten
+          // players want 4300 - but MAX_TOKENS_CEILING in api/_guards.ts caps
+          // every proxied request at 4000, and that ceiling is the account's
+          // cost guard for a public URL, not a keepsake tuning knob. So ask for
+          // the most the guard allows: 400 tokens per keepsake at ten players.
+          // A truncated batch is not a silent loss - it fails the envelope
+          // check and lands in the grounding review record like any other
+          // unusable response.
+          maxTokens: 4000,
           maxRetries: 2,
           allowedCompanionIds: current.runtimeCast?.postShow
             ? current.runtimeCast.postShow.voices.map((voice) => voice.id)

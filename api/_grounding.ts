@@ -237,7 +237,7 @@ function validVerdictContracts(
   allowedCompanionIds: ReadonlySet<string>,
 ): boolean {
   return contracts.length >= 1 &&
-    contracts.length <= 7 &&
+    contracts.length <= 10 &&
     new Set(contracts.map((contract) => contract.playerId)).size === contracts.length &&
     contracts.every((contract, index) =>
       contract.slot === index + 1 &&
@@ -339,7 +339,7 @@ export async function groundedVerdictBatch(opts: {
     throw new Error('allowed keepsake voice ids must name one to seven unique slug ids')
   }
   if (!validVerdictContracts(contracts, new Set(allowedIds))) {
-    throw new Error('verdict grounding contracts must define one through seven ordered slots')
+    throw new Error('verdict grounding contracts must define one through ten ordered slots')
   }
   const normalizedFacts = normalizeGroundingFacts(facts)
   let findings: GroundingFinding[] = []

@@ -7,6 +7,7 @@ import type {
   PlayerRow,
 } from '../types/database'
 import {
+  assignVerdictAuthors,
   buildBanterPrompt,
   buildBingoReactionPrompt,
   buildChatReactivePrompt,
@@ -510,6 +511,55 @@ describe('buildVerdictsPrompt grounding projection', () => {
       allowedMessageIds: ['message-1'],
       allowedImageSlugs: expect.any(Array),
     }])
+  })
+
+  it('projects a ten-player room and stops at the eleventh award', () => {
+    const roster = (count: number) => Array.from({ length: count }, (_, index) => {
+      const id = `player-${index + 1}`
+      return {
+        award: {
+          playerId: id,
+          playerName: `Player ${index + 1}`,
+          title: `Held Position ${index + 1}`,
+          blurb: 'Stayed close.',
+          stat: `${14 - index} points`,
+        },
+        entry: {
+          player: {
+            id, room_id: 'room', name: `Player ${index + 1}`, avatar_id: 'a1',
+            color: '', is_host: index === 0, created_at: '2026-08-11T00:00:00Z',
+          },
+          ensembleScore: 7, confidenceScore: 5, bingoScore: 2,
+          totalScore: 14 - index, rank: index + 1,
+          correctPickCount: 1, topCorrectPick: 5,
+        },
+      }
+    })
+
+    const ten = roster(10)
+    const tenAuthors = assignVerdictAuthors(ten.map((seat) => seat.award.playerId))
+    const prompt = buildVerdictsPrompt(
+      ten.map((seat) => seat.award),
+      ten.map((seat) => seat.entry),
+      tenAuthors,
+    )
+
+    expect(prompt.slotContracts).toHaveLength(10)
+    expect(prompt.slotContracts.map((contract) => contract.slot))
+      .toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    expect(prompt.slots.get(10)).toBe('player-10')
+    expect(prompt.user).toContain('Return exactly 10 verdicts')
+    // Seven voices cover ten seats, so a byline repeats - but every seat still
+    // draws a real companion, and the stored byline matches the prompt.
+    expect(prompt.slotContracts.every((contract) => contract.companionId.length > 0)).toBe(true)
+    expect(prompt.groundingFacts.length).toBeLessThanOrEqual(100)
+
+    const eleven = roster(11)
+    expect(() => buildVerdictsPrompt(
+      eleven.map((seat) => seat.award),
+      eleven.map((seat) => seat.entry),
+      assignVerdictAuthors(eleven.map((seat) => seat.award.playerId)),
+    )).toThrow('verdict generation requires one through ten player awards')
   })
 
   it('represents an empty candidate set and refuses a slot without a canonical standing', () => {

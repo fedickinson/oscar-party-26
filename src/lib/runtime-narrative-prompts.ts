@@ -451,8 +451,8 @@ export function buildRuntimeVerdictsPrompt(
   lineCandidates: Map<string, RuntimeVerdictLineCandidate[]> = new Map(),
 ): RuntimeVerdictsPrompt {
   if (!cast.postShow) throw new Error('runtime keepsakes need an authored post-show cast')
-  if (awards.length < 1 || awards.length > 7) {
-    throw new Error('runtime keepsake generation requires one through seven player awards')
+  if (awards.length < 1 || awards.length > 10) {
+    throw new Error('runtime keepsake generation requires one through ten player awards')
   }
   if (new Set(awards.map((award) => award.playerId)).size !== awards.length) {
     throw new Error('runtime keepsake player awards must be unique')
