@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Grid3x3, Swords, Target, Trophy, Users } from 'lucide-react'
 import type { GameModel } from '../../types/database'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 interface ScoringSection {
   icon: ReactNode
@@ -67,9 +68,26 @@ const CONVICTION_SECTIONS: ScoringSection[] = [
   },
 ]
 
+/**
+ * Two of the details above name the legacy pack's own pools. Only that pack
+ * drafts a dragon, so every other pack gets the same rule stated in pool-neutral
+ * terms rather than a sentence about content it does not have.
+ */
+const PACK_DETAIL_OVERRIDES: Record<string, string> = {
+  'Signature Beats': 'You activated 3 beats per entry before the show; only those can score. Beats are priced by odds (20, 25, 35 or 45 base), so a 35-point long shot pays 53 on the board. The host can also call the board\'s standing events.',
+  'Conviction': 'A true beat pays its authored pot. One believer receives the full amount; a crowd splits it equally, with any indivisible remainder left unawarded. What you drafted is identity, not passive score.',
+}
+
 export default function ScoringExplainer({ gameModel = 'legacy_ensemble' }: { gameModel?: GameModel }) {
   const [isOpen, setIsOpen] = useState(false)
-  const sections = gameModel === 'conviction_portfolio' ? CONVICTION_SECTIONS : SECTIONS
+  const { identity: showIdentity } = useShowIdentity()
+  const baseSections = gameModel === 'conviction_portfolio' ? CONVICTION_SECTIONS : SECTIONS
+  const sections = showIdentity.isLegacy
+    ? baseSections
+    : baseSections.map((section) => {
+      const override = PACK_DETAIL_OVERRIDES[section.label]
+      return override ? { ...section, detail: override } : section
+    })
 
   return (
     <div className="relief-glass overflow-hidden">

@@ -33,6 +33,7 @@ import AvatarPicker from '../components/AvatarPicker'
 import Avatar from '../components/Avatar'
 import { Hallmark } from '../components/ui/Hallmarks'
 import { PLAYER_AVATARS } from '../data/avatar-config'
+import { UNBOUND_SHOW_IDENTITY, showIdentityLine } from '../lib/show-identity'
 import type { PlayerRow, RoomPhase } from '../types/database'
 
 // ─── Screen state ─────────────────────────────────────────────────────────────
@@ -266,7 +267,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
         >
-          House of the Dragon — Season 3 Finale
+          {showIdentityLine(UNBOUND_SHOW_IDENTITY)}
         </motion.p>
 
         {/* Star field — static decorative dots */}
@@ -356,11 +357,15 @@ export default function Home() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
                 >
-                  House of the Dragon
+                  {UNBOUND_SHOW_IDENTITY.property}
                 </motion.p>
               </section>
 
-              {/* The episode is treated as tonight's dated proclamation. */}
+              {/* The installment is treated as tonight's dated proclamation.
+                  The landing route exists before any room does, so there is no
+                  pack to read: the band renders only when the unbound identity
+                  names an installment. */}
+              {UNBOUND_SHOW_IDENTITY.installment != null && (
               <motion.div
                 className="material-vellum deckled relief-raised flex min-h-11 w-full items-center justify-center gap-3 px-5 py-2"
                 style={{ color: 'var(--t-ink)' }}
@@ -373,10 +378,11 @@ export default function Home() {
                   className="whitespace-nowrap text-[12px] font-extrabold uppercase tracking-[0.18em]"
                   style={{ fontFamily: 'var(--font-family-display)' }}
                 >
-                  Season 3 Finale
+                  {UNBOUND_SHOW_IDENTITY.installment}
                 </span>
                 <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-ink-muted)' }} aria-hidden />
               </motion.div>
+              )}
 
               {/* Blood-thread divider: madder line, wax knot, restrained ornament. */}
               <div className="flex w-full items-center gap-2 px-1" aria-hidden>

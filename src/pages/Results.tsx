@@ -37,6 +37,7 @@ import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import PostCeremonyView from '../components/home/PostCeremonyView'
 import { Hallmark } from '../components/ui/Hallmarks'
 import { resolveBrowserRuntimeNarrativePolicy } from '../lib/runtime-narrative'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { useRuntimeNarrativeCast } from '../hooks/useRuntimeNarrativeCast'
 
 export default function Results() {
@@ -372,16 +373,21 @@ export default function Results() {
   return (
     <>
       {scores.recordSource === 'settled' ? (
-        <div className="max-w-md mx-auto px-4 pt-6">
-          <a
-            href="/ceremony.html"
-            className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"
-          >
-            <Clapperboard size={18} className="text-oscar-gold flex-shrink-0" />
-            <span className="font-semibold text-oscar-gold">The Ceremony</span>
-            <span className="ml-auto text-xs text-white/40">rewatch &rsaquo;</span>
-          </a>
-        </div>
+        /* The offline ceremony artifact was hand-built for the legacy pack and is
+           not published for any other pack, so the link is only offered where it
+           resolves. */
+        isLegacyShowPack(room.show_pack_id) ? (
+          <div className="max-w-md mx-auto px-4 pt-6">
+            <a
+              href="/ceremony.html"
+              className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"
+            >
+              <Clapperboard size={18} className="text-oscar-gold flex-shrink-0" />
+              <span className="font-semibold text-oscar-gold">The Ceremony</span>
+              <span className="ml-auto text-xs text-white/40">rewatch &rsaquo;</span>
+            </a>
+          </div>
+        ) : null
       ) : (
         <div className="max-w-md mx-auto px-4 pt-6">
           <div

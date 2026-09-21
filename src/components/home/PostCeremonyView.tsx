@@ -25,6 +25,8 @@ import TheReckoning from './TheReckoning'
 import type { BingoMarkRow, BingoSquareRow, GameModel, PlayerRow, PlayerVerdictRow } from '../../types/database'
 import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { showIdentityLine } from '../../lib/show-identity'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
@@ -91,6 +93,7 @@ export default function PostCeremonyView({
   gameModel = 'legacy_ensemble',
   runtimeVoices,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const settled = recordSource === 'settled'
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
@@ -230,7 +233,7 @@ export default function PostCeremonyView({
           transition={{ duration: 0.35, delay: 0.05 }}
           className="text-[10px] text-accent/55 uppercase tracking-[0.28em] mb-2"
         >
-          House of the Dragon · Season 3 Finale
+          {showIdentityLine(showIdentity, ' · ')}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: -6 }}

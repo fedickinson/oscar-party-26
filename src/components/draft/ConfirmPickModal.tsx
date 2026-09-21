@@ -24,6 +24,7 @@ import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 // Returns a display-friendly short label for the Claim button.
 // Prefers the full name if it fits; otherwise truncates to the longest
@@ -55,6 +56,7 @@ export default function ConfirmPickModal({
   onCancel,
   isSubmitting,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const isFilm = entity.type === 'film'
   const scoringBeats = isFilm ? beats : beats.slice(0, 3)
   const totalPoints = scoringBeats.reduce((sum, beat) => sum + beat.points, 0)
@@ -99,7 +101,9 @@ export default function ConfirmPickModal({
                   color: 'var(--t-pending)',
                 }}
               >
-                {isFilm ? 'Dragon' : 'Character'}
+                {isFilm
+                  ? (showIdentity.isLegacy ? 'Dragon' : 'Title')
+                  : (showIdentity.isLegacy ? 'Character' : 'Pick')}
               </span>
             </div>
 

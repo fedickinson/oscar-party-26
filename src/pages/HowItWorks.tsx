@@ -50,6 +50,8 @@ import {
   Tv,
 } from 'lucide-react'
 import { Hallmark } from '../components/ui/Hallmarks'
+import { useShowIdentity } from '../hooks/useShowIdentity'
+import { showIdentityLine } from '../lib/show-identity'
 
 // ─── Tonight ──────────────────────────────────────────────────────────────────
 // The only block that changes between parties. `null` on any time renders a
@@ -57,8 +59,11 @@ import { Hallmark } from '../components/ui/Hallmarks'
 // the schedule is settled.
 
 const TONIGHT = {
-  event: 'House of the Dragon',
-  episode: 'Season 3, the finale',
+  /**
+   * The show itself is no longer named here. It comes from the pack the reader's
+   * room is bound to (`useShowIdentity`), falling back to the platform's own
+   * unbound wording for a stranger who has not joined anything yet.
+   */
   date: 'Sunday 9 August',
   /** Shown big at the bottom. null hides the code block entirely. */
   roomCode: null as string | null,
@@ -103,6 +108,24 @@ const TONIGHT = {
         'The episode is out at nine, but we start it when everyone is actually ready — not at nine sharp. Both screens count down and press play on the same beat.',
     },
   ],
+}
+
+/**
+ * The draft step, and the draft card further down, describe the legacy pack's
+ * two pools by name. Only that pack opens with a one-dragon round; every other
+ * pack drafts a single pool, so it gets the same instruction stated in
+ * pool-neutral terms rather than a promise of a round it does not run.
+ */
+const PACK_DRAFT_STEP_DETAIL =
+  'Draft your roster in turns, then choose the moments each pick scores on. The one part where everyone has to be in the app at once, and it does not wait.'
+
+function scheduleFor(isLegacy: boolean) {
+  if (isLegacy) return TONIGHT.schedule
+  return TONIGHT.schedule.map((step) => (
+    step.title === 'The draft, then activation'
+      ? { ...step, detail: PACK_DRAFT_STEP_DETAIL }
+      : step
+  ))
 }
 
 // ─── The pact ─────────────────────────────────────────────────────────────────
@@ -389,6 +412,12 @@ function Rule() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HowItWorks() {
+  // The reader may be a stranger with the link and no room at all; the unbound
+  // identity is what that resolves to, and it names no show.
+  const { identity: showIdentity } = useShowIdentity()
+  const isLegacy = showIdentity.isLegacy
+  const schedule = scheduleFor(isLegacy)
+
   return (
     <div
       className="flex flex-col gap-10"
@@ -422,7 +451,7 @@ export default function HowItWorks() {
         </h1>
         <div className="flex flex-col gap-0.5">
           <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
-            {TONIGHT.event} &middot; {TONIGHT.episode}
+            {showIdentityLine(showIdentity, ' \u00b7 ')}
           </p>
           <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
             {TONIGHT.date}
@@ -513,7 +542,7 @@ export default function HowItWorks() {
           <GameCard
             icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>}
             title="Before — you draft"
-            summary={
+            summary={isLegacy ? (
               <>
                 One dragon each, then four characters each, taken in turns. Drafting the
                 character is only half of it: for every character you take, you then choose
@@ -522,7 +551,16 @@ export default function HowItWorks() {
                 An activated beat scores if it happens tonight. A beat you left off pays
                 nothing, however loudly it happens.
               </>
-            }
+            ) : (
+              <>
+                You draft from the board in turns. Taking a pick is only half of it: for
+                every one you take, you then choose exactly{' '}
+                <strong style={{ color: 'var(--t-text)' }}>three</strong> of its Signature
+                Beats &mdash; specific moments only that pick can trigger. An activated beat
+                scores if it happens tonight. A beat you left off pays nothing, however
+                loudly it happens.
+              </>
+            )}
           >
             <Disclosure label="Why no character is the best pick">
               <P>
@@ -555,7 +593,7 @@ export default function HowItWorks() {
                 Characters score at one and a half times, so a 45-point wild beat actually
                 pays 67 &mdash; enough to swing the whole night on one moment. That is
                 deliberate, and it is why the wild band has to stay genuinely unlikely.
-                Dragons pay at face value.
+                {isLegacy && ' Dragons pay at face value.'}
               </P>
             </Disclosure>
             <Disclosure label="You are allowed to bet both ways">
@@ -585,6 +623,9 @@ export default function HowItWorks() {
                 shouts.
               </P>
             </Disclosure>
+            {/* The opening one-each round only exists on the legacy pack; a pack
+                with no second pool never runs it, so the rule is not stated. */}
+            {isLegacy && (
             <Disclosure label="Dragons work differently">
               <P>
                 Dragons go first, everyone gets exactly one, and there are only eleven, so
@@ -596,6 +637,7 @@ export default function HowItWorks() {
                 face value rather than one and a half times.
               </P>
             </Disclosure>
+            )}
             <Disclosure label="How the round actually runs">
               <P>
                 Snake order, 45 seconds a pick &mdash; miss the clock and it moves on
@@ -636,8 +678,11 @@ export default function HowItWorks() {
               <P>
                 Every square has a strict win condition that spells out what does{' '}
                 <em>not</em> count, and tapping a square shows you that wording before you
-                commit. &ldquo;Named Dragon Snack&rdquo; needs a dragon to actually use its
-                teeth on someone with a name &mdash; burning them does not count.
+                commit.
+                {isLegacy && (
+                  <> &ldquo;Named Dragon Snack&rdquo; needs a dragon to actually use its
+                  teeth on someone with a name &mdash; burning them does not count.</>
+                )}
               </P>
               <P>
                 So it is two taps, not one: select, read, confirm. Then say it out loud,
@@ -885,7 +930,7 @@ export default function HowItWorks() {
         </P>
 
         <ol className="flex flex-col">
-          {TONIGHT.schedule.map((slot, i) => (
+          {schedule.map((slot, i) => (
             <li key={slot.title} className="flex gap-4">
               {/* Spine: a continuous rule with a node per step. */}
               <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
@@ -893,7 +938,7 @@ export default function HowItWorks() {
                   className="w-2 h-2 rounded-full mt-1.5"
                   style={{ background: 'var(--t-accent)' }}
                 />
-                {i < TONIGHT.schedule.length - 1 && (
+                {i < schedule.length - 1 && (
                   <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
                 )}
               </div>

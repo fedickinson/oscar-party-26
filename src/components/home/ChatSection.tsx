@@ -23,6 +23,7 @@ import { acquireCompanionTypingChannel } from '../../hooks/companionTypingChanne
 import { useRuntimeNarrativeCast } from '../../hooks/useRuntimeNarrativeCast'
 import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
 import { LEGACY_SHOW_PACK_ID } from '../../lib/catalog-scope'
+import { isLegacyShowPack } from '../../lib/show-identity'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -337,7 +338,11 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
             }
 
             // ── Film encyclopedia link cards ──────────────────────────────
+            // The encyclopedia is legacy-pack content (src/data/film-encyclopedia).
+            // A room on any other pack has nothing behind the card, so it is not
+            // offered there at all.
             if (msg.player_id === 'film-link') {
+              if (!isLegacyShowPack(room?.show_pack_id)) return null
               return (
                 <motion.div
                   key={msg.id}

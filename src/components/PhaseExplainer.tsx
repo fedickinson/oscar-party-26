@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Users, Hash, Grid3X3, Sparkles } from 'lucide-react'
+import { useShowIdentity } from '../hooks/useShowIdentity'
 
 type Phase = 'draft' | 'confidence' | 'bingo'
 
@@ -48,12 +49,29 @@ const CONTENT: Record<Phase, {
   },
 }
 
+/**
+ * The draft copy above describes the legacy pack's two pools by name. Any other
+ * pack drafts its own kinds from the same snake, so it gets the pool-neutral
+ * account of the same rules.
+ */
+const PACK_DRAFT_CONTENT = {
+  what: 'You draft in turns from the room\u2019s board, and your picks are yours for the night. When something you hold resolves on screen, you score it. You are drafting who matters tonight.',
+  different: 'This is the only part where you compete for picks — once somebody takes an entry, it is theirs. Everyone needs to be here, because it goes in turns.',
+  tip: 'Take the picks with the most ways to score, not the most famous names. A pick that can only do one thing scores once, at best.',
+}
+
 export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24 }: PhaseExplainerProps) {
+  const { identity: showIdentity } = useShowIdentity()
   const base = CONTENT[phase]
   const { icon, title } = base
 
   // Confidence copy is dynamic based on the number of categories in play
   let { what, different, tip } = base
+  if (phase === 'draft' && !showIdentity.isLegacy) {
+    what = PACK_DRAFT_CONTENT.what
+    different = PACK_DRAFT_CONTENT.different
+    tip = PACK_DRAFT_CONTENT.tip
+  }
   if (phase === 'confidence') {
     what = `Pick who you think will win each of the ${confidenceRange} categories. Each pick gets a confidence number from 1 to ${confidenceRange} — if your pick wins, you score that many points. Each number can only be used once.`
     different = `Everyone picks independently — you can all choose the same winner. The strategy isn't just WHO you pick, it's WHERE you put your big numbers. Save the high numbers for categories you're sure about.`

@@ -29,6 +29,8 @@ export interface PlayerShareCardProps {
   roomCode: string
   /** Absolute URL of the public recap, printed as the footer call to action. */
   recapUrl: string
+  /** The room's show credit. Omitted renders no credit line rather than a guess. */
+  showLine?: string | null
 }
 
 function playerColors(avatarId: string): { primary: string; secondary: string } {
@@ -140,6 +142,7 @@ export function PlayerShareCard({
   verdict,
   roomCode,
   recapUrl,
+  showLine = null,
 }: PlayerShareCardProps) {
   const colors = playerColors(entry?.player.avatar_id ?? '')
   const companion = verdict ? getCompanionById(verdict.companion_id) : null
@@ -223,7 +226,7 @@ export function PlayerShareCard({
             letterSpacing: '0.035em',
           }}
         >
-          House of the Dragon — Season 3 Finale
+          {showLine}
         </div>
       </div>
 

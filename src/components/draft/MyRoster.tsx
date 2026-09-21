@@ -23,6 +23,8 @@ import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { draftPoolNoun } from '../../lib/show-identity'
 
 interface Props {
   roster: DraftEntityWithDetails[]
@@ -32,6 +34,7 @@ interface Props {
 }
 
 export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, playerColor, beatsByEntityId }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const [expanded, setExpanded] = useState(false)
 
   const peoplePicks = roster.filter((e) => e.type === 'person')
@@ -68,7 +71,7 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
             <span className="text-xs text-[var(--t-text-muted)]">
               {peoplePicks.length > 0 && `${peoplePicks.length} ${peoplePicks.length === 1 ? 'person' : 'people'}`}
               {peoplePicks.length > 0 && dragonPicks.length > 0 && ' · '}
-              {dragonPicks.length > 0 && `${dragonPicks.length} ${dragonPicks.length === 1 ? 'dragon' : 'dragons'}`}
+              {dragonPicks.length > 0 && `${dragonPicks.length} ${draftPoolNoun('film', dragonPicks.length, showIdentity)}`}
             </span>
           )}
           {totalPotentialPoints > 0 && (
@@ -108,7 +111,11 @@ export default function MyRoster({ roster, totalPickSlots: _totalPickSlots, play
                     <RosterSection label="People" entities={peoplePicks} beatsByEntityId={beatsByEntityId} />
                   )}
                   {dragonPicks.length > 0 && (
-                    <RosterSection label="Dragons" entities={dragonPicks} beatsByEntityId={beatsByEntityId} />
+                    <RosterSection
+                      label={showIdentity.isLegacy ? 'Dragons' : 'Titles'}
+                      entities={dragonPicks}
+                      beatsByEntityId={beatsByEntityId}
+                    />
                   )}
                 </>
               )}
@@ -131,6 +138,7 @@ function RosterSection({
   entities: import('../../types/game').DraftEntityWithDetails[]
   beatsByEntityId: Map<string, SignatureBeatRow[]>
 }) {
+  const { identity: showIdentity } = useShowIdentity()
   return (
     <div className="mb-3 last:mb-0">
       <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--t-ornament)]">{label}</p>
@@ -152,7 +160,7 @@ function RosterSection({
                   fallback={<FilmIcon filmName={entity.type === 'film' ? entity.name : entity.film_name} size={16} className="text-[var(--t-text-muted)]" />}
                 />
                 {entity.type === 'film' && (
-                  <span className="mt-0.5 flex-shrink-0 text-[var(--t-personal-text)]" aria-label="Claimed dragon">
+                  <span className="mt-0.5 flex-shrink-0 text-[var(--t-personal-text)]" aria-label={showIdentity.isLegacy ? 'Claimed dragon' : 'Claimed'}>
                     <Hallmark id="hallmark-claim" size={14} />
                   </span>
                 )}

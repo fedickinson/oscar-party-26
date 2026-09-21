@@ -17,6 +17,8 @@ export interface ShareCardProps {
   leaderboard: ScoredPlayer[]
   players: PlayerRow[]
   roomCode: string
+  /** The room's show credit. Omitted renders no credit line rather than a guess. */
+  showLine?: string | null
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -98,7 +100,7 @@ function DanceMark() {
     <svg width="128" height="128" viewBox="0 0 120 120" aria-hidden="true">
       <circle cx="60" cy="60" r="53" fill="#e2d5b9" stroke="#292219" strokeWidth="5" />
       <circle cx="60" cy="60" r="47" fill="none" stroke="#665642" strokeWidth="1.5" />
-      <g aria-label="Team Black dragon">
+      <g aria-label="Team Black device">
         <path fill="#101014" d="M66 17C45 11 25 21 16 39 8 56 12 77 26 89c11 10 28 12 39 3 9-7 10-20 3-28-6-8-18-9-26-3l-8 7 10 1-5 8 12-3c5 0 8 5 5 9-5 7-17 7-24 0-11-10-12-27-4-39 7-11 20-17 33-15l-8 7 15-2-5 11 16-8-2-9 10-3Z" />
         <path fill="#101014" d="M48 31C36 23 24 24 16 33l12 2-13 8 15 1-10 12 17-5-3 15 15-12 11-15Z" />
         <path fill="#8e3b2e" d="M56 31c9-6 19-3 23 6l11 2-7 6 9 6-12 3-5 9-5-10-13-2-10 5 4-10-8-6 11-1Z" />
@@ -110,7 +112,7 @@ function DanceMark() {
         </g>
         <circle cx="71" cy="43" r="2" fill="#f0e5cb" />
       </g>
-      <g aria-label="Team Green dragon" transform="rotate(180 60 60)">
+      <g aria-label="Team Green device" transform="rotate(180 60 60)">
         <path fill="#2c4034" d="M66 17C45 11 25 21 16 39 8 56 12 77 26 89c11 10 28 12 39 3 9-7 10-20 3-28-6-8-18-9-26-3l-8 7 10 1-5 8 12-3c5 0 8 5 5 9-5 7-17 7-24 0-11-10-12-27-4-39 7-11 20-17 33-15l-8 7 15-2-5 11 16-8-2-9 10-3Z" />
         <path fill="#2c4034" d="M48 31C36 23 24 24 16 33l12 2-13 8 15 1-10 12 17-5-3 15 15-12 11-15Z" />
         <path fill="#b9863f" d="M56 31c9-6 19-3 23 6l11 2-7 6 9 6-12 3-5 9-5-10-13-2-10 5 4-10-8-6 11-1Z" />
@@ -126,7 +128,7 @@ function DanceMark() {
   )
 }
 
-export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
+export function ShareCard({ leaderboard, players, roomCode, showLine = null }: ShareCardProps) {
   const winner = leaderboard[0]
 
   return (
@@ -216,7 +218,7 @@ export function ShareCard({ leaderboard, players, roomCode }: ShareCardProps) {
             letterSpacing: '0.035em',
           }}
         >
-          House of the Dragon — Season 3 Finale
+          {showLine}
         </div>
       </div>
 

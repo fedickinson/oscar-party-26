@@ -24,6 +24,8 @@ import { PlayerShareCard } from '../components/home/PlayerShareCard'
 import type { ScoredPlayer } from '../lib/scoring'
 import type { PlayerAward } from '../lib/night-awards'
 import type { PlayerRow, PlayerVerdictRow } from '../types/database'
+import { useShowIdentity } from './useShowIdentity'
+import { showIdentityLine } from '../lib/show-identity'
 
 /** Public recap URL for a room — printed on the card and used as share text. */
 export function recapUrlFor(roomCode: string): string {
@@ -31,7 +33,13 @@ export function recapUrlFor(roomCode: string): string {
   return `${origin}/recap/${roomCode}`
 }
 
+/** Filename-safe slug of the show credit, so a card is not named for another show. */
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'watch-party'
+}
+
 export function useShareResults() {
+  const { identity: showIdentity } = useShowIdentity()
   const [isCopied, setIsCopied] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -112,17 +120,20 @@ export function useShareResults() {
     [flashCopied],
   )
 
+  const showLine = showIdentityLine(showIdentity)
+  const showSlug = slugify(showLine)
+
   const shareResults = useCallback(
     async (leaderboard: ScoredPlayer[], players: PlayerRow[], roomCode: string) => {
       if (leaderboard.length === 0) return
       await captureAndShare(
-        ShareCard({ leaderboard, players, roomCode }),
-        `hotd-finale-standings-${roomCode}.png`,
-        'House of the Dragon Finale — Final Standings',
+        ShareCard({ leaderboard, players, roomCode, showLine }),
+        `${showSlug}-standings-${roomCode}.png`,
+        `${showLine} — Final Standings`,
         recapUrlFor(roomCode),
       )
     },
-    [captureAndShare],
+    [captureAndShare, showLine, showSlug],
   )
 
   const sharePlayerCard = useCallback(
@@ -134,13 +145,13 @@ export function useShareResults() {
     ) => {
       const recapUrl = recapUrlFor(roomCode)
       await captureAndShare(
-        PlayerShareCard({ award, entry, verdict, roomCode, recapUrl }),
-        `hotd-finale-${award.playerName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
+        PlayerShareCard({ award, entry, verdict, roomCode, recapUrl, showLine }),
+        `${showSlug}-${slugify(award.playerName)}.png`,
         `${award.playerName} — ${award.title}`,
         recapUrl,
       )
     },
-    [captureAndShare],
+    [captureAndShare, showLine, showSlug],
   )
 
   return { shareResults, sharePlayerCard, isCopied }

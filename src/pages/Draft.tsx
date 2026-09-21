@@ -32,6 +32,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, Trophy, Flame, RefreshCw, Users, Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { useDraft } from '../hooks/useDraft'
+import { useShowIdentity } from '../hooks/useShowIdentity'
+import { draftSubPhaseLabel } from '../lib/show-identity'
 import DraftTimer from '../components/draft/DraftTimer'
 import EntityCard from '../components/draft/EntityCard'
 import MyRoster from '../components/draft/MyRoster'
@@ -66,6 +68,7 @@ export default function Draft() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
+  const { identity: showIdentity } = useShowIdentity()
 
   const [selectedEntity, setSelectedEntity] = useState<DraftEntityWithDetails | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
@@ -162,9 +165,13 @@ export default function Draft() {
   const draftedPeople = draftedEntities.filter((e) => e.type === 'person')
   const draftedDragons = draftedEntities.filter((e) => e.type === 'film')
 
-  const isDragonPhase = draftSubPhase === 'films'
-  const activeAvailable = isDragonPhase ? availableDragons : availablePeople
-  const activeDrafted = isDragonPhase ? draftedDragons : draftedPeople
+  // The film pool is the legacy pack's dragons; every other pack fills the same
+  // slot with its own kind, and a pack with no film entities never enters this
+  // sub-draft at all (useDraft sizes it from the pool, so it is zero picks long).
+  const isFilmPhase = draftSubPhase === 'films'
+  const activeAvailable = isFilmPhase ? availableDragons : availablePeople
+  const activeDrafted = isFilmPhase ? draftedDragons : draftedPeople
+  const subPhaseLabel = draftSubPhaseLabel(isFilmPhase ? 'film' : 'person', showIdentity)
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -220,12 +227,12 @@ export default function Draft() {
             className="relief-glass flex items-center justify-between flex-shrink-0 px-3 py-2 mb-2 min-h-[52px] rounded-xl"
           >
             <div className="flex items-center gap-2">
-              {isDragonPhase
+              {isFilmPhase
                 ? <Flame size={16} className="text-[var(--t-pending)]" />
                 : <Users size={16} className="text-[var(--t-ornament)]" />
               }
               <span className="font-display text-xs font-semibold text-[var(--t-text)] uppercase tracking-[0.14em]">
-                {isDragonPhase ? 'Claim a dragon' : 'Draft your characters'}
+                {subPhaseLabel}
               </span>
               <span className="hidden min-[360px]:block h-px w-8" style={{ backgroundColor: 'var(--t-ornament-muted)' }} aria-hidden />
             </div>
@@ -263,8 +270,8 @@ export default function Draft() {
                   Taking you to {room.game_model === 'conviction_portfolio' ? 'build your conviction portfolio' : 'choose your bets'}…
                 </p>
               </motion.div>
-            ) : isDragonPhase ? (
-              /* ── Dragons sub-draft ── */
+            ) : isFilmPhase ? (
+              /* ── Film-pool sub-draft (the legacy pack's dragons) ── */
               <>
                 {isMyTurn && (
                   <motion.p

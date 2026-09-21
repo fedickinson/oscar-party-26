@@ -32,6 +32,7 @@ import type { BeatActivationRow, DraftEntityRow, DraftPickRow, PlayerRow, Signat
 import OperatorLens from './OperatorLens'
 import WitnessProposalQueue from './WitnessProposalQueue'
 import CompanionGroundingReviewQueue from './CompanionGroundingReviewQueue'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 const FREE_CENTER_INDEX = 12
 
@@ -67,6 +68,7 @@ export default function GameMasterConsole({
   engineHeartbeat,
   heartbeatError,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const {
     events,
     quickPicks,
@@ -964,7 +966,10 @@ export default function GameMasterConsole({
             </div>
             {canCommit && (
               <p className="text-[11px] text-white/30 mt-2 text-center">
-                {GM_POINT_TIERS.find((t) => t.points === 10)?.hint}
+                {/* The authored hint names the legacy pack's own biggest moments. */}
+                {showIdentity.isLegacy
+                  ? GM_POINT_TIERS.find((t) => t.points === 10)?.hint
+                  : 'The biggest moments of the night'}
               </p>
             )}
           </div>
