@@ -362,6 +362,19 @@ npx tsx scripts/generate-settlement-drop.mts \
 Proves it worked: `[settlement-drop] wrote=…/ceremony.html`. Open it and read it at 375 by 812.
 Do **not** pass `--allow-proof` — that flag is only for deliberately synthetic receipts.
 
+### 1.11 If the machine has no Docker
+
+All of section 1 assumes `supabase start`, which needs Docker. A Docker-free stand-in exists at
+`.private/local-stack/` (gitignored, sandbox-only, never production): real Postgres 16 with all
+65 migrations and `supabase/seed.sql` applied, real PostgREST, and a shim answering
+`supabase status -o json` on the same `http://127.0.0.1:54321`. Bring it up with
+`.private/local-stack/start.sh`, put `.private/local-stack/bin` first on `PATH`, and pass
+`SUPABASE_TARGET=local`. Its `README.md` lists what is real and what is not — the important
+absences are Realtime, the auth server, Storage, Vault and every `supabase db …` subcommand, so
+any rehearsal step that depends on a broadcast reaching a second phone still needs a real stack
+or a real pair of phones. Pack activation and the operator scripts do work against it: the VMA
+pack has been activated into a room there end to end.
+
 ---
 
 ## 2. Friday: production setup
@@ -380,6 +393,11 @@ npx vercel --prod
 
 Proves it worked: Vercel prints `Production: https://…` and the URL loads the landing page.
 Note the deployment URL; it is the first entry of your rollback menu (section 6.1).
+
+**Check the environment variables before you trust the landing page.** A build without
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` throws at module load and renders an empty
+textured page with no error. The Vercel project has carried them until now; confirm in the
+project settings that both are still set for Production before sending anyone the link.
 
 ### 2.2 Create the production room
 
@@ -720,18 +738,36 @@ and D2h). Per D2, off-air winners are declared by the host from MTV's official p
 2. Watch MTV's own official channels only. A trade-press recap is not the source; a screenshot
    forwarded by a player is not the source. If it is not MTV's official account or site, it does
    not get declared.
-3. Declare the remaining categories **one at a time, in the order MTV posts them**, with about
-   60 to 90 seconds between each. The cast stagger needs room; a batch of eight declarations in
-   twenty seconds produces an illegible timeline and a wall of chat (`BRIEF.md` risk 3).
-4. Spotlight each one exactly as in 4.6 — the ceremony still works after the broadcast.
+3. Write the results into a file as MTV posts them, one entry per category with the exact
+   category title, the artist, and the URL of MTV's post, then dry-run the batch command from
+   the laptop and read the table it prints:
+
+   ```sh
+   npx tsx scripts/declare-scheduled-winners.mts --room CODE --input winners.json
+   ```
+
+   It refuses the whole batch if any title or artist is ambiguous, a category already has a
+   winner, a category appears twice, or a source is not an http(s) URL. When the table is
+   right, apply it with a 60-second pause so the cast stagger has room:
+
+   ```sh
+   SUPABASE_TARGET=remote npx tsx scripts/declare-scheduled-winners.mts \
+     --room CODE --input winners.json --apply --confirm-room CODE --pause-seconds 60
+   ```
+
+   It declares one at a time in file order through the same command the phone uses, posts the
+   winner divider, and stops at the first failure saying which entries landed. Ties stay on the
+   phone: the script always declares a single winner.
+4. If you would rather tap, spotlight each one exactly as in 4.6 with 60 to 90 seconds between
+   declarations — the ceremony still works after the broadcast.
 5. **Choose a cutoff and say it in chat before you start.** 11:00 p.m. ET is a reasonable one.
 6. If a category is still unposted at your cutoff: **do not invent a winner.** Post in chat
    "MTV has not posted <category>; we will settle it in the record" and leave the room live
    overnight. The daemon and the snapshot loop can keep running, or you can stop the daemon and
    leave the snapshots going. Close the floor in the morning once MTV posts, then settle.
-   Be aware of the constraint behind that advice: the **Close the Live Floor** button only
-   appears once every category in the room has a winner. There is no host control that closes a
-   Results Night floor with a category still undeclared.
+   You are not trapped: the **Close the Live Floor** card is permanent and two-step, and it
+   tells you how many categories are unresolved before you confirm. Holding the room open is a
+   choice about the provisional ledger, not a constraint.
 
 ### 4.8 If something goes wrong
 
