@@ -26,7 +26,7 @@ import type { BingoMarkRow, BingoSquareRow, GameModel, PlayerRow, PlayerVerdictR
 import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
 import { useShowIdentity } from '../../hooks/useShowIdentity'
-import { showIdentityLine } from '../../lib/show-identity'
+import { showIdentityLine, type ShowIdentity } from '../../lib/show-identity'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
@@ -58,6 +58,12 @@ interface Props {
   onSharePlayerCard?: (playerId: string) => void
   /** Enables per-player keepsake links inside The Reckoning. */
   roomCode?: string
+  /**
+   * The show this record belongs to. The session-free recap route resolves it
+   * from the room it loaded by code; without it the view falls back to the
+   * viewer's own session, which is only the same show on the in-room path.
+   */
+  showIdentity?: ShowIdentity
   gameModel?: GameModel
   runtimeVoices?: RuntimeNarrativeVoice[]
 }
@@ -90,10 +96,12 @@ export default function PostCeremonyView({
   currentPlayerId,
   onSharePlayerCard,
   roomCode,
+  showIdentity,
   gameModel = 'legacy_ensemble',
   runtimeVoices,
 }: Props) {
-  const { identity: showIdentity } = useShowIdentity()
+  const { identity: sessionIdentity } = useShowIdentity()
+  const identity = showIdentity ?? sessionIdentity
   const settled = recordSource === 'settled'
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
@@ -233,7 +241,7 @@ export default function PostCeremonyView({
           transition={{ duration: 0.35, delay: 0.05 }}
           className="text-[10px] text-accent/55 uppercase tracking-[0.28em] mb-2"
         >
-          {showIdentityLine(showIdentity, ' · ')}
+          {showIdentityLine(identity, ' · ')}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: -6 }}

@@ -66,9 +66,15 @@ interface InternalState extends ShowIdentityState {
   showPackId: string | null
 }
 
-export function useShowIdentity(): ShowIdentityState {
-  const { room } = useGame()
-  const showPackId = room?.show_pack_id ?? null
+/**
+ * The same read, for a pack id the caller already holds.
+ *
+ * The session-free routes (`/recap/:code`) resolve a room by code rather than
+ * through GameContext, so the show they must name is the record's, not the
+ * viewer's. They pass that pack id here and share this module's cache and
+ * in-flight deduplication rather than carrying a second loader.
+ */
+export function useShowIdentityForPack(showPackId: string | null): ShowIdentityState {
   const known = settledIdentity(showPackId)
 
   const [state, setState] = useState<InternalState>({
@@ -98,4 +104,10 @@ export function useShowIdentity(): ShowIdentityState {
     return { identity: known ?? UNBOUND_SHOW_IDENTITY, isLoading: known == null }
   }
   return { identity: state.identity, isLoading: state.isLoading }
+}
+
+/** The identity of the room this viewer has a session in. */
+export function useShowIdentity(): ShowIdentityState {
+  const { room } = useGame()
+  return useShowIdentityForPack(room?.show_pack_id ?? null)
 }

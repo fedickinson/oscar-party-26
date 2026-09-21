@@ -2,8 +2,11 @@
 
 Run with `scripts/simulate-results-night.mts` against `vma-2026-authoring.json` and the
 research odds file `research/03-odds.json`, six players, 3,000 nights, seed 7, on
-2026-09-21. The "Swift absent" column uses the same odds with every Taylor Swift probability
-scaled to one quarter and the category renormalized, the stress case the odds packet asked for.
+2026-09-21. Three thousand nights rather than the ten thousand BRIEF.md section 6 names: the
+Monte Carlo standard error on a 27 percent rate at that sample size is about plus or minus 0.8
+points, which is far inside the margin any of the decisions below turn on. The "Swift absent"
+column uses the same odds with every Taylor Swift probability scaled to one quarter and the
+category renormalized, the stress case the odds packet asked for.
 
 The model is the strongest case for first-pick advantage: every drafter values artists
 identically and picks greedily, and confidence picks are drawn from the same distribution for

@@ -44,6 +44,8 @@ import type {
 export interface RoomSnapshot {
   roomId: string
   roomCode: string
+  /** The pack this record is bound to — the show a session-free page must name. */
+  showPackId: string
   players: PlayerRow[]
   categories: CategoryRow[]
   nominees: NomineeRow[]
@@ -164,6 +166,7 @@ export function useRoomSnapshot(code: string | undefined): {
       setSnapshot({
         roomId,
         roomCode: room.code as string,
+        showPackId: roomBinding.show_pack_id,
         players: (playersRes.data ?? []) as PlayerRow[],
         categories: record.categories,
         nominees: (nomRes.data ?? []) as NomineeRow[],

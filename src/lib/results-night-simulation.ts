@@ -483,6 +483,13 @@ export interface NightPlayerResult {
   bingoScore: number
   totalScore: number
   rank: number
+  /**
+   * Mean count of identical square ids between this player's card and each
+   * other card dealt tonight, out of the 24 live squares. Averaging it over
+   * the room gives the mean pairwise overlap, because every unordered pair is
+   * counted once from each side.
+   */
+  sharedSquares: number
 }
 
 function buildPlayers(playerCount: number): PlayerRow[] {
@@ -608,10 +615,12 @@ export function simulateNight(
   }
   const squareById = new Map(catalog.bingoSquares.map((square) => [square.id, square]))
   const dealtCards: number[][] = []
+  const cardSquareIds: Array<Set<number>> = []
   const bingoScores = new Map<string, number>()
   for (const player of players) {
     const card = withSeededRandom(rng, () => generateBingoCard(catalog.bingoSquares, dealtCards))
     dealtCards.push(card)
+    cardSquareIds.push(new Set(card.filter((id) => id !== 0)))
     const positional = card.map((id) => (id === 0 ? null : squareById.get(id) ?? null))
     const marked = new Set<number>()
     card.forEach((id, index) => {
@@ -624,6 +633,23 @@ export function simulateNight(
       computeSquarePoints(positional, marked),
     ))
   }
+
+  // ── Card overlap ────────────────────────────────────────────────────────
+  // Draft pricing cannot see this: two players can be handed most of the same
+  // board out of a shallow pool, which makes their bingo scores move together
+  // rather than separate them. Counted here so the table can show it.
+  const sharedByPlayerId = new Map<string, number>()
+  players.forEach((player, index) => {
+    let shared = 0
+    for (let other = 0; other < cardSquareIds.length; other += 1) {
+      if (other === index) continue
+      for (const id of cardSquareIds[index]) {
+        if (cardSquareIds[other].has(id)) shared += 1
+      }
+    }
+    const pairs = cardSquareIds.length - 1
+    sharedByPlayerId.set(player.id, pairs > 0 ? shared / pairs : 0)
+  })
 
   // ── Score ───────────────────────────────────────────────────────────────
   const scored = computeLeaderboard(
@@ -646,6 +672,7 @@ export function simulateNight(
     bingoScore: row.bingoScore,
     totalScore: row.totalScore,
     rank: row.rank,
+    sharedSquares: sharedByPlayerId.get(row.player.id) ?? 0,
   }))
 }
 
@@ -662,6 +689,8 @@ export interface SimulationSlotSummary {
   bingoP10: number
   bingoP90: number
   zeroBingoShare: number
+  /** Mean identical square ids between two players' cards, out of 24. */
+  meanSharedSquares: number
   meanTotal: number
 }
 
@@ -678,7 +707,7 @@ export interface SimulationSummary {
   slots: SimulationSlotSummary[]
   overall: SimulationSlotSummary
   decisionRule: string
-  verdict: 'flatten' | 'keep placeholder'
+  verdict: 'flatten' | 'keep current scale'
   verdictReason: string
 }
 
@@ -699,6 +728,7 @@ interface SlotAccumulator {
   totalSum: number
   bingoScores: number[]
   zeroBingo: number
+  sharedSquaresSum: number
   confidenceShareSum: number
   draftShareSum: number
   bingoShareSum: number
@@ -712,6 +742,7 @@ function newAccumulator(): SlotAccumulator {
     totalSum: 0,
     bingoScores: [],
     zeroBingo: 0,
+    sharedSquaresSum: 0,
     confidenceShareSum: 0,
     draftShareSum: 0,
     bingoShareSum: 0,
@@ -725,6 +756,7 @@ function record(accumulator: SlotAccumulator, row: NightPlayerResult): void {
   accumulator.totalSum += row.totalScore
   accumulator.bingoScores.push(row.bingoScore)
   if (row.bingoScore === 0) accumulator.zeroBingo += 1
+  accumulator.sharedSquaresSum += row.sharedSquares
   if (row.totalScore > 0) {
     accumulator.confidenceShareSum += row.confidenceScore / row.totalScore
     accumulator.draftShareSum += row.draftScore / row.totalScore
@@ -755,6 +787,7 @@ function summarize(slot: number, accumulator: SlotAccumulator): SimulationSlotSu
     bingoP10: percentile(sorted, 0.1),
     bingoP90: percentile(sorted, 0.9),
     zeroBingoShare: accumulator.zeroBingo / players,
+    meanSharedSquares: accumulator.sharedSquaresSum / players,
     meanTotal: accumulator.totalSum / players,
   }
 }
@@ -793,7 +826,7 @@ export function runSimulation(options: SimulationOptions): SimulationSummary {
   const slotOneWinRate = slots[0].winRate
   const flattenForSlot = slotOneWinRate > DECISION_THRESHOLD
   const flattenForShare = overallSummary.draftShare > DECISION_THRESHOLD
-  const verdict = flattenForSlot || flattenForShare ? 'flatten' : 'keep placeholder'
+  const verdict = flattenForSlot || flattenForShare ? 'flatten' : 'keep current scale'
   const reasons: string[] = []
   if (flattenForSlot) reasons.push(`draft slot 1 wins ${formatPercent(slotOneWinRate)} of nights`)
   if (flattenForShare) reasons.push(`draft is ${formatPercent(overallSummary.draftShare)} of total score`)
@@ -834,14 +867,15 @@ function formatRow(label: string, slot: SimulationSlotSummary): string {
   return `| ${label} | ${formatPercent(slot.winRate)} | ${formatPercent(slot.confidenceShare)} `
     + `| ${formatPercent(slot.draftShare)} | ${formatPercent(slot.bingoShare)} `
     + `| ${formatScore(slot.bingoMean)} | ${formatScore(slot.bingoP10)} | ${formatScore(slot.bingoP90)} `
-    + `| ${formatPercent(slot.zeroBingoShare)} | ${formatScore(slot.meanTotal)} |`
+    + `| ${formatPercent(slot.zeroBingoShare)} | ${formatScore(slot.meanSharedSquares)} `
+    + `| ${formatScore(slot.meanTotal)} |`
 }
 
 /** One Markdown table: a row per draft slot, then the pooled row. */
 export function formatSimulationTable(summary: SimulationSummary): string {
   const lines = [
-    '| Draft slot | Win rate | Confidence share | Draft share | Bingo share | Bingo mean | Bingo p10 | Bingo p90 | Zero bingo | Mean total |',
-    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Draft slot | Win rate | Confidence share | Draft share | Bingo share | Bingo mean | Bingo p10 | Bingo p90 | Zero bingo | Shared squares | Mean total |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ]
   for (const slot of summary.slots) lines.push(formatRow(String(slot.slot), slot))
   lines.push(formatRow('All', summary.overall))

@@ -110,24 +110,6 @@ const TONIGHT = {
   ],
 }
 
-/**
- * The draft step, and the draft card further down, describe the legacy pack's
- * two pools by name. Only that pack opens with a one-dragon round; every other
- * pack drafts a single pool, so it gets the same instruction stated in
- * pool-neutral terms rather than a promise of a round it does not run.
- */
-const PACK_DRAFT_STEP_DETAIL =
-  'Draft your roster in turns, then choose the moments each pick scores on. The one part where everyone has to be in the app at once, and it does not wait.'
-
-function scheduleFor(isLegacy: boolean) {
-  if (isLegacy) return TONIGHT.schedule
-  return TONIGHT.schedule.map((step) => (
-    step.title === 'The draft, then activation'
-      ? { ...step, detail: PACK_DRAFT_STEP_DETAIL }
-      : step
-  ))
-}
-
 // ─── The pact ─────────────────────────────────────────────────────────────────
 // Five, not ten. A list nobody finishes reading protects nothing. Deliberately
 // never collapsed — this is the payload of the whole page.
@@ -416,7 +398,8 @@ export default function HowItWorks() {
   // identity is what that resolves to, and it names no show.
   const { identity: showIdentity } = useShowIdentity()
   const isLegacy = showIdentity.isLegacy
-  const schedule = scheduleFor(isLegacy)
+  // Rendered only under `isLegacy` below: the running order is that event's.
+  const schedule = TONIGHT.schedule
 
   return (
     <div
@@ -455,9 +438,11 @@ export default function HowItWorks() {
           <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
             {showIdentityLine(showIdentity, ' \u00b7 ')}
           </p>
-          <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
-            {TONIGHT.date}
-          </p>
+          {isLegacy && (
+            <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
+              {TONIGHT.date}
+            </p>
+          )}
         </div>
       </motion.header>
 
@@ -555,15 +540,15 @@ export default function HowItWorks() {
               </>
             ) : (
               <>
-                You draft from the board in turns. Taking a pick is only half of it: for
-                every one you take, you then choose exactly{' '}
-                <strong style={{ color: 'var(--t-text)' }}>three</strong> of its Signature
-                Beats &mdash; specific moments only that pick can trigger. An activated beat
-                scores if it happens tonight. A beat you left off pays nothing, however
-                loudly it happens.
+                You draft from the board in turns, and the roster you end up with is the
+                whole bet &mdash; there is nothing to choose or confirm afterwards. Every
+                category the show declares pays its points to whoever is holding the winner,
+                so a roster is a spread of claims on the night.
               </>
             )}
           >
+            {isLegacy && (
+            <>
             <Disclosure label="Why no character is the best pick">
               <P>
                 Every legal set of three lands in the same 60&ndash;90 point band. How many
@@ -598,6 +583,25 @@ export default function HowItWorks() {
                 {isLegacy && ' Dragons pay at face value.'}
               </P>
             </Disclosure>
+            </>
+            )}
+            {/* Beats are inert on a Results Night pack, so what a pick is worth
+                there is the category value itself — the rule `src/lib/scoring.ts`
+                applies, with no activation step in front of it. */}
+            {!isLegacy && (
+            <Disclosure label="What a pick is worth">
+              <P>
+                Each category on the board carries its own point value, set by how much of
+                the night it is. When the host declares a winner, those points go to whoever
+                drafted them &mdash; and to nobody, if nobody did.
+              </P>
+              <P>
+                A winner you drafted as a person pays one and a half times the category,
+                rounded. So the spread matters more than any single name: a roster with a
+                claim in more categories outscores one stacked on a single favourite.
+              </P>
+            </Disclosure>
+            )}
             {/* The two worked examples below name the legacy pack's characters;
                 another pack's forks and shared beats are its own, so the rule is
                 stated only where the example is true. */}
@@ -653,11 +657,13 @@ export default function HowItWorks() {
                 without you. This is the only part of the night that needs everyone in the
                 app at the same time.
               </P>
+              {isLegacy && (
               <P>
                 Activation happens after the picking and before the episode starts. Once the
                 episode is running, your three are locked.
               </P>
-              {!TONIGHT.draftBeatsLive && (
+              )}
+              {isLegacy && !TONIGHT.draftBeatsLive && (
                 <p
                   className="text-[14px] leading-relaxed border-l-2 pl-3"
                   style={{ color: 'var(--t-pending)', borderColor: 'var(--t-pending)' }}
@@ -679,7 +685,7 @@ export default function HowItWorks() {
                 That is genuinely the instruction. Your score moves on its own as{' '}
                 {TONIGHT.gameMaster} logs what happens on screen. The only thing that wants
                 your thumb is a 5&times;5 bingo card: tap a square when you see it happen,
-                confirm, and it goes to {TONIGHT.gameMaster} to approve.
+                confirm, and it scores immediately.
               </>
             }
           >
@@ -694,8 +700,9 @@ export default function HowItWorks() {
                 )}
               </P>
               <P>
-                So it is two taps, not one: select, read, confirm. Then say it out loud,
-                because a claim sits pending until {TONIGHT.gameMaster} approves it.
+                So it is two taps, not one: select, read, confirm. Nobody approves it and
+                nothing sits pending &mdash; the card is on your honor. Say it out loud
+                anyway, and if you marked it by mistake, tap the square again to undo it.
               </P>
             </Disclosure>
             <Disclosure label="What a square is worth">
@@ -936,51 +943,58 @@ export default function HowItWorks() {
         </div>
       </Section>
 
-      <Rule />
+      {/* The date, the running order and the release time all belong to the
+          legacy event. A room on any other pack has its own schedule, which this
+          page does not know, so it shows none rather than the wrong one. */}
+      {isLegacy && (
+        <>
+        <Rule />
 
-      {/* ── Timeline ─────────────────────────────────────────────────────── */}
-      <Section eyebrow="Tonight" title="The shape of it">
-        <P>
-          The episode drops at nine and we will start it around half past &mdash; that part
-          is deliberate. The draft and activation take a real half hour, and it is far better
-          to begin late together than to rush the picks. Nine o&rsquo;clock is a release time,
-          not a deadline; the episode waits for us.
-        </P>
+        {/* ── Timeline ─────────────────────────────────────────────────────── */}
+        <Section eyebrow="Tonight" title="The shape of it">
+          <P>
+            The episode drops at nine and we will start it around half past &mdash; that part
+            is deliberate. The draft and activation take a real half hour, and it is far better
+            to begin late together than to rush the picks. Nine o&rsquo;clock is a release time,
+            not a deadline; the episode waits for us.
+          </P>
 
-        <ol className="flex flex-col">
-          {schedule.map((slot, i) => (
-            <li key={slot.title} className="flex gap-4">
-              {/* Spine: a continuous rule with a node per step. */}
-              <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
-                <span
-                  className="w-2 h-2 rounded-full mt-1.5"
-                  style={{ background: 'var(--t-accent)' }}
-                />
-                {i < schedule.length - 1 && (
-                  <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
-                )}
-              </div>
-              <div className="flex flex-col gap-1 pb-6 min-w-0">
-                <span
-                  className="text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums"
-                  style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
-                >
-                  {slot.time ?? 'time to come'}
-                </span>
-                <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
-                  {slot.title}
-                </h3>
-                <p
-                  className="text-[16px] leading-[1.6]"
-                  style={{ color: 'var(--t-text-muted)' }}
-                >
-                  {slot.detail}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </Section>
+          <ol className="flex flex-col">
+            {schedule.map((slot, i) => (
+              <li key={slot.title} className="flex gap-4">
+                {/* Spine: a continuous rule with a node per step. */}
+                <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
+                  <span
+                    className="w-2 h-2 rounded-full mt-1.5"
+                    style={{ background: 'var(--t-accent)' }}
+                  />
+                  {i < schedule.length - 1 && (
+                    <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 pb-6 min-w-0">
+                  <span
+                    className="text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums"
+                    style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
+                  >
+                    {slot.time ?? 'time to come'}
+                  </span>
+                  <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
+                    {slot.title}
+                  </h3>
+                  <p
+                    className="text-[16px] leading-[1.6]"
+                    style={{ color: 'var(--t-text-muted)' }}
+                  >
+                    {slot.detail}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+        </>
+      )}
 
       {/* ── Join ─────────────────────────────────────────────────────────── */}
       <motion.div

@@ -309,7 +309,11 @@ describe('runSimulation', () => {
     const catalog = fixtureCatalog(50)
     const summary = runSimulation({ catalog, odds: 'uniform', playerCount: 4, nights: 20, seed: 9 })
     expect(summary.slots.map((slot) => slot.slot)).toEqual([1, 2, 3, 4])
-    expect(['flatten', 'keep placeholder']).toContain(summary.verdict)
+    expect(['flatten', 'keep current scale']).toContain(summary.verdict)
+    // A night that clears both thresholds names the scale it is keeping, not a
+    // placeholder: D8 settled the 3/2 scale, so there is no placeholder left.
+    const settled = runSimulation({ catalog, odds: 'uniform', playerCount: 6, nights: 20, seed: 2 })
+    expect(settled.verdict).toBe('keep current scale')
     const shareTotal = summary.overall.confidenceShare
       + summary.overall.draftShare
       + summary.overall.bingoShare
@@ -337,7 +341,18 @@ describe('runSimulation', () => {
     const rows = table.split('\n').filter((line) => line.startsWith('|'))
     expect(rows).toHaveLength(2 + 4 + 1)
     expect(table).toContain('| All |')
+    expect(table).toContain('Shared squares')
     expect(table).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u)
+  })
+
+  // Pool overlap is the thing draft pricing cannot see: two players can hold the
+  // same night's board. The fixture pool is exactly one board deep, so every
+  // pair must share all 24 live squares — the ceiling, stated exactly.
+  it('reports mean pairwise shared squares between two cards', () => {
+    const catalog = fixtureCatalog(50)
+    const summary = runSimulation({ catalog, odds: 'uniform', playerCount: 4, nights: 10, seed: 4 })
+    expect(summary.overall.meanSharedSquares).toBe(24)
+    for (const slot of summary.slots) expect(slot.meanSharedSquares).toBe(24)
   })
 })
 

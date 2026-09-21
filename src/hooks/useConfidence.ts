@@ -26,6 +26,7 @@ import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { requireShowPackId } from '../lib/catalog-scope'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { filterPrestigeCategories, getConfidenceRange } from '../lib/mode-utils'
 import { fetchAllRows } from './fetch-all-rows'
 import type { CategoryWithNominees } from '../types/game'
@@ -141,7 +142,12 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
       // Keep the slate-shape check as a second safety boundary: a prediction
       // must still offer an actual choice rather than one pre-resolved entity.
       const predictable = hydrated.filter((cat) => cat.nominees.length >= 2)
-      const filtered = filterPrestigeCategories(predictable, prestigeMode) as CategoryWithNominees[]
+      // The prestige subsets are hardcoded legacy category ids (1..24). On any
+      // other pack they match nothing, so a non-full mode would silently hand
+      // the player an empty sheet. Only the pack those ids belong to is filtered.
+      const filtered = isLegacyShowPack(showPackId)
+        ? filterPrestigeCategories(predictable, prestigeMode) as CategoryWithNominees[]
+        : predictable
       setCategories(filtered)
 
       // Pre-allocate empty local pick slots for each category
