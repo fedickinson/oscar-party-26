@@ -75,7 +75,11 @@ export default function PhaseExplainer({ phase, onContinue, confidenceRange = 24
   if (phase === 'confidence') {
     what = `Pick who you think will win each of the ${confidenceRange} categories. Each pick gets a confidence number from 1 to ${confidenceRange} — if your pick wins, you score that many points. Each number can only be used once.`
     different = `Everyone picks independently — you can all choose the same winner. The strategy isn't just WHO you pick, it's WHERE you put your big numbers. Save the high numbers for categories you're sure about.`
-    tip = `Put your highest numbers on your most confident picks, not on the biggest awards. Missing Best Picture with a ${confidenceRange} hurts more than missing a craft category.`
+    // The legacy tip names an awards-ceremony category; any other pack gets
+    // the same advice without another show's category in it.
+    tip = showIdentity.isLegacy
+      ? `Put your highest numbers on your most confident picks, not on the biggest awards. Missing Best Picture with a ${confidenceRange} hurts more than missing a craft category.`
+      : `Put your highest numbers on your most confident picks, not on the headline categories. Missing a headline pick with a ${confidenceRange} hurts more than missing a small one.`
   }
 
   return (

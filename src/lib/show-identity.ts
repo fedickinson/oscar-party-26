@@ -139,3 +139,30 @@ export function draftPoolNoun(pool: DraftPool, count: number, identity: ShowIden
 export function draftRosterNoun(identity: ShowIdentity): string {
   return identity.isLegacy ? 'characters and dragons' : 'entities'
 }
+
+// ─── Confidence-phase copy ────────────────────────────────────────────────────
+//
+// `categories.tier` is the authored `prediction.tier` from the pack, validated
+// only as a positive integer: no pack contract gives the numbers a name. The
+// legacy surfaces shipped with awards-ceremony tier names, which stay pinned
+// for that pack; every other pack gets its tiers numbered rather than a name
+// borrowed from another show.
+
+const LEGACY_CONFIDENCE_TIER_LABELS: Record<number, string> = {
+  1: 'Major Awards',
+  2: 'Prestige Craft',
+  3: 'Technical & Performance',
+  4: 'Specialty',
+  5: 'Short Films',
+}
+
+/** Section heading for one confidence tier. */
+export function confidenceTierLabel(tier: number, identity: ShowIdentity): string {
+  if (identity.isLegacy) return LEGACY_CONFIDENCE_TIER_LABELS[tier] ?? `Tier ${tier}`
+  return `Tier ${tier}`
+}
+
+/** The confidence screen's header eyebrow. */
+export function confidencePhaseTitle(identity: ShowIdentity): string {
+  return identity.isLegacy ? 'Prestige Picks' : 'Predictions'
+}

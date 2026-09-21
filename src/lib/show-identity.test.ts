@@ -3,6 +3,8 @@ import { LEGACY_SHOW_PACK_ID } from './catalog-scope'
 import {
   LEGACY_SHOW_IDENTITY,
   UNBOUND_SHOW_IDENTITY,
+  confidencePhaseTitle,
+  confidenceTierLabel,
   draftPoolNoun,
   draftRosterNoun,
   draftSubPhaseLabel,
@@ -104,5 +106,28 @@ describe('pool copy', () => {
     }
     expect(draftSubPhaseLabel('person', identity)).toBe('Draft your roster')
     expect(draftPoolNoun('person', 4, identity)).toBe('people')
+  })
+})
+
+describe('confidence copy', () => {
+  it('keeps the legacy tier labels and phase title exactly as shipped', () => {
+    expect(confidencePhaseTitle(LEGACY_SHOW_IDENTITY)).toBe('Prestige Picks')
+    expect(confidenceTierLabel(1, LEGACY_SHOW_IDENTITY)).toBe('Major Awards')
+    expect(confidenceTierLabel(2, LEGACY_SHOW_IDENTITY)).toBe('Prestige Craft')
+    expect(confidenceTierLabel(3, LEGACY_SHOW_IDENTITY)).toBe('Technical & Performance')
+    expect(confidenceTierLabel(4, LEGACY_SHOW_IDENTITY)).toBe('Specialty')
+    expect(confidenceTierLabel(5, LEGACY_SHOW_IDENTITY)).toBe('Short Films')
+    expect(confidenceTierLabel(6, LEGACY_SHOW_IDENTITY)).toBe('Tier 6')
+  })
+
+  it('numbers the tiers and names no awards show for any other pack', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    expect(confidencePhaseTitle(identity)).toBe('Predictions')
+    expect(confidencePhaseTitle(UNBOUND_SHOW_IDENTITY)).toBe('Predictions')
+    for (const tier of [1, 2, 3, 4, 5]) {
+      expect(confidenceTierLabel(tier, identity)).toBe(`Tier ${tier}`)
+      expect(confidenceTierLabel(tier, UNBOUND_SHOW_IDENTITY)).toBe(`Tier ${tier}`)
+      expect(confidenceTierLabel(tier, identity)).not.toMatch(/award|prestige|craft|short film|specialty/i)
+    }
   })
 })

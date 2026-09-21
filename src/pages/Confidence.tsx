@@ -43,20 +43,14 @@ import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useConfidence } from '../hooks/useConfidence'
+import { useShowIdentity } from '../hooks/useShowIdentity'
 import { getConfidenceRange } from '../lib/mode-utils'
+import { confidencePhaseTitle, confidenceTierLabel } from '../lib/show-identity'
 import CategoryPickCard from '../components/confidence/CategoryPickCard'
 import ConfidenceNumberPicker from '../components/confidence/ConfidenceNumberPicker'
 import PicksReveal from '../components/confidence/PicksReveal'
 import SubmitStatus from '../components/confidence/SubmitStatus'
 import PhaseExplainer from '../components/PhaseExplainer'
-
-const TIER_LABELS: Record<number, string> = {
-  1: 'Major Awards',
-  2: 'Prestige Craft',
-  3: 'Technical & Performance',
-  4: 'Specialty',
-  5: 'Short Films',
-}
 
 const TIER_LABEL_COLORS: Record<number, string> = {
   1: 'text-[var(--t-pending)]',
@@ -71,6 +65,9 @@ export default function Confidence() {
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
   const { authority: operatorAuthority } = useOperatorAuthority()
+  // Tier names and the header are show copy: the legacy pack keeps its
+  // authored strings, every other pack gets numbered tiers.
+  const { identity: showIdentity } = useShowIdentity()
 
   const [pickerCategoryId, setPickerCategoryId] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -265,7 +262,7 @@ export default function Confidence() {
           <div className="relief-glass rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
             <div>
               <p className="font-display text-xs text-[var(--t-pending)] uppercase tracking-[0.16em]">
-                Prestige Picks
+                {confidencePhaseTitle(showIdentity)}
               </p>
               <p className="text-sm font-semibold text-[var(--t-text)] mt-0.5">
                 {slateIsEmpty
@@ -320,7 +317,7 @@ export default function Confidence() {
                       TIER_LABEL_COLORS[tier] ?? 'text-[var(--t-text-dim)]',
                     ].join(' ')}
                   >
-                    {TIER_LABELS[tier] ?? `Tier ${tier}`}
+                    {confidenceTierLabel(tier, showIdentity)}
                   </p>
                   <div className="space-y-2">
                     {categoriesByTier[tier].map((category, i) => (

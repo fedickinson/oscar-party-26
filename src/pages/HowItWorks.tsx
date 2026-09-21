@@ -435,7 +435,9 @@ export default function HowItWorks() {
             from an ancestor. 88px sits inside the Dance's declared 48–160
             drawing range, where its heads and membrane fingers actually read. */}
         <span style={HALLMARK_RELIEF}>
-          <Hallmark id="hallmark-dance" size={88} />
+          {isLegacy
+            ? <Hallmark id="hallmark-dance" size={88} />
+            : <Tv size={88} strokeWidth={1} aria-hidden />}
         </span>
         <span
           className="text-[12px] font-semibold uppercase tracking-[0.3em]"
@@ -447,7 +449,7 @@ export default function HowItWorks() {
           className="text-[42px] leading-none"
           style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
         >
-          Fire &amp; Blood
+          {isLegacy ? <>Fire &amp; Blood</> : showIdentity.title}
         </h1>
         <div className="flex flex-col gap-0.5">
           <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
@@ -596,6 +598,10 @@ export default function HowItWorks() {
                 {isLegacy && ' Dragons pay at face value.'}
               </P>
             </Disclosure>
+            {/* The two worked examples below name the legacy pack's characters;
+                another pack's forks and shared beats are its own, so the rule is
+                stated only where the example is true. */}
+            {isLegacy && (
             <Disclosure label="You are allowed to bet both ways">
               <P>
                 Beats come in forks. Daemon can make peace with Rhaenyra or openly defy her.
@@ -609,6 +615,8 @@ export default function HowItWorks() {
                 game.
               </P>
             </Disclosure>
+            )}
+            {isLegacy && (
             <Disclosure label="Some beats pay two people">
               <P>
                 Eight beats name two characters, and both drafters score. If a conscious
@@ -623,6 +631,7 @@ export default function HowItWorks() {
                 shouts.
               </P>
             </Disclosure>
+            )}
             {/* The opening one-each round only exists on the legacy pack; a pack
                 with no second pool never runs it, so the rule is not stated. */}
             {isLegacy && (
@@ -726,13 +735,21 @@ export default function HowItWorks() {
           <GameCard
             icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>}
             title="Underneath — the chat"
-            summary={
+            summary={isLegacy ? (
               <>
                 All of us, plus seven AI companions who are watching along and have opinions
                 about it. They react to what actually happens, live.
               </>
-            }
+            ) : (
+              <>
+                All of us, plus an AI cast who are watching along and have opinions about
+                it. They react to what actually happens, live.
+              </>
+            )}
           >
+            {/* The roster is the legacy pack's; another pack's cast is named by
+                that pack, not here. */}
+            {isLegacy && (
             <Disclosure label="Who is in there">
               <P>
                 Cersei passes judgement, Tyrion drinks and knows things, Olenna is unkind
@@ -744,6 +761,7 @@ export default function HowItWorks() {
                 say when your pick dies.
               </P>
             </Disclosure>
+            )}
           </GameCard>
         </div>
       </Section>

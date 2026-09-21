@@ -24,16 +24,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Tv } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoom } from '../hooks/useRoom'
+import { useShowIdentity } from '../hooks/useShowIdentity'
 import { resolvePlayerReclaim } from '../lib/player-reclaim'
 import AvatarPicker from '../components/AvatarPicker'
 import Avatar from '../components/Avatar'
 import { Hallmark } from '../components/ui/Hallmarks'
 import { PLAYER_AVATARS } from '../data/avatar-config'
-import { UNBOUND_SHOW_IDENTITY, showIdentityLine } from '../lib/show-identity'
+import { showIdentityLine } from '../lib/show-identity'
 import type { PlayerRow, RoomPhase } from '../types/database'
 
 // ─── Screen state ─────────────────────────────────────────────────────────────
@@ -72,6 +73,12 @@ export default function Home() {
   const navigate = useNavigate()
   const { player, room, loading } = useGame()
   const { createRoom, joinRoom } = useRoom()
+  // The landing route exists before any room does, so this resolves to the
+  // unbound identity for a visitor; a restored session is redirected to its
+  // room above before its own pack could matter here. Only the legacy pack
+  // keeps the Fire & Blood wordmark and the two-dragon Dance hallmark.
+  const { identity: showIdentity } = useShowIdentity()
+  const isLegacy = showIdentity.isLegacy
 
   const [screen, setScreen] = useState<Screen>({ view: 'landing' })
   const [name, setName] = useState('')
@@ -231,7 +238,9 @@ export default function Home() {
             transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
           >
             {/* The Dance — two dragons, Black and Green, circling. The master mark. */}
-            <Hallmark id="hallmark-dance" size={72} />
+            {isLegacy
+              ? <Hallmark id="hallmark-dance" size={72} />
+              : <Tv size={72} strokeWidth={1} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
           </motion.div>
         </div>
 
@@ -258,7 +267,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          Fire &amp; Blood
+          {isLegacy ? <>Fire &amp; Blood</> : showIdentity.title}
         </motion.h1>
         <motion.p
           className="text-sm mt-2"
@@ -267,7 +276,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
         >
-          {showIdentityLine(UNBOUND_SHOW_IDENTITY)}
+          {showIdentityLine(showIdentity)}
         </motion.p>
 
         {/* Star field — static decorative dots */}
@@ -322,7 +331,9 @@ export default function Home() {
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 190, damping: 19, delay: 0.04 }}
                 >
-                  <Hallmark id="hallmark-dance-hero" size={128} />
+                  {isLegacy
+                    ? <Hallmark id="hallmark-dance-hero" size={128} />
+                    : <Tv size={128} strokeWidth={1} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
                 </motion.div>
 
                 <motion.p
@@ -345,7 +356,9 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.14 }}
                 >
-                  Fire <span style={{ color: 'var(--t-vellum-light)' }}>&amp;</span> Blood
+                  {isLegacy
+                    ? <>Fire <span style={{ color: 'var(--t-vellum-light)' }}>&amp;</span> Blood</>
+                    : showIdentity.title}
                 </motion.h1>
                 <motion.p
                   className="mt-2 text-[18px] font-semibold italic leading-none"
@@ -357,15 +370,13 @@ export default function Home() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
                 >
-                  {UNBOUND_SHOW_IDENTITY.property}
+                  {showIdentity.property}
                 </motion.p>
               </section>
 
               {/* The installment is treated as tonight's dated proclamation.
-                  The landing route exists before any room does, so there is no
-                  pack to read: the band renders only when the unbound identity
-                  names an installment. */}
-              {UNBOUND_SHOW_IDENTITY.installment != null && (
+                  The band renders only when the identity names one. */}
+              {showIdentity.installment != null && (
               <motion.div
                 className="material-vellum deckled relief-raised flex min-h-11 w-full items-center justify-center gap-3 px-5 py-2"
                 style={{ color: 'var(--t-ink)' }}
@@ -378,7 +389,7 @@ export default function Home() {
                   className="whitespace-nowrap text-[12px] font-extrabold uppercase tracking-[0.18em]"
                   style={{ fontFamily: 'var(--font-family-display)' }}
                 >
-                  {UNBOUND_SHOW_IDENTITY.installment}
+                  {showIdentity.installment}
                 </span>
                 <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-ink-muted)' }} aria-hidden />
               </motion.div>

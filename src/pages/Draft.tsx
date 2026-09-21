@@ -267,7 +267,7 @@ export default function Draft() {
                 <Trophy size={48} className="text-[var(--t-ornament)] mx-auto mb-3" />
                 <p className="font-display text-xl font-bold text-[var(--t-text)] mb-1">Roster complete</p>
                 <p className="text-[var(--t-text-muted)] text-sm">
-                  Taking you to {room.game_model === 'conviction_portfolio' ? 'build your conviction portfolio' : 'choose your bets'}…
+                  Taking you to {room.game_model === 'conviction_portfolio' ? 'build your conviction portfolio' : 'make your confidence picks'}…
                 </p>
               </motion.div>
             ) : isFilmPhase ? (
