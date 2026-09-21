@@ -29,7 +29,7 @@ settlement receipt, the public recap route and the settlement-drop ceremony.
 | D5 | Cast | Four original archetypes, no real people: a plain narrator who reads the record, an openly partisan stan, a critic who remembers every VMA moment since 1984, and one who cares only about outfits and crowd shots. Names are the operator's to choose. |
 | D6 | Group | Four to ten players, remote, possibly people the host half knows. |
 | D7 | Viewing | Async is the model. Host declares on the fastest feed. Chat will spoil slower feeds; the invite says so. Players who do not watch still receive full confidence and draft scoring and a recap; they forfeit bingo. |
-| D8 | Draft pricing | Placeholder now: every category the same draft points with one higher tier for marquee categories. Ranked confidence unchanged. Revisited only by the simulation in section 6. |
+| D8 | Draft pricing | Set by simulation (see `SIMULATION.md`): marquee categories 3 draft points, every other category 2. The 8/6 placeholder let draft slot one win 42 percent of six-player nights; 3/2 gives 27 percent, and 31 percent with Taylor Swift absent, with draft at 8 percent of total score. Ranked confidence unchanged. |
 | D9 | Portraits | Generated abstract tiles per artist, committed under `public/`, so the portrait contract is met with nothing rights-encumbered. |
 | D10 | Signature beats | The minimum the activation gate requires, authored as official-result wagers (for example "wins three or more categories"), one to two per draftable entity. Not screen-witnessed events. |
 

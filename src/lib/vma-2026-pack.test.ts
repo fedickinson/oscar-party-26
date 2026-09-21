@@ -171,13 +171,13 @@ describe('2026 VMA show pack', () => {
     ])
     for (const prediction of authored.predictions) {
       if (marquee.has(prediction.title)) {
-        expect(prediction.points).toBe(8)
+        expect(prediction.points).toBe(3)
         expect(prediction.tier).toBe(1)
       } else if (lowTier.has(prediction.title)) {
-        expect(prediction.points).toBe(6)
+        expect(prediction.points).toBe(2)
         expect(prediction.tier).toBe(3)
       } else {
-        expect(prediction.points).toBe(6)
+        expect(prediction.points).toBe(2)
         expect(prediction.tier).toBe(2)
       }
     }

@@ -149,12 +149,12 @@ category's `artist_ids` with duplicates collapsed (D1; the odds file in fact has
 duplicates, so 155 rows collapse to 155 links). 23 is inside the 24-category cap the
 `confidence_picks` check constraint imposes on a ranked confidence number.
 
-D8 placeholder pricing, asserted by the test:
+D8 pricing after the simulation (see `SIMULATION.md`), asserted by the test:
 
-- **tier 1, 8 points** - Video of the Year, Artist of the Year, Song of the Year, Best New Artist
-- **tier 2, 6 points** - the other nine fan-voted categories: Best Collaboration, Best Pop,
+- **tier 1, 3 points** - Video of the Year, Artist of the Year, Song of the Year, Best New Artist
+- **tier 2, 2 points** - the other nine fan-voted categories: Best Collaboration, Best Pop,
   Best Hip-Hop, Best R&B, Best Alternative, Best Dance, Best Country, Best Latin, Best K-Pop
-- **tier 3, 6 points** - the six craft categories and the four social categories
+- **tier 3, 2 points** - the six craft categories and the four social categories
 
 Every prediction: `truth_authority: official_result`; adjudication `proxies: count`,
 `offscreen: count`, `mentions: do_not_count`; three exclusions (four for the social categories,

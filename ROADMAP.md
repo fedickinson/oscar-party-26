@@ -722,6 +722,7 @@ a new primitive:
 | 2026-09-21 | The VMA unit of play is the artist, not the video. | Draft rivalry over named artists is the engagement hook; videos spread value across names nobody roots for. |
 | 2026-09-21 | Bingo stays self-marked; host-adjudicated bingo is deferred. | Host approval was the Oscars-night bottleneck; settlement already re-warrants marks. |
 | 2026-09-21 | Draft point pricing is set by simulation through the real scoring library, not by argument. | The bingo rebalance already used the same method; odds arrive from research midweek. |
+| 2026-09-21 | VMA draft pricing is 3 points for marquee categories and 2 for all others. | The 8/6 placeholder let draft slot one win 42 percent of simulated six-player nights; 3/2 holds it at 27 percent, 31 percent with Taylor Swift absent. See `show-packs/research/vma-2026/SIMULATION.md`. |
 
 ## How to maintain this plan
 

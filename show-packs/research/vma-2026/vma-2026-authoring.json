@@ -2868,7 +2868,7 @@
         "slate-bruno-mars",
         "slate-gener8ion"
       ],
-      "points": 8,
+      "points": 3,
       "tier": 1,
       "candidate_entity_ids": [
         "taylor-swift",
@@ -2906,7 +2906,7 @@
         "slate-bruno-mars",
         "slate-morgan-wallen"
       ],
-      "points": 8,
+      "points": 3,
       "tier": 1,
       "candidate_entity_ids": [
         "taylor-swift",
@@ -2945,7 +2945,7 @@
         "slate-pinkpantheress",
         "slate-ella-langley"
       ],
-      "points": 8,
+      "points": 3,
       "tier": 1,
       "candidate_entity_ids": [
         "bts",
@@ -2986,7 +2986,7 @@
         "slate-bella-kay",
         "slate-magnus-ferrell"
       ],
-      "points": 8,
+      "points": 3,
       "tier": 1,
       "candidate_entity_ids": [
         "cortis",
@@ -3025,7 +3025,7 @@
         "slate-teyana-taylor",
         "slate-french-montana"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "madonna",
@@ -3064,7 +3064,7 @@
         "slate-tate-mcrae",
         "slate-charli-xcx"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "taylor-swift",
@@ -3103,7 +3103,7 @@
         "slate-tyler-the-creator",
         "slate-don-toliver"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "drake",
@@ -3141,7 +3141,7 @@
         "slate-mariah-the-scientist",
         "slate-dave"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "bruno-mars",
@@ -3180,7 +3180,7 @@
         "slate-mgk",
         "slate-geese"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "olivia-rodrigo",
@@ -3220,7 +3220,7 @@
         "slate-bebe-rexha",
         "slate-slayyyter"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "madonna",
@@ -3260,7 +3260,7 @@
         "slate-tucker-wetmore",
         "slate-stella-lefty"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "ella-langley",
@@ -3300,7 +3300,7 @@
         "slate-rauw-alejandro",
         "slate-ryan-castro"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "bad-bunny",
@@ -3339,7 +3339,7 @@
         "slate-le-sserafim",
         "slate-cortis"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 2,
       "candidate_entity_ids": [
         "bts",
@@ -3377,7 +3377,7 @@
         "slate-ariana-grande",
         "slate-bruno-mars"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3415,7 +3415,7 @@
         "slate-katseye",
         "slate-harry-styles"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3453,7 +3453,7 @@
         "slate-ariana-grande",
         "slate-shaboozey"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3491,7 +3491,7 @@
         "slate-lisa",
         "slate-bruno-mars"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3527,7 +3527,7 @@
         "slate-pinkpantheress",
         "slate-jisoo"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3563,7 +3563,7 @@
         "slate-pinkpantheress",
         "slate-sombr"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3604,7 +3604,7 @@
         "slate-flo",
         "slate-geese"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "bts",
@@ -3643,7 +3643,7 @@
         "slate-ella-langley",
         "slate-gener8ion"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "madonna",
@@ -3683,7 +3683,7 @@
         "slate-ella-langley",
         "slate-olivia-dean"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "taylor-swift",
@@ -3734,7 +3734,7 @@
         "slate-stella-lefty",
         "slate-slayyyter"
       ],
-      "points": 6,
+      "points": 2,
       "tier": 3,
       "candidate_entity_ids": [
         "taylor-swift",

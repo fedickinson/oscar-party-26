@@ -247,8 +247,8 @@ and pull request.
 
 Applying migrations to the live project · deleting or truncating any table · running any script
 against a room that real people are in · `npx vercel --prod` and alias changes · rotating or
-touching credentials · anything that writes to `categories` (global, no `room_id` — practice rows
-leak into real rooms forever).
+touching credentials · anything that writes pack-owned `categories` rows (`show_pack_id` set, no
+`room_id` — practice rows there leak into every room bound to that pack).
 
 ## Git and worktree safety
 
