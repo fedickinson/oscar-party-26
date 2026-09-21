@@ -19,8 +19,16 @@
  *   │  [SubmitStatus] progress/submit  │  ← Bottom bar (flex-shrink-0)
  *   └──────────────────────────────────┘
  *
+ * ROUTING:
+ * PredictionPhase renders this screen for `legacy_ensemble` rooms — the
+ * `confidence_allocation` commitment. A player's submit writes only their own
+ * confidence_picks rows; it never moves the room.
+ *
  * PHASE NAVIGATION:
- * useRoomSubscription watches room.phase. When host locks → phase = 'live' → everyone navigates.
+ * Only the host's lock opens live, and it does so through the capability-gated
+ * open_room_live_authorized command. useRoomSubscription watches room.phase,
+ * so phase = 'live' arrives over Realtime and every phone navigates together.
+ * Nothing here navigates from the action itself.
  *
  * NUMBER PICKER:
  * A single ConfidenceNumberPicker bottom sheet, controlled by `pickerCategoryId` state.
@@ -30,8 +38,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { RotateCcw, Shuffle } from 'lucide-react'
+import { Lock, RotateCcw, Shuffle } from 'lucide-react'
 import { useGame } from '../context/GameContext'
+import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useRoomSubscription } from '../hooks/useRoom'
 import { useConfidence } from '../hooks/useConfidence'
 import { getConfidenceRange } from '../lib/mode-utils'
@@ -61,6 +70,7 @@ export default function Confidence() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, player, players, loading } = useGame()
+  const { authority: operatorAuthority } = useOperatorAuthority()
 
   const [pickerCategoryId, setPickerCategoryId] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -142,9 +152,21 @@ export default function Confidence() {
       setSubmitError('The shared room record must synchronize before the show can start.')
       return
     }
+    if (!operatorAuthority.enabled) {
+      setSubmitError(operatorAuthority.message ?? 'Current operator authority is required.')
+      return
+    }
     setIsLocking(true)
+    setSubmitError(null)
     try {
       await lockPicks()
+      // No navigate() here. open_room_live_authorized writes the phase, the
+      // room subscription delivers it, and every phone moves together.
+    } catch (e) {
+      // Auto-fill and the phase command both fail closed. Surface the reason
+      // instead of leaving the host tapping a button that silently does
+      // nothing.
+      setSubmitError(e instanceof Error ? e.message : 'The show could not start. Try again.')
     } finally {
       setIsLocking(false)
     }
@@ -219,6 +241,15 @@ export default function Confidence() {
       ? (categories.find((c) => c.id === pickerCategoryId) ?? null)
       : null
 
+  // A pack may authorize a room without authoring any predictions: the
+  // activation gate requires bingo squares, entities and beats, not a slate.
+  // There is then nothing to submit, so the ordinary submit-then-lock path
+  // would leave the room stranded in the prediction phase with no way to open
+  // live. The host keeps the phase command; nobody is asked for picks.
+  const slateIsEmpty = categories.length === 0
+  const showOperatorAuthorityNotice =
+    player.is_host && !operatorAuthority.enabled && operatorAuthority.message != null
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -237,13 +268,15 @@ export default function Confidence() {
                 Prestige Picks
               </p>
               <p className="text-sm font-semibold text-[var(--t-text)] mt-0.5">
-                {myHasSubmitted
-                  ? 'Submitted — waiting for others'
-                  : `Choose your winner pick and assign prestige points for all ${categories.length} categories`}
+                {slateIsEmpty
+                  ? 'This room has no prediction slate'
+                  : myHasSubmitted
+                    ? 'Submitted — waiting for others'
+                    : `Choose your winner pick and assign prestige points for all ${categories.length} categories`}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {import.meta.env.DEV && !myHasSubmitted && (
+              {import.meta.env.DEV && !myHasSubmitted && !slateIsEmpty && (
                 <button
                   onClick={handleRandomFill}
                   className="flex min-h-[44px] items-center gap-1 text-xs font-medium text-[var(--t-pending)] border px-3 py-2 rounded-full"
@@ -253,7 +286,7 @@ export default function Confidence() {
                   Random
                 </button>
               )}
-              {!myHasSubmitted && (
+              {!myHasSubmitted && !slateIsEmpty && (
                 <span className="font-display text-xs text-[var(--t-text-muted)] px-2 py-1 rounded-full tabular-nums border" style={{ backgroundColor: 'var(--t-surface)', borderColor: 'var(--t-line-soft)' }}>
                   {completedPickCount}/{categories.length}
                 </span>
@@ -266,7 +299,18 @@ export default function Confidence() {
         <div className="flex-1 overflow-y-auto">
           <div className="pb-2">
 
-            {!myHasSubmitted ? (
+            {slateIsEmpty ? (
+              // EMPTY SLATE — no authored predictions in this room's pack
+              <section className="material-stone relief-inset mt-3 rounded-2xl p-4">
+                <p className="font-display text-xs uppercase tracking-widest text-[var(--t-text-dim)]">
+                  Nothing to predict
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+                  This room&apos;s show pack has no prediction categories, so there are no picks to
+                  make. The draft and the live board are unaffected.
+                </p>
+              </section>
+            ) : !myHasSubmitted ? (
               // PICKING MODE — categories grouped by tier
               tiers.map((tier) => (
                 <div key={tier}>
@@ -315,22 +359,54 @@ export default function Confidence() {
           </div>
         </div>
 
+        {/* ── Host authority notice ── */}
+        {showOperatorAuthorityNotice && (
+          <p className="flex-shrink-0 px-4 pb-2 text-center text-xs text-[var(--t-pending)]" role="status">
+            {operatorAuthority.message}
+          </p>
+        )}
+
         {/* ── Bottom status / submit bar ── */}
-        <SubmitStatus
-          players={players}
-          submittedPlayerIds={submittedPlayerIds}
-          myPlayerId={player.id}
-          completedPickCount={completedPickCount}
-          missingConfidenceCount={missingConfidenceCount}
-          totalCategories={categories.length}
-          isComplete={isComplete}
-          myHasSubmitted={myHasSubmitted}
-          isHost={player.is_host}
-          isSubmitting={isSubmitting}
-          isLocking={isLocking}
-          onSubmit={handleSubmit}
-          onLock={handleLock}
-        />
+        {slateIsEmpty ? (
+          <div className="relief-glass flex-shrink-0 border-t px-4 pt-4 pb-6" style={{ borderColor: 'var(--t-line)' }}>
+            {player.is_host ? (
+              <motion.button
+                onClick={handleLock}
+                disabled={isLocking || !operatorAuthority.enabled}
+                whileTap={!isLocking && operatorAuthority.enabled ? { scale: 0.97 } : undefined}
+                className={[
+                  'flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl border py-3 text-base font-bold',
+                  !isLocking && operatorAuthority.enabled
+                    ? 'material-enamel relief-raised border-[var(--t-personal-device)] text-[var(--t-personal-text)]'
+                    : 'border-[var(--t-line-soft)] text-[var(--t-text-dim)]',
+                ].join(' ')}
+              >
+                <Lock size={16} aria-hidden />
+                {isLocking ? 'Starting the show' : 'Start the show'}
+              </motion.button>
+            ) : (
+              <p className="text-center text-xs text-[var(--t-pending)]">
+                Waiting for the host to start the show…
+              </p>
+            )}
+          </div>
+        ) : (
+          <SubmitStatus
+            players={players}
+            submittedPlayerIds={submittedPlayerIds}
+            myPlayerId={player.id}
+            completedPickCount={completedPickCount}
+            missingConfidenceCount={missingConfidenceCount}
+            totalCategories={categories.length}
+            isComplete={isComplete}
+            myHasSubmitted={myHasSubmitted}
+            isHost={player.is_host}
+            isSubmitting={isSubmitting}
+            isLocking={isLocking}
+            onSubmit={handleSubmit}
+            onLock={handleLock}
+          />
+        )}
       </div>
 
       {/* ── Confidence number picker sheet ── */}

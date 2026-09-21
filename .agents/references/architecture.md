@@ -35,7 +35,10 @@ through the narrow claim, complete and release RPCs.
 `RoomPhase` (`src/types/database.ts`): `lobby -> pre_draft -> draft -> confidence -> live ->
 finished -> closed`. `finished` exposes the provisional live ledger; `closed` means a researched
 settlement is active. Routes mirror them under `/room/:code/*`; `/room/:code/confidence` renders
-`Activate`, and both post-show phases render Results.
+`PredictionPhase`, which resolves the room's commitment instrument — `Confidence` for
+`legacy_ensemble` (`confidence_allocation`) and `Conviction` for `conviction_portfolio`
+(`open_conviction`) — and both post-show phases render Results. `Activate`, the pre-portfolio
+per-character beat-activation screen, is no longer selected by any room model.
 
 The current operator invokes a capability-gated phase command; it writes the new phase to
 `rooms`, every client's Realtime subscription fires, and a `useEffect` on `room.phase` navigates.

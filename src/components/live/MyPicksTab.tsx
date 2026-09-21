@@ -83,9 +83,15 @@ function getEntityStatus(
     : 'in_play'
 }
 
+// Pack-activated beats carry the likelihood tier verbatim (`likely`,
+// `toss_up`, `long_shot`, `chaos`); the legacy authored beats carry the older
+// spellings. Both have to resolve here or the raw enum value reaches the
+// screen.
 function oddsLabel(odds: string): string {
   const labels: Record<string, string> = {
     likely: 'Likely',
+    toss_up: 'Toss-up',
+    'toss up': 'Toss-up',
     coin_flip: 'Coin flip',
     'coin flip': 'Coin flip',
     long_shot: 'Long shot',
