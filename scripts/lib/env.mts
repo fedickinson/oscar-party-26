@@ -30,7 +30,14 @@ export interface SupabaseConfig {
   anonKey: string
   /** Required by protected operator writes such as settlement. Never exposed to Vite. */
   serviceKey?: string
-  /** Only set for the remote target, and only when .env.local carries it. */
+  /**
+   * Operator-only model credential, absent when nothing supplies one.
+   *   remote: `.env.local`'s ANTHROPIC_API_KEY, as it has always been.
+   *   local:  the process environment's ANTHROPIC_API_KEY when it is set and
+   *           non-empty, otherwise `.env.local`'s. Rehearsing the cast against
+   *           the local stack needs a real model key; the target it talks to
+   *           and the credential it generates with are separate questions.
+   */
   anthropicKey?: string
 }
 
@@ -85,7 +92,7 @@ export function supabaseConfig(defaultTarget: Target): SupabaseConfig {
   if (target === 'local') {
     const { url, anonKey, serviceKey } = localConfig()
     announce(target, url)
-    return { target, url, anonKey, serviceKey }
+    return { target, url, anonKey, serviceKey, anthropicKey: anthropicOperatorKey() }
   }
 
   const env = parseEnvFile(new URL('../../.env.local', import.meta.url))

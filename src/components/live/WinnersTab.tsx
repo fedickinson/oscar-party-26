@@ -5,11 +5,15 @@
  *
  * LAYOUT:
  *   - Progress bar: "12 / 24 Announced"
- *   - End Ceremony card (host only, when all categories have winners)
+ *   - Close-the-live-floor card (host only, permanent, two-step). Results Night
+ *     resolves half its slate on social media after the broadcast, so the close
+ *     is never gated on a full slate; the card names the unresolved count and
+ *     what staying unresolved costs before the second confirmation.
  *   - Category list sorted by display_order:
  *       ANNOUNCED: name + tier badge + winner name (accent) + film + check
  *                  Tap to expand → all nominees, winner highlighted
- *                  Undo button (host only, within 30s window)
+ *                  Two-tap undo (host with authority, while the room is live,
+ *                  for any declared category however it was declared)
  *       UNANNOUNCED (host): "Open Category" button → spotlight via openSpotlight()
  *       UNANNOUNCED (non-host): "Awaiting result..." italic
  */
@@ -25,6 +29,7 @@ import {
   FastForward,
   RotateCcw,
   AlertTriangle,
+  Loader2,
   RefreshCw,
   Trophy,
   User,
@@ -32,12 +37,17 @@ import {
 import { useAdmin } from '../../hooks/useAdmin'
 import { CategoryIcon } from '../../lib/category-icons'
 import { FilmIcon } from '../../lib/film-icons'
+import {
+  SCHEDULED_UNDO_HINT_WINDOW_MS,
+  deriveLiveFloorCloseCard,
+  deriveScheduledUndoAffordance,
+} from '../../lib/live-floor'
 import { supabase } from '../../lib/supabase'
 
 const FREE_CENTER_INDEX = 12
 
-
-const UNDO_WINDOW_MS = 30_000
+/** How long an armed undo stays armed before it disarms itself. */
+const UNDO_ARM_MS = 15_000
 
 const TIER_BADGE_COLORS: Record<number, string> = {
   1: 'bg-accent/20 text-accent',
@@ -75,6 +85,7 @@ export default function WinnersTab({
   const {
     categories,
     winnerSetAt,
+    roomPhase,
     isLoading,
     syncError,
     retrySync,
@@ -143,13 +154,29 @@ export default function WinnersTab({
   }
   const [tick, setTick] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [confirmingClose, setConfirmingClose] = useState(false)
+  const [armedUndoId, setArmedUndoId] = useState<number | null>(null)
 
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // 1Hz tick to keep undo countdowns accurate
+  // An armed undo disarms itself, so a stray tap never sits waiting to fire.
+  useEffect(() => {
+    if (armedUndoId == null) return
+    const timer = setTimeout(() => setArmedUndoId(null), UNDO_ARM_MS)
+    return () => clearTimeout(timer)
+  }, [armedUndoId])
+
+  // Clear a stale failure rather than leaving it over the live category list.
+  useEffect(() => {
+    if (error == null) return
+    const timer = setTimeout(() => setError(null), 6000)
+    return () => clearTimeout(timer)
+  }, [error])
+
+  // 1Hz tick to keep the undo freshness countdown accurate
   useEffect(() => {
     const hasRecent = Object.values(winnerSetAt).some(
-      (t) => Date.now() - t < UNDO_WINDOW_MS,
+      (t) => Date.now() - t < SCHEDULED_UNDO_HINT_WINDOW_MS,
     )
     if (hasRecent) {
       if (!tickRef.current) {
@@ -166,11 +193,24 @@ export default function WinnersTab({
     }
   }, [winnerSetAt, tick])
 
+  // Two-tap undo. The first tap arms one category; the second fires the
+  // capability-gated compare-and-delete command. There is no timer to beat.
   async function handleUndo(categoryId: number) {
+    if (armedUndoId !== categoryId) {
+      setError(null)
+      setArmedUndoId(categoryId)
+      return
+    }
+    setArmedUndoId(null)
     try {
       await undoWinner(categoryId)
-    } catch {
-      // silent — undo window likely expired
+      setError(null)
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'That declaration could not be undone.',
+      )
     }
   }
 
@@ -219,7 +259,7 @@ export default function WinnersTab({
 
   const announcedCount = categories.filter((c) => c.winner_id != null).length
   const totalCount = categories.length
-  const allAnnounced = totalCount > 0 && announcedCount === totalCount
+  const closeCard = deriveLiveFloorCloseCard({ announcedCount, totalCount })
 
   return (
     <>
@@ -280,65 +320,93 @@ export default function WinnersTab({
           </div>
         </div>
 
-        {/* Close the live floor — host only, when all announced */}
-        <AnimatePresence>
-          {allAnnounced && isHost && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              className="backdrop-blur-lg bg-accent/10 border border-accent/30 rounded-2xl p-4 space-y-3"
-            >
-              <div className="flex items-center gap-2">
-                <Trophy size={14} className="text-accent" />
-                <p className="text-sm font-semibold text-white">
-                  All {totalCount} categories announced
-                </p>
-              </div>
-              <p className="text-xs text-white/50">
-                Close the live floor to publish provisional results on every phone.
-              </p>
-              <motion.button
-                type="button"
-                onClick={onCloseNight}
-                disabled={isClosingNight || !refereeEnabled}
-                whileTap={!isClosingNight && refereeEnabled ? { scale: 0.97 } : undefined}
-                className={[
-                  'min-h-11 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
-                  !isClosingNight && refereeEnabled
-                    ? 'bg-accent text-ground'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed',
-                ].join(' ')}
-              >
-                {isClosingNight ? (
-                  <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Flame size={14} />
-                    Close the Live Floor
-                  </>
-                )}
-              </motion.button>
-              {closeNightError && (
-                <p className="text-xs text-[var(--t-pending)]" role="alert">
-                  {closeNightError}
-                </p>
+        {/* Close the live floor — host only, permanent, two-step. Unresolved
+            categories do not block the close; the database command accepts
+            them and the settlement pass is where they become true. */}
+        {isHost && (
+          <div className="material-stone relief-inset space-y-3 rounded-2xl p-4">
+            <div className="flex items-center gap-2">
+              {closeCard.unresolvedCount > 0 ? (
+                <AlertTriangle size={14} style={{ color: 'var(--t-pending)' }} aria-hidden />
+              ) : (
+                <Trophy size={14} style={{ color: 'var(--t-accent)' }} aria-hidden />
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p className="text-sm font-semibold text-[color:var(--t-text)]">
+                {closeCard.headline}
+              </p>
+            </div>
+            <p className="text-xs leading-relaxed text-[color:var(--t-text-muted)]">
+              {closeCard.detail}
+            </p>
+            {closeCard.emptyLedgerWarning && (
+              <p className="rounded-xl border border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] p-3 text-xs leading-relaxed text-[color:var(--t-text-muted)]">
+                {closeCard.emptyLedgerWarning}
+              </p>
+            )}
+
+            {confirmingClose ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingClose(false)}
+                  disabled={isClosingNight}
+                  className="min-h-11 rounded-xl border border-[color:var(--t-line)] px-3 py-2 text-sm font-medium text-[color:var(--t-text-muted)] disabled:opacity-40"
+                >
+                  Keep the floor live
+                </button>
+                <motion.button
+                  type="button"
+                  onClick={onCloseNight}
+                  disabled={isClosingNight || !refereeEnabled}
+                  whileTap={!isClosingNight && refereeEnabled ? { scale: 0.97 } : undefined}
+                  className="min-h-11 rounded-xl bg-[var(--t-personal-device)] px-3 py-2 text-sm font-bold text-[color:var(--t-ground)] disabled:opacity-40"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {isClosingNight ? (
+                      <Loader2 size={14} className="animate-spin" aria-hidden />
+                    ) : (
+                      <Flame size={14} aria-hidden />
+                    )}
+                    {isClosingNight ? 'Closing' : closeCard.confirmLabel}
+                  </span>
+                </motion.button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingClose(true)}
+                disabled={isClosingNight || !refereeEnabled}
+                className="min-h-11 w-full rounded-xl border border-[color:var(--t-line)] px-4 py-2 text-sm font-bold text-[color:var(--t-text)] disabled:opacity-40"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Flame size={14} aria-hidden />
+                  Close the Live Floor
+                </span>
+              </button>
+            )}
+
+            {closeNightError && (
+              <p className="text-xs text-[color:var(--t-pending)]" role="alert">
+                {closeNightError}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Category list */}
         <div className="material-oak relief-carved rounded-2xl space-y-2">
           {categories.map((category, i) => {
             const hasWinner = category.winner_id != null
             const isExpanded = expandedIds.has(category.id)
-            const setAt = winnerSetAt[category.id]
-            const canUndo = isHost && setAt != null && Date.now() - setAt < UNDO_WINDOW_MS
-            const secondsLeft = canUndo
-              ? Math.ceil((UNDO_WINDOW_MS - (Date.now() - setAt)) / 1000)
-              : 0
+            const undo = deriveScheduledUndoAffordance({
+              isHost,
+              refereeEnabled,
+              roomPhase,
+              hasWinner,
+              declaredAtMs: winnerSetAt[category.id] ?? null,
+              nowMs: Date.now(),
+            })
+            const isUndoArmed = armedUndoId === category.id
 
             const winnerNominee = hasWinner
               ? category.nominees.find((n) => n.id === category.winner_id)
@@ -467,8 +535,9 @@ export default function WinnersTab({
                       </motion.button>
                     )}
 
-                    {hasWinner && canUndo && (
+                    {undo.enabled && (
                       <motion.button
+                        type="button"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         whileTap={{ scale: 0.94 }}
@@ -476,11 +545,22 @@ export default function WinnersTab({
                           e.stopPropagation()
                           handleUndo(category.id)
                         }}
-                        disabled={!refereeEnabled}
-                        className="relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white/50 text-[11px]"
+                        aria-label={isUndoArmed
+                          ? `Confirm undo of ${category.name}`
+                          : `Undo ${category.name}`}
+                        className={[
+                          'relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px]',
+                          isUndoArmed
+                            ? 'border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] font-semibold text-[color:var(--t-pending)]'
+                            : 'border-[color:var(--t-line)] text-[color:var(--t-text-dim)]',
+                        ].join(' ')}
                       >
-                        <RotateCcw size={10} />
-                        {secondsLeft}s
+                        <RotateCcw size={10} aria-hidden />
+                        {isUndoArmed
+                          ? 'Confirm'
+                          : undo.countdownSeconds != null
+                            ? `Undo ${undo.countdownSeconds}s`
+                            : 'Undo'}
                       </motion.button>
                     )}
 
@@ -565,7 +645,8 @@ export default function WinnersTab({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="fixed bottom-20 left-4 right-4 max-w-md mx-auto bg-red-500/90 text-white text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+              role="alert"
+              className="fixed bottom-20 left-4 right-4 max-w-md mx-auto border border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] text-[color:var(--t-text)] text-sm font-medium px-4 py-3 rounded-xl text-center z-40 backdrop-blur-lg"
             >
               {error}
             </motion.div>
