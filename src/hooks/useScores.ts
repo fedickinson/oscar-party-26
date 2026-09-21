@@ -26,8 +26,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
-import { computeLeaderboard, findDraftPointsForWinner } from '../lib/scoring'
-import { computeConvictionPortfolioScores } from '../lib/conviction'
+import { computeLeaderboard } from '../lib/scoring'
+import {
+  buildWinnerFeedEntry,
+  mergeSeededWinnerEntries,
+  seedWinnerFeedEntries,
+  type WinnerFeedContext,
+  type WinnerFeedEntry,
+} from '../lib/winner-feed'
 import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { buildCanonicalRoomRecord } from '../lib/room-record'
 import { categoryScopeFilter, isCategoryInRoomCatalog } from '../lib/catalog-scope'
@@ -64,33 +70,12 @@ export interface RecentResult {
 }
 
 // ─── Activity feed types ──────────────────────────────────────────────────────
+//
+// The winner entry and its per-player impacts are built by `lib/winner-feed`,
+// which both the Realtime callback and hydration use. Re-exported here because
+// every consumer already reads the feed's shape from this hook.
 
-export interface PlayerImpact {
-  playerId: string
-  playerName: string
-  avatarId: string
-  confidenceDelta: number
-  confidencePickedName: string | null
-  confidenceCorrect: boolean
-  draftDelta: number
-  draftedEntityName: string | null
-}
-
-export interface WinnerFeedEntry {
-  kind: 'winner'
-  categoryId: number
-  categoryName: string
-  categoryTier: number
-  categoryPoints: number
-  winnerName: string
-  winnerFilm: string
-  /** Second winner name when there is a tie */
-  tieWinnerName: string | null
-  /** Second winner film when there is a tie */
-  tieWinnerFilm: string | null
-  time: Date
-  playerImpacts: PlayerImpact[]
-}
+export type { PlayerImpact, WinnerFeedEntry } from '../lib/winner-feed'
 
 export interface LeadChangeFeedEntry {
   kind: 'lead-change'
@@ -312,6 +297,19 @@ export function useScores(
         : { roomId, winners: false, bingo: false, confidence: false, conviction: false }
     ))
 
+    // Read through the refs, never a closure: a Realtime callback that fired
+    // before the next render would otherwise score against a stale roster.
+    const feedContext = (): WinnerFeedContext => ({
+      gameModel: currentRoom.game_model ?? 'legacy_ensemble',
+      players: playersRef.current,
+      categories: categoriesRef.current,
+      nominees: nomineesRef.current,
+      confidencePicks: confidencePicksRef.current,
+      convictionPicks: convictionPicksRef.current,
+      draftPicks: draftPicksRef.current,
+      draftEntities: draftEntitiesRef.current,
+    })
+
     function handleWinnerSet(rw: RoomWinnerRow) {
       const cat = categoriesRef.current.find((c) => c.id === rw.category_id)
       if (!cat) {
@@ -384,100 +382,19 @@ export function useScores(
         ].slice(0, 10),
       )
 
-      // Build per-player impacts for activity feed
-      const categoriesWithUpdate = categoriesRef.current.map((c) =>
-        c.id === rw.category_id ? { ...c, winner_id: rw.winner_id, tie_winner_id: rw.tie_winner_id } : c,
-      )
-
-      // Draft impact for first winner
-      const draftWinnerResult = currentRoom.game_model === 'conviction_portfolio'
-        ? { playerId: null, points: 0, entityId: null }
-        : findDraftPointsForWinner(
-        rw.category_id,
-        rw.winner_id,
-        categoriesWithUpdate,
-        nomineesRef.current,
-        draftEntitiesRef.current,
-        draftPicksRef.current,
-      )
-
-      // Draft impact for tie winner (if any)
-      const draftTieResult = currentRoom.game_model !== 'conviction_portfolio' && rw.tie_winner_id
-        ? findDraftPointsForWinner(
-          rw.category_id,
-          rw.tie_winner_id,
-          categoriesWithUpdate,
-          nomineesRef.current,
-          draftEntitiesRef.current,
-          draftPicksRef.current,
-        )
-        : { playerId: null, points: 0, entityId: null }
-
-      const draftImpactByPlayer = new Map<string, { points: number; entityNames: string[] }>()
-      for (const result of [draftWinnerResult, draftTieResult]) {
-        if (!result.playerId || !result.entityId || result.points <= 0) continue
-        const entity = draftEntitiesRef.current.find((candidate) => candidate.id === result.entityId)
-        if (!entity) continue
-        const entityName = entity.type === 'film' ? entity.film_name : entity.name
-        const current = draftImpactByPlayer.get(result.playerId) ?? { points: 0, entityNames: [] }
-        current.points += result.points
-        if (entityName && !current.entityNames.includes(entityName)) current.entityNames.push(entityName)
-        draftImpactByPlayer.set(result.playerId, current)
-      }
-
-      const playerImpacts: PlayerImpact[] = playersRef.current.map((player) => {
-        const convictionOutcome = currentRoom.game_model === 'conviction_portfolio'
-          ? computeConvictionPortfolioScores(
-              playersRef.current,
-              convictionPicksRef.current,
-              categoriesWithUpdate.filter((category) => category.id === rw.category_id),
-            ).get(player.id)
-          : null
-        const confPick = confidencePicksRef.current.find(
-          (p) => p.player_id === player.id && p.category_id === rw.category_id,
-        )
-        // In a tie, picks matching EITHER winner are correct
-        const confidenceCorrect = convictionOutcome != null
-          ? convictionOutcome.correctPickCount > 0
-          : confPick
-            ? (confPick.nominee_id === rw.winner_id || confPick.nominee_id === rw.tie_winner_id)
-            : false
-        const confidenceDelta = convictionOutcome?.score ?? (confidenceCorrect ? confPick!.confidence : 0)
-        const pickedNominee = confPick
-          ? nomineesRef.current.find((n) => n.id === confPick.nominee_id)
-          : null
-        // Combine draft points from both winners (a player could theoretically draft both entities).
-        // The scorer returns the canonical entity id; presentation never re-matches by display name.
-        const draftImpact = draftImpactByPlayer.get(player.id)
-        const draftDelta = draftImpact?.points ?? 0
-
-        return {
-          playerId: player.id,
-          playerName: player.name,
-          avatarId: player.avatar_id,
-          confidenceDelta,
-          confidencePickedName: convictionOutcome ? cat.name : (pickedNominee?.name ?? null),
-          confidenceCorrect,
-          draftDelta,
-          draftedEntityName: draftImpact?.entityNames.join(' and ') || null,
-        }
+      // One builder for both paths — the live announcement here and the
+      // hydrated seed below — so the feed cannot disagree with itself.
+      const entry = buildWinnerFeedEntry(feedContext(), {
+        categoryId: rw.category_id,
+        winnerId: rw.winner_id,
+        tieWinnerId: rw.tie_winner_id,
+        time: now,
       })
+      if (!entry) return
 
       setWinnerEntries((prev) => [
-        {
-          kind: 'winner',
-          categoryId: cat.id,
-          categoryName: cat.name,
-          categoryTier: cat.tier,
-          categoryPoints: cat.points,
-          winnerName: winner.name,
-          winnerFilm: winner.film_name,
-          tieWinnerName: tieWinner?.name ?? null,
-          tieWinnerFilm: tieWinner?.film_name ?? null,
-          time: now,
-          playerImpacts,
-        },
-        ...prev.filter((entry) => entry.categoryId !== cat.id),
+        entry,
+        ...prev.filter((existing) => existing.categoryId !== cat.id),
       ])
     }
 
@@ -829,10 +746,51 @@ export function useScores(
     prevLeaderIdRef.current = topPlayerId
   }, [topPlayerId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Merge and sort all feed events newest-first
-  const activityFeed: FeedEvent[] = [...winnerEntries, ...leadChanges].sort(
-    (a, b) => b.time.getTime() - a.time.getTime(),
+  // ── The winner feed, derived from the canonical record ─────────────────────
+  //
+  // The feed used to exist only as a side effect of the Realtime winner
+  // callback, so a reloaded phone showed "No winners announced yet" while the
+  // stats below it named the winners. It is now recomputed from the hydrated
+  // rows every time they change; `winnerEntries` survives only to remember the
+  // moment each category was witnessed live on this phone. One entry per
+  // category, so a live event and the hydrated snapshot cannot both add one.
+  //
+  // Everything seeded is stamped just before this page's epoch, which is fixed
+  // per room: a winner declared or a lead taken after arrival always sorts
+  // above the record that was already on screen when the phone joined.
+  const feedEpochRef = useRef({ roomId, at: Date.now() })
+  if (feedEpochRef.current.roomId !== roomId) {
+    feedEpochRef.current = { roomId, at: Date.now() }
+  }
+
+  const seededWinnerEntries = useMemo(
+    () => seedWinnerFeedEntries({
+      gameModel: room?.game_model ?? 'legacy_ensemble',
+      players,
+      categories,
+      nominees,
+      confidencePicks,
+      convictionPicks,
+      draftPicks,
+      draftEntities,
+    }, feedEpochRef.current.at),
+    [
+      room?.game_model,
+      players,
+      categories,
+      nominees,
+      confidencePicks,
+      convictionPicks,
+      draftPicks,
+      draftEntities,
+    ],
   )
+
+  // Merge and sort all feed events newest-first
+  const activityFeed: FeedEvent[] = [
+    ...mergeSeededWinnerEntries(winnerEntries, seededWinnerEntries),
+    ...leadChanges,
+  ].sort((a, b) => b.time.getTime() - a.time.getTime())
 
   return {
     leaderboard,

@@ -95,6 +95,14 @@ export default function Draft() {
     devAutoPickAll,
   } = useDraft(room?.id)
 
+  // Signature beats are the conviction board's scoring instrument. A scheduled
+  // Results Night room scores the draft through its category slate instead, so
+  // its beats never resolve — the cards were promising "choose 3 of 0" and "up
+  // to 0 pts" for a mechanic that does not run. Only an explicit
+  // `legacy_ensemble` turns the beat affordances off; an unset game model keeps
+  // the conviction board's behaviour exactly as it was.
+  const beatsActive = room?.game_model !== 'legacy_ensemble'
+
   // Navigate when phase changes — same pattern as Room.tsx
   useEffect(() => {
     if (!room || !code) return
@@ -288,6 +296,7 @@ export default function Draft() {
                       key={entity.id}
                       entity={entity}
                       beats={beatsByEntityId.get(entity.id) ?? []}
+                      beatsActive={beatsActive}
                       isAvailable={true}
                       isMyTurn={isMyTurn}
                       draftedBy={null}
@@ -320,6 +329,7 @@ export default function Draft() {
                           key={entity.id}
                           entity={entity}
                           beats={beatsByEntityId.get(entity.id) ?? []}
+                          beatsActive={beatsActive}
                           isAvailable={true}
                           isMyTurn={isMyTurn}
                           draftedBy={null}
@@ -345,6 +355,7 @@ export default function Draft() {
                       key={entity.id}
                       entity={entity}
                       beats={beatsByEntityId.get(entity.id) ?? []}
+                      beatsActive={beatsActive}
                       isAvailable={false}
                       isMyTurn={false}
                       draftedBy={players.find((p) => p.id === picksMap.get(entity.id)) ?? null}
@@ -373,6 +384,7 @@ export default function Draft() {
           <ConfirmPickModal
             entity={selectedEntity}
             beats={beatsByEntityId.get(selectedEntity.id) ?? []}
+            beatsActive={beatsActive}
             onConfirm={handleConfirmPick}
             onCancel={() => {
               if (!isConfirming) {

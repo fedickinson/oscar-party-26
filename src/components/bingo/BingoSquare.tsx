@@ -216,13 +216,18 @@ export default function BingoSquare({
         <p
           className={[
             // The master pool's titles carry words the old hand-written ones
-            // never did — "Sheepstealer", "Witchcraft", "Everything" — and a
-            // 45px tile clips anything past about nine characters. Soft hyphens
-            // (hyphenateForTile) break those at a syllable; break-words is the
-            // backstop so nothing can ever clip. The 4th line is free: four
-            // lines at 10px/leading-tight is 50px inside a 60px tile.
-            'text-[10px] leading-tight text-center font-medium break-words',
-            'line-clamp-4 overflow-hidden w-full',
+            // never did — "Sheepstealer", "Witchcraft", "Performance" — and a
+            // tile clips anything past about nine characters. hyphenateForTile
+            // now offers every long word a break that leaves a readable
+            // fragment on both sides, so break-words stays only as a backstop
+            // and can no longer be the thing that produces "Categorie / s".
+            //
+            // 11px is the floor the label scale allows; the old 10px was below
+            // it and bought nothing, because the words that overflowed were
+            // never going to fit at any readable size. Three lines at
+            // 11px/leading-tight is 42px inside a 60px tile.
+            'text-[11px] leading-tight text-center font-medium break-words',
+            'line-clamp-3 overflow-hidden w-full',
             textClass,
             isObjective && isUnmarked ? 'italic' : '',
           ].join(' ')}

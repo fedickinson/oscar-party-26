@@ -9,14 +9,8 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
-
-const TIER_LABEL: Record<number, string> = {
-  1: 'Huge Moment',
-  2: 'Solid Moment',
-  3: 'Flavour',
-  4: 'Flavour',
-  5: 'Flavour',
-}
+import { confidenceTierLabel } from '../../lib/show-identity'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 interface Props {
   categoryName: string
@@ -25,6 +19,11 @@ interface Props {
 }
 
 export default function SpotlightNotification({ categoryName, tier, onComplete }: Props) {
+  // Tier names are show copy: the legacy pack keeps its authored strings and
+  // every other pack gets numbered tiers, exactly as the Confidence ladder and
+  // the spotlight header resolve them.
+  const { identity: showIdentity } = useShowIdentity()
+
   useEffect(() => {
     const timer = setTimeout(onComplete, 2500)
     return () => clearTimeout(timer)
@@ -47,7 +46,7 @@ export default function SpotlightNotification({ categoryName, tier, onComplete }
           <p className="text-sm font-bold text-accent truncate">{categoryName}</p>
         </div>
         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent/80 flex-shrink-0">
-          {TIER_LABEL[tier] ?? `Tier ${tier}`}
+          {confidenceTierLabel(tier, showIdentity)}
         </span>
       </div>
     </motion.div>

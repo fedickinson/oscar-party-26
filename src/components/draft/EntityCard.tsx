@@ -25,6 +25,14 @@ import type { DraftEntityWithDetails } from '../../types/game'
 interface Props {
   entity: DraftEntityWithDetails
   beats: SignatureBeatRow[]
+  /**
+   * Whether this room's board actually scores signature beats. A Results Night
+   * pack authors no beats, so the beat affordances resolved to "choose 3 of 0"
+   * and "up to 0 pts" on every card — a scoring promise the room does not keep.
+   * When false the card names what the pack does have instead: how many of its
+   * categories this entity is a candidate in.
+   */
+  beatsActive: boolean
   isAvailable: boolean
   isMyTurn: boolean
   draftedBy: PlayerRow | null
@@ -35,6 +43,7 @@ interface Props {
 export default function EntityCard({
   entity,
   beats,
+  beatsActive,
   isAvailable,
   isMyTurn,
   draftedBy,
@@ -95,9 +104,23 @@ export default function EntityCard({
             </div>
           )}
 
-          {/* Signature beats display */}
-          <div className="mt-2">
-            {isDragon ? (
+          {/* Signature beats display, or the pack's own nomination count when
+              this room's beats are inert. `nom_count` is the number of the
+              pack's prediction categories this entity is a candidate in, so it
+              needs no extra read. Zero says nothing rather than saying "0". */}
+          <div className={beatsActive || entity.nom_count > 0 ? 'mt-2' : ''}>
+            {!beatsActive ? (
+              entity.nom_count > 0 && (
+                <span
+                  className={[
+                    'text-sm font-bold',
+                    isAvailable ? 'text-[var(--t-pending)]' : 'text-[var(--t-negative)]',
+                  ].join(' ')}
+                >
+                  {entity.nom_count} nomination{entity.nom_count !== 1 ? 's' : ''}
+                </span>
+              )
+            ) : isDragon ? (
               // Dragons: how many scoring events they appear in
               <span
                 className={[
@@ -143,9 +166,12 @@ export default function EntityCard({
           )}
         </div>
 
-        {/* Right: potential points */}
+        {/* Right: potential points. Beat points only — a room whose beats are
+            inert shows no figure here rather than a standing "up to 0". */}
         <div className="flex-shrink-0 text-right">
-          {isAvailable ? (
+          {!isAvailable ? (
+            <span className="text-xs text-[var(--t-negative)]">claimed</span>
+          ) : beatsActive ? (
             <>
               <p
                 className={[
@@ -157,9 +183,7 @@ export default function EntityCard({
               </p>
               <p className="text-xs text-[var(--t-text-dim)] mt-0.5">pts</p>
             </>
-          ) : (
-            <span className="text-xs text-[var(--t-negative)]">claimed</span>
-          )}
+          ) : null}
         </div>
       </div>
     </motion.div>

@@ -44,6 +44,13 @@ function claimLabel(name: string, maxChars = 14): string {
 interface Props {
   entity: DraftEntityWithDetails
   beats: SignatureBeatRow[]
+  /**
+   * Whether this room's board scores signature beats. A Results Night pack
+   * authors none, and the empty-list branch below said "Signature beats
+   * loading" forever — a permanent promise of something that was never coming.
+   * When false the beats section is not rendered at all.
+   */
+  beatsActive: boolean
   onConfirm: () => void
   onCancel: () => void
   isSubmitting: boolean
@@ -52,6 +59,7 @@ interface Props {
 export default function ConfirmPickModal({
   entity,
   beats,
+  beatsActive,
   onConfirm,
   onCancel,
   isSubmitting,
@@ -120,8 +128,8 @@ export default function ConfirmPickModal({
           </div>
         </div>
 
-        {/* Signature beats list */}
-        {beats.length > 0 ? (
+        {/* Signature beats list — omitted entirely when the room's beats are inert */}
+        {!beatsActive ? null : beats.length > 0 ? (
           <div className="relief-glass rounded-xl p-4 mb-5 space-y-2" style={{ borderColor: 'var(--t-line-soft)' }}>
             <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-widest mb-3">Signature beats</p>
             {beats.map((beat) => (

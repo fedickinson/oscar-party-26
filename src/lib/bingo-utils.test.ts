@@ -12,6 +12,7 @@ import {
   countBingos,
   didBingoMarkCompleteLine,
   generateBingoCard,
+  hyphenateForTile,
   isBlackout,
   splitWinCondition,
 } from './bingo-utils'
@@ -430,5 +431,67 @@ describe('checkObjectiveCondition', () => {
 
   it('is false for a phrasing it does not understand, leaving the host to rule', () => {
     expect(checkObjectiveCondition('someone cries during a speech', categories, nominees)).toBe(false)
+  })
+})
+
+// ─── hyphenateForTile ─────────────────────────────────────────────────────────
+
+const SOFT_HYPHEN = '\u00AD'
+
+/**
+ * Every way a tile line could actually break this word: the letters that would
+ * be left before the hyphen, and the letters that would carry to the next line.
+ */
+function breakPoints(word: string): Array<[string, string]> {
+  const marked = hyphenateForTile(word)
+  const plain = marked.split(SOFT_HYPHEN).join('')
+  const out: Array<[string, string]> = []
+  let consumed = 0
+  for (const char of marked) {
+    if (char === SOFT_HYPHEN) out.push([plain.slice(0, consumed), plain.slice(consumed)])
+    else consumed++
+  }
+  return out
+}
+
+describe('hyphenateForTile', () => {
+  it('never offers a break that leaves a fragment too short to read', () => {
+    for (const word of ['Categories', 'Performance', 'Statement', 'Microphone', 'Censorship', 'Memorial']) {
+      const points = breakPoints(word)
+      expect(points.length).toBeGreaterThan(0)
+      for (const [head, tail] of points) {
+        expect(head.length).toBeGreaterThanOrEqual(3)
+        expect(tail.length).toBeGreaterThanOrEqual(3)
+      }
+    }
+  })
+
+  it('offers a break to every long word, not only the authored ones', () => {
+    expect(hyphenateForTile('Categories')).toContain(SOFT_HYPHEN)
+    expect(hyphenateForTile('Performance')).toContain(SOFT_HYPHEN)
+    // The shortest word `break-words` was seen to cut on a real tile.
+    expect(hyphenateForTile('Memorial')).toContain(SOFT_HYPHEN)
+  })
+
+  it('keeps the authored syllable point as the only break for a listed word', () => {
+    expect(hyphenateForTile('Sheepstealer')).toBe(`Sheep${SOFT_HYPHEN}stealer`)
+    expect(hyphenateForTile('Everything')).toBe(`Every${SOFT_HYPHEN}thing`)
+  })
+
+  it('leaves a word that already fits a tile line alone', () => {
+    expect(hyphenateForTile('A Kiss On Camera')).toBe('A Kiss On Camera')
+    expect(hyphenateForTile('A Host Bit Lands')).toBe('A Host Bit Lands')
+  })
+
+  it('treats punctuation as the break it already is', () => {
+    const marked = hyphenateForTile('Mid-Performance')
+    expect(marked.split('-')[0]).toBe('Mid')
+    expect(marked.split('-')[1]).toBe(hyphenateForTile('Performance'))
+  })
+
+  it('changes nothing a player actually reads', () => {
+    for (const text of ['A Non-Musician Presents An Award', 'Two Categories Back To Back']) {
+      expect(hyphenateForTile(text).split(SOFT_HYPHEN).join('')).toBe(text)
+    }
   })
 })

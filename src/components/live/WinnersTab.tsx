@@ -324,7 +324,13 @@ export default function WinnersTab({
             categories do not block the close; the database command accepts
             them and the settlement pass is where they become true. */}
         {isHost && (
-          <div className="material-stone relief-inset space-y-3 rounded-2xl p-4">
+          // Iron, not stone: the stone texture is a masonry course drawn at
+          // 480x360 and never scaled down for a card this size, so its mortar
+          // lines ran straight through the paragraph that explains what closing
+          // costs. Iron carries the same alpha-only grain with no structure in
+          // it. The border is the strong line token — at --t-line this card read
+          // as a disabled control rather than the night's last decision.
+          <div className="material-iron relief-inset space-y-3 rounded-2xl border border-[color:var(--t-line-strong)] p-4">
             <div className="flex items-center gap-2">
               {closeCard.unresolvedCount > 0 ? (
                 <AlertTriangle size={14} style={{ color: 'var(--t-pending)' }} aria-hidden />
@@ -376,7 +382,7 @@ export default function WinnersTab({
                 type="button"
                 onClick={() => setConfirmingClose(true)}
                 disabled={isClosingNight || !refereeEnabled}
-                className="min-h-11 w-full rounded-xl border border-[color:var(--t-line)] px-4 py-2 text-sm font-bold text-[color:var(--t-text)] disabled:opacity-40"
+                className="min-h-11 w-full rounded-xl border border-[color:var(--t-line-strong)] px-4 py-2 text-sm font-bold text-[color:var(--t-text)] disabled:opacity-40"
               >
                 <span className="flex items-center justify-center gap-2">
                   <Flame size={14} aria-hidden />
@@ -416,6 +422,101 @@ export default function WinnersTab({
               : null
             const hasTie = tieWinnerNominee != null
 
+            // The status icon, the category and the disclosure chevron. Shared
+            // so the announced row can put them inside the expand button while
+            // an unannounced row renders them as plain, unclickable content.
+            const rowBody = (
+              <>
+                {/* Status icon */}
+                <div
+                  className={[
+                    'relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
+                    hasWinner
+                      ? 'bg-accent/16 border border-accent/30'
+                      : 'bg-white/6 border border-white/8',
+                  ].join(' ')}
+                >
+                  {hasWinner ? (
+                    <>
+                      <Trophy size={11} className="text-accent" />
+                      <span
+                        aria-hidden="true"
+                        className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--t-wax)] relief-seal"
+                      />
+                    </>
+                  ) : (
+                    <Clock size={12} className="text-white/22" />
+                  )}
+                </div>
+
+                {/* Category info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                    <CategoryIcon
+                      categoryName={category.name}
+                      size={13}
+                      className={hasWinner ? 'text-white/30 flex-shrink-0' : 'text-white/60 flex-shrink-0'}
+                    />
+                    <p
+                      className={[
+                        'text-sm font-medium leading-tight',
+                        hasWinner ? 'text-white/60' : 'text-white',
+                      ].join(' ')}
+                    >
+                      {category.name}
+                    </p>
+                    <span
+                      className={[
+                        'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide flex-shrink-0',
+                        TIER_BADGE_COLORS[category.tier] ?? 'bg-white/10 text-white/40',
+                      ].join(' ')}
+                    >
+                      {category.points}pt
+                    </span>
+                  </div>
+
+                  {hasWinner && winnerNominee ? (
+                    <div>
+                      <p className="text-[13px] font-bold text-accent leading-tight truncate">
+                        {winnerNominee.name}
+                        {hasTie && tieWinnerNominee && (
+                          <>
+                            <span className="text-white/28 mx-1 font-normal">&</span>
+                            {tieWinnerNominee.name}
+                          </>
+                        )}
+                      </p>
+                      {hasTie && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--t-pending)]">Tie</span>
+                      )}
+                      {winnerNominee.film_name && !hasTie && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                          <p className="text-[11px] text-white/40 truncate">
+                            {winnerNominee.film_name}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className={['text-xs', !isHost && 'italic'].join(' ')}>
+                      <span className="text-white/30">
+                        {isHost
+                          ? `${category.nominees.length} nominees`
+                          : 'Awaiting result...'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {hasWinner && (
+                  isExpanded
+                    ? <ChevronUp size={14} className="text-white/30 flex-shrink-0" />
+                    : <ChevronDown size={14} className="text-white/30 flex-shrink-0" />
+                )}
+              </>
+            )
+
             return (
               <motion.div
                 key={category.id}
@@ -429,105 +530,34 @@ export default function WinnersTab({
                     : 'text-[color:var(--t-text-muted)]',
                 ].join(' ')}
               >
-                {/* Main row */}
-                <button
-                  onClick={hasWinner ? () => toggleExpand(category.id) : undefined}
-                  className={[
-                    'min-h-11 w-full px-3.5 py-3 flex items-center gap-3 text-left',
-                    hasWinner ? 'cursor-pointer' : 'cursor-default',
-                  ].join(' ')}
-                >
-                  {/* Status icon */}
-                  <div
-                    className={[
-                      'relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
-                      hasWinner
-                        ? 'bg-accent/16 border border-accent/30'
-                        : 'bg-white/6 border border-white/8',
-                    ].join(' ')}
-                  >
-                    {hasWinner ? (
-                      <>
-                        <Trophy size={11} className="text-accent" />
-                        <span
-                          aria-hidden="true"
-                          className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--t-wax)] relief-seal"
-                        />
-                      </>
-                    ) : (
-                      <Clock size={12} className="text-white/22" />
-                    )}
-                  </div>
-
-                  {/* Category info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                      <CategoryIcon
-                        categoryName={category.name}
-                        size={13}
-                        className={hasWinner ? 'text-white/30 flex-shrink-0' : 'text-white/60 flex-shrink-0'}
-                      />
-                      <p
-                        className={[
-                          'text-sm font-medium leading-tight',
-                          hasWinner ? 'text-white/60' : 'text-white',
-                        ].join(' ')}
-                      >
-                        {category.name}
-                      </p>
-                      <span
-                        className={[
-                          'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide flex-shrink-0',
-                          TIER_BADGE_COLORS[category.tier] ?? 'bg-white/10 text-white/40',
-                        ].join(' ')}
-                      >
-                        {category.points}pt
-                      </span>
+                {/* Main row. A div, not a button: Spotlight and Undo are real
+                    buttons and a button cannot contain one. React logged the
+                    nesting, and the two-tap undo's second tap could be swallowed
+                    by the row behind it. Expanding is now its own sibling
+                    control, so each tap has exactly one target. */}
+                <div className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  {hasWinner ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(category.id)}
+                      aria-expanded={isExpanded}
+                      className="min-h-11 min-w-0 flex-1 flex items-center gap-3 text-left cursor-pointer"
+                    >
+                      {rowBody}
+                    </button>
+                  ) : (
+                    <div className="min-h-11 min-w-0 flex-1 flex items-center gap-3">
+                      {rowBody}
                     </div>
-
-                    {hasWinner && winnerNominee ? (
-                      <div>
-                        <p className="text-[13px] font-bold text-accent leading-tight truncate">
-                          {winnerNominee.name}
-                          {hasTie && tieWinnerNominee && (
-                            <>
-                              <span className="text-white/28 mx-1 font-normal">&</span>
-                              {tieWinnerNominee.name}
-                            </>
-                          )}
-                        </p>
-                        {hasTie && (
-                          <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--t-pending)]">Tie</span>
-                        )}
-                        {winnerNominee.film_name && !hasTie && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
-                            <p className="text-[11px] text-white/40 truncate">
-                              {winnerNominee.film_name}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className={['text-xs', !isHost && 'italic'].join(' ')}>
-                        <span className="text-white/30">
-                          {isHost
-                            ? `${category.nominees.length} nominees`
-                            : 'Awaiting result...'}
-                        </span>
-                      </p>
-                    )}
-                  </div>
+                  )}
 
                   {/* Right-side actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {!hasWinner && isHost && (
                       <motion.button
+                        type="button"
                         whileTap={{ scale: 0.94 }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openSpotlight(category.id)
-                        }}
+                        onClick={() => openSpotlight(category.id)}
                         disabled={!refereeEnabled}
                         className="relief-raised min-h-11 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                       >
@@ -541,10 +571,7 @@ export default function WinnersTab({
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         whileTap={{ scale: 0.94 }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleUndo(category.id)
-                        }}
+                        onClick={() => handleUndo(category.id)}
                         aria-label={isUndoArmed
                           ? `Confirm undo of ${category.name}`
                           : `Undo ${category.name}`}
@@ -563,14 +590,8 @@ export default function WinnersTab({
                             : 'Undo'}
                       </motion.button>
                     )}
-
-                    {hasWinner && (
-                      isExpanded
-                        ? <ChevronUp size={14} className="text-white/30" />
-                        : <ChevronDown size={14} className="text-white/30" />
-                    )}
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded: all nominees */}
                 <AnimatePresence initial={false}>

@@ -30,7 +30,15 @@ import PipLegend from '../bingo/PipLegend'
 import Avatar from '../Avatar'
 import type { CategoryRow, NomineeRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
-import { BINGO_LINE_PALETTE, BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
+import {
+  BINGO_LINE_PALETTE,
+  BINGO_LINES,
+  FREE_CENTER_INDEX,
+  MARKABLE_SQUARE_COUNT,
+  checkBingo,
+  countBingos,
+  isMarkableSquareIndex,
+} from '../../lib/bingo-utils'
 
 interface Props {
   roomId: string
@@ -134,7 +142,6 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
 
   const approvedCount = markedIndices.size - 1 // exclude free center
   const pendingCount = pendingIndices.size
-  const totalSquares = 24 // excludes free center
 
   return (
     <>
@@ -153,7 +160,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
             </div>
             <div className="text-right space-y-0.5">
               <p className="text-xs text-white/40">
-                {approvedCount}/{totalSquares} marked
+                {approvedCount}/{MARKABLE_SQUARE_COUNT} marked
                 {pendingCount > 0 && (
                   <span className="text-amber-400 ml-1">· {pendingCount} pending</span>
                 )}
@@ -260,7 +267,11 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                       .forEach((m) => mi.add(m.square_index))
                     const { lines } = checkBingo(mi, [])
                     peekedBingos = countBingos(lines)
-                    peekedApproved = otherCard.marks.filter((m) => m.status === 'approved').length
+                    // Same denominator as this player's own header: the free
+                    // centre is nobody's mark, so it is in neither count.
+                    peekedApproved = otherCard.marks.filter(
+                      (m) => m.status === 'approved' && isMarkableSquareIndex(m.square_index),
+                    ).length
                   }
 
                   return (
@@ -287,7 +298,7 @@ export default function BingoTab({ roomId, isHost, categories, nominees, leaderb
                             </span>
                           )}
                           <span className="text-xs text-white/35">
-                            {peekedApproved}/25
+                            {peekedApproved}/{MARKABLE_SQUARE_COUNT}
                           </span>
                         </div>
                       ) : (

@@ -139,8 +139,14 @@ export default function BingoCard({
   const selectedSquare = selectedIndex !== null ? squares[selectedIndex] : null
 
   return (
+    // The grid sits inside the frame on every side, but it did not read that
+    // way: relief-carved lights the top-left with 7px of iron and darkens the
+    // bottom-right with 4px of iron-dark, which is the tiles' own colour. With
+    // a faint --t-line border the right-hand column had no visible wood beside
+    // it and looked like it had broken out of the card. A wider band and the
+    // strong line token close the frame on all four sides.
     <div
-      className="material-oak relief-carved rounded-2xl border border-[var(--t-line)] p-2.5"
+      className="material-oak relief-carved rounded-2xl border border-[var(--t-line-strong)] p-3"
       style={{ width: '100%', maxWidth: 340 }}
     >
       <div className="motif-band narrow mb-2" aria-hidden="true" />

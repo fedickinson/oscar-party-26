@@ -13,7 +13,14 @@ import Avatar from '../Avatar'
 import BingoSquare from './BingoSquare'
 import TierChip from './TierChip'
 import SquareRule from './SquareRule'
-import { BINGO_LINES, FREE_CENTER_INDEX, checkBingo, countBingos } from '../../lib/bingo-utils'
+import {
+  BINGO_LINES,
+  FREE_CENTER_INDEX,
+  MARKABLE_SQUARE_COUNT,
+  checkBingo,
+  countBingos,
+  isMarkableSquareIndex,
+} from '../../lib/bingo-utils'
 import type { BingoMarkRow, BingoSquareRow, PlayerRow } from '../../types/database'
 
 interface Props {
@@ -54,7 +61,11 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
       })
     }
   })
-  const approvedCount = marks.filter((m) => m.status === 'approved').length
+  // The free centre is nobody's mark: it belongs in neither the count nor the
+  // denominator, and the two have to agree with the card's own header.
+  const approvedCount = marks.filter(
+    (m) => m.status === 'approved' && isMarkableSquareIndex(m.square_index),
+  ).length
 
   function getStatus(index: number): 'free' | 'approved' | 'pending' | 'denied' | 'unmarked' {
     if (index === FREE_CENTER_INDEX) return 'free'
@@ -110,7 +121,7 @@ export default function PeekCardOverlay({ player, squares, marks, onDismiss }: P
               {bingoCount > 0
                 ? `${bingoCount} bingo${bingoCount !== 1 ? 's' : ''}`
                 : 'No bingos'}{' '}
-              · {approvedCount}/25 marked
+              · {approvedCount}/{MARKABLE_SQUARE_COUNT} marked
             </p>
           </div>
         </div>
