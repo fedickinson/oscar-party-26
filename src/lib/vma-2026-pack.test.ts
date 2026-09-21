@@ -195,16 +195,34 @@ describe('2026 VMA show pack', () => {
     }
   })
 
-  it('carries enough of every tier to deal one full board', () => {
-    expect(authored.bingo_squares.length).toBeGreaterThanOrEqual(40)
-    expect(authored.bingo_squares.length).toBeLessThanOrEqual(48)
+  it('carries at least twice the board mix in every tier', () => {
+    // A board is dealt at BOARD_TIER_MIX exactly, so a pool that only just
+    // covers the mix hands every player the same long shots and the same chaos
+    // squares. Twice the mix is the floor that keeps two boards apart; the pool
+    // is authored above it in every tier.
+    expect(authored.bingo_squares.length).toBeGreaterThanOrEqual(56)
+    expect(authored.bingo_squares.length).toBeLessThanOrEqual(64)
     const counts = new Map<LikelihoodTier, number>()
     for (const square of authored.bingo_squares) {
       counts.set(square.likelihood_tier, (counts.get(square.likelihood_tier) ?? 0) + 1)
     }
     for (const [tier, needed] of Object.entries(BOARD_TIER_MIX) as Array<[LikelihoodTier, number]>) {
-      expect(counts.get(tier) ?? 0).toBeGreaterThanOrEqual(needed)
+      expect(counts.get(tier) ?? 0).toBeGreaterThanOrEqual(needed * 2)
     }
+  })
+
+  it('prices no bingo square as a near-certainty', () => {
+    // A square a viewer can assume before the show starts is not bingo. The
+    // pool caps at 80 and keeps its likely tier inside the 60-75 band.
+    for (const square of authored.bingo_squares) {
+      expect(square.probability_pct).toBeLessThanOrEqual(80)
+      if (square.likelihood_tier === 'likely') {
+        expect(square.probability_pct).toBeLessThanOrEqual(75)
+      }
+    }
+    const mean = authored.bingo_squares.reduce((sum, square) => sum + square.probability_pct, 0)
+      / authored.bingo_squares.length
+    expect(mean).toBeLessThanOrEqual(50)
   })
 
   it('derives every likelihood tier exactly from its authored probability', () => {

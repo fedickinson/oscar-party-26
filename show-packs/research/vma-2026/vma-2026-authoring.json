@@ -1683,6 +1683,196 @@
       "source_ids": [
         "vma-2026-voice-attitude-guide"
       ]
+    },
+    {
+      "id": "moments-row-07-overcut",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 7 of the 2022-2025 history packet: the 2025 bleep of a Best Album acceptance over-ran and also removed the following word. The packet documents that once in the years reached and publishes no separate base rate for an over-cutting censor, so 25 is this pack's conservative placeholder, inside the packet's own one-of-three band and discounted again for being conditional on a bleep.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-09-interruption",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 9 of the 2022-2025 history packet: no stage invasion or uninvited approach to the stage was found in any year reached, and the packet describes the VMAs as a heavily managed arena show with a seated, credentialed floor. Its estimation rule prices a plausible moment with zero confirmed instances at 8 to 20.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-11-host-performs",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 11 of the 2022-2025 history packet: the packet records that the 2023 host both hosted and performed, and that 2022 used rotating hosts drawn from the performer bill. It publishes no separate base rate for the host performing, so 60 is this pack's estimate, placed in the packet's own two-of-three band and flagged as a pack figure rather than a packet finding.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-21-multiple-guests",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 21 of the 2022-2025 history packet: the packet documents one guest-bearing performance in 2023 and one in 2024, and two separate ones in 2025 - a saxophone guest inside the opening number and four guests inside the Rock the Bells medley. Two or more separate performances carrying an unannounced guest is therefore documented in one of the three years, which the packet's estimation rule prices at 30 to 45.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-26-non-musician-presenter",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 26 of the 2022-2025 history packet: the packet records that the 2024 Video Vanguard Award was presented by Orlando Bloom, a non-musician and the honoree's fiance, and names no comparable presenter in 2023 or 2025. It publishes no base rate for a non-musician presenter, so 40 is this pack's figure, taken from the packet's one-of-three band.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-29-total-failure",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 29 of the 2022-2025 history packet: the packet documents an awkward on-air technical moment in 2025 and a staged malfunction in 2023, and no instance in any year reached of the broadcast losing picture or sound outright. Its estimation rule prices a plausible moment with zero confirmed instances at 8 to 20.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "moments-row-34-escalation",
+      "canon": "screen",
+      "status": "verified",
+      "text": "VMA moments base rate, row 34 of the 2022-2025 history packet: exactly one honorary award besides the Vanguard was presented in 2022, 2023 and 2024, and two were presented in 2025. Two or more in one night is therefore documented in one of the four years.",
+      "source_ids": [
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "run-of-show-opening-pattern",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The run-of-show packet records as an invariant of the 2024 and 2025 telecasts that a marquee performer opens cold and the host monologue follows the opening performance rather than preceding it. For 2026 Madonna's opening slot is confirmed and no running order has been published; the packet marks its own predicted order entirely as inference.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "run-of-show-closing-pattern",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The run-of-show packet records that in both 2024 and 2025 the Vanguard segment sat in the back half but not last and Video of the Year was the final award announced, and flags that with only two hours and no announced tribute performer MTV may instead close the 2026 show on the Vanguard segment. No 2026 running order has been published.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "run-of-show-first-award-window",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The run-of-show packet predicts the first award of the night about fourteen minutes into the 2026 telecast, after the opening performance and the host monologue, on the 2024 and 2025 pattern in which the first trophy is a big-name but non-apex category and never Video of the Year. The packet marks the predicted order as inference and publishes no base rate, so 55 is this pack's flagged placeholder.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "run-of-show-award-compression",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The run-of-show packet records that two hours minus roughly 26 to 30 minutes of commercial load leaves about 90 to 94 minutes of content for seven or eight performances, a Vanguard segment and the award slate, calls that tight, and expects performances trimmed toward two to three minutes, a meaningful number of categories handled in rapid-fire pairs or graphics-only reads, and possible use of a secondary stage. The packet marks all of this inference and publishes no base rate, so every square resting on it carries a pack placeholder.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "show-no-presenters-announced",
+      "canon": "screen",
+      "status": "verified",
+      "text": "No presenters for the 2026 telecast had been announced as of 2026-09-21. The run-of-show packet calls this its largest hole and expects the list in the final week, on the 2024 and 2025 cadence. No square in this pack names a presenter.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "show-nirvana-acceptance-open",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Who accepts the Video Vanguard Award for Nirvana was not announced as of 2026-09-21. The surviving members are Dave Grohl, Krist Novoselic and, as a later-period touring guitarist, Pat Smear; the run-of-show packet records that they have reunited periodically for tribute sets with rotating guest vocalists, which is the template most coverage expects if a performance happens, and that Dave Grohl's band is booked in Las Vegas the night before the show, which it flags as a reason his attendance is uncertain. The packet publishes no base rate for any of it.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "show-vanguard-promotional-build",
+      "canon": "screen",
+      "status": "verified",
+      "text": "CBS aired two lead-in specials before the 2026 show, Best of VMAs: Iconic Vanguard Performances on 13 September and Best of VMAs: Unforgettable Moments on 20 September, which the run-of-show packet calls an unusually heavy promotional build for a Vanguard segment. Its predicted shape for the segment, an archival montage drawing on the 1992 performance, is marked inference and carries no base rate.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "show-shaboozey-two-slots",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Shaboozey is announced twice on the 2026 bill, alone with 'Cowgirl' and with Gunna for the first broadcast performance of 'High Noon'. The run-of-show packet records that whether this is one combined slot or two separate segments is unconfirmed, and publishes no base rate either way.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet"
+      ]
+    },
+    {
+      "id": "show-latin-lineup-gap",
+      "canon": "screen",
+      "status": "verified",
+      "text": "No act on the announced 2026 performer list is a Spanish-language or Latin act, and neither the Latin Icon Award nor the Rock the Bells Visionary Award, both created in 2025, has an announced 2026 recipient. The 2023 to 2025 Latin segments the moments packet counts were carried by a Latin Icon segment or by booked Latin performers, so that four-of-four rate cannot be read straight onto this bill.",
+      "source_ids": [
+        "vma-2026-run-of-show-packet",
+        "vma-2026-moments-packet"
+      ]
+    },
+    {
+      "id": "discourse-host-performs",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The discourse record notes that the 2024 host both hosted and performed, and that audiences separated the well-received performance from the flat hosting, a distinction VMA audiences make almost every year.",
+      "source_ids": [
+        "vma-2026-discourse-packet"
+      ]
+    },
+    {
+      "id": "discourse-presenter-non-interaction",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Two rappers presenting an award together in 2024 visibly did not interact, and the clip spread frame by frame as feud speculation precisely because nothing happened.",
+      "source_ids": [
+        "vma-2026-discourse-packet"
+      ]
+    },
+    {
+      "id": "discourse-runtime-complaint",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The 2025 broadcast ran roughly three hours and the discourse record frames the two-hour 2026 window as a deliberate correction, with the obvious pre-show prediction being that a tighter window pushes more categories off air.",
+      "source_ids": [
+        "vma-2026-discourse-packet"
+      ]
+    },
+    {
+      "id": "discourse-interrupted-acceptance",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The discourse record treats the 2009 acceptance-speech interruption, when a rapper took the microphone from a young winner to argue for someone else, as the show's defining moment and the reason people still watch VMA acceptances live.",
+      "source_ids": [
+        "vma-2026-discourse-packet"
+      ]
+    },
+    {
+      "id": "discourse-1992-nirvana-reference",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "The discourse record treats Nirvana's 1992 VMA performance, which teased the opening chords of an unreleased, censor-baiting song before the band played 'Lithium' and ended in a backstage confrontation, as the reference point for the 2026 Vanguard honor.",
+      "source_ids": [
+        "vma-2026-discourse-packet"
+      ]
     }
   ],
   "entities": [
@@ -4233,8 +4423,8 @@
       "likelihood_tier": "toss_up",
       "why_it_is_fun": "The whole square is the wording: 'my fans' is nearly automatic and the nickname is not.",
       "storyline_tags": [
-        "speeches",
-        "fandom"
+        "fandom",
+        "crowd"
       ]
     },
     {
@@ -4266,7 +4456,7 @@
       "why_it_is_fun": "A two-hour window with this many performances is the best chance in years of hearing it.",
       "storyline_tags": [
         "speeches",
-        "broadcast"
+        "runtime"
       ]
     },
     {
@@ -4296,7 +4486,7 @@
       "likelihood_tier": "long_shot",
       "why_it_is_fun": "The VMAs usually solve an absent winner by hiding the category, so seeing one is rare.",
       "storyline_tags": [
-        "speeches",
+        "categories",
         "broadcast"
       ]
     },
@@ -4326,7 +4516,7 @@
       "likelihood_tier": "long_shot",
       "why_it_is_fun": "Half the room will argue that a brisk walk counted, which is exactly the fun.",
       "storyline_tags": [
-        "speeches",
+        "emotion",
         "crowd"
       ]
     },
@@ -4356,8 +4546,8 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "CBS standards on a live feed make this the most audible rule in the building.",
       "storyline_tags": [
-        "broadcast",
-        "censorship"
+        "censorship",
+        "broadcast"
       ]
     },
     {
@@ -4539,7 +4729,7 @@
       "why_it_is_fun": "The VMAs have no standing in-memoriam package, so this one is genuinely contingent.",
       "storyline_tags": [
         "tribute",
-        "broadcast"
+        "legacy"
       ]
     },
     {
@@ -4559,15 +4749,16 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 14 prices a Vanguard medley at 90, but that is a four-of-four rate for a living, performing honoree; the 2026 honoree is a posthumously-fronted band whose segment format, acceptance and any performance were all unannounced at the research cutoff, and the run-of-show packet says the medley template may not hold. The pack discounts the row to 65 and records the discount here."
       },
       "basis_claim_ids": [
         "moments-row-14",
-        "show-vanguard-nirvana"
+        "show-vanguard-nirvana",
+        "show-nirvana-acceptance-open"
       ],
-      "probability_pct": 90,
+      "probability_pct": 65,
       "likelihood_tier": "likely",
-      "why_it_is_fun": "The one Vanguard tradition that has held for four straight years, aimed at a band that cannot follow it the usual way.",
+      "why_it_is_fun": "Four Vanguard medleys in four years, aimed at a band that cannot follow the template.",
       "storyline_tags": [
         "vanguard",
         "performances"
@@ -4591,18 +4782,19 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 14 prices six or more songs at 65 given that a medley happens at all. This square is conditional on the 65 the pack now carries for a Vanguard performance, so the two compound to 40."
       },
       "basis_claim_ids": [
         "moments-row-14",
-        "show-vanguard-nirvana"
+        "show-vanguard-nirvana",
+        "show-nirvana-acceptance-open"
       ],
-      "probability_pct": 65,
-      "likelihood_tier": "likely",
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
       "why_it_is_fun": "Set the over-under at six, not eight; the published song lists always undercount.",
       "storyline_tags": [
         "vanguard",
-        "performances"
+        "setlist"
       ]
     },
     {
@@ -4623,49 +4815,19 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 14 prices eight or more songs at 35 given a medley. Compounded with the pack's 65 for a Vanguard performance happening at all, that is 23."
       },
       "basis_claim_ids": [
         "moments-row-14",
-        "show-runtime-cut"
+        "show-runtime-cut",
+        "show-nirvana-acceptance-open"
       ],
-      "probability_pct": 35,
+      "probability_pct": 23,
       "likelihood_tier": "long_shot",
       "why_it_is_fun": "Eight is the number the last two Vanguard medleys hit exactly, in a show with an hour less to spend.",
       "storyline_tags": [
         "vanguard",
-        "performances"
-      ]
-    },
-    {
-      "id": "a-reaction-shot-steals-the-night",
-      "title": "A Reaction Shot Steals The Night",
-      "truth_authority": "official_result",
-      "condition": "The live telecast cuts to a reaction shot of a named artist in the audience that the room immediately reads as the moment, for example a visible shock, eye-roll, dance or grimace held on camera.",
-      "exclusions": [
-        "A neutral establishing shot of the crowd does not count.",
-        "A reaction filmed for MTV's separate reaction stream, and not shown on the telecast, does not count.",
-        "Anything seen only on the red-carpet preshow, and not on the telecast, does not count."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-16",
-        "discourse-reaction-cam"
-      ],
-      "probability_pct": 90,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "MTV now builds the reaction cam as a product, so this is the safest square on the board.",
-      "storyline_tags": [
-        "crowd",
-        "broadcast"
+        "setlist"
       ]
     },
     {
@@ -4694,8 +4856,8 @@
       "likelihood_tier": "toss_up",
       "why_it_is_fun": "This show invented the televised awards kiss and keeps reaching for it.",
       "storyline_tags": [
-        "performances",
-        "crowd"
+        "romance",
+        "staging"
       ]
     },
     {
@@ -4725,41 +4887,7 @@
       "why_it_is_fun": "It only becomes a broadcast fact when somebody says it on stage, which is the fun part.",
       "storyline_tags": [
         "crowd",
-        "broadcast"
-      ]
-    },
-    {
-      "id": "a-category-is-dumped-to-social",
-      "title": "A Category Is Dumped To Social",
-      "truth_authority": "official_result",
-      "condition": "The live telecast ends with at least one 2026 competitive category whose winner was never announced on the telecast or in the preshow.",
-      "exclusions": [
-        "A category announced on air in a rapid-fire read or a graphics-only card has been announced and does not count.",
-        "The four Instagram-voted social categories still count if their winners are never announced on air.",
-        "Mark this square once the telecast has ended, not before."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-19",
-        "discourse-off-air-complaint",
-        "show-off-air-risk",
-        "show-social-categories",
-        "show-category-architecture"
-      ],
-      "probability_pct": 85,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "The complaint that closed out last year, priced as the near-certainty it actually is.",
-      "storyline_tags": [
-        "broadcast",
-        "categories"
+        "gossip"
       ]
     },
     {
@@ -4789,68 +4917,8 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "Two hours for a Vanguard segment, eight performances and 23 categories. Good luck.",
       "storyline_tags": [
-        "broadcast",
-        "runtime"
-      ]
-    },
-    {
-      "id": "a-surprise-guest-appears-mid-performance",
-      "title": "A Surprise Guest Appears Mid-Performance",
-      "truth_authority": "official_result",
-      "condition": "An unannounced performer joins a performance in progress on the live telecast.",
-      "exclusions": [
-        "A collaborator named in MTV's published performer announcements is not a surprise.",
-        "A presenter walking on after a performance ends does not count.",
-        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-21"
-      ],
-      "probability_pct": 85,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "Every medley on this bill is built as a guest vehicle, and the identity is never guessable.",
-      "storyline_tags": [
-        "performances",
-        "surprise"
-      ]
-    },
-    {
-      "id": "pyrotechnics-on-the-broadcast",
-      "title": "Pyrotechnics On The Broadcast",
-      "truth_authority": "official_result",
-      "condition": "Visible pyrotechnics, flame jets or sparks fire on stage during the live telecast.",
-      "exclusions": [
-        "Confetti, lasers, smoke and lighting effects alone do not count.",
-        "Pyrotechnics inside a nominated video clip or an archival montage do not count.",
-        "Anything seen only on the red-carpet preshow, and not on the telecast, does not count."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-22"
-      ],
-      "probability_pct": 90,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "An arena awards show without a flame cue has never happened, and this one is indoors.",
-      "storyline_tags": [
-        "performances",
-        "staging"
+        "runtime",
+        "broadcast"
       ]
     },
     {
@@ -4879,37 +4947,8 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "The producers never say it happened, so the room has to catch it live.",
       "storyline_tags": [
-        "performances",
-        "staging"
-      ]
-    },
-    {
-      "id": "an-artist-performs-more-than-one-song",
-      "title": "An Artist Performs More Than One Song",
-      "truth_authority": "official_result",
-      "condition": "One act performs two or more distinct songs within a single performance slot on the live telecast.",
-      "exclusions": [
-        "Two acts each performing one song do not count.",
-        "A reprise of the same song does not count as a second song.",
-        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-24"
-      ],
-      "probability_pct": 95,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "The freest square on the card, and someone will still forget to mark it.",
-      "storyline_tags": [
-        "performances"
+        "staging",
+        "setlist"
       ]
     },
     {
@@ -4968,7 +5007,6 @@
       "likelihood_tier": "toss_up",
       "why_it_is_fun": "Confirmed exactly once in four years, and that artist is not a fixture this time.",
       "storyline_tags": [
-        "speeches",
         "politics"
       ]
     },
@@ -5058,8 +5096,8 @@
       "likelihood_tier": "chaos",
       "why_it_is_fun": "Nobody could find evidence this has ever happened at the VMAs, which is why it is here.",
       "storyline_tags": [
-        "chaos",
-        "carpet"
+        "carpet",
+        "chaos"
       ]
     },
     {
@@ -5088,8 +5126,8 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "A staged collapse once fooled the whole front row, so the arguing starts immediately.",
       "storyline_tags": [
-        "broadcast",
-        "chaos"
+        "chaos",
+        "liveness"
       ]
     },
     {
@@ -5151,7 +5189,7 @@
       "why_it_is_fun": "Pinned to the broadcast: the list version happens every year, the on-air version does not.",
       "storyline_tags": [
         "categories",
-        "broadcast"
+        "records"
       ]
     },
     {
@@ -5179,16 +5217,17 @@
       "likelihood_tier": "long_shot",
       "why_it_is_fun": "It takes a sweep, and the last three years say the field has stopped producing them.",
       "storyline_tags": [
-        "categories",
-        "broadcast"
+        "records",
+        "running-order"
       ]
     },
     {
-      "id": "a-legacy-medley-anchors-the-show",
-      "title": "A Legacy Medley Anchors The Show",
+      "id": "a-second-legacy-medley-besides-the-vanguard",
+      "title": "A Second Legacy Medley",
       "truth_authority": "official_result",
-      "condition": "The live telecast carries a genre, label, anniversary or career legacy medley as its own segment.",
+      "condition": "The live telecast carries a genre, label, anniversary or career legacy medley as its own segment, separate from the Michael Jackson Video Vanguard Award segment.",
       "exclusions": [
+        "The Vanguard segment itself does not count, however it is staged.",
         "A single artist performing two of their own current songs does not count.",
         "A clip package with no live performance does not count.",
         "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
@@ -5200,19 +5239,20 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 33 is four-of-four at 85 for a legacy medley anchoring the show, but in each of those years the Vanguard segment was a separate block inside a three-hour telecast. This square asks for a legacy medley besides the Vanguard inside a two-hour window that the run-of-show packet already calls tight, so the pack discounts the row to 60."
       },
       "basis_claim_ids": [
         "moments-row-33",
+        "show-runtime-cut",
         "discourse-legacy-medley-fatigue",
         "discourse-slate-leans-legacy"
       ],
-      "probability_pct": 85,
+      "probability_pct": 60,
       "likelihood_tier": "likely",
-      "why_it_is_fun": "Four for four, and the complaint about it is the proof it will happen again.",
+      "why_it_is_fun": "Four for four in three-hour shows. Two hours is a different argument.",
       "storyline_tags": [
-        "performances",
-        "legacy"
+        "legacy",
+        "setlist"
       ]
     },
     {
@@ -5232,51 +5272,20 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 34 is four-of-four at 85, but every one of those years was a three- hour show, and for 2026 neither the Latin Icon Award nor the Rock the Bells Visionary Award has an announced recipient. The pack discounts the row to 65 for the two-hour window and records the discount here."
       },
       "basis_claim_ids": [
         "moments-row-34",
         "show-honorary-awards-open",
-        "show-artist-director-honors"
+        "show-artist-director-honors",
+        "show-runtime-cut"
       ],
-      "probability_pct": 85,
+      "probability_pct": 65,
       "likelihood_tier": "likely",
       "why_it_is_fun": "MTV keeps inventing these because they book legacy acts, and nobody has announced 2026's.",
       "storyline_tags": [
         "legacy",
         "categories"
-      ]
-    },
-    {
-      "id": "an-unreleased-song-is-debuted",
-      "title": "An Unreleased Song Is Debuted",
-      "truth_authority": "official_result",
-      "condition": "A song is given its first live or broadcast performance on the telecast, whether announced in advance as a premiere or introduced as new on the night.",
-      "exclusions": [
-        "A song already performed on another televised show does not count as a debut here.",
-        "A new remix or a new verse inside an existing song does not count.",
-        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
-      ],
-      "adjudication": {
-        "proxies": "do_not_count",
-        "offscreen": "do_not_count",
-        "mentions": "do_not_count"
-      },
-      "title_review": {
-        "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
-      },
-      "basis_claim_ids": [
-        "moments-row-35",
-        "show-announced-performers",
-        "show-madonna-opens"
-      ],
-      "probability_pct": 80,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "Two of the announced slots are already billed as premieres, which is the whole business model.",
-      "storyline_tags": [
-        "performances",
-        "premiere"
       ]
     },
     {
@@ -5336,7 +5345,7 @@
       "why_it_is_fun": "Arena-tour scheduling makes this a standing production solution, and they usually admit it on air.",
       "storyline_tags": [
         "performances",
-        "broadcast"
+        "staging"
       ]
     },
     {
@@ -5368,16 +5377,17 @@
       "why_it_is_fun": "This is the Nirvana question, priced from what actually happens at this show rather than from the rumour.",
       "storyline_tags": [
         "legacy",
-        "vanguard"
+        "guests"
       ]
     },
     {
-      "id": "a-k-pop-act-performs-or-wins-on-air",
-      "title": "A K-Pop Act Performs Or Wins On Air",
+      "id": "a-k-pop-act-wins-on-the-telecast",
+      "title": "A K-Pop Act Wins On The Telecast",
       "truth_authority": "official_result",
-      "condition": "A K-pop act performs on the telecast, or is announced on the telecast as the winner of any category.",
+      "condition": "A K-pop act is announced on the live telecast as the winner of a competitive category.",
       "exclusions": [
-        "A category won by a K-pop act but announced only in the preshow or only in the winners post does not count.",
+        "A K-pop act performing but not winning on the telecast does not count.",
+        "A category won by a K-pop act but announced only in the preshow or only in MTV's winners post does not count.",
         "A K-pop artist appearing only as a presenter or in the audience does not count."
       ],
       "adjudication": {
@@ -5387,17 +5397,19 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 39 is four-of-four at 85 for a K-pop act performing or winning, but LISA is already an announced 2026 performer, which makes the performing half of that row nearly settled before the show starts. Pinned to an on-air win, the packet documents one year in three, and row 19 explains why: most categories are never announced on the broadcast at all."
       },
       "basis_claim_ids": [
         "moments-row-39",
+        "moments-row-19",
+        "show-announced-performers",
         "discourse-katseye-kpop-fight"
       ],
-      "probability_pct": 85,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "Four for four, and this year the category argument comes attached.",
+      "probability_pct": 35,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The category everyone is already arguing about, pinned to what the broadcast actually says out loud.",
       "storyline_tags": [
-        "performances",
+        "kpop",
         "categories"
       ]
     },
@@ -5457,9 +5469,8 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "Two years running, in more than one form each night, and now on a broadcast network.",
       "storyline_tags": [
-        "speeches",
-        "performances",
-        "politics"
+        "politics",
+        "performances"
       ]
     },
     {
@@ -5488,18 +5499,18 @@
       "likelihood_tier": "toss_up",
       "why_it_is_fun": "The last one was a Vanguard-scale production gag, and this year's Vanguard is a rock band.",
       "storyline_tags": [
-        "performances",
-        "staging"
+        "staging",
+        "performances"
       ]
     },
     {
-      "id": "a-latin-or-spanish-language-segment",
-      "title": "A Latin Or Spanish-Language Segment",
+      "id": "spanish-is-sung-on-the-telecast",
+      "title": "Spanish Is Sung On The Telecast",
       "truth_authority": "official_result",
-      "condition": "The live telecast carries a performance with substantial Spanish-language or Portuguese vocals, or a segment presented as a Latin music showcase.",
+      "condition": "A performance on the live telecast carries substantial Spanish-language or Portuguese vocals.",
       "exclusions": [
         "A single Spanish word or phrase inside an English-language song does not count.",
-        "A Spanish-language acceptance speech alone does not count.",
+        "A Spanish-language acceptance speech or presenter line does not count.",
         "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
       ],
       "adjudication": {
@@ -5509,18 +5520,19 @@
       },
       "title_review": {
         "status": "approved",
-        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 43 is four-of-four at 90, but every one of those years had either a Latin Icon segment or a booked Latin performer, and the 2026 bill announced so far has neither. The pack discounts the row to 40 and records the discount here."
       },
       "basis_claim_ids": [
         "moments-row-43",
+        "show-latin-lineup-gap",
         "show-honorary-awards-open"
       ],
-      "probability_pct": 90,
-      "likelihood_tier": "likely",
-      "why_it_is_fun": "Institutionalised four years running, and the show has moved to Los Angeles.",
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "Institutionalised for four years, and then the 2026 bill turned up without a single Latin act on it.",
       "storyline_tags": [
-        "performances",
-        "latin"
+        "latin",
+        "setlist"
       ]
     },
     {
@@ -5549,8 +5561,758 @@
       "likelihood_tier": "likely",
       "why_it_is_fun": "The umbrella version of the bleep square, and it resolves on either kind of cut.",
       "storyline_tags": [
-        "broadcast",
-        "censorship"
+        "censorship",
+        "broadcast"
+      ]
+    },
+    {
+      "id": "the-host-performs-a-song",
+      "title": "The Host Performs A Song",
+      "truth_authority": "official_result",
+      "condition": "Snoop Dogg performs a song on the live telecast, alone or as a guest inside another act's set, rather than only hosting.",
+      "exclusions": [
+        "Rapping a line or two inside a scripted bit or a category introduction does not count.",
+        "A pre-taped music video, or archival footage of the host performing, does not count.",
+        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. Moments row 11 records a host who hosted and performed in 2023 and the discourse record another in 2024; neither packet publishes a rate, so 60 is the pack's figure inside the packet's two-of-three band."
+      },
+      "basis_claim_ids": [
+        "moments-row-11-host-performs",
+        "show-host-snoop-dogg",
+        "discourse-host-performs"
+      ],
+      "probability_pct": 60,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "He is an executive producer, it is his home town, and the show has an hour less than usual to fill.",
+      "storyline_tags": [
+        "host",
+        "setlist"
+      ]
+    },
+    {
+      "id": "video-of-the-year-closes-the-show",
+      "title": "Video Of The Year Closes The Show",
+      "truth_authority": "official_result",
+      "condition": "Video of the Year is the last competitive award announced on the live telecast.",
+      "exclusions": [
+        "An honorary award or a performance after Video of the Year does not change the answer.",
+        "If Video of the Year is never announced on the telecast, this square does not count.",
+        "Judge this from the CBS broadcast, not from MTV's post-show winners post."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "run-of-show-closing-pattern"
+      ],
+      "probability_pct": 65,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "Two years running it was the curtain. This year a Vanguard segment with nothing announced is fighting it for the slot.",
+      "storyline_tags": [
+        "running-order",
+        "categories"
+      ]
+    },
+    {
+      "id": "the-monologue-follows-the-opener",
+      "title": "The Monologue Follows The Opener",
+      "truth_authority": "official_result",
+      "condition": "The telecast opens with a musical performance and Snoop Dogg's first monologue comes after it rather than before it.",
+      "exclusions": [
+        "A voice-over, an announcer read or a title sequence before the performance is not the monologue.",
+        "A host appearance inside the opening performance is not the monologue.",
+        "Anything from the red-carpet preshow does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "run-of-show-opening-pattern",
+        "show-madonna-opens",
+        "show-host-snoop-dogg"
+      ],
+      "probability_pct": 65,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "The invariant of the last two shows, against a host who is also the executive producer and might want the first word.",
+      "storyline_tags": [
+        "host",
+        "running-order"
+      ]
+    },
+    {
+      "id": "the-first-award-lands-before-eight-eastern",
+      "title": "The First Award Lands Before Eight",
+      "truth_authority": "official_result",
+      "condition": "The first competitive award of the night is announced on the telecast before 8:00 p.m. ET.",
+      "exclusions": [
+        "An honorary award does not count as the first award.",
+        "A category announced in the red-carpet preshow does not count.",
+        "Judge this from the CBS broadcast clock, not from a stream running behind it."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "run-of-show-first-award-window",
+        "show-date-venue-broadcast"
+      ],
+      "probability_pct": 55,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "Thirty minutes in, with an opener, a monologue and a whole slate still to get through.",
+      "storyline_tags": [
+        "running-order",
+        "categories"
+      ]
+    },
+    {
+      "id": "a-nirvana-member-accepts-the-award",
+      "title": "A Nirvana Member Accepts",
+      "truth_authority": "official_result",
+      "condition": "Dave Grohl, Krist Novoselic or Pat Smear appears in person on the telecast to accept the Video Vanguard Award.",
+      "exclusions": [
+        "An acceptance by a family member, an estate representative or a presenter on the band's behalf does not count.",
+        "A pre-taped video message rather than an in-person appearance does not count.",
+        "An appearance elsewhere in the show that is not the acceptance does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-nirvana-acceptance-open",
+        "show-vanguard-nirvana"
+      ],
+      "probability_pct": 50,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The run-of-show packet calls this one of the three highest-value unknowns in the whole show, and it resolves live.",
+      "storyline_tags": [
+        "vanguard",
+        "nirvana"
+      ]
+    },
+    {
+      "id": "the-1992-performance-is-named-on-air",
+      "title": "The 1992 Performance Is Named",
+      "truth_authority": "official_result",
+      "condition": "The telecast names or replays Nirvana's 1992 VMA performance, in a montage, an introduction, a presenter's line or an acceptance.",
+      "exclusions": [
+        "A general reference to the band's career with no mention of the 1992 show does not count.",
+        "A reference made only in the red-carpet preshow does not count.",
+        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-vanguard-nirvana",
+        "show-vanguard-promotional-build",
+        "discourse-1992-nirvana-reference"
+      ],
+      "probability_pct": 55,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "MTV timed the announcement to its anniversary, then ran a whole special about Vanguard performances.",
+      "storyline_tags": [
+        "nirvana",
+        "archive"
+      ]
+    },
+    {
+      "id": "two-surprise-guests-in-one-night",
+      "title": "Two Surprise Guests In One Night",
+      "truth_authority": "official_result",
+      "condition": "Two or more separate performances on the telecast each bring out a guest who was not on the announced bill.",
+      "exclusions": [
+        "Two guests inside the same performance count as one performance, not two.",
+        "A guest announced in advance as part of that performance does not count.",
+        "A presenter walk-on is not a performance guest."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-21-multiple-guests",
+        "moments-row-21",
+        "show-announced-performers"
+      ],
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "One surprise guest is the house style. Two in one night has happened once in three years.",
+      "storyline_tags": [
+        "guests",
+        "surprise"
+      ]
+    },
+    {
+      "id": "the-artist-director-honors-airs",
+      "title": "The Artist Director Honors Airs",
+      "truth_authority": "official_result",
+      "condition": "The telecast presents an award or segment billed as the Artist Director Honors.",
+      "exclusions": [
+        "Another honorary award under a different name does not count.",
+        "A mention of the honor without a presented segment does not count.",
+        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets disagree on whether this segment exists and none publishes a base rate, so 40 is the pack's flagged placeholder, set at a coin flip to reflect the disagreement itself."
+      },
+      "basis_claim_ids": [
+        "show-artist-director-honors",
+        "moments-row-34"
+      ],
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "Two packets say it was announced and the run-of-show packet has never heard of it. Somebody is wrong by Sunday.",
+      "storyline_tags": [
+        "legacy",
+        "records"
+      ]
+    },
+    {
+      "id": "two-categories-back-to-back",
+      "title": "Two Categories Back To Back",
+      "truth_authority": "official_result",
+      "condition": "Two competitive categories are announced back to back on the telecast with no performance, honorary segment or commercial break between them.",
+      "exclusions": [
+        "A single category with joint winners does not count.",
+        "Two categories separated by a commercial break do not count.",
+        "Judge this from the CBS broadcast."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "run-of-show-award-compression",
+        "show-runtime-cut"
+      ],
+      "probability_pct": 50,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The obvious way to fit a whole slate into ninety minutes, and the obvious thing to complain about afterwards.",
+      "storyline_tags": [
+        "running-order",
+        "runtime"
+      ]
+    },
+    {
+      "id": "a-non-musician-presents-an-award",
+      "title": "A Non-Musician Presents An Award",
+      "truth_authority": "official_result",
+      "condition": "Someone whose public career is not music - an actor, an athlete, a comedian or a television personality - presents an award on the telecast.",
+      "exclusions": [
+        "A musician who also acts counts as a musician.",
+        "Someone who only introduces a performance does not count as presenting an award.",
+        "Anything from the red-carpet preshow does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-26-non-musician-presenter",
+        "show-no-presenters-announced"
+      ],
+      "probability_pct": 40,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "No presenter had been announced six days out, so the whole presenter lane is a blind bet.",
+      "storyline_tags": [
+        "presenters",
+        "surprise"
+      ]
+    },
+    {
+      "id": "shaboozey-performs-twice",
+      "title": "Shaboozey Performs Twice",
+      "truth_authority": "official_result",
+      "condition": "Shaboozey appears in two separate performance segments on the telecast, one of them with Gunna.",
+      "exclusions": [
+        "One continuous segment that moves from one song into the other counts as one performance, not two.",
+        "An appearance as a presenter or an award winner is not a performance.",
+        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The run-of-show packet records the one-slot-or-two question as explicitly unconfirmed and publishes no rate, so 45 is the pack's flagged placeholder."
+      },
+      "basis_claim_ids": [
+        "show-shaboozey-two-slots",
+        "show-announced-performers"
+      ],
+      "probability_pct": 45,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The release says with and without Gunna, and nobody will say whether that is one slot or two.",
+      "storyline_tags": [
+        "setlist",
+        "guests"
+      ]
+    },
+    {
+      "id": "an-archive-montage-of-past-vmas",
+      "title": "An Archive Montage Of Past VMAs",
+      "truth_authority": "official_result",
+      "condition": "The telecast runs a montage of archival footage from past VMA ceremonies.",
+      "exclusions": [
+        "A clip of a nominated music video does not count.",
+        "A single still photograph or one clip inside an introduction does not count.",
+        "The lead-in specials that aired on earlier nights do not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-vanguard-promotional-build"
+      ],
+      "probability_pct": 50,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "CBS spent two Sunday nights building a Vanguard segment out of the archive. Some of it has to show up.",
+      "storyline_tags": [
+        "archive",
+        "legacy"
+      ]
+    },
+    {
+      "id": "a-winner-is-read-without-a-presenter",
+      "title": "A Winner Is Read With No Presenter",
+      "truth_authority": "official_result",
+      "condition": "A competitive category winner is announced on the telecast as a graphic, a voice-over or a host read, with no presenter on stage for that category.",
+      "exclusions": [
+        "One presenter reading two categories in a single appearance counts as presented, both times.",
+        "A category never announced on the telecast does not count.",
+        "Judge this from the CBS broadcast."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "run-of-show-award-compression",
+        "show-off-air-risk"
+      ],
+      "probability_pct": 35,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The cheapest minute MTV can buy back, and the one that reads worst on air.",
+      "storyline_tags": [
+        "categories",
+        "presenters"
+      ]
+    },
+    {
+      "id": "the-vanguard-segment-closes-the-show",
+      "title": "The Vanguard Closes The Show",
+      "truth_authority": "official_result",
+      "condition": "The Video Vanguard segment is the last content on the telecast, after the final competitive award.",
+      "exclusions": [
+        "A sign-off line or credits after the segment do not change the answer.",
+        "A Vanguard segment anywhere earlier in the show does not count.",
+        "Judge this from the CBS broadcast."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "run-of-show-closing-pattern",
+        "show-vanguard-nirvana"
+      ],
+      "probability_pct": 25,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "It would invert the last two shows, and the run-of-show packet thinks two hours might make MTV do it.",
+      "storyline_tags": [
+        "vanguard",
+        "running-order"
+      ]
+    },
+    {
+      "id": "two-honorary-awards-besides-the-vanguard",
+      "title": "Two Honorary Awards Besides The Vanguard",
+      "truth_authority": "official_result",
+      "condition": "The telecast presents two or more honorary or non-competitive awards besides the Michael Jackson Video Vanguard Award.",
+      "exclusions": [
+        "A competitive category award does not count toward the total.",
+        "An honorary award mentioned but not presented on the telecast does not count toward the total.",
+        "Anything that happens only after the telecast has ended, or only in MTV's official winners post, does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-34-escalation",
+        "show-honorary-awards-open",
+        "show-artist-director-honors"
+      ],
+      "probability_pct": 30,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "MTV invented two new trophies in one night once already. Doing it again inside two hours is another matter.",
+      "storyline_tags": [
+        "legacy",
+        "categories"
+      ]
+    },
+    {
+      "id": "a-censor-cut-clips-the-next-word",
+      "title": "A Censor Cut Clips The Next Word",
+      "truth_authority": "official_result",
+      "condition": "A censor bleep or mute on the telecast over-runs and also removes a word that was not the profanity.",
+      "exclusions": [
+        "A clean single-word bleep does not count.",
+        "A camera cutaway with no audio cut does not count.",
+        "A judgement made only from a later uncensored clip does not count; judge it from the live broadcast."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-07-overcut",
+        "moments-row-07"
+      ],
+      "probability_pct": 25,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The 2025 censor took the word oyster with it, and nobody has ever apologised.",
+      "storyline_tags": [
+        "censorship",
+        "chaos"
+      ]
+    },
+    {
+      "id": "the-host-jokes-about-the-two-hour-window",
+      "title": "The Host Jokes About The Clock",
+      "truth_authority": "official_result",
+      "condition": "Snoop Dogg or a presenter makes a joke on air about the show's two-hour length, the clock, or having to hurry.",
+      "exclusions": [
+        "A straight statement of the time with no joke does not count.",
+        "A visible stage-manager wrap signal is not a joke.",
+        "Anything from the red-carpet preshow does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-runtime-cut",
+        "show-host-snoop-dogg",
+        "discourse-runtime-complaint"
+      ],
+      "probability_pct": 30,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "An hour vanished from this show and somebody on stage is going to notice.",
+      "storyline_tags": [
+        "host",
+        "runtime"
+      ]
+    },
+    {
+      "id": "a-presenter-pair-visibly-does-not-interact",
+      "title": "A Presenter Pair Does Not Interact",
+      "truth_authority": "official_result",
+      "condition": "Two presenters share the stage on the telecast and visibly avoid speaking to or looking at each other.",
+      "exclusions": [
+        "A scripted back-and-forth that falls flat does not count.",
+        "A presenter appearing alone does not count.",
+        "A reading of the moment taken only from a next-day clip does not count; judge it live."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-no-presenters-announced",
+        "discourse-presenter-non-interaction"
+      ],
+      "probability_pct": 25,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The 2024 version spread precisely because nothing happened, which is the hardest thing to mark on a card.",
+      "storyline_tags": [
+        "presenters",
+        "gossip"
+      ]
+    },
+    {
+      "id": "a-guest-vocalist-fronts-a-nirvana-song",
+      "title": "A Guest Vocalist Fronts A Nirvana Song",
+      "truth_authority": "official_result",
+      "condition": "A singer other than Nirvana's late frontman performs lead vocal on a Nirvana song on the telecast.",
+      "exclusions": [
+        "Archival footage, or the original recorded vocal played back, does not count.",
+        "A Nirvana song used only as walk-on or background music does not count.",
+        "If no Nirvana song is performed on the telecast, this square does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-nirvana-acceptance-open",
+        "show-vanguard-nirvana",
+        "moments-row-14"
+      ],
+      "probability_pct": 30,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The rotating-guest-vocalist tribute is the template everyone expects and nobody has confirmed.",
+      "storyline_tags": [
+        "nirvana",
+        "guests"
+      ]
+    },
+    {
+      "id": "a-performance-happens-away-from-the-main-stage",
+      "title": "A Performance Away From The Main Stage",
+      "truth_authority": "official_result",
+      "condition": "A performance on the telecast is staged somewhere other than the main stage - a secondary stage, the crowd floor, the seating bowl or elsewhere inside the venue.",
+      "exclusions": [
+        "A performance pre-taped or staged outside the venue does not count; that is a separate square.",
+        "Walking into the crowd during an otherwise main-stage number does not count.",
+        "Anything from the red-carpet preshow does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "run-of-show-award-compression",
+        "moments-row-37"
+      ],
+      "probability_pct": 35,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "Two hours and eight acts means somebody is playing while the main stage is being rebuilt.",
+      "storyline_tags": [
+        "staging",
+        "performances"
+      ]
+    },
+    {
+      "id": "sabrina-carpenter-joins-the-opening-number",
+      "title": "Sabrina Carpenter Joins The Opener",
+      "truth_authority": "official_result",
+      "condition": "Sabrina Carpenter appears on stage as a guest inside Madonna's opening performance.",
+      "exclusions": [
+        "An audience reaction shot of her does not count.",
+        "A duet performed later in the show, outside the opening number, does not count.",
+        "A pre-taped appearance rather than an on-stage one does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The opening number's guests were announced as existing and deliberately unnamed, and no outlet had named one at the research cutoff, so 15 is the pack's flagged placeholder for one specific name out of the whole bill."
+      },
+      "basis_claim_ids": [
+        "show-madonna-opens",
+        "show-announced-performers",
+        "discourse-sabrina-handoff"
+      ],
+      "probability_pct": 15,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "The release promises special guests and names none, and the two of them are nominated together and against each other.",
+      "storyline_tags": [
+        "guests",
+        "surprise"
+      ]
+    },
+    {
+      "id": "someone-takes-the-microphone-mid-speech",
+      "title": "Someone Takes The Microphone",
+      "truth_authority": "official_result",
+      "condition": "Someone interrupts an acceptance speech on the telecast by taking or speaking into the microphone uninvited.",
+      "exclusions": [
+        "A co-winner sharing the microphone by arrangement does not count.",
+        "A scripted host or presenter interruption does not count.",
+        "A play-off by the band or a cut to commercial does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-09-interruption",
+        "discourse-interrupted-acceptance"
+      ],
+      "probability_pct": 10,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "It has happened exactly once in the show's history and it is still the reason people watch speeches live.",
+      "storyline_tags": [
+        "chaos",
+        "speeches"
+      ]
+    },
+    {
+      "id": "the-feed-drops-out",
+      "title": "The Feed Drops Out",
+      "truth_authority": "official_result",
+      "condition": "The telecast loses picture or sound outright for several seconds, in a way the broadcast or the host acknowledges.",
+      "exclusions": [
+        "A deliberate censorship bleep or camera cutaway does not count.",
+        "A problem on one viewer's own stream or affiliate does not count.",
+        "A staged malfunction inside a performance does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "moments-row-29-total-failure",
+        "moments-row-29"
+      ],
+      "probability_pct": 12,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "Live on network television with no delay, which is exactly the kind of night this happens on.",
+      "storyline_tags": [
+        "chaos",
+        "liveness"
+      ]
+    },
+    {
+      "id": "an-instrument-is-smashed-on-stage",
+      "title": "An Instrument Is Smashed",
+      "truth_authority": "official_result",
+      "condition": "A performer destroys an instrument on stage during the telecast.",
+      "exclusions": [
+        "Dropping or knocking over an instrument does not count.",
+        "Archival footage of a past performance does not count.",
+        "A prop that is not a working instrument does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the live-broadcast moment the condition requires and promises nothing wider. The packets publish no base rate for this moment, so the figure is the pack's own conservative placeholder and is flagged as such rather than presented as a finding."
+      },
+      "basis_claim_ids": [
+        "show-vanguard-nirvana",
+        "discourse-1992-nirvana-reference"
+      ],
+      "probability_pct": 10,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "MTV timed this whole award to the anniversary of the night Nirvana wrecked the gear on this stage.",
+      "storyline_tags": [
+        "chaos",
+        "nirvana"
       ]
     }
   ],
