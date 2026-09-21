@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LEGACY_SHOW_PACK_ID } from './catalog-scope'
 import {
+  FEATURED_SHOW_IDENTITY,
   LEGACY_SHOW_IDENTITY,
   UNBOUND_SHOW_IDENTITY,
   confidencePhaseTitle,
@@ -10,7 +11,10 @@ import {
   draftSubPhaseLabel,
   isLegacyShowPack,
   showIdentityFromPackRow,
+  showIdentityKicker,
   showIdentityLine,
+  showIdentityMastheadLine,
+  showIdentityPresentsProperty,
 } from './show-identity'
 
 const VMA_ROW = {
@@ -77,6 +81,67 @@ describe('showIdentityLine', () => {
 
   it('never emits legacy copy for the unbound identity', () => {
     expect(showIdentityLine(UNBOUND_SHOW_IDENTITY)).toBe('Tonight’s show')
+  })
+})
+
+describe('FEATURED_SHOW_IDENTITY', () => {
+  it('names the show a room-less route puts on tonight', () => {
+    expect(FEATURED_SHOW_IDENTITY).toEqual({
+      title: '2026 VMAs',
+      property: 'MTV Video Music Awards',
+      installment: 'Sunday, September 27',
+      isLegacy: false,
+    })
+  })
+
+  it('is not the unbound identity and carries no legacy copy', () => {
+    expect(FEATURED_SHOW_IDENTITY).not.toEqual(UNBOUND_SHOW_IDENTITY)
+    expect(JSON.stringify(FEATURED_SHOW_IDENTITY)).not.toMatch(/dragon|oscar|academy award/i)
+  })
+})
+
+describe('masthead stack', () => {
+  it('presents the featured show as kicker, wordmark and dated line', () => {
+    expect(showIdentityPresentsProperty(FEATURED_SHOW_IDENTITY)).toBe(true)
+    expect(showIdentityKicker(FEATURED_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('MTV Video Music Awards')
+    expect(FEATURED_SHOW_IDENTITY.title).toBe('2026 VMAs')
+    expect(showIdentityMastheadLine(FEATURED_SHOW_IDENTITY)).toBe('Sunday, September 27')
+    expect(showIdentityMastheadLine(FEATURED_SHOW_IDENTITY, ' · ')).toBe('Sunday, September 27')
+  })
+
+  it('keeps the legacy masthead exactly as it shipped', () => {
+    expect(showIdentityPresentsProperty(LEGACY_SHOW_IDENTITY)).toBe(false)
+    expect(showIdentityKicker(LEGACY_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('Watch Party presents')
+    expect(showIdentityKicker(LEGACY_SHOW_IDENTITY, 'Watch Party')).toBe('Watch Party')
+    expect(showIdentityMastheadLine(LEGACY_SHOW_IDENTITY))
+      .toBe('House of the Dragon — Season 3 Finale')
+    expect(showIdentityMastheadLine(LEGACY_SHOW_IDENTITY, ' · '))
+      .toBe('House of the Dragon · Season 3 Finale')
+  })
+
+  it('leaves the platform kicker in place when there is nothing to present', () => {
+    expect(showIdentityPresentsProperty(UNBOUND_SHOW_IDENTITY)).toBe(false)
+    expect(showIdentityKicker(UNBOUND_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('Watch Party presents')
+    expect(showIdentityMastheadLine(UNBOUND_SHOW_IDENTITY)).toBe('Tonight’s show')
+
+    // A pack that names one half only keeps that half on the line.
+    const titleOnly = showIdentityFromPackRow(VMA_PACK_ID, { title: 'One Night Only' })
+    expect(showIdentityPresentsProperty(titleOnly)).toBe(false)
+    expect(showIdentityKicker(titleOnly, 'Watch Party')).toBe('Watch Party')
+    expect(showIdentityMastheadLine(titleOnly)).toBe('One Night Only')
+
+    const propertyOnly = showIdentityFromPackRow(VMA_PACK_ID, { property: 'A Property' })
+    expect(showIdentityPresentsProperty(propertyOnly)).toBe(false)
+    expect(showIdentityMastheadLine(propertyOnly)).toBe('A Property')
+  })
+
+  it('presents any pack that names both halves, not only the featured one', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    expect(showIdentityKicker(identity, 'Watch Party')).toBe('MTV Video Music Awards')
+    expect(showIdentityMastheadLine(identity)).toBe('2026')
   })
 })
 

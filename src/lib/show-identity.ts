@@ -43,18 +43,33 @@ export const LEGACY_SHOW_IDENTITY: ShowIdentity = {
 }
 
 /**
- * Used wherever no pack is bound: the landing route (which exists before any
- * room does), the public explainer opened from a link, and any surface whose
- * pack row has not resolved yet or failed to load.
+ * The restrictive answer: a pack row that has not resolved yet, failed to load,
+ * or named nothing at all. It deliberately names no show, because naming the
+ * wrong one is worse than naming none.
  *
- * This is the one constant that still hard-codes show copy, and it deliberately
- * names no property — a pack activation can later own this single object rather
- * than a scatter of literals across the pages.
+ * It is no longer what a room-less route renders — those name the featured show
+ * below.
  */
 export const UNBOUND_SHOW_IDENTITY: ShowIdentity = {
   title: 'Watch Party',
   property: 'Tonight’s show',
   installment: null,
+  isLegacy: false,
+}
+
+/**
+ * The show a route with no room names: the landing (which exists before any
+ * room does) and the public explainer opened by someone with no session.
+ *
+ * This is the one constant that still hard-codes show copy, and it is the
+ * single object a pack activation could later own rather than a scatter of
+ * literals across the pages. It is not bound to any room, so it decides no
+ * scoring, no phase and no catalog — only what a visitor is told is on tonight.
+ */
+export const FEATURED_SHOW_IDENTITY: ShowIdentity = {
+  title: '2026 VMAs',
+  property: 'MTV Video Music Awards',
+  installment: 'Sunday, September 27',
   isLegacy: false,
 }
 
@@ -105,6 +120,34 @@ export function showIdentityLine(identity: ShowIdentity, separator = ' — '): s
     (part): part is string => part != null,
   )
   return parts.length > 0 ? parts.join(separator) : identity.title
+}
+
+/**
+ * True when the masthead kicker carries the property — `MTV Video Music Awards`
+ * over `2026 VMAs` — which frees the line under the wordmark for the
+ * installment instead of repeating what the kicker already said.
+ *
+ * False for the legacy pack, whose kicker is pinned platform copy, and for any
+ * identity that names only one of the two halves: with nothing left for the
+ * line, the property belongs there rather than above the wordmark.
+ */
+export function showIdentityPresentsProperty(identity: ShowIdentity): boolean {
+  return !identity.isLegacy && identity.property != null && identity.installment != null
+}
+
+/**
+ * The kicker above the wordmark. `platformKicker` is the surface's own wording
+ * (the landing says `Watch Party presents`, the explainer says `Watch Party`),
+ * used whenever the identity has no property to present.
+ */
+export function showIdentityKicker(identity: ShowIdentity, platformKicker: string): string {
+  return showIdentityPresentsProperty(identity) ? (identity.property as string) : platformKicker
+}
+
+/** The line under the wordmark, once the kicker may have taken the property. */
+export function showIdentityMastheadLine(identity: ShowIdentity, separator = ' — '): string {
+  if (showIdentityPresentsProperty(identity)) return identity.installment as string
+  return showIdentityLine(identity, separator)
 }
 
 // ─── Pool-dependent copy ──────────────────────────────────────────────────────

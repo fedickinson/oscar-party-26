@@ -22,6 +22,13 @@
  * draft scoring — are exactly the parts behind a disclosure. Rewriting a
  * ladder is a contained edit; the visible spine does not move.
  *
+ * TWO NIGHTS, ONE PAGE
+ * The paragraph above describes the legacy night: a shared streaming playback
+ * that stops and starts together. A live broadcast has no shared playback at
+ * all — own feed, no pause, the host declaring on the fastest stream — so the
+ * remote, the drift and the pause sequence render only for the legacy identity,
+ * and every other identity gets the Live broadcast section in their place.
+ *
  * THIS IS NOT A RULES REFERENCE
  * The in-app PhaseExplainer covers each mini-game at the moment you need it.
  * This page is what comes first: what we are agreeing to, and why the pauses
@@ -44,14 +51,22 @@ import {
   ChevronDown,
   Clock,
   Hand,
+  ListChecks,
   MessageCircle,
+  MessageSquare,
   Pause,
   Play,
+  Radio,
   Tv,
 } from 'lucide-react'
 import { Hallmark } from '../components/ui/Hallmarks'
+import { useGame } from '../context/GameContext'
 import { useShowIdentity } from '../hooks/useShowIdentity'
-import { showIdentityLine } from '../lib/show-identity'
+import {
+  FEATURED_SHOW_IDENTITY,
+  showIdentityKicker,
+  showIdentityMastheadLine,
+} from '../lib/show-identity'
 
 // ─── Tonight ──────────────────────────────────────────────────────────────────
 // The only block that changes between parties. `null` on any time renders a
@@ -113,6 +128,13 @@ const TONIGHT = {
 // ─── The pact ─────────────────────────────────────────────────────────────────
 // Five, not ten. A list nobody finishes reading protects nothing. Deliberately
 // never collapsed — this is the payload of the whole page.
+//
+// Two versions, because the two nights make opposite promises. The legacy pact
+// is a shared streaming playback: one remote, stops between scenes, nobody
+// ahead of anybody. A live broadcast has none of that — everyone is on their
+// own feed, nothing pauses, and chat runs ahead of the slow streams. Stating
+// the streaming pact over a broadcast would be the one thing this page cannot
+// afford: instructions that are not true tonight.
 
 const PACT = [
   {
@@ -134,6 +156,30 @@ const PACT = [
   {
     title: `${TONIGHT.gameMaster} calls it, and that is the call.`,
     body: 'Someone has to decide what counted and who it counted for. Argue at the break, in good faith, briefly — then let it go and watch the show.',
+  },
+]
+
+/** The same five promises for a live broadcast nobody can pause. */
+const LIVE_PACT = [
+  {
+    title: 'The show never waits for the game.',
+    body: 'Nothing in here needs you mid-moment. A bingo claim is two taps. Scoring happens without you. The draft is finished before the broadcast starts.',
+  },
+  {
+    title: 'Everyone is on their own feed.',
+    body: 'There is no shared play button and nothing to pause. Watch wherever the show reaches you, on whatever carries it, and the game runs underneath that.',
+  },
+  {
+    title: 'The room moves at the fastest feed.',
+    body: 'The host declares each result as it happens on theirs, and chat follows the host rather than your stream. If you are running behind, chat is a spoiler — that is the trade for a room that reacts together.',
+  },
+  {
+    title: 'Missing it costs you bingo, and nothing else.',
+    body: 'Your picks and your draft score in full whether or not you are watching. Only the card needs your eyes on the show.',
+  },
+  {
+    title: 'The host calls it, and that is the call.',
+    body: 'Someone has to decide what counted and who it counted for. Argue in chat, in good faith, briefly — then let it go and watch the show.',
   },
 ]
 
@@ -394,10 +440,17 @@ function Rule() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HowItWorks() {
-  // The reader may be a stranger with the link and no room at all; the unbound
-  // identity is what that resolves to, and it names no show.
-  const { identity: showIdentity } = useShowIdentity()
+  // The reader may be a stranger with the link and no room at all. With no room
+  // there is no pack to name, so the page names the featured show; a reader who
+  // does have a session gets their own room's identity, legacy or otherwise.
+  const { room } = useGame()
+  const { identity: boundIdentity } = useShowIdentity()
+  const showIdentity = room == null ? FEATURED_SHOW_IDENTITY : boundIdentity
   const isLegacy = showIdentity.isLegacy
+  // Nobody is named to a reader who is not in the legacy party: the person
+  // declaring results is whoever is hosting that room.
+  const caller = isLegacy ? TONIGHT.gameMaster : 'the host'
+  const pact = isLegacy ? PACT : LIVE_PACT
   // Rendered only under `isLegacy` below: the running order is that event's.
   const schedule = TONIGHT.schedule
 
@@ -426,7 +479,7 @@ export default function HowItWorks() {
           className="text-[12px] font-semibold uppercase tracking-[0.3em]"
           style={{ color: 'var(--t-ornament-muted)' }}
         >
-          Watch Party
+          {showIdentityKicker(showIdentity, 'Watch Party')}
         </span>
         <h1
           className="text-[42px] leading-none"
@@ -436,7 +489,7 @@ export default function HowItWorks() {
         </h1>
         <div className="flex flex-col gap-0.5">
           <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
-            {showIdentityLine(showIdentity, ' \u00b7 ')}
+            {showIdentityMastheadLine(showIdentity, ' \u00b7 ')}
           </p>
           {isLegacy && (
             <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
@@ -495,7 +548,7 @@ export default function HowItWorks() {
         </P>
 
         <ol className="flex flex-col gap-3">
-          {PACT.map((item, i) => (
+          {pact.map((item, i) => (
             <li key={item.title} className="relief-glass p-4 flex gap-3.5">
               <span
                 className="flex-shrink-0 grid place-items-center w-7 h-7 border text-[16px]"
@@ -543,7 +596,13 @@ export default function HowItWorks() {
               the legacy-only rows below — and every other identity gets the
               plain roster summary instead. */}
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>}
+            /* The hallmarks are Westerosi heraldry and they are drawn to be
+               read large; at 28px, next to plain-language copy about a
+               broadcast, they are both off-show and illegible. A lucide glyph
+               at the same size in the same ornament token reads at a glance. */
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>
+              : <ListChecks size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="Before — you draft"
             summary={isLegacy ? (
               <>
@@ -694,12 +753,14 @@ export default function HowItWorks() {
 
           {/* Bingo — current as of the rebalanced 75-square researched pool. */}
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-comet" size={28} /></span>}
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-comet" size={28} /></span>
+              : <Radio size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="During — you watch"
             summary={
               <>
                 That is genuinely the instruction. Your score moves on its own as{' '}
-                {TONIGHT.gameMaster} logs what happens on screen. The only thing that wants
+                {caller} logs what happens on screen. The only thing that wants
                 your thumb is a 5&times;5 bingo card: tap a square when you see it happen,
                 confirm, and it scores immediately.
               </>
@@ -756,7 +817,9 @@ export default function HowItWorks() {
           </GameCard>
 
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>}
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>
+              : <MessageSquare size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="Underneath — the chat"
             summary={isLegacy ? (
               <>
@@ -789,6 +852,12 @@ export default function HowItWorks() {
         </div>
       </Section>
 
+      {/* Everything from here to the timeline describes one shared playback:
+          a remote-holder, a paused episode, two screens kept on the same
+          second. None of it is true of a live broadcast, so a non-legacy
+          reader gets the live section below instead. */}
+      {isLegacy && (
+      <>
       <Rule />
 
       {/* ── The remote ───────────────────────────────────────────────────── */}
@@ -958,6 +1027,63 @@ export default function HowItWorks() {
           </Disclosure>
         </div>
       </Section>
+      </>
+      )}
+
+      {/* ── Live broadcast ───────────────────────────────────────────────── */}
+      {/* The live replacement for the three sections above: no shared playback
+          to explain, so what a reader needs instead is where the truth comes
+          from, what chat will do to a slow stream, and what they still score
+          if they cannot watch at all. */}
+      {!isLegacy && (
+      <>
+      <Rule />
+
+      <Section eyebrow="While the show airs" title="Live broadcast">
+        <P>
+          There is nothing to press play on together. Everyone watches on their own feed,
+          wherever the show reaches them, and the game runs underneath whatever you are
+          watching on.
+        </P>
+
+        <KeyLine>The host declares it the moment it happens on the fastest feed.</KeyLine>
+
+        <P>
+          That is what moves the board, and chat moves with it. If your stream runs a minute
+          or two behind, chat will tell you what happened before your screen does &mdash;
+          that is the trade for a room reacting together, and it is worth knowing before you
+          scroll.
+        </P>
+
+        <div className="relief-glass p-4 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Radio
+              size={18}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--t-text-dim)' }}
+              aria-hidden
+            />
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Not every category is handed out on air. The ones the show posts afterwards are
+              declared at the end of the night, from that official post, one at a time.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Tv
+              size={18}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--t-text-dim)' }}
+              aria-hidden
+            />
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Cannot watch tonight? Your picks and your draft still score in full, and the
+              recap is waiting afterwards. Bingo is the only part you forfeit.
+            </p>
+          </div>
+        </div>
+      </Section>
+      </>
+      )}
 
       {/* The date, the running order and the release time all belong to the
           legacy event. A room on any other pack has its own schedule, which this
