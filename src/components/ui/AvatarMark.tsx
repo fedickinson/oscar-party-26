@@ -17,6 +17,14 @@ interface Props {
   avatar: NeutralAvatar
   size?: number
   className?: string
+  /**
+   * Literal colors in place of the mark's two custom properties. Only the
+   * rasterised share cards pass this: html-to-image clones the node out of the
+   * document, where a `var(--t-…)` in a presentation attribute has no cascade
+   * to resolve against. Every on-screen caller omits it and gets the token
+   * layer, so the mark still recolors with the theme everywhere it is a screen.
+   */
+  colors?: { field: string; device: string }
 }
 
 function figure(shape: NeutralAvatarShape) {
@@ -102,7 +110,9 @@ function figure(shape: NeutralAvatarShape) {
   }
 }
 
-export default function AvatarMark({ avatar, size = 40, className = '' }: Props) {
+export default function AvatarMark({ avatar, size = 40, className = '', colors }: Props) {
+  const field = colors?.field ?? `var(${avatar.fieldToken})`
+  const device = colors?.device ?? `var(${avatar.deviceToken})`
   return (
     <svg
       width={size}
@@ -112,10 +122,10 @@ export default function AvatarMark({ avatar, size = 40, className = '' }: Props)
       role="img"
       aria-label={avatar.name}
     >
-      <rect width="24" height="24" fill={`var(${avatar.fieldToken})`} />
+      <rect width="24" height="24" fill={field} />
       <g
-        fill={`var(${avatar.deviceToken})`}
-        stroke={`var(${avatar.deviceToken})`}
+        fill={device}
+        stroke={device}
         strokeWidth="0"
         strokeLinecap="round"
       >

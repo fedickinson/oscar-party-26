@@ -6,12 +6,20 @@
  *
  * This component is NEVER rendered visually in the app -- it is mounted
  * off-screen, captured via toPng(), then unmounted immediately.
+ *
+ * TWO PRESENTATIONS, ONE SCOREBOARD
+ * `LegacyShareCard` is the pinned Fire-and-blood card, unchanged: a legacy room
+ * posts exactly the image it has always posted. Every other room gets
+ * `NeutralShareCard`, which names its own show, draws the players' neutral
+ * marks and carries one restrained ornament in place of the heraldry. The
+ * standings themselves are the same rows computed the same way in both.
  */
 
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { PlayerRow } from '../../types/database'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import { PLAYER_AVATARS } from '../../data/avatar-config'
+import { ShareRule, SharePlayerMark, resolveSharePalette } from './share-card-neutral'
 
 export interface ShareCardProps {
   leaderboard: ScoredPlayer[]
@@ -19,6 +27,12 @@ export interface ShareCardProps {
   roomCode: string
   /** The room's show credit. Omitted renders no credit line rather than a guess. */
   showLine?: string | null
+  /**
+   * True only for the pinned legacy pack, whose card stays exactly what it was.
+   * Defaults to false: the restrictive answer, since the neutral card borrows
+   * no other show's heraldry when the identity is unknown.
+   */
+  isLegacy?: boolean
 }
 
 function getPlayerColor(avatarId: string): string {
@@ -128,7 +142,11 @@ function DanceMark() {
   )
 }
 
-export function ShareCard({ leaderboard, players, roomCode, showLine = null }: ShareCardProps) {
+export function ShareCard(props: ShareCardProps) {
+  return props.isLegacy ? <LegacyShareCard {...props} /> : <NeutralShareCard {...props} />
+}
+
+function LegacyShareCard({ leaderboard, players, roomCode, showLine = null }: ShareCardProps) {
   const winner = leaderboard[0]
 
   return (
@@ -506,6 +524,316 @@ export function ShareCard({ leaderboard, players, roomCode, showLine = null }: S
 
       <div style={{ margin: '0 32px 30px' }}>
         <MotifBand />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The standings card for a room bound to any pack but the legacy one.
+ *
+ * Same scoreboard, stated in the room's own show and the platform's own token
+ * layer: the show credit as the masthead, each player's neutral mark, and the
+ * ledger rows unchanged. Colors are resolved from `:root` once per render
+ * because the rasteriser cannot resolve custom properties -- see
+ * `share-card-neutral.tsx`.
+ */
+function NeutralShareCard({ leaderboard, roomCode, showLine = null }: ShareCardProps) {
+  const t = resolveSharePalette()
+  const winner = leaderboard[0]
+
+  return (
+    <div
+      style={{
+        width: 1080,
+        height: 1350,
+        backgroundColor: t.groundDeep,
+        color: t.text,
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 28,
+          border: `1px solid ${t.line}`,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* -- 1. Masthead: the show this room is bound to -------------------- */}
+      <div
+        style={{
+          paddingTop: 76,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: t.textDim,
+            letterSpacing: '0.34em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Watch Party
+        </div>
+        {showLine && (
+          <div
+            style={{
+              marginTop: 20,
+              padding: '0 108px',
+              fontSize: 50,
+              fontWeight: 800,
+              lineHeight: 1.1,
+              letterSpacing: '-0.005em',
+              color: t.text,
+            }}
+          >
+            {showLine}
+          </div>
+        )}
+        <div style={{ marginTop: 24 }}>
+          <ShareRule palette={t} width={460} />
+        </div>
+      </div>
+
+      {/* -- 2. Top of the night -------------------------------------------- */}
+      {winner && (
+        <div
+          style={{
+            margin: '34px 88px 0',
+            padding: '24px 32px',
+            background: t.surface,
+            border: `1px solid ${t.line}`,
+            display: 'grid',
+            gridTemplateColumns: '112px minmax(0, 1fr) auto',
+            alignItems: 'center',
+            columnGap: 26,
+          }}
+        >
+          <SharePlayerMark
+            palette={t}
+            avatarId={winner.player.avatar_id}
+            name={winner.player.name}
+            size={112}
+          />
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: t.textDim,
+                letterSpacing: '0.26em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Top of the night
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 44,
+                fontWeight: 800,
+                lineHeight: 1.06,
+                color: t.text,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {winner.player.name}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', paddingLeft: 18 }}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 54,
+                fontWeight: 800,
+                lineHeight: 1,
+                color: t.accentLight,
+                fontVariantNumeric: 'tabular-nums lining-nums',
+              }}
+            >
+              {winner.totalScore}
+            </span>
+            <span
+              style={{
+                display: 'block',
+                marginTop: 6,
+                fontSize: 12,
+                fontWeight: 700,
+                color: t.textDim,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+              }}
+            >
+              points
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* -- 3. The ledger --------------------------------------------------- */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          // A four-person room would otherwise leave the bottom third of the
+          // card empty. Centering is safe only while the whole ledger fits:
+          // past that, centering a column that overflows pushes the leader off
+          // the top edge, so a long room stays top-aligned and fills the space
+          // on its own.
+          justifyContent: leaderboard.length <= 8 ? 'center' : 'flex-start',
+          padding: '32px 88px 0',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '76px 1fr auto',
+            alignItems: 'end',
+            padding: '0 18px 10px',
+            borderBottom: `1px solid ${t.lineStrong}`,
+            fontSize: 12,
+            fontWeight: 700,
+            color: t.textDim,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+          }}
+        >
+          <span>Place</span>
+          <span>Final standings</span>
+          <span>Score</span>
+        </div>
+        {leaderboard.map((entry, i) => {
+          const isFirst = i === 0
+          return (
+            <div
+              key={entry.player.id}
+              style={{
+                flex: '1 1 auto',
+                minHeight: 70,
+                maxHeight: 96,
+                display: 'grid',
+                gridTemplateColumns: '54px 54px minmax(0, 1fr) auto',
+                alignItems: 'center',
+                gap: 16,
+                padding: '10px 18px',
+                borderBottom: `1px solid ${t.lineSoft}`,
+                background: isFirst ? t.surface : 'transparent',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: isFirst ? 27 : 22,
+                  fontWeight: 800,
+                  color: isFirst ? t.accentLight : t.textDim,
+                  fontVariantNumeric: 'tabular-nums lining-nums',
+                  textAlign: 'center',
+                }}
+              >
+                {i + 1}
+              </span>
+              <SharePlayerMark
+                palette={t}
+                avatarId={entry.player.avatar_id}
+                name={entry.player.name}
+                size={46}
+              />
+              <div style={{ minWidth: 0 }}>
+                <span
+                  style={{
+                    display: 'block',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontSize: 21,
+                    fontWeight: 700,
+                    color: t.text,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {entry.player.name}
+                </span>
+                <span
+                  style={{
+                    display: 'block',
+                    marginTop: 4,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: t.textMuted,
+                    letterSpacing: '0.045em',
+                    fontVariantNumeric: 'tabular-nums lining-nums',
+                  }}
+                >
+                  Draft {entry.ensembleScore} &nbsp;&middot;&nbsp; Bingo {entry.bingoScore}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span
+                  style={{
+                    fontSize: 31,
+                    fontWeight: 800,
+                    color: isFirst ? t.accentLight : t.text,
+                    lineHeight: 1,
+                    fontVariantNumeric: 'tabular-nums lining-nums',
+                  }}
+                >
+                  {entry.totalScore}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: t.textDim }}>PT</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* -- 4. Footer ------------------------------------------------------- */}
+      <div
+        style={{
+          height: 138,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+        }}
+      >
+        <ShareRule palette={t} width={300} tone={t.textDim} />
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: t.textDim,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+          }}
+        >
+          The record of the night
+        </div>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: t.accentLight,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Room {roomCode}
+        </div>
       </div>
     </div>
   )

@@ -13,6 +13,14 @@
  * rasterises a detached DOM node with no stylesheet cascade and no layout
  * context, so Tailwind classes and relative units resolve to nothing. Same
  * constraint ShareCard works under.
+ *
+ * TWO PRESENTATIONS, ONE NIGHT
+ * `LegacyPlayerShareCard` is the pinned Fire-and-blood card, unchanged. Every
+ * other room gets `NeutralPlayerShareCard`: the same title, stat, verdict and
+ * placing, under the room's own show credit, with the player's neutral mark and
+ * one restrained ornament where the house signet used to be. The signet was the
+ * bug -- `houseForAvatar` fell through to Targaryen, so a player with a neutral
+ * mark posted an image stamped with another show's heraldry.
  */
 
 import { AVATAR_CONFIGS } from '../../data/avatars'
@@ -21,6 +29,7 @@ import { getCompanionById } from '../../data/ai-companions'
 import type { ScoredPlayer } from '../../lib/scoring'
 import type { PlayerAward } from '../../lib/night-awards'
 import type { PlayerVerdictRow } from '../../types/database'
+import { ShareRule, SharePlayerMark, resolveSharePalette } from './share-card-neutral'
 
 export interface PlayerShareCardProps {
   award: PlayerAward
@@ -31,6 +40,12 @@ export interface PlayerShareCardProps {
   recapUrl: string
   /** The room's show credit. Omitted renders no credit line rather than a guess. */
   showLine?: string | null
+  /**
+   * True only for the pinned legacy pack, whose card stays exactly what it was.
+   * Defaults to false: the restrictive answer, since the neutral card borrows
+   * no other show's heraldry when the identity is unknown.
+   */
+  isLegacy?: boolean
 }
 
 function playerColors(avatarId: string): { primary: string; secondary: string } {
@@ -136,7 +151,13 @@ function MotifBand() {
   )
 }
 
-export function PlayerShareCard({
+export function PlayerShareCard(props: PlayerShareCardProps) {
+  return props.isLegacy
+    ? <LegacyPlayerShareCard {...props} />
+    : <NeutralPlayerShareCard {...props} />
+}
+
+function LegacyPlayerShareCard({
   award,
   entry,
   verdict,
@@ -425,6 +446,264 @@ export function PlayerShareCard({
         </div>
         <div style={{ alignSelf: 'stretch', margin: '6px 32px 0' }}>
           <MotifBand />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The seal that stands where the house signet stood: concentric geometry and
+ * nothing else. It is drawn from the resolved token layer, belongs to no show
+ * and declares no allegiance, which is exactly what a card for an unknown pack
+ * is allowed to say.
+ */
+function NeutralSeal(
+  { line, lineSoft, accent, size }: { line: string; lineSoft: string; accent: string; size: number },
+) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="55" fill="none" stroke={line} strokeWidth="1.4" />
+      <circle cx="60" cy="60" r="45" fill="none" stroke={lineSoft} strokeWidth="1" />
+      <rect
+        x="36"
+        y="36"
+        width="48"
+        height="48"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1.8"
+        transform="rotate(45 60 60)"
+      />
+      <circle cx="60" cy="60" r="5" fill={accent} />
+    </svg>
+  )
+}
+
+/**
+ * One player's card for a room bound to any pack but the legacy one.
+ *
+ * The content is the legacy card's content: the title the night gave them, the
+ * stat behind it, the companion's verdict when there is one, and their placing.
+ * What changes is everything that used to name House of the Dragon.
+ */
+function NeutralPlayerShareCard({
+  award,
+  entry,
+  verdict,
+  roomCode,
+  recapUrl,
+  showLine = null,
+}: PlayerShareCardProps) {
+  const t = resolveSharePalette()
+  const companion = verdict ? getCompanionById(verdict.companion_id) : null
+
+  return (
+    <div
+      style={{
+        width: 1080,
+        height: 1350,
+        backgroundColor: t.groundDeep,
+        color: t.text,
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 28,
+          border: `1px solid ${t.line}`,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* -- Masthead ------------------------------------------------------- */}
+      <div style={{ paddingTop: 76, textAlign: 'center' }}>
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: t.textDim,
+            letterSpacing: '0.34em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Watch Party
+        </div>
+        {showLine && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: '0 96px',
+              fontSize: 30,
+              fontWeight: 700,
+              lineHeight: 1.2,
+              color: t.textMuted,
+            }}
+          >
+            {showLine}
+          </div>
+        )}
+      </div>
+
+      {/* -- The player ----------------------------------------------------- */}
+      <div style={{ marginTop: 40, display: 'flex', alignItems: 'center', gap: 22 }}>
+        <SharePlayerMark
+          palette={t}
+          avatarId={entry?.player.avatar_id}
+          name={award.playerName}
+          size={88}
+        />
+        <div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: t.textDim,
+              letterSpacing: '0.24em',
+              textTransform: 'uppercase',
+            }}
+          >
+            This night belongs to
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              fontSize: 43,
+              fontWeight: 800,
+              lineHeight: 1.05,
+              color: t.text,
+            }}
+          >
+            {award.playerName}
+          </div>
+        </div>
+      </div>
+
+      {/* -- The title the night gave them ---------------------------------- */}
+      <div
+        style={{
+          marginTop: 30,
+          padding: '0 80px',
+          maxWidth: 960,
+          fontSize: 58,
+          fontWeight: 800,
+          color: t.accentLight,
+          letterSpacing: '-0.01em',
+          textAlign: 'center',
+          lineHeight: 1.06,
+        }}
+      >
+        {award.title}
+      </div>
+
+      <div
+        style={{
+          marginTop: 24,
+          padding: '12px 30px',
+          borderTop: `1px solid ${t.line}`,
+          borderBottom: `1px solid ${t.line}`,
+          fontSize: 24,
+          fontWeight: 600,
+          color: t.textMuted,
+          textAlign: 'center',
+        }}
+      >
+        {award.stat}
+      </div>
+
+      {/* -- The ornament, holding the space the signet held ----------------- */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <NeutralSeal line={t.line} lineSoft={t.lineSoft} accent={t.accentLight} size={232} />
+      </div>
+
+      {/* -- The verdict. Omitted entirely if generation failed -- the card is
+             composed to close cleanly without it rather than leave a hole. -- */}
+      {verdict && (
+        <div
+          style={{
+            width: 830,
+            padding: '20px 42px',
+            borderTop: `1px solid ${t.lineSoft}`,
+            borderBottom: `1px solid ${t.lineSoft}`,
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 27,
+              fontWeight: 500,
+              lineHeight: 1.36,
+              color: t.text,
+              fontStyle: 'italic',
+            }}
+          >
+            &ldquo;{verdict.verdict}&rdquo;
+          </div>
+          <div
+            style={{
+              marginTop: 12,
+              fontSize: 13,
+              fontWeight: 700,
+              color: t.textDim,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+            }}
+          >
+            — {companion?.name ?? verdict.companion_id}
+          </div>
+        </div>
+      )}
+
+      {/* -- Footer: placing + the link that makes this shareable ------------ */}
+      <div
+        style={{
+          height: 196,
+          alignSelf: 'stretch',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+        }}
+      >
+        <ShareRule palette={t} width={300} tone={t.textDim} />
+        <div
+          style={{
+            fontSize: 25,
+            fontWeight: 700,
+            color: t.text,
+            fontVariantNumeric: 'tabular-nums lining-nums',
+          }}
+        >
+          {entry ? `#${entry.rank} of the night · ${entry.totalScore} pts` : `Room ${roomCode}`}
+        </div>
+        <div
+          style={{
+            maxWidth: 880,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: 17,
+            fontWeight: 600,
+            color: t.accentLight,
+            letterSpacing: '0.07em',
+          }}
+        >
+          {recapUrl}
         </div>
       </div>
     </div>

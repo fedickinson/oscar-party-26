@@ -122,18 +122,22 @@ export function useShareResults() {
 
   const showLine = showIdentityLine(showIdentity)
   const showSlug = slugify(showLine)
+  // The identity owns which card is drawn: the pinned legacy pack keeps its
+  // heraldic card, every other pack gets the neutral one. Anything unresolved
+  // is not legacy, so it never borrows House of the Dragon's devices.
+  const isLegacy = showIdentity.isLegacy
 
   const shareResults = useCallback(
     async (leaderboard: ScoredPlayer[], players: PlayerRow[], roomCode: string) => {
       if (leaderboard.length === 0) return
       await captureAndShare(
-        ShareCard({ leaderboard, players, roomCode, showLine }),
+        ShareCard({ leaderboard, players, roomCode, showLine, isLegacy }),
         `${showSlug}-standings-${roomCode}.png`,
         `${showLine} — Final Standings`,
         recapUrlFor(roomCode),
       )
     },
-    [captureAndShare, showLine, showSlug],
+    [captureAndShare, showLine, showSlug, isLegacy],
   )
 
   const sharePlayerCard = useCallback(
@@ -145,13 +149,13 @@ export function useShareResults() {
     ) => {
       const recapUrl = recapUrlFor(roomCode)
       await captureAndShare(
-        PlayerShareCard({ award, entry, verdict, roomCode, recapUrl, showLine }),
+        PlayerShareCard({ award, entry, verdict, roomCode, recapUrl, showLine, isLegacy }),
         `${showSlug}-${slugify(award.playerName)}.png`,
         `${award.playerName} — ${award.title}`,
         recapUrl,
       )
     },
-    [captureAndShare, showLine, showSlug],
+    [captureAndShare, showLine, showSlug, isLegacy],
   )
 
   return { shareResults, sharePlayerCard, isCopied }
