@@ -679,7 +679,7 @@
       "id": "slate-sienna-spiro",
       "canon": "screen",
       "status": "verified",
-      "text": "The compiled 2026 MTV Video Music Awards research slate credits SIENNA SPIRO with 1 nominated candidate entries, in these categories: Best New Artist. Collaboration entries are keyed to the primary credited artist, so one artist holds one candidate slot per category.",
+      "text": "The compiled 2026 MTV Video Music Awards research slate credits Sienna Spiro with 1 nominated candidate entries, in these categories: Best New Artist. Collaboration entries are keyed to the primary credited artist, so one artist holds one candidate slot per category.",
       "source_ids": [
         "vma-2026-odds-packet",
         "vma-2026-artist-packet",
@@ -701,7 +701,7 @@
       "id": "slate-sombr",
       "canon": "screen",
       "status": "verified",
-      "text": "The compiled 2026 MTV Video Music Awards research slate credits SOMBR with 3 nominated candidate entries, in these categories: Best Alternative, Best Art Direction, Song of Summer. The nominated works recorded for this artist are: Homewrecker; My Body Isn't Ready; UNCONFIRMED. Collaboration entries are keyed to the primary credited artist, so one artist holds one candidate slot per category.",
+      "text": "The compiled 2026 MTV Video Music Awards research slate credits Sombr with 3 nominated candidate entries, in these categories: Best Alternative, Best Art Direction, Song of Summer. The nominated works recorded for this artist are: Homewrecker; My Body Isn't Ready; UNCONFIRMED. Collaboration entries are keyed to the primary credited artist, so one artist holds one candidate slot per category.",
       "source_ids": [
         "vma-2026-odds-packet",
         "vma-2026-artist-packet",
@@ -860,7 +860,7 @@
       "id": "show-announced-performers",
       "canon": "screen",
       "status": "verified",
-      "text": "The announced 2026 performers as of 2026-09-21 are Madonna, LISA, Shaboozey, Shaboozey with Gunna, RAYE, SIENNA SPIRO, and GENER8ION with Yung Lean. No presenters had been announced.",
+      "text": "The announced 2026 performers as of 2026-09-21 are Madonna, LISA, Shaboozey, Shaboozey with Gunna, RAYE, Sienna Spiro, and GENER8ION with Yung Lean. No presenters had been announced.",
       "source_ids": [
         "vma-2026-run-of-show-packet",
         "vma-2026-artist-packet"
@@ -1103,7 +1103,7 @@
       "id": "sienna-spiro-performer",
       "canon": "screen",
       "status": "verified",
-      "text": "SIENNA SPIRO is a first-time nominee, in Best New Artist, and makes her VMA performance debut at the 2026 show; her material was not announced.",
+      "text": "Sienna Spiro is a first-time nominee, in Best New Artist, and makes her VMA performance debut at the 2026 show; her material was not announced.",
       "source_ids": [
         "vma-2026-artist-packet"
       ]
@@ -2840,7 +2840,7 @@
     },
     {
       "id": "sienna-spiro",
-      "name": "SIENNA SPIRO",
+      "name": "Sienna Spiro",
       "kind": "person",
       "group": "2026 VMA nominee",
       "draftable": true,
@@ -2875,7 +2875,7 @@
     },
     {
       "id": "sombr",
-      "name": "SOMBR",
+      "name": "Sombr",
       "kind": "person",
       "group": "Homewrecker",
       "draftable": true,

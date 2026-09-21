@@ -129,6 +129,22 @@ names come from packet 2's summary table; the single id mismatch is `asap-rocky`
 against `a-ap-rocky` (packet 2), resolved to the odds-file id with packet 2's display name
 "A$AP Rocky".
 
+Display casing rule: a name is stored in the casing the artist uses as a name, so a documented
+stylization stays (`GENER8ION`, `CORTIS`, `FLO`, `LISA`, `KATSEYE`, `JISOO`, `BLACKPINK`, `BTS`,
+`LE SSERAFIM`, `HUNTR/X`, `RAYE`, `Charli xcx`, `PinkPantheress`, `mgk`, `twenty one pilots`), but
+a plain name that is only in capitals because a press-release heading was in capitals does not.
+Two names moved under that rule: `SIENNA SPIRO` -> `Sienna Spiro`, whose capitals come from the
+September 17 CBS performer release that packet 2 quotes, while packet 1 writes "Sienna Spiro" and
+packet 3 writes "Sienna Spiro" - treated as confirmed; and `SOMBR` -> `Sombr`, where the packets
+disagree (packet 2 `SOMBR`, packet 1 `Sombr`, packet 3 lowercase `sombr`), no stylization is
+documented anywhere, and packet 2's entry is a thin-sourcing stub - so conventional title case was
+used and the result is **UNCONFIRMED**: round two should settle whether the artist styles it
+lowercase. `twenty one pilots` and `HUNTR/X` also differ between packets 1 and 2 (packet 1
+title-cases both), but packet 1 title-cases `Raye`, `Cortis` and `Sombr` too, so its casing is
+treated as normalization and packet 2 governs; the slash in `HUNTR/X` is itself the stylization.
+Only `name` strings and the claim text that repeats them changed - no `id` and no `artist_id`
+reference was touched, so the odds-file join and every candidate link are unchanged.
+
 `entity.group` is rendered as `film_name` on draft and roster rows, so it carries the artist's
 headline nominated work, taken from the highest-tier category they appear in whose `work` is not
 just the category name and is not marked UNCONFIRMED. Seven entities whose only entries are
