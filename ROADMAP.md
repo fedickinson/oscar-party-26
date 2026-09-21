@@ -490,9 +490,11 @@ Black/Green picker self-hides outside its pinned historical pack.
 **Goal:** arrive at the next watch event with a tested pack and an operator who
 has already run the exact night once.
 
-- [ ] Select the property, installment, screen-canon cutoff and expected group
-  size.
-- [ ] Choose a product shell and fill its game contract deliberately.
+- [x] Select the property, installment, screen-canon cutoff and expected group
+  size. The 2026 MTV Video Music Awards, September 27, 2026, four to ten remote
+  players; brief at `show-packs/research/vma-2026/BRIEF.md`.
+- [x] Choose a product shell and fill its game contract deliberately. Results
+  Night with the exact executable profile; decisions D1-D10 in the brief.
 - [ ] Build the roster, propositions, exact trigger contracts, calibration,
   bingo, cast dossiers, visual assets and commentary requests through the
   factory.
@@ -716,6 +718,10 @@ a new primitive:
 | 2026-08-12 | Conviction revisions are append-only. | The timing and evolution of belief are part of the product's value. |
 | 2026-08-12 | Settled receipts, not AI summaries, own evolving canon. | Grounding and reproducibility require provenance. |
 | 2026-08-12 | P0-P3 define next-event readiness. | Campaign work must not delay a reusable one-night game. |
+| 2026-09-21 | The 2026 VMAs are the P3 event, on the Results Night shell, as a private remote beta. | First pack-authored awards show; public launch and payments are not ready and are not the goal. |
+| 2026-09-21 | The VMA unit of play is the artist, not the video. | Draft rivalry over named artists is the engagement hook; videos spread value across names nobody roots for. |
+| 2026-09-21 | Bingo stays self-marked; host-adjudicated bingo is deferred. | Host approval was the Oscars-night bottleneck; settlement already re-warrants marks. |
+| 2026-09-21 | Draft point pricing is set by simulation through the real scoring library, not by argument. | The bingo rebalance already used the same method; odds arrive from research midweek. |
 
 ## How to maintain this plan
 
