@@ -538,6 +538,14 @@ the laptop's `.private/operator-capabilities/CODE.token` is the current bearer. 
 **Database: production. PROTECTED — this applies a migration to the live project. Ask the user
 and get an explicit yes before running it. Do not run it on a day a room is live.**
 
+**Two migrations now wait for Friday's yes, not one:**
+`supabase/migrations/20260921000100_ten_player_keepsake_verdicts.sql` (the keepsake row bound,
+below) and `supabase/migrations/20260921000200_room_winners_declared_at.sql`, which adds
+`room_winners.declared_at` so a phone that reloads mid-show reads the Scores feed in the order
+the room watched the night, not in slate order. The second one is additive and unconditional —
+apply it whatever the seat count. Without it the room still works; the reloaded feed just keeps
+today's authored-slate ordering. `supabase db push` below applies both in one pass.
+
 Skip this entirely if the room will seat seven or fewer. Above seven it is not optional: the
 keepsake command demands the *complete* room player set, so with eight or more players every
 attempt is rejected and the room finishes with no keepsake at all rather than a partial one.
@@ -559,8 +567,9 @@ Then, only after the user has said yes:
 supabase db push
 ```
 
-Proves it worked: `supabase db push` lists
-`20260921000100_ten_player_keepsake_verdicts.sql` as applied and exits 0, and a re-run of
+Proves it worked: `supabase db push` lists both
+`20260921000100_ten_player_keepsake_verdicts.sql` and
+`20260921000200_room_winners_declared_at.sql` as applied and exits 0, and a re-run of
 `npx tsx scripts/schema-diff.mts` reports no drift between local and production.
 
 If you decide not to apply it, say so out loud and cap the room at seven players. A bundle

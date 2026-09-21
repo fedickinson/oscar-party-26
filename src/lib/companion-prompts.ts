@@ -33,6 +33,7 @@ import {
   type CompanionMessage,
 } from './companion-response'
 import type { VerdictSlotContract } from './verdict-response.js'
+import { keepsakeLengthContract } from './verdict-response.js'
 export { parseVerdictResponse } from './verdict-response.js'
 export type { CompanionVerdict, VerdictSlotContract } from './verdict-response.js'
 export type { MessageRow }
@@ -1227,14 +1228,25 @@ export function buildVerdictsPrompt(
     throw new Error('verdict grounding projection exceeds the one-hundred-fact review contract')
   }
 
+  // Every keepsake shares one response. Above seven seats the wide contract
+  // does not fit under the proxy ceiling — see keepsakeLengthContract.
+  const length = keepsakeLengthContract(awards.length)
+  const imageryInstruction = length.maxImagery >= 2
+    ? '- Choose at most one crest and one hero image, with different slugs, only from the ARTWORK CATALOG RECORD. Catalog metadata authorizes selection, not a claim that the depicted relationship or event appeared tonight.'
+    : '- Choose AT MOST ONE image in total, for either crest or hero, only from the ARTWORK CATALOG RECORD. Leave the other placement out. Catalog metadata authorizes selection, not a claim that the depicted relationship or event appeared tonight.'
+  const budgetNote = length.tightened
+    ? `
+THIS IS A WIDE ROOM: ${awards.length} keepsakes share one response. The caps above are tighter than the format brief's and they replace it. Write less per keepsake so every slot is complete; a short keepsake for everyone beats a long one for the first few.`
+    : ''
+
   const user = `THE RECKONING. Write exactly one keepsake verdict for every slot defined in the numbered LIVE FACTS, in ascending slot order.
 
 For each slot:
 - Use only its GAME RECORD for the player, assigned companion voice, standings and deterministic award.
-- Write a distinct 2-4 word title and a 2-3 sentence second-person verdict. Evaluative voice is welcome; invented facts are not.
-- Choose zero to four highlight message_ids only from that slot's CHAT RECORD. A highlight note may judge the quoted line as memorable, but may not promote its content into broadcast truth.
-- Choose at most one crest and one hero image, with different slugs, only from the ARTWORK CATALOG RECORD. Catalog metadata authorizes selection, not a claim that the depicted relationship or event appeared tonight.
-- When a fact is absent, unresolved, excerpted or empty, say less. Never fill it from memory.
+- Write a distinct 2-4 word title and a ${length.sentences} second-person verdict. Evaluative voice is welcome; invented facts are not.
+- Choose zero to ${length.maxHighlights === 2 ? 'two' : 'four'} highlight message_ids only from that slot's CHAT RECORD. A highlight note may judge the quoted line as memorable, but may not promote its content into broadcast truth.
+${imageryInstruction}
+- When a fact is absent, unresolved, excerpted or empty, say less. Never fill it from memory.${budgetNote}
 
 Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'} in the documented JSON shape. Slots must be unique and complete. Titles must be unique case-insensitively. Do not invent player identity, score causes, chat ids, image slugs, broadcast events, source-material outcomes or next-season claims.`
 

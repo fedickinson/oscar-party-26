@@ -247,6 +247,41 @@ describe('pack runtime narrative prompts', () => {
     )).toThrow('runtime keepsake generation requires one through ten player awards')
   })
 
+  it('tightens the per-keepsake contract above seven seats so ten fit one response', () => {
+    const seats = (count: number) => Array.from({ length: count }, (_, index) => ({
+      playerId: `player-${index + 1}`,
+      playerName: `Player ${index + 1}`,
+      title: `Held Position ${index + 1}`,
+      blurb: 'Held the line.',
+      stat: `${10 - index} points`,
+    }))
+    const standings = (count: number) => seats(count).map((seat, index) => ({
+      player: { id: seat.playerId, name: seat.playerName }, rank: index + 1,
+      totalScore: 10 - index, confidenceScore: 10 - index, ensembleScore: 0,
+      bingoScore: 0, correctPickCount: 1, topCorrectPick: 2,
+    } as never))
+    const voiceIds = cast.postShow!.voices.map((voice) => voice.id)
+    const authors = (count: number) => new Map(
+      seats(count).map((seat, index) => [seat.playerId, voiceIds[index % voiceIds.length]]),
+    )
+    const promptFor = (count: number) => buildRuntimeVerdictsPrompt(
+      cast, seats(count), standings(count), authors(count), new Map(),
+    )
+
+    // Ten keepsakes at the wide contract want about 4300 output tokens and the
+    // proxy ceiling is 4000, so the contract gives, not the ceiling.
+    const ten = promptFor(10)
+    expect(ten.user).toContain('zero to two highlight message_ids')
+    expect(ten.user).toContain('one-to-two-sentence')
+    expect(ten.user).toContain('THIS IS A WIDE ROOM: 10 keepsakes share one response')
+
+    // Seven still fits, so seven keeps the fuller keepsake.
+    const seven = promptFor(7)
+    expect(seven.user).toContain('zero to four highlight message_ids')
+    expect(seven.user).toContain('two-to-three-sentence')
+    expect(seven.user).not.toContain('WIDE ROOM')
+  })
+
   it('builds generic keepsake slots from pack voices with no legacy artwork authority', () => {
     const authors = new Map([['player-a', 'lamplighter']])
     const prompt = buildRuntimeVerdictsPrompt(

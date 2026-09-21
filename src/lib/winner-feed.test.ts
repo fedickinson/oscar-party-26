@@ -194,6 +194,53 @@ describe('seedWinnerFeedEntries', () => {
     for (const time of byId.values()) expect(time).toBeLessThan(10_000)
   })
 
+  it('orders the night by the declaration time, not the authored slate order', () => {
+    // The real shape of a scheduled room: nothing ever writes announced_at, so
+    // before room_winners.declared_at existed this slate came back in catalog
+    // order no matter which category the room actually watched resolve first.
+    const ctx = context({
+      categories: [
+        category(1, { winner_id: 'n1', display_order: 1 }),
+        category(2, { winner_id: 'n2', display_order: 2 }),
+      ],
+      declaredAtByCategory: new Map([
+        [1, '2026-09-21T21:40:00Z'],
+        [2, '2026-09-21T21:05:00Z'],
+      ]),
+    })
+
+    const seeded = seedWinnerFeedEntries(ctx, 10_000)
+
+    expect(seeded.map((entry) => entry.categoryId)).toEqual([2, 1])
+  })
+
+  it('falls back to announced_at for a row the declaration ledger does not time', () => {
+    // A settled record carries occurred_at as announced_at and no declared_at
+    // map; a not-yet-migrated database carries neither for a live row.
+    const ctx = context({
+      categories: [
+        category(1, { winner_id: 'n1', announced_at: '2026-09-21T21:05:00Z', display_order: 9 }),
+        category(2, { winner_id: 'n2', display_order: 1 }),
+      ],
+      declaredAtByCategory: new Map([[2, '2026-09-21T21:40:00Z']]),
+    })
+
+    const seeded = seedWinnerFeedEntries(ctx, 10_000)
+
+    expect(seeded.map((entry) => entry.categoryId)).toEqual([1, 2])
+  })
+
+  it('keeps the pre-migration ordering when no declaration time is loaded at all', () => {
+    const ctx = context({
+      categories: [
+        category(1, { winner_id: 'n1', display_order: 2 }),
+        category(2, { winner_id: 'n2', display_order: 1 }),
+      ],
+    })
+
+    expect(seedWinnerFeedEntries(ctx, 10_000).map((entry) => entry.categoryId)).toEqual([2, 1])
+  })
+
   it('orders a timestamped declaration after an untimed authored row', () => {
     const ctx = context({
       categories: [

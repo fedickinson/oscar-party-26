@@ -264,17 +264,21 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
           facts: prompt.groundingFacts,
           contracts: prompt.slotContracts,
           model: 'claude-sonnet-5',
-          // One keepsake costs about 430 output tokens at the contract's
-          // ceiling: a 2-4 word title, a 2-3 sentence passage, up to four
-          // highlight notes of 240 characters and up to two imagery notes. The
-          // seven-player budget of 3000 was that figure times seven, so ten
-          // players want 4300 - but MAX_TOKENS_CEILING in api/_guards.ts caps
-          // every proxied request at 4000, and that ceiling is the account's
-          // cost guard for a public URL, not a keepsake tuning knob. So ask for
-          // the most the guard allows: 400 tokens per keepsake at ten players.
-          // A truncated batch is not a silent loss - it fails the envelope
-          // check and lands in the grounding review record like any other
-          // unusable response.
+          // One keepsake costs about 430 output tokens at the wide contract: a
+          // 2-4 word title, a 2-3 sentence passage, up to four highlight notes
+          // and up to two imagery notes. Ten of those want 4300, and
+          // MAX_TOKENS_CEILING in api/_guards.ts caps every proxied request at
+          // 4000 - that ceiling is the account's cost guard for a public URL,
+          // not a keepsake tuning knob, so it does not move. The contract
+          // moves instead: above seven seats both prompt builders ask for two
+          // highlights, one image and a shorter passage, about 290 tokens each
+          // (see keepsakeLengthContract in src/lib/verdict-response.ts), so ten
+          // keepsakes fit in roughly 2900 with about 1100 tokens of margin.
+          // The database envelope is unchanged - 20260921000100 still accepts
+          // four highlights and two images per row - so this narrows what is
+          // asked for, never what is valid. A truncated batch would not be a
+          // silent loss either: it fails the envelope check and lands in the
+          // grounding review record like any other unusable response.
           maxTokens: 4000,
           maxRetries: 2,
           allowedCompanionIds: current.runtimeCast?.postShow

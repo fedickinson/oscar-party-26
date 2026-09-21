@@ -30,6 +30,22 @@ export function buildBingoReactionKey(
   return `bingo:${assertPart(markId, 'bingo mark id')}:${kind}`
 }
 
+/**
+ * The durable key for a declaration's winner divider.
+ *
+ * Deliberately distinct from `event:<id>:winner`, which the live cast
+ * generation owns — the daemon holds that key for a pack room's voices while
+ * the host tab holds this one for the divider, so the two never contend. Two
+ * host tabs watching the same declaration land on the same key and exactly one
+ * of them writes the row.
+ */
+export function buildWinnerDividerReactionKey(categoryId: number): string {
+  if (!Number.isInteger(categoryId) || categoryId < 1) {
+    throw new Error('winner divider reaction key requires a positive integer category id')
+  }
+  return `event:${categoryId}:winner:divider`
+}
+
 export type DeclaredEventMilestone = 'halfway' | 'final_stretch'
 
 export function buildMilestoneReactionKey(type: DeclaredEventMilestone): string {

@@ -560,6 +560,25 @@ describe('buildVerdictsPrompt grounding projection', () => {
       eleven.map((seat) => seat.entry),
       assignVerdictAuthors(eleven.map((seat) => seat.award.playerId)),
     )).toThrow('verdict generation requires one through ten player awards')
+
+    // Ten keepsakes at the wide contract want about 4300 output tokens and the
+    // proxy ceiling is 4000, so the contract gives, not the ceiling.
+    expect(prompt.user).toContain('zero to two highlight message_ids')
+    expect(prompt.user).toContain('a one-to-two-sentence second-person verdict')
+    expect(prompt.user).toContain('AT MOST ONE image in total')
+    expect(prompt.user).toContain('THIS IS A WIDE ROOM: 10 keepsakes share one response')
+
+    // Seven fits, so a seven-seat room keeps the fuller keepsake.
+    const seven = roster(7)
+    const sevenPrompt = buildVerdictsPrompt(
+      seven.map((seat) => seat.award),
+      seven.map((seat) => seat.entry),
+      assignVerdictAuthors(seven.map((seat) => seat.award.playerId)),
+    )
+    expect(sevenPrompt.user).toContain('zero to four highlight message_ids')
+    expect(sevenPrompt.user).toContain('a two-to-three-sentence second-person verdict')
+    expect(sevenPrompt.user).toContain('at most one crest and one hero image')
+    expect(sevenPrompt.user).not.toContain('WIDE ROOM')
   })
 
   it('represents an empty candidate set and refuses a slot without a canonical standing', () => {

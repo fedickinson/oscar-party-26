@@ -125,6 +125,14 @@ export function useScores(
   const [bingoMarks, setBingoMarks] = useState<BingoMarkRow[]>([])
   /** The static 75-square pool. Only its tier data is used, for square points. */
   const [bingoSquares, setBingoSquares] = useState<BingoSquareRow[]>([])
+  /**
+   * `room_winners.declared_at` by category id — the order the room actually
+   * watched the night resolve in. Empty for a settled record (the settlement
+   * entries carry their own researched time) and empty against a database
+   * without migration 20260921000200, which is exactly the fallback
+   * `seedWinnerFeedEntries` already handles.
+   */
+  const [declaredAtByCategory, setDeclaredAtByCategory] = useState<ReadonlyMap<number, string>>(new Map())
   const [recentResults, setRecentResults] = useState<RecentResult[]>([])
   const [winnerEntries, setWinnerEntries] = useState<WinnerFeedEntry[]>([])
   const [leadChanges, setLeadChanges] = useState<LeadChangeFeedEntry[]>([])
@@ -251,6 +259,14 @@ export function useScores(
 
         setCategories(record.categories)
         categoriesRef.current = record.categories
+        // `select()` is `select=*`, so an un-migrated database simply returns
+        // rows without the field and the map stays empty. Never a named column
+        // list here: that would turn a missing column into a failed fetch.
+        setDeclaredAtByCategory(record.source === 'live'
+          ? new Map(((rwRes.data ?? []) as RoomWinnerRow[]).flatMap((row) => (
+            row.declared_at ? [[row.category_id, row.declared_at] as const] : []
+          )))
+          : new Map())
         prevCategoriesRef.current = new Map(
           record.categories.map((category) => [category.id, {
             winnerId: category.winner_id,
@@ -347,6 +363,13 @@ export function useScores(
         tieWinnerId: rw.tie_winner_id,
       })
 
+      // Keep the declaration ledger current so a seed built after this event
+      // (a fetch that overlapped it, a settlement toggle) orders it correctly.
+      if (rw.declared_at) {
+        const declaredAt = rw.declared_at
+        setDeclaredAtByCategory((prev) => new Map(prev).set(rw.category_id, declaredAt))
+      }
+
       // Update categories state with the per-room winner (including tie)
       categoriesRef.current = categoriesRef.current.map((c) => (
         c.id === rw.category_id
@@ -408,6 +431,12 @@ export function useScores(
       )
       setRecentResults((prev) => prev.filter((r) => r.categoryId !== categoryId))
       setWinnerEntries((prev) => prev.filter((e) => e.categoryId !== categoryId))
+      setDeclaredAtByCategory((prev) => {
+        if (!prev.has(categoryId)) return prev
+        const next = new Map(prev)
+        next.delete(categoryId)
+        return next
+      })
     }
 
     const channel = supabase
@@ -448,6 +477,12 @@ export function useScores(
           setCategories((prev) => prev.filter((candidate) => candidate.id !== categoryId))
           setRecentResults((prev) => prev.filter((result) => result.categoryId !== categoryId))
           setWinnerEntries((prev) => prev.filter((entry) => entry.categoryId !== categoryId))
+          setDeclaredAtByCategory((prev) => {
+            if (!prev.has(categoryId)) return prev
+            const next = new Map(prev)
+            next.delete(categoryId)
+            return next
+          })
         },
       )
       .on(
@@ -773,6 +808,7 @@ export function useScores(
       convictionPicks,
       draftPicks,
       draftEntities,
+      declaredAtByCategory,
     }, feedEpochRef.current.at),
     [
       room?.game_model,
@@ -783,6 +819,7 @@ export function useScores(
       convictionPicks,
       draftPicks,
       draftEntities,
+      declaredAtByCategory,
     ],
   )
 

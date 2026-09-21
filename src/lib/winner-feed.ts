@@ -7,6 +7,14 @@
  * entry its event announced, and hydration seeds the whole feed from the
  * canonical record. Nothing is recomputed twice from a second copy of the rules.
  *
+ * The order the seeded feed reads in comes from `room_winners.declared_at`.
+ * `categories.announced_at` is NOT a live source: no writer on the scheduled
+ * path populates it, so before migration 20260921000200 every seeded entry was
+ * untimed and the reloaded night came back in authored slate order. It stays in
+ * the comparison only for the settled record, where `room-record` fills it from
+ * the settlement entry's researched `occurred_at`, and for a database that has
+ * not taken that migration yet.
+ *
  * Pure by contract: no React, no Supabase, no async.
  */
 
@@ -60,6 +68,15 @@ export interface WinnerFeedContext {
   convictionPicks: readonly ConvictionPickRow[]
   draftPicks: readonly DraftPickRow[]
   draftEntities: readonly DraftEntityRow[]
+  /**
+   * `room_winners.declared_at` by category id, when the loaded rows carry it.
+   *
+   * Absent for a settled record, whose times come from the settlement entries
+   * instead, and absent against a database that has not taken migration
+   * 20260921000200 — in both cases the ordering falls back exactly as it did
+   * before the column existed.
+   */
+  declaredAtByCategory?: ReadonlyMap<number, string>
 }
 
 export interface WinnerFeedOutcome {
@@ -182,17 +199,27 @@ export function buildWinnerFeedEntry(
 }
 
 /**
- * The announced ordering of the resolved slate, oldest first.
+ * The declared ordering of the resolved slate, oldest first.
  *
- * `room_winners` carries no timestamp, so the only announced time available is
- * the category's own `announced_at` — set for a room-declared event, null for
- * an authored pack row whose winner arrived through the scheduled command. A
- * row without one falls back to the authored slate order, and untimed rows sort
- * before timed ones so a live declaration never appears older than the slate.
+ * `room_winners.declared_at` (migration 20260921000200) is the canonical
+ * declaration time, and it is the one the live record should be ordered by:
+ * `categories.announced_at` is never populated by a writer on the scheduled
+ * path — neither `declare_scheduled_winner` nor `declare_room_event` sets it —
+ * so it is only ever present on a settled record, where `room-record` fills it
+ * from the settlement entry's `occurred_at`.
+ *
+ * So: the declaration time when the loaded row carries one, `announced_at`
+ * otherwise, then the authored slate order, then id. Untimed rows still sort
+ * before timed ones, so a declaration never appears older than a slate row
+ * that was never stamped at all.
  */
-export function compareAnnouncedOrder(left: CategoryRow, right: CategoryRow): number {
-  const leftAt = parseAnnouncedAt(left)
-  const rightAt = parseAnnouncedAt(right)
+export function compareAnnouncedOrder(
+  left: CategoryRow,
+  right: CategoryRow,
+  declaredAtByCategory?: ReadonlyMap<number, string>,
+): number {
+  const leftAt = declaredOrAnnouncedAt(left, declaredAtByCategory)
+  const rightAt = declaredOrAnnouncedAt(right, declaredAtByCategory)
   if (leftAt != null && rightAt != null && leftAt !== rightAt) return leftAt - rightAt
   if (leftAt != null && rightAt == null) return 1
   if (leftAt == null && rightAt != null) return -1
@@ -200,16 +227,24 @@ export function compareAnnouncedOrder(left: CategoryRow, right: CategoryRow): nu
   return left.id - right.id
 }
 
-function parseAnnouncedAt(category: CategoryRow): number | null {
-  if (!category.announced_at) return null
-  const parsed = Date.parse(category.announced_at)
+function declaredOrAnnouncedAt(
+  category: CategoryRow,
+  declaredAtByCategory?: ReadonlyMap<number, string>,
+): number | null {
+  return parseTimestamp(declaredAtByCategory?.get(category.id))
+    ?? parseTimestamp(category.announced_at)
+}
+
+function parseTimestamp(value: string | null | undefined): number | null {
+  if (!value) return null
+  const parsed = Date.parse(value)
   return Number.isNaN(parsed) ? null : parsed
 }
 
 /**
  * The whole feed, rebuilt from the canonical record at hydration.
  *
- * Seeded entries are stamped strictly before `hydratedAtMs` and in announced
+ * Seeded entries are stamped strictly before `hydratedAtMs` and in declared
  * order, so a winner that arrives live afterwards always sorts above them and
  * the reloaded feed reads in the same direction as the one that was watched.
  */
@@ -219,7 +254,7 @@ export function seedWinnerFeedEntries(
 ): WinnerFeedEntry[] {
   const resolved = context.categories
     .filter((category) => category.winner_id != null)
-    .sort(compareAnnouncedOrder)
+    .sort((left, right) => compareAnnouncedOrder(left, right, context.declaredAtByCategory))
 
   return resolved.flatMap((category, index) => {
     const entry = buildWinnerFeedEntry(context, {

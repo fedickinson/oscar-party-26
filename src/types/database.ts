@@ -799,6 +799,15 @@ export interface RoomWinnerRow {
   category_id: number
   winner_id: string
   tie_winner_id: string | null
+  /**
+   * When the declaration landed (20260921000200). Optional rather than
+   * required on purpose: the column is `not null default now()` in a migrated
+   * database, but a newer bundle can be talking to one that has not taken the
+   * migration yet, and then the field is simply absent from the row. Consumers
+   * must treat absent as "no declaration time" and fall back, never as null
+   * meaning something else.
+   */
+  declared_at?: string
 }
 
 export interface RoomWinnerInsert {
@@ -806,6 +815,8 @@ export interface RoomWinnerInsert {
   category_id: number
   winner_id: string
   tie_winner_id?: string | null
+  /** Omit it: the column defaults. Set only when restoring a snapshotted row. */
+  declared_at?: string
 }
 
 export interface RoomWinnerUpdate {
@@ -813,6 +824,7 @@ export interface RoomWinnerUpdate {
   category_id?: number
   winner_id?: string
   tie_winner_id?: string | null
+  declared_at?: string
 }
 
 // ─── Settled room record ─────────────────────────────────────────────────────
