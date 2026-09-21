@@ -18,6 +18,31 @@ the operator, with **no developer touching the app during the show**. Public lau
 payments and a pack picker are explicitly out of scope. The shareable outcome is the
 settlement receipt, the public recap route and the settlement-drop ceremony.
 
+## 0. Timeline as of September 21
+
+The operator has no laptop until Friday September 25 or Saturday September 26. The Thursday
+rehearsal is gone; every database and phone check happens in the last day and a half. To keep
+that day and a half execution rather than discovery, everything that can run in the sandbox runs
+now: a Docker-free local database for the dogfoods and the activation apply, phone-size
+screenshots of every route that renders without a database, and an off-air winners declaration
+script so the post-show social dump is a reviewed list rather than fifteen taps at 11 p.m.
+
+**From the phone, now:** send the invite (checklist section 7) with the show time, the Saturday
+evening draft call, and "room link follows Friday". Confirm the draft time on the call is one
+where a present player can take the final pick.
+
+**Friday (or the first day with the laptop), in order:** pull the branch; `supabase start` and
+`supabase db reset --local` (the first real execution of the keepsake migration); checklist
+section 1 with a second phone, allow two hours; land the branch on main and deploy; create the
+production room from the phone; decide the keepsake migration (protected); activate the pack
+with `SUPABASE_TARGET=remote` (protected); issue the operator capability; send the room link.
+
+**Saturday:** draft night on a call; daemon and snapshot loop dry run against the real room.
+
+**If the laptop only returns Saturday:** rehearsal and production setup Saturday afternoon, draft
+Saturday night, and if that slips, draft Sunday at 6:30 p.m. ET, one hour before the show, with
+the timer on.
+
 ## 1. Decisions (locked)
 
 | # | Decision | Choice |
