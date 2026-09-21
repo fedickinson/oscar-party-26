@@ -648,17 +648,15 @@ over-the-air CBS (packet 4, E4-E6).
 5. Close the spotlight.
 6. Move to the next category. Do not batch — one spotlight open at a time.
 
-**Undo, honestly.** The 30-second undo button in the Winners tab only appears for a declaration
-that the same browser tab made through the admin path, and it disappears on reload. A
-declaration made through the spotlight may not show it at all. Verify this on Thursday
-(rehearsal step 1.5.6) and plan for the worse case:
-
-- If the undo button is there and you are inside 30 seconds, tap it. One transaction strikes
-  the fact and posts the public correction; every phone sees both.
-- If it is not there, **do not re-declare and do not improvise**. Post in chat, in your own
-  words: "Correction: I called <category> for <name> in error. The real winner is <name>. The
-  scoreboard will be right in the settled record." The live floor is provisional by design;
-  settlement is where it becomes true (section 5).
+**Undo, honestly.** Undo is available for any category that has a provisional winner while the
+room is live: tap **Undo** on the category row, then tap **Confirm** within fifteen seconds. It
+works for spotlight declarations and survives a reload, because it is derived from the room's
+rows rather than from the tab that declared. Every phone sees the winner disappear and the
+scores recompute. **The scheduled undo posts no correction line in chat**; only the Story Night
+referee undo does. So after every undo, post in chat in your own words: "Correction: I called
+<category> for <name> in error. The real winner is <name>." Then re-open the spotlight and
+declare the right winner. The live floor is provisional by design; settlement is where it
+becomes true (section 5).
 
 ### 4.7 The categories MTV posts after the show
 
@@ -981,12 +979,11 @@ Paste as is; fill in the three bracketed values.
 3. `BRIEF.md` acceptance criterion 2 says an absent player is "auto-picked"; the implementation
    (`skip_room_draft_turn_authorized`, "preserves the final player-owned turn") skips the turn
    and never auto-skips the last pick. I wrote the checklist to the code, not the brief.
-4. `BRIEF.md` acceptance criterion 4 (host undo with a public correction) is doubtful on this
-   shell: `WinnersTab`'s undo needs `winnerSetAt`, which only `useAdmin.setWinner` sets, and the
-   only production declare path is the spotlight (`useSpotlight`). Verify on Thursday.
-5. There is no host control that closes a Results Night live floor while any category is
-   undeclared — the close card is gated on `allAnnounced`. That shapes the whole off-air-dump
-   procedure in 4.7 and I could not find an escape hatch short of service-role repair.
+4. `BRIEF.md` acceptance criterion 4 (host undo with a public correction): undo is now
+   reachable for any provisional winner while live, but the scheduled path appends no public
+   correction line; that needs a between-show migration. The host posts the correction by hand.
+5. The Results Night close card is now permanent and two-step and works with unresolved
+   categories; section 4.7's overnight hold is a choice, not a trap.
 6. I did not run any command in this document. Every flag was read from the script's own
    argument parser and every "proves it worked" line from its own `console.log`, but no script
    was executed and no database, local or remote, was touched.

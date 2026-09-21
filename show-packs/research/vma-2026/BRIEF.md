@@ -38,7 +38,7 @@ settlement receipt, the public recap route and the settlement-drop ceremony.
 Each stays open until individually verified on a phone or explicitly deferred.
 
 1. A player in a Results Night room can make ranked confidence picks for every category and lock them. (Today the confidence route renders the Story Night activation screen.)
-2. The draft runs as a timed snake over artists; an absent player is auto-picked rather than stalling the room.
+2. The draft runs as a timed snake over artists; an absent player's turn is skipped by the timer rather than stalling the room, except the final pick, which is never skipped.
 3. The host declares a winner from the Winners tab and every phone's leaderboard moves without a reload.
 4. The host can undo a mistaken declaration and every phone shows the correction.
 5. A player who never opens the app during the show still has a full confidence and draft score afterward.
@@ -182,7 +182,7 @@ One script, `scripts/simulate-results-night.mts`, filesystem-only:
 
 Local stack, activated pack, host phone plus one second client at 375 by 812:
 
-- lobby, ready-up, timed draft with one absent player auto-picked;
+- lobby, ready-up, timed draft with one absent player skipped by the timer (the final pick is never skipped, so a present player must take it);
 - confidence picks made and locked on both phones;
 - live: three declarations, one undo with public correction, one spotlight open and close;
 - bingo: deal, mark, unmark, a completed line;
@@ -203,6 +203,9 @@ Record what was run and what was not in the `verify-change` ledger.
   dimension, and every v4 bingo trigger already carries a `truth_authority` field the
   runtime currently ignores. Settlement's `preserve_live` versus `replace` modes are the
   adjudication layer for this show.
+- A public correction line for the scheduled winner undo. `undo_scheduled_winner` strikes the
+  winner and recomputes scores but appends no chat correction; only the Story Night referee undo
+  does. Needs a between-show migration. The host posts the correction by hand this show.
 - Host-facing pack picker; every new room is born bound to the legacy pack by column default.
 - Auto-declaration from an official feed.
 - Payments, auth, public landing.
