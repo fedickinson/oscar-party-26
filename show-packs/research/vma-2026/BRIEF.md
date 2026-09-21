@@ -1,6 +1,6 @@
 # 2026 MTV Video Music Awards — P3 event brief
 
-**Status:** scoped, not implemented. This is the `ROADMAP.md` P3 slice ("author and
+**Status:** implemented on the planning branch and awaiting the Thursday rehearsal on a local stack; nothing here has been run against a database or a phone. This is the `ROADMAP.md` P3 slice ("author and
 rehearse the next real event") applied to one concrete property.
 
 **Show:** Sunday, September 27, 2026, Peacock Theater, Los Angeles. Live on CBS, simulcast
@@ -29,7 +29,7 @@ settlement receipt, the public recap route and the settlement-drop ceremony.
 | D5 | Cast | Five original fictional people posting to a live feed, no real person: Priya, The Desk (narrator, a fictional results-desk anchor); Jojo, The Superfan (seat 14R, openly partisan); Dev, The Insider (ex-label campaign strategist, explains the mechanism); Wren, The Rocker (frontwoman of a fictional touring band, watches as a musician, carries the long memory; the eliminated rock category is one grievance among many); Sasha, The Carpet (red carpet correspondent). First names only; the title is the prominent label. |
 | D6 | Group | Four to ten players, remote, possibly people the host half knows. |
 | D7 | Viewing | Async is the model. Host declares on the fastest feed. Chat will spoil slower feeds; the invite says so. Players who do not watch still receive full confidence and draft scoring and a recap; they forfeit bingo. |
-| D8 | Draft pricing | Set by simulation (see `SIMULATION.md`): marquee categories 3 draft points, every other category 2. The 8/6 placeholder let draft slot one win 42 percent of six-player nights; 3/2 gives 27 percent, and 31 percent with Taylor Swift absent, with draft at 8 percent of total score. Ranked confidence unchanged. |
+| D8 | Draft pricing | Set by simulation (see `SIMULATION.md`): marquee categories 3 draft points, every other category 2. Against the final pack, draft slot one wins 25 percent of six-player nights, 31 percent with Taylor Swift absent, with draft at 8 percent of total score. Ranked confidence unchanged. |
 | D9 | Portraits | Generated abstract tiles per artist, committed under `public/`, so the portrait contract is met with nothing rights-encumbered. |
 | D10 | Signature beats | The minimum the activation gate requires, authored as official-result wagers. On Results Night no player-facing surface activates or declares beats, so they are inert and unscored for this show; no player copy may mention beats or activation. Revisit when a Results Night beat surface exists. |
 

@@ -40,3 +40,18 @@ npx tsx scripts/simulate-results-night.mts \
   --odds show-packs/research/vma-2026/research/03-odds.json \
   --players 6 --nights 3000 --seed 7
 ```
+
+## Final run against the committed pack
+
+After the bingo pool was re-tiered to 64 squares (18 likely / 24 toss-up / 15 long-shot / 7
+chaos, nothing above 80) and the 3 / 2 scale was applied, the same six-player, 3,000-night,
+seed-7 runs give:
+
+| Scenario | Slot 1 wins | Slot 2 wins | Draft share | Confidence share | Bingo mean / p10 / p90 | Shared squares |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Baseline odds | 25.2% | 22.3% | 8.1% | 72.8% | 23.8 / 13 / 40 | 6.7 of 24 |
+| Swift absent | 30.8% | 14.8% | 8.3% | 66.9% | 23.9 / 13 / 40 | 6.7 of 24 |
+
+Two players now share a mean of 6.7 squares against the earlier pool's 14.5, which is why slot
+one fell from 27.1 to 25.2 percent at the same pricing: bingo now separates players instead of
+dealing everyone nearly the same card. Both scenarios hold the first pick at or under a third.

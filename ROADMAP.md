@@ -495,9 +495,12 @@ has already run the exact night once.
   players; brief at `show-packs/research/vma-2026/BRIEF.md`.
 - [x] Choose a product shell and fill its game contract deliberately. Results
   Night with the exact executable profile; decisions D1-D10 in the brief.
-- [ ] Build the roster, propositions, exact trigger contracts, calibration,
+- [x] Build the roster, propositions, exact trigger contracts, calibration,
   bingo, cast dossiers, visual assets and commentary requests through the
-  factory.
+  factory. Hand-authored as a first-of-property schema-v4 pack from six
+  research packets (the factory needs a predecessor receipt); compiles
+  publishable with 67 artists, 23 categories, 12 beats, 64 bingo squares and
+  a five-voice runtime cast. Search-summary grade pending round-two sources.
 - [ ] Perform the required source, canon, trigger-title, portrait and grounded
   prose reviews.
 - [ ] Activate the published pack in a local rehearsal room.
@@ -506,7 +509,8 @@ has already run the exact night once.
   mistaken declarations, blocked AI prose, host reload and room closure.
 - [ ] Produce and inspect a full settlement receipt and ceremony from synthetic
   rehearsal facts.
-- [ ] Write the show-specific operator checklist and rollback path.
+- [x] Write the show-specific operator checklist and rollback path
+  (`show-packs/research/vma-2026/OPERATOR-CHECKLIST.md`).
 
 **Next-event readiness gate**
 
