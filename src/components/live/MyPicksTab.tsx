@@ -28,6 +28,8 @@ import {
   draftEntityHasHitSignatureBeat,
   signatureBeatWasHit,
 } from '../../lib/signature-beat-status'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { confidencePhaseTitle } from '../../lib/show-identity'
 import Avatar from '../Avatar'
 import PackIdentityPicker from '../PackIdentityPicker'
 import TeamPicker from '../TeamPicker'
@@ -127,6 +129,12 @@ export default function MyPicksTab({
   identityChoices,
   onSwitchToBingo,
 }: Props) {
+  // "Ensemble" and "Prestige" are the legacy ceremony's words for the draft and
+  // the prediction round. Any other pack gets the platform's plain ones.
+  const { identity: showIdentity } = useShowIdentity()
+  const draftScoreLabel = showIdentity.isLegacy ? 'Ensemble' : 'Draft'
+  const confidenceTitle = confidencePhaseTitle(showIdentity)
+
   const myConfidencePicks = confidencePicks
     .filter((p) => p.player_id === currentPlayerId)
     .sort((a, b) => b.confidence - a.confidence)
@@ -302,12 +310,12 @@ export default function MyPicksTab({
           {/* Score breakdown */}
           <div className="grid grid-cols-3 gap-2">
             <ScoreBreakdownCell
-              label="Ensemble"
+              label={draftScoreLabel}
               value={myScore.ensembleScore}
               dimmed={myScore.ensembleScore === 0}
             />
             <ScoreBreakdownCell
-              label="Prestige"
+              label={showIdentity.isLegacy ? 'Prestige' : 'Picks'}
               value={myScore.confidenceScore}
               dimmed={myScore.confidenceScore === 0}
             />
@@ -339,7 +347,7 @@ export default function MyPicksTab({
         >
           <div className="flex items-center gap-2">
             <p className="text-xs uppercase tracking-widest text-[var(--t-text-muted)]">
-              Prestige Picks
+              {confidenceTitle}
             </p>
             {myConfidencePicks.length > 0 && (
               <span className="rounded-full border border-[var(--t-line)] px-1.5 py-0.5 text-xs text-[var(--t-text-dim)] tabular-nums">
@@ -523,8 +531,8 @@ export default function MyPicksTab({
           <div className="flex items-center gap-2">
             <p className="text-xs uppercase tracking-widest text-[var(--t-text-muted)]">
               {rosterPlayerId === currentPlayerId
-                ? 'My Ensemble'
-                : `${players.find((roomPlayer) => roomPlayer.id === rosterPlayerId)?.name.split(' ')[0] ?? 'Player'}'s Ensemble`}
+                ? `My ${draftScoreLabel}`
+                : `${players.find((roomPlayer) => roomPlayer.id === rosterPlayerId)?.name.split(' ')[0] ?? 'Player'}'s ${draftScoreLabel}`}
             </p>
             {selectedDraftEntities.length > 0 && (
               <span className="rounded-full border border-[var(--t-line)] px-1.5 py-0.5 text-xs text-[var(--t-text-dim)] tabular-nums">
@@ -588,7 +596,7 @@ export default function MyPicksTab({
             )
           })()}
         {selectedDraftEntities.length === 0 ? (
-          <p className="py-6 text-center text-sm text-[var(--t-text-dim)]">No ensemble picks</p>
+          <p className="py-6 text-center text-sm text-[var(--t-text-dim)]">No {draftScoreLabel.toLowerCase()} picks</p>
         ) : (
           <div className="space-y-3">
             {selectedDraftEntities.map((entity) => {

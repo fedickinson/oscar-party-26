@@ -61,7 +61,14 @@ export default function Results() {
   })
   // `finished` is the live, provisional ledger and opens immediately. Only a
   // researched `closed` room owns the ceremony gate and its sealed-record copy.
-  const gated = room?.phase === 'closed' && !gateDismissed
+  //
+  // And only the legacy pack owns the curtain itself: it is the Dance mark over
+  // "The Night of the Dance", and it opens /ceremony.html, an offline artifact
+  // published for that pack alone (see the settled-record link below). Any other
+  // room goes straight to its standings rather than through another show's door.
+  const gated = room?.phase === 'closed'
+    && isLegacyShowPack(room?.show_pack_id)
+    && !gateDismissed
 
   const bingo = useMemo(() => {
     const card = scores.bingoCards.find((row) => row.player_id === player?.id) ?? null
@@ -171,6 +178,7 @@ export default function Results() {
         scores.confidencePicks,
         timeline,
         room?.game_model ?? 'legacy_ensemble',
+        isLegacyShowPack(room?.show_pack_id),
       ),
     [
       scores.leaderboard,

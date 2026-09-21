@@ -36,7 +36,7 @@ import { ArrowLeft, ArrowRight, Check, Tv } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoom } from '../hooks/useRoom'
-import { useShowIdentity } from '../hooks/useShowIdentity'
+import { useShowIdentity, useShowIdentityForPack } from '../hooks/useShowIdentity'
 import { resolvePlayerReclaim } from '../lib/player-reclaim'
 import { normalizeJoinLinkCode, parseJoinLinkCode } from '../lib/join-link'
 import AvatarPicker from '../components/AvatarPicker'
@@ -61,6 +61,10 @@ type Screen =
     view: 'join-form'
     code: string
     phase: RoomPhase
+    // The room's pack, read in the same lookup that fetched the phase. The
+    // avatar set is the room's decision, not the visitor's: a legacy room keeps
+    // offering its sigils however this phone arrived at it.
+    showPackId: string | null
     existingPlayers: Array<Pick<PlayerRow, 'id' | 'name' | 'avatar_id'>>
   }
   // A restored session and a join link that disagree. The session redirect is
@@ -108,6 +112,14 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // The avatar set belongs to the room being joined, not to the featured show:
+  // the join form has a pack id in hand, so it asks the same cached resolver
+  // every other surface asks. The create form has no room yet and uses the
+  // featured answer above.
+  const { identity: joinIdentity } = useShowIdentityForPack(
+    screen.view === 'join-form' ? screen.showPackId : null,
+  )
 
   // ── The join deep link ─────────────────────────────────────────────────────
   //
@@ -209,7 +221,7 @@ export default function Home() {
       // because it discarded the error and fell through to the null check.
       const { data: roomData, error: lookupError } = await supabase
         .from('rooms')
-        .select('id, phase')
+        .select('id, phase, show_pack_id')
         .eq('code', code)
         .maybeSingle()
 
@@ -233,6 +245,7 @@ export default function Home() {
         view: 'join-form',
         code,
         phase: roomData.phase,
+        showPackId: roomData.show_pack_id ?? null,
         existingPlayers: existingPlayers ?? [],
       })
     } catch (e) {
@@ -652,6 +665,7 @@ export default function Home() {
                     onSelect={setSelectedAvatar}
                     selectedId={selectedAvatar}
                     takenIds={[]}
+                    isLegacy={isLegacy}
                   />
                 </div>
 
@@ -833,6 +847,7 @@ export default function Home() {
                     <AvatarPicker
                       onSelect={setSelectedAvatar}
                       selectedId={selectedAvatar}
+                      isLegacy={joinIdentity.isLegacy}
                       takenIds={screen.existingPlayers.map((player) => player.avatar_id)}
                       takenBy={Object.fromEntries(
                         screen.existingPlayers.map((player) => [player.avatar_id, player.name]),

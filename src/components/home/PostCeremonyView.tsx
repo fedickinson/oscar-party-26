@@ -235,11 +235,15 @@ export default function PostCeremonyView({
 
       {/* ── 1. Header ──────────────────────────────────────────────────────── */}
       <div className="text-center relative z-10">
+        {/* --t-accent is a dark madder; at 55% on the stone wall the show
+            credit was unreadable in every theme and for every pack. The dim
+            text token is this page's own eyebrow color and clears the wall. */}
         <motion.p
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
-          className="text-[10px] text-accent/55 uppercase tracking-[0.28em] mb-2"
+          className="text-[10px] uppercase tracking-[0.28em] mb-2"
+          style={{ color: 'var(--t-text-dim)' }}
         >
           {showIdentityLine(identity, ' · ')}
         </motion.p>
@@ -707,6 +711,7 @@ export default function PostCeremonyView({
           isCopied={isCopied}
           roomCode={roomCode}
           runtimeVoices={runtimeVoices}
+          isLegacy={identity.isLegacy}
         />
       </div>
 
@@ -727,6 +732,7 @@ export default function PostCeremonyView({
           draftData={draftData}
           leaderboard={leaderboard}
           players={players}
+          isLegacy={identity.isLegacy}
         />
       </div>
 

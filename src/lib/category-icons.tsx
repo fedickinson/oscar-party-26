@@ -1,86 +1,114 @@
 /**
- * category-icons.tsx — maps Oscar category names to thematic SVG icons.
+ * category-icons.tsx — renders the icon a category asks for.
  *
  * Usage:
  *   <CategoryIcon categoryName={category.name} size={16} className="text-white/50" />
  *
- * Pattern-matched on lowercased name so it works regardless of exact DB wording.
- * Falls back to a generic Film icon for unknown categories.
+ * The decision lives in `category-icon-map.ts`, which is pure and tested; this
+ * file is the key → component table and the identity read. The original map is
+ * keyed on Academy Award wording and falls back to a film strip, which is the
+ * right answer for exactly one pack; every other pack resolves through the
+ * music map, whose fallback is a plain award.
+ *
+ * The component reads `useShowIdentity` so the many call sites — several of
+ * which are not ours to edit — need no new prop. A surface that already holds
+ * an identity (the public recap resolves the record's show, not the viewer's)
+ * passes `isLegacy` explicitly and skips the read.
  */
 
 import type { ComponentType } from 'react'
 import {
   Aperture,
+  AudioLines,
+  Award,
   BookOpen,
-  Swords,
+  Clapperboard,
+  Disc,
+  Disc3,
+  Drum,
   Film,
+  Footprints,
+  Guitar,
   Globe,
+  Headphones,
   Mic,
   Music,
+  Music2,
+  Music3,
+  Music4,
   Palette,
   PenLine,
   Scissors,
   Shirt,
   Sparkles,
+  Star,
+  Sun,
+  Swords,
+  Trophy,
   User,
+  Users,
   Video,
   Volume2,
   Wand2,
 } from 'lucide-react'
 import { OscarTrophy } from '../components/ui/Icons'
+import { useShowIdentity } from '../hooks/useShowIdentity'
+import { categoryIconKey, type CategoryIconKey } from './category-icon-map'
 
 interface CategoryIconProps {
   categoryName: string
   size?: number
   className?: string
+  /** Overrides the room read. Pass it where the identity is already in hand. */
+  isLegacy?: boolean
 }
 
 // lucide-react icons accept size + className directly
 type LucideIconType = ComponentType<{ size?: number; className?: string }>
 
-function resolveIcon(name: string): LucideIconType {
-  const n = name.toLowerCase()
-
-  if (n.includes('picture')) return OscarTrophy as LucideIconType
-  if (n.includes('director')) return Swords
-
-  // Acting — check supporting before lead
-  if (n.includes('supporting') && (n.includes('actress') || n.includes('actor'))) return User
-  if (n.includes('actress') || n.includes('actor')) return User
-
-  // Screenplay — adapted before original to avoid substring collision
-  if (n.includes('adapted')) return BookOpen
-  if (n.includes('screenplay')) return PenLine
-
-  // Animated — feature before short
-  if (n.includes('animated') && n.includes('feature')) return Wand2
-  if (n.includes('animated') && n.includes('short')) return Sparkles
-  if (n.includes('animated')) return Wand2
-
-  // Documentary
-  if (n.includes('documentary')) return Video
-
-  // International
-  if (n.includes('international')) return Globe
-
-  // Technical craft
-  if (n.includes('editing')) return Scissors
-  if (n.includes('cinematography')) return Aperture
-  if (n.includes('score')) return Music
-  if (n.includes('song')) return Mic
-  if (n.includes('production design')) return Palette
-  if (n.includes('costume')) return Shirt
-  if (n.includes('makeup') || n.includes('hairstyling')) return Sparkles
-  if (n.includes('sound')) return Volume2
-  if (n.includes('visual effects')) return Wand2
-
-  // Short films — live action fallback
-  if (n.includes('short')) return Swords
-
-  return Film
+const ICONS: Record<CategoryIconKey, LucideIconType> = {
+  'oscar-trophy': OscarTrophy as LucideIconType,
+  swords: Swords,
+  user: User,
+  'book-open': BookOpen,
+  'pen-line': PenLine,
+  wand: Wand2,
+  sparkles: Sparkles,
+  video: Video,
+  globe: Globe,
+  scissors: Scissors,
+  aperture: Aperture,
+  music: Music,
+  mic: Mic,
+  palette: Palette,
+  shirt: Shirt,
+  volume: Volume2,
+  film: Film,
+  trophy: Trophy,
+  star: Star,
+  sun: Sun,
+  disc3: Disc3,
+  users: Users,
+  clapperboard: Clapperboard,
+  footprints: Footprints,
+  'audio-lines': AudioLines,
+  headphones: Headphones,
+  drum: Drum,
+  guitar: Guitar,
+  music4: Music4,
+  disc: Disc,
+  music2: Music2,
+  music3: Music3,
+  award: Award,
 }
 
-export function CategoryIcon({ categoryName, size = 16, className = '' }: CategoryIconProps) {
-  const Icon = resolveIcon(categoryName)
+export function CategoryIcon({
+  categoryName,
+  size = 16,
+  className = '',
+  isLegacy,
+}: CategoryIconProps) {
+  const { identity } = useShowIdentity()
+  const Icon = ICONS[categoryIconKey(categoryName, isLegacy ?? identity.isLegacy)]
   return <Icon size={size} className={className} />
 }

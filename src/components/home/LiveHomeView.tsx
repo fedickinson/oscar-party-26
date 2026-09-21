@@ -236,7 +236,7 @@ function NextUpCard({
   showStarted,
   openSpotlight,
 }: Omit<Props, 'leaderboard'>) {
-  const { player } = useGame()
+  const { player, room } = useGame()
   const currentPlayerId = player?.id ?? ''
   const [showModal, setShowModal] = useState(false)
 
@@ -356,7 +356,9 @@ function NextUpCard({
 
           {myDraftHere.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">My ensemble pick</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">
+                {isLegacyShowPack(room?.show_pack_id) ? 'My ensemble pick' : 'My draft pick'}
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 {myDraftHere.map((e) => (
                   <span

@@ -28,6 +28,7 @@ import { useRoomSnapshot } from '../hooks/useRoomSnapshot'
 import { computeLeaderboard } from '../lib/scoring'
 import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { computeNightAwards } from '../lib/night-awards'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { computeScoreTimeline } from '../lib/timeline-utils'
 import { buildPlayerRecap, requiredImageSlugs } from '../lib/player-recap'
 import { collectPlayerDraftPortraitPaths } from '../lib/draft-portrait'
@@ -153,6 +154,7 @@ export default function PlayerRecap() {
       snapshot.confidencePicks,
       timeline,
       snapshot.gameModel,
+      isLegacyShowPack(snapshot.showPackId),
     )
     const avatar = AVATAR_CONFIGS.find((a) => a.id === player.avatar_id)
 

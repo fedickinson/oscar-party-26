@@ -17,7 +17,7 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronUp } from 'lucide-react'
+import { BadgeCheck, ChevronUp } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
 import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
@@ -161,7 +161,11 @@ function RosterSection({
                 />
                 {entity.type === 'film' && (
                   <span className="mt-0.5 flex-shrink-0 text-[var(--t-personal-text)]" aria-label={showIdentity.isLegacy ? 'Claimed dragon' : 'Claimed'}>
-                    <Hallmark id="hallmark-claim" size={14} />
+                    {/* The claim hallmark is a mantled dragon; a non-legacy
+                        room gets a neutral claimed mark at the same 14px. */}
+                    {showIdentity.isLegacy
+                      ? <Hallmark id="hallmark-claim" size={14} />
+                      : <BadgeCheck size={14} strokeWidth={1.8} aria-hidden />}
                   </span>
                 )}
                 <div className="min-w-0">

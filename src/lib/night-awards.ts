@@ -140,7 +140,10 @@ export function tallyEntityPoints(
 
 // ─── Character awards ─────────────────────────────────────────────────────────
 
-function computeCharacterAwards(tallies: Map<string, EntityTally>): CharacterAward[] {
+function computeCharacterAwards(
+  tallies: Map<string, EntityTally>,
+  isLegacy: boolean,
+): CharacterAward[] {
   const all = [...tallies.values()]
   const drafted = all.filter((t) => t.ownerId != null)
   const awards: CharacterAward[] = []
@@ -153,7 +156,7 @@ function computeCharacterAwards(tallies: Map<string, EntityTally>): CharacterAwa
   if (top && top.points > 0) {
     awards.push({
       kind: 'character_of_the_night',
-      label: 'Character of the Night',
+      label: isLegacy ? 'Character of the Night' : 'Pick of the Night',
       entityName: top.entity.name,
       ownerName: top.ownerName,
       points: top.points,
@@ -294,6 +297,18 @@ interface TitleCandidate {
   strength: (p: PlayerProfile) => number
   blurb: (p: PlayerProfile) => string
   stat: (p: PlayerProfile) => string
+  /**
+   * The non-legacy wording. Several of these honours are named in House of the
+   * Dragon's own vocabulary — Valyrian steel, dragonback, the Watch, the Dance
+   * — which reads as another show's copy on a card about an awards broadcast.
+   * Only the entries that need it carry an override; the rest are already plain
+   * English and are shared, so the legacy cards stay byte-identical either way.
+   */
+  neutral?: {
+    title?: string
+    blurb?: (p: PlayerProfile) => string
+    stat?: (p: PlayerProfile) => string
+  }
 }
 
 /**
@@ -310,6 +325,7 @@ const TITLE_POOL: TitleCandidate[] = [
   {
     id: 'valyrian_nerve',
     title: 'Nerves of Valyrian Steel',
+    neutral: { title: 'Nerves of Steel' },
     strength: (p) => (p.topStakeHit ? p.topStake * 4 : 0),
     blurb: (p) =>
       `Put their biggest number of the night on ${p.topStakeCategory ?? 'the line'} and watched it come in.`,
@@ -342,6 +358,11 @@ const TITLE_POOL: TitleCandidate[] = [
     strength: (p) => p.dragonPoints * 1.4,
     blurb: () => 'Took a dragon and let it do the work.',
     stat: (p) => `${p.dragonPoints} pts on dragonback`,
+    neutral: {
+      title: 'Headliner',
+      blurb: () => 'Took the headline pick and let it do the work.',
+      stat: (p) => `${p.dragonPoints} pts from the headline pick`,
+    },
   },
   {
     id: 'one_shot',
@@ -349,6 +370,7 @@ const TITLE_POOL: TitleCandidate[] = [
     strength: (p) => p.bestSingleSwing * 2,
     blurb: () => 'One moment did more for them than the rest of the night combined.',
     stat: (p) => `${p.bestSingleSwing} pts from a single beat`,
+    neutral: { stat: (p) => `${p.bestSingleSwing} pts from a single moment` },
   },
   {
     id: 'cold_reader',
@@ -373,6 +395,20 @@ const FALLBACK_TITLE: Omit<TitleCandidate, 'strength'> = {
   title: 'Kept the Watch',
   blurb: () => 'Sat through the whole Dance and lived to argue about it.',
   stat: (p) => `${p.entry.totalScore} pts on the night`,
+  neutral: {
+    title: 'Stayed for All of It',
+    blurb: () => 'Sat through the whole show and lived to argue about it.',
+  },
+}
+
+/** One card's words, in the wording the room's pack is entitled to. */
+function wording(candidate: Omit<TitleCandidate, 'strength'>, p: PlayerProfile, isLegacy: boolean) {
+  const n = isLegacy ? undefined : candidate.neutral
+  return {
+    title: n?.title ?? candidate.title,
+    blurb: (n?.blurb ?? candidate.blurb)(p),
+    stat: (n?.stat ?? candidate.stat)(p),
+  }
 }
 
 /**
@@ -383,7 +419,7 @@ const FALLBACK_TITLE: Omit<TitleCandidate, 'strength'> = {
  * title leave the pool. This beats per-player argmax, which happily hands the
  * same title to three people and then needs a tiebreak anyway.
  */
-function assignPlayerTitles(profiles: PlayerProfile[]): PlayerAward[] {
+function assignPlayerTitles(profiles: PlayerProfile[], isLegacy: boolean): PlayerAward[] {
   const pairs: Array<{ profile: PlayerProfile; candidate: TitleCandidate; strength: number }> = []
   for (const profile of profiles) {
     for (const candidate of TITLE_POOL) {
@@ -405,9 +441,7 @@ function assignPlayerTitles(profiles: PlayerProfile[]): PlayerAward[] {
     awards.set(pid, {
       playerId: pid,
       playerName: profile.entry.player.name,
-      title: candidate.title,
-      blurb: candidate.blurb(profile),
-      stat: candidate.stat(profile),
+      ...wording(candidate, profile, isLegacy),
     })
   }
 
@@ -418,9 +452,7 @@ function assignPlayerTitles(profiles: PlayerProfile[]): PlayerAward[] {
     awards.set(pid, {
       playerId: pid,
       playerName: profile.entry.player.name,
-      title: FALLBACK_TITLE.title,
-      blurb: FALLBACK_TITLE.blurb(profile),
-      stat: FALLBACK_TITLE.stat(profile),
+      ...wording(FALLBACK_TITLE, profile, isLegacy),
     })
   }
 
@@ -440,6 +472,12 @@ export function computeNightAwards(
   confidencePicks: ConfidencePickRow[],
   timeline: TimelinePoint[],
   gameModel: GameModel = 'legacy_ensemble',
+  /**
+   * The room's pack. Only the legacy pack keeps the honours named in its own
+   * canon; every other room gets the plain-English wording. Defaults to the
+   * legacy answer so an un-threaded caller renders exactly what it always did.
+   */
+  isLegacy = true,
 ): NightAwards {
   const attributedTallies = tallyEntityPoints(categories, nominees, draftEntities, draftPicks, players)
   const tallies = gameModel === 'legacy_ensemble'
@@ -457,7 +495,9 @@ export function computeNightAwards(
     timeline,
   )
   return {
-    playerAwards: assignPlayerTitles(profiles),
-    characterAwards: gameModel === 'legacy_ensemble' ? computeCharacterAwards(tallies) : [],
+    playerAwards: assignPlayerTitles(profiles, isLegacy),
+    characterAwards: gameModel === 'legacy_ensemble'
+      ? computeCharacterAwards(tallies, isLegacy)
+      : [],
   }
 }

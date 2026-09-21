@@ -24,6 +24,7 @@ import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useRoomSnapshot } from '../hooks/useRoomSnapshot'
 import { useShowIdentityForPack } from '../hooks/useShowIdentity'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { computeLeaderboard } from '../lib/scoring'
 import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { computeNightAwards } from '../lib/night-awards'
@@ -96,6 +97,7 @@ export default function PublicResults() {
             snapshot.confidencePicks,
             timeline,
             snapshot.gameModel,
+            isLegacyShowPack(snapshot.showPackId),
           )
         : { playerAwards: [], characterAwards: [] },
     [snapshot, leaderboard, timeline],

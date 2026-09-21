@@ -28,9 +28,11 @@
 
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
-import { Smile, Frown, AlertCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Zap } from 'lucide-react'
+import { getNeutralAvatarById } from '../data/avatar-config'
 import { getAvatarById } from '../lib/avatar-utils'
 import type { AvatarEmotion } from '../lib/avatar-utils'
+import AvatarMark from './ui/AvatarMark'
 
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl'
 
@@ -67,6 +69,9 @@ export default function Avatar({
   className,
 }: Props) {
   const config = getAvatarById(avatarId)
+  // A neutral mark is drawn, not fetched. An id from neither set still falls
+  // through to the initials gradient below, so an unknown key never blanks out.
+  const mark = getNeutralAvatarById(avatarId)
   const px = SIZES[size]
   const controls = useAnimationControls()
   const prevEmotion = useRef<AvatarEmotion>(emotion)
@@ -110,7 +115,9 @@ export default function Avatar({
           overflow: 'hidden',
         }}
       >
-        {config?.imageUrl ? (
+        {mark ? (
+          <AvatarMark avatar={mark} size={px} className="absolute inset-0" />
+        ) : config?.imageUrl ? (
           /* Photo — fills the circle, cropped from top (faces) */
           <img
             src={config.imageUrl}
@@ -160,14 +167,18 @@ export default function Avatar({
             className="absolute bottom-0 right-0 bg-black/65 rounded-full flex items-center justify-center"
             style={{ width: iconPx + 4, height: iconPx + 4 }}
           >
+            {/* The badge marks score movement (and, in the results leader card
+                and the ready-up grid, a standing). A smiling face read as an
+                emoji and was painted in green and red, which the state palette
+                forbids; these are the same three states in token color. */}
             {emotion === 'happy' && (
-              <Smile size={iconPx} className="text-emerald-400" />
+              <TrendingUp size={iconPx} style={{ color: 'var(--t-positive)' }} />
             )}
             {emotion === 'sad' && (
-              <Frown size={iconPx} className="text-blue-400" />
+              <TrendingDown size={iconPx} style={{ color: 'var(--t-negative)' }} />
             )}
             {emotion === 'shocked' && (
-              <AlertCircle size={iconPx} className="text-yellow-400" />
+              <Zap size={iconPx} style={{ color: 'var(--t-pending)' }} />
             )}
           </div>
         )}

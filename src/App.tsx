@@ -30,6 +30,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HallmarkDefs } from './components/ui/Hallmarks'
 import { allegianceForPlayer } from './lib/allegiance'
+import { useShowIdentity } from './hooks/useShowIdentity'
 import { WifiOff } from 'lucide-react'
 import { GameProvider, useGame } from './context/GameContext'
 import { OperatorAuthorityProvider } from './context/OperatorAuthorityContext'
@@ -99,14 +100,24 @@ function ReconnectBanner() {
 function AppInner() {
   const location = useLocation()
   const { player } = useGame()
+  const { identity } = useShowIdentity()
 
   // The --t-personal-* token layer (active tab, own leaderboard row, chat
   // edge, primary actions) resolves through this attribute. An explicit
   // TeamPicker declaration (players.team, defection included) wins; your
   // house's historical side is the default — see src/lib/allegiance.ts.
+  //
+  // Only the legacy pack has claimants. Every other room removes the attribute
+  // and falls back to the :root defaults, which are the platform's own base
+  // theme — no green wall, no red wall, nothing declared on a player's behalf.
+  const isLegacyIdentity = identity.isLegacy
   useEffect(() => {
-    document.documentElement.dataset.allegiance = allegianceForPlayer(player)
-  }, [player?.team, player?.avatar_id])
+    if (isLegacyIdentity) {
+      document.documentElement.dataset.allegiance = allegianceForPlayer(player)
+    } else {
+      delete document.documentElement.dataset.allegiance
+    }
+  }, [isLegacyIdentity, player?.team, player?.avatar_id])
 
   return (
     <>

@@ -15,7 +15,7 @@
 
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Check, Crown, Quote, Share2, Skull, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, Check, Crown, Quote, Share2, Skull, Stamp, TrendingUp } from 'lucide-react'
 import Avatar from '../Avatar'
 import CompanionAvatar from '../ui/CompanionAvatar'
 import { getCompanionById } from '../../data/ai-companions'
@@ -38,6 +38,12 @@ interface Props {
   /** Room code. Present only where the per-player keepsake is linkable. */
   roomCode?: string
   runtimeVoices?: RuntimeNarrativeVoice[]
+  /**
+   * The record's show, not the viewer's — the public recap resolves the room it
+   * is showing. Only the legacy pack keeps the house seals and the two Westerosi
+   * section headings; everything else gets a neutral seal and plain headings.
+   */
+  isLegacy: boolean
 }
 
 const CHARACTER_AWARD_ICONS = {
@@ -82,6 +88,7 @@ export default function TheReckoning({
   isCopied,
   roomCode,
   runtimeVoices = [],
+  isLegacy,
 }: Props) {
   if (playerAwards.length === 0) return null
 
@@ -91,7 +98,7 @@ export default function TheReckoning({
   return (
     <div className="mb-8">
       <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-[var(--t-text-dim)]">
-        The Reckoning
+        {isLegacy ? 'The Reckoning' : 'Player by player'}
       </p>
 
       {/* ── Player cards ──────────────────────────────────────────────────── */}
@@ -103,7 +110,7 @@ export default function TheReckoning({
             ? runtimeVoices.find((voice) => voice.id === verdict.companion_id)
             : undefined
           const isMe = currentPlayerId === award.playerId
-          const deviceId = houseDeviceId(avatarFor(award.playerId))
+          const deviceId = isLegacy ? houseDeviceId(avatarFor(award.playerId)) : null
 
           return (
             <motion.div
@@ -215,7 +222,7 @@ export default function TheReckoning({
                 </motion.div>
               )}
 
-              {deviceId && (
+              {deviceId ? (
                 <span
                   className="wax-seal relief-seal mt-4"
                   aria-label={`${award.playerName}'s house seal`}
@@ -224,7 +231,14 @@ export default function TheReckoning({
                     <use href={`#${deviceId}`} />
                   </svg>
                 </span>
-              )}
+              ) : !isLegacy ? (
+                /* The seal is the card's finish, not the heraldry — a neutral
+                   stamp keeps the parchment closed without a house on it. A
+                   legacy card with no matching device still renders none. */
+                <span className="wax-seal relief-seal mt-4" aria-label="Sealed">
+                  <Stamp aria-hidden strokeWidth={1.1} />
+                </span>
+              ) : null}
             </motion.div>
           )
         })}
@@ -234,7 +248,7 @@ export default function TheReckoning({
       {characterAwards.length > 0 && (
         <div className="mt-6">
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-[var(--t-text-dim)]">
-            The Roll of Honour
+            {isLegacy ? 'The Roll of Honour' : 'Standouts of the night'}
           </p>
           <div className="space-y-2">
             {characterAwards.map((award, i) => {
