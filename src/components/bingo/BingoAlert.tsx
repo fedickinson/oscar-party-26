@@ -12,8 +12,9 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy } from 'lucide-react'
+import { Sparkles, Trophy } from 'lucide-react'
 import { Hallmark } from '../ui/Hallmarks'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 import confetti from 'canvas-confetti'
 import type { BingoSquareRow } from '../../types/database'
 import type { CelebrationData } from '../../hooks/useBingo'
@@ -33,6 +34,8 @@ export default function BingoAlert({
   playerColor,
   onDismiss,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
+
   // Fire confetti on mount, auto-dismiss after 3s
   useEffect(() => {
     // Two-burst confetti from bottom corners
@@ -94,7 +97,11 @@ export default function BingoAlert({
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 16 }}
         >
-          <Hallmark id="hallmark-horn" size={56} />
+          {/* The horn is a Westerosi device; every other room gets a neutral
+              celebration mark at the same 56px. */}
+          {showIdentity.isLegacy
+            ? <Hallmark id="hallmark-horn" size={56} />
+            : <Sparkles size={56} strokeWidth={1.2} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
         </motion.div>
 
         {/* BINGO! headline */}

@@ -10,7 +10,6 @@
  */
 
 import type React from 'react'
-import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from '../../context/GameContext'
 
@@ -26,33 +25,6 @@ import type {
   NomineeRow,
 } from '../../types/database'
 import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
-
-/**
- * How long entry lasts before the column is left to the viewer.
- *
- * Long enough to outlast the chat ledger's 5s post-subscribe reconciliation
- * (`CHAT_REALTIME_STABILIZATION_MS` in useChat): that re-fetch publishes a new
- * transcript, the chat re-anchors, and without this the column jumped to 65px
- * six seconds after a silent arrival. Any real gesture ends it immediately, so
- * the only thing this window holds off is a programmatic scroll.
- */
-const ENTRY_SETTLE_MS = 7000
-
-/** Any of these means a person is driving the column now, not a layout effect. */
-const VIEWER_INPUT_EVENTS = ['pointerdown', 'touchstart', 'wheel', 'keydown'] as const
-
-/** The tab's own scroll column: the first scroller on the way down, not the chat list inside it. */
-function findOuterScroller(root: HTMLElement): HTMLElement | null {
-  const queue: Element[] = [...root.children]
-  while (queue.length > 0) {
-    const element = queue.shift()!
-    if (!(element instanceof HTMLElement)) continue
-    const overflowY = getComputedStyle(element).overflowY
-    if (overflowY === 'auto' || overflowY === 'scroll') return element
-    queue.push(...element.children)
-  }
-  return null
-}
 
 interface Props {
   categories: CategoryRow[]
@@ -153,58 +125,9 @@ export default function HomeTab({
   // Spotlight gets a dramatic reveal; normal tab switches are subtle fades
   const isSpotlight = !!spotlightContent
 
-  // ── Reset-on-entry ────────────────────────────────────────────────────────
-  //
-  // The Home tab was arriving about 65px down its own column, slicing the
-  // pre-show heading in half. Nothing on this screen asks for that: the chat
-  // panel anchors itself to its newest line with `scrollIntoView`, and that
-  // walks every scrollable ancestor, including this tab's column. It fires
-  // again on each chat hydration pass, so a single reset at mount does not
-  // hold. The mobile grammar's rule is that scroll position resets on entry,
-  // and entry is the settle after mount, not one frame of it.
-  //
-  // So the column is pinned to the top for the entry window and released the
-  // moment the viewer touches the screen — this never fights a real gesture,
-  // and it stops on its own. Only the outermost scroller inside this tab is
-  // touched; the chat's own list is nested below it and keeps the position it
-  // chose. The lasting fix belongs where the anchor is, in the chat panel,
-  // which should scroll its own list rather than every ancestor it has.
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const root = contentRef.current
-    if (!root) return
-
-    const column = findOuterScroller(root)
-    if (!column) return
-
-    let released = false
-    const release = () => {
-      if (released) return
-      released = true
-      window.clearTimeout(timer)
-      column.removeEventListener('scroll', pinToTop)
-      for (const event of VIEWER_INPUT_EVENTS) root.removeEventListener(event, release)
-    }
-    function pinToTop() {
-      if (released) return
-      if (column!.scrollTop !== 0) column!.scrollTop = 0
-    }
-
-    const timer = window.setTimeout(release, ENTRY_SETTLE_MS)
-    column.addEventListener('scroll', pinToTop)
-    for (const event of VIEWER_INPUT_EVENTS) {
-      root.addEventListener(event, release, { passive: true })
-    }
-    pinToTop()
-
-    return release
-  }, [viewKey])
-
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        ref={contentRef}
         key={viewKey}
         initial={isSpotlight ? { opacity: 0, y: 28, scale: 0.97 } : { opacity: 0 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

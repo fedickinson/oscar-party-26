@@ -22,7 +22,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { Hash } from 'lucide-react'
+import { Hash, Stamp } from 'lucide-react'
 import type { NomineeRow } from '../../types/database'
 import type { CategoryWithNominees } from '../../types/game'
 import type { LocalPick } from '../../hooks/useConfidence'
@@ -36,6 +36,8 @@ interface Props {
   onSelectNominee: (nomineeId: string) => void
   onOpenPicker: () => void
   index: number
+  /** Legacy rooms keep the authored wax signet; every other pack gets a neutral mark. */
+  isLegacy: boolean
 }
 
 const TIER_STYLES: Record<
@@ -79,6 +81,7 @@ export default function CategoryPickCard({
   onSelectNominee,
   onOpenPicker,
   index,
+  isLegacy,
 }: Props) {
   const style = tierStyle(category.tier)
   const isPickComplete = pick.nominee_id != null && pick.confidence != null
@@ -122,7 +125,12 @@ export default function CategoryPickCard({
             {pick.confidence != null ? (
               <>
                 {pick.confidence === 24 && (
-                  <Hallmark id="hallmark-signet" size={16} className="flex-shrink-0" />
+                  // The signet is a wax seal with a house device; a non-legacy
+                  // room gets a neutral stamp at the same 16px, inheriting the
+                  // badge's token color.
+                  isLegacy
+                    ? <Hallmark id="hallmark-signet" size={16} className="flex-shrink-0" />
+                    : <Stamp size={16} strokeWidth={1.8} aria-hidden className="flex-shrink-0" />
                 )}
                 <span className="font-display text-sm font-bold leading-none tabular-nums">
                   {pick.confidence}

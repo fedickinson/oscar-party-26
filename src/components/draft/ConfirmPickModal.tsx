@@ -19,6 +19,7 @@
  */
 
 import { motion } from 'framer-motion'
+import { BadgeCheck } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
 import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
@@ -175,7 +176,11 @@ export default function ConfirmPickModal({
             }}
           >
             <span className="flex items-center justify-center gap-2">
-              <Hallmark id="hallmark-claim" size={18} className="flex-shrink-0" />
+              {/* The claim hallmark is a mantled dragon; a non-legacy room gets
+                  a neutral claimed mark at the same 18px, as in MyRoster. */}
+              {showIdentity.isLegacy
+                ? <Hallmark id="hallmark-claim" size={18} className="flex-shrink-0" />
+                : <BadgeCheck size={18} strokeWidth={1.8} aria-hidden className="flex-shrink-0" />}
               {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
             </span>
           </button>

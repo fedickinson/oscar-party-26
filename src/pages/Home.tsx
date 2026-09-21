@@ -814,7 +814,9 @@ export default function Home() {
                       <p className="mt-1 text-sm text-[var(--t-text-muted)]">
                         {reclaimedAvatar
                           ? `House ${reclaimedAvatar.name} is still yours. No new sigil needed.`
-                          : 'Your original sigil and every game choice are still attached.'}
+                          : joinIdentity.isLegacy
+                            ? 'Your original sigil and every game choice are still attached.'
+                            : 'Your original avatar and every game choice are still attached.'}
                       </p>
                     </div>
                   </div>

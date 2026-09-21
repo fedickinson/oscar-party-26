@@ -2,8 +2,11 @@
  * SpotlightNomineeCard — shows each nominee and the current player's stake.
  *
  * Right side badges (current player only):
- *   Prestige · [n]  — they confidence-picked this nominee (n = their value)
- *   Ensemble        — they drafted this entity
+ *   Prestige · [n] / Pick · [n]  — they confidence-picked this nominee (n = their value)
+ *   Ensemble / Draft             — they drafted this entity
+ *
+ * The first word of each is show copy: the legacy pack keeps its authored
+ * "Prestige"/"Ensemble", every other pack gets the platform's own wording.
  *
  * States: normal (tappable by host) | selected (gold outline, pre-confirm) | winner (gold) | loser (faded)
  */
@@ -11,6 +14,7 @@
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { FilmIcon } from '../../lib/film-icons'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 import type { NomineeRow } from '../../types/database'
 
 export interface PlayerPickInfo {
@@ -45,6 +49,7 @@ export default function SpotlightNomineeCard({
   state,
   disabled = false,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const isNormal = state === 'normal'
   const isSelected = state === 'selected'
   const isWinner = state === 'winner'
@@ -110,12 +115,12 @@ export default function SpotlightNomineeCard({
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {myConfidence != null && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 border border-accent/30 text-accent whitespace-nowrap">
-              Prestige · {myConfidence}
+              {showIdentity.isLegacy ? 'Prestige' : 'Pick'} · {myConfidence}
             </span>
           )}
           {myDraftPick && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-400/30 text-violet-300 whitespace-nowrap">
-              Ensemble
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--t-surface)] border border-[var(--t-line)] text-[var(--t-text-muted)] whitespace-nowrap">
+              {showIdentity.isLegacy ? 'Ensemble' : 'Draft'}
             </span>
           )}
         </div>

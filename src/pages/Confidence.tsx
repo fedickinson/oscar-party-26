@@ -328,6 +328,7 @@ export default function Confidence() {
                         onSelectNominee={(nomineeId) => assignNominee(category.id, nomineeId)}
                         onOpenPicker={() => setPickerCategoryId(category.id)}
                         index={i}
+                        isLegacy={showIdentity.isLegacy}
                       />
                     ))}
                   </div>
@@ -417,6 +418,7 @@ export default function Confidence() {
             maxConfidence={confidenceRange}
             onAssign={(confidence) => assignConfidence(pickerCategory.id, confidence)}
             onClose={() => setPickerCategoryId(null)}
+            isLegacy={showIdentity.isLegacy}
           />
         )}
       </AnimatePresence>

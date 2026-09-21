@@ -10,7 +10,8 @@
  */
 
 import { motion } from 'framer-motion'
-import { BarChart3, Grid3X3, House, Swords, User } from 'lucide-react'
+import { BarChart3, Grid3X3, House, ListChecks, Swords, User } from 'lucide-react'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 export const TABS = [
   { id: 0, label: 'Home',     Icon: House      },
@@ -32,9 +33,15 @@ interface Props {
 }
 
 export default function TabBar({ activeTab, onSelect, badges, isHost = true }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
+
   // The Events tab is the declare console, open to every player — anyone who
   // sees a beat happen can call it (honor system, same as bingo; undo exists).
-  const tabs = TABS.filter(() => true)
+  // Its crossed swords are a Westerosi device, so every other pack gets a
+  // neutral list mark at the same size.
+  const tabs = TABS.map((tab) =>
+    tab.id === 3 && !showIdentity.isLegacy ? { ...tab, Icon: ListChecks } : tab,
+  )
   return (
     <div
       className="flex-shrink-0 relief-glass"
