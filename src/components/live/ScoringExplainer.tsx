@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Grid3x3, Swords, Target, Trophy, Users } from 'lucide-react'
 import type { GameModel } from '../../types/database'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 interface ScoringSection {
   icon: ReactNode
@@ -67,9 +68,64 @@ const CONVICTION_SECTIONS: ScoringSection[] = [
   },
 ]
 
+/**
+ * Results Night on any pack but the legacy one.
+ *
+ * The legacy list above is a beats game: activation, collision beats, odds
+ * pricing. A Results Night pack room runs none of it — its beats are inert and
+ * unscored — so patching that list one sentence at a time left a player reading
+ * the rules of a game they are not playing. This is the game they are playing,
+ * and every number here is the one `src/lib/scoring.ts` and
+ * `src/lib/bingo-utils.ts` actually apply.
+ */
+const PACK_ENSEMBLE_SECTIONS: ScoringSection[] = [
+  {
+    icon: <Target size={14} className="flex-shrink-0 text-[var(--t-personal-text)]" />,
+    label: 'Confidence Picks',
+    description: 'Rank every category. A call that lands pays the number you put on it.',
+    detail: 'Before the show locks you spend each number from 1 up to the number of categories exactly once. A category you called right pays that number; a category you called wrong pays nothing. Where the big numbers go is the whole decision.',
+  },
+  {
+    icon: <Users size={14} className="flex-shrink-0 text-[var(--t-accent-light)]" />,
+    label: 'Draft',
+    description: 'Whoever drafted the winner takes that category\'s points.',
+    detail: 'Each category carries its own point value, and it goes to the player holding the winner. A winner drafted as a person pays one and a half times that value, rounded. There is nothing to activate and nothing to spend — holding them is the bet.',
+  },
+  {
+    icon: <Grid3x3 size={14} className="flex-shrink-0 text-[var(--t-text-muted)]" />,
+    label: 'Bingo',
+    description: 'Every marked square scores. Rarer squares score more.',
+    detail: 'A square pays 1, 2, 3 or 5 points depending on how likely it was. Your first line pays 15, your second 10, every line after that 5, and a full card 25. Marking is on your honor — tap a marked square to undo it.',
+  },
+  {
+    icon: <Trophy size={14} className="flex-shrink-0 text-[var(--t-personal-text)]" />,
+    label: 'Total Score',
+    description: 'Picks + Draft + Bingo, one leaderboard.',
+    detail: 'Level totals break on confidence score first, then how many calls you got right, then the biggest number you landed. Bingo is dealt rather than decided, so it never breaks a tie.',
+  },
+]
+
+/**
+ * The conviction detail above names the legacy pack's own pools. Only that pack
+ * drafts a dragon, so every other pack gets the same rule stated in pool-neutral
+ * terms rather than a sentence about content it does not have.
+ */
+const PACK_DETAIL_OVERRIDES: Record<string, string> = {
+  'Conviction': 'A true beat pays its authored pot. One believer receives the full amount; a crowd splits it equally, with any indivisible remainder left unawarded. What you drafted is identity, not passive score.',
+}
+
 export default function ScoringExplainer({ gameModel = 'legacy_ensemble' }: { gameModel?: GameModel }) {
   const [isOpen, setIsOpen] = useState(false)
-  const sections = gameModel === 'conviction_portfolio' ? CONVICTION_SECTIONS : SECTIONS
+  const { identity: showIdentity } = useShowIdentity()
+  const baseSections = gameModel === 'conviction_portfolio'
+    ? CONVICTION_SECTIONS
+    : showIdentity.isLegacy ? SECTIONS : PACK_ENSEMBLE_SECTIONS
+  const sections = showIdentity.isLegacy
+    ? baseSections
+    : baseSections.map((section) => {
+      const override = PACK_DETAIL_OVERRIDES[section.label]
+      return override ? { ...section, detail: override } : section
+    })
 
   return (
     <div className="relief-glass overflow-hidden">

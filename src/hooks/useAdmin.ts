@@ -12,10 +12,14 @@
  *   setTieWinner(categoryId, nomineeId1, nomineeId2) stores both winner_id and
  *   tie_winner_id. Confidence picks matching EITHER nominee earn full points.
  *
- * UNDO WINDOW:
- *   30 seconds from the setWinner call. Tracked as a timestamp per category.
- *   undoWinner() calls a compare-and-delete command; the same trigger resets
- *   confidence outcomes to null in that transaction.
+ * UNDO:
+ *   Any provisionally declared category may be undone while the room is live,
+ *   whether it was declared from this tab, from the spotlight, or from another
+ *   phone. undoWinner() calls the same compare-and-delete command the database
+ *   already gates on host, capability, provisional phase and an exact winner
+ *   match; the trigger resets confidence outcomes to null in that transaction.
+ *   winnerSetAt survives only as the freshness hint the legacy Oscars room
+ *   showed as a countdown — it never decides whether undo is offered.
  *
  * Bingo is a separate self-serve, player-owned command path; this hook never
  * adjudicates marks.
@@ -32,8 +36,10 @@ import type { CategoryRow, NomineeRow, RoomWinnerRow } from '../types/database'
 
 export interface AdminState {
   categories: CategoryWithNominees[]
-  /** categoryId -> unix ms when winner was set. Used to compute undo eligibility. */
+  /** categoryId -> unix ms when THIS tab declared. A freshness hint, not a gate. */
   winnerSetAt: Record<number, number>
+  /** Canonical room phase, so callers derive undo eligibility from rows. */
+  roomPhase: string | null
   isLoading: boolean
   syncError: string | null
   retrySync: () => void
@@ -336,10 +342,13 @@ export function useAdmin(
       throw new Error('The winner slate must finish synchronizing before a result can be undone.')
     }
 
-    const setAt = winnerSetAt[categoryId]
-    if (!setAt || Date.now() - setAt > 30_000) return
+    if (room?.phase !== 'live') {
+      throw new Error('A declaration can only be undone while the room is live.')
+    }
     const current = categories.find((category) => category.id === categoryId)
-    if (!current?.winner_id) return
+    if (!current?.winner_id) {
+      throw new Error('That category has no declared winner to undo.')
+    }
 
     settingRef.current = true
     try {
@@ -366,6 +375,7 @@ export function useAdmin(
   return {
     categories,
     winnerSetAt,
+    roomPhase: room?.phase ?? null,
     isLoading,
     syncError,
     retrySync,

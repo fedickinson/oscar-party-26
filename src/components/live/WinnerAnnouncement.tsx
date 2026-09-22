@@ -15,9 +15,10 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User } from 'lucide-react'
+import { Medal, User } from 'lucide-react'
 import confetti from 'canvas-confetti'
-import { FilmIcon } from '../../lib/film-icons'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { FilmIcon } from '../ui/FilmIcon'
 import { Hallmark } from '../ui/Hallmarks'
 
 const DISMISS_MS = 8000
@@ -60,6 +61,8 @@ interface Props {
 export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
   const { categoryName, winnerName, winnerFilm, tieWinnerName, tieWinnerFilm, confidenceResult, allConfidenceResults, draftResult } = announcement
   const isTie = tieWinnerName != null
+  const { identity } = useShowIdentity()
+  const isLegacy = identity.isLegacy
 
   const scored =
     confidenceResult?.isCorrect ||
@@ -144,7 +147,11 @@ export default function WinnerAnnouncement({ announcement, onDismiss }: Props) {
             transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
             className="wax-seal relief-seal"
           >
-            <Hallmark id="hallmark-iron-throne" size={62} />
+            {/* The seal on the proclamation. The Iron Throne is Westerosi, so
+                every other room gets a neutral medal at the same 62px. */}
+            {isLegacy
+              ? <Hallmark id="hallmark-iron-throne" size={62} />
+              : <Medal size={62} strokeWidth={1.2} aria-hidden />}
           </motion.div>
 
           <motion.p

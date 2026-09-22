@@ -23,6 +23,8 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useRoomSnapshot } from '../hooks/useRoomSnapshot'
+import { useShowIdentityForPack } from '../hooks/useShowIdentity'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { computeLeaderboard } from '../lib/scoring'
 import { computePlayerBingoScores } from '../lib/bingo-utils'
 import { computeNightAwards } from '../lib/night-awards'
@@ -38,6 +40,11 @@ import PostCeremonyView from '../components/home/PostCeremonyView'
 export default function PublicResults() {
   const { code } = useParams<{ code: string }>()
   const { snapshot, notFound, recordError } = useRoomSnapshot(code)
+
+  // The show named on this page is the record's, not the viewer's. A stranger
+  // has no session at all, and a player who does have one is almost certainly
+  // in a different room than the recap they were sent.
+  const { identity: showIdentity } = useShowIdentityForPack(snapshot?.showPackId ?? null)
 
   const leaderboard = useMemo(() => {
     if (!snapshot) return []
@@ -90,6 +97,7 @@ export default function PublicResults() {
             snapshot.confidencePicks,
             timeline,
             snapshot.gameModel,
+            isLegacyShowPack(snapshot.showPackId),
           )
         : { playerAwards: [], characterAwards: [] },
     [snapshot, leaderboard, timeline],
@@ -145,6 +153,7 @@ export default function PublicResults() {
       finalStretchNarrative={describeFinalStretch(timeline, snapshot.players)}
       confidenceData={breakdowns.confidence}
       draftData={breakdowns.draft}
+      showIdentity={showIdentity}
       gameModel={snapshot.gameModel}
       playerAwards={awards.playerAwards}
       characterAwards={awards.characterAwards}

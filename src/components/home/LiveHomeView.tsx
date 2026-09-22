@@ -14,10 +14,11 @@ import { useGame } from '../../context/GameContext'
 import { supabase } from '../../lib/supabase'
 import ChatSection from './ChatSection'
 import NomineeDetailSheet from './NomineeDetailSheet'
-import { CategoryIcon } from '../../lib/category-icons'
-import { FilmIcon } from '../../lib/film-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
+import { FilmIcon } from '../ui/FilmIcon'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
+import { isLegacyShowPack } from '../../lib/show-identity'
 
 interface Props {
   categories: CategoryRow[]
@@ -43,8 +44,14 @@ interface CategoryInfoModalProps {
 }
 
 function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlayerId, onClose }: CategoryInfoModalProps) {
+  const { room } = useGame()
   const [nomineeIds, setNomineeIds] = useState<string[] | null>(null)
   const [selectedNominee, setSelectedNominee] = useState<NomineeRow | null>(null)
+
+  // The nominee detail sheet renders the legacy film encyclopedia
+  // (src/data/film-encyclopedia). No other pack has entries there, so outside a
+  // legacy room the row carries its own information and is not tappable.
+  const hasEncyclopedia = isLegacyShowPack(room?.show_pack_id)
 
   // Fetch the category→nominee mapping on mount
   useEffect(() => {
@@ -134,8 +141,10 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
             return (
               <motion.button
                 key={nominee.id}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setSelectedNominee(nominee)}
+                type="button"
+                disabled={!hasEncyclopedia}
+                whileTap={hasEncyclopedia ? { scale: 0.97 } : undefined}
+                onClick={() => { if (hasEncyclopedia) setSelectedNominee(nominee) }}
                 className={[
                   'w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-colors',
                   isMyPick
@@ -186,9 +195,11 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
                   {count > 0 && (
                     <p className="text-[11px] text-white/30">{count} {count === 1 ? 'pick' : 'picks'}</p>
                   )}
-                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-white/55">
-                    Info
-                  </span>
+                  {hasEncyclopedia && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-white/55">
+                      Info
+                    </span>
+                  )}
                 </div>
               </motion.button>
             )
@@ -201,7 +212,7 @@ function CategoryInfoModal({ category, allNominees, confidencePicks, currentPlay
 
       {/* Nominee detail sheet — slides over this modal */}
       <AnimatePresence>
-        {selectedNominee && (
+        {hasEncyclopedia && selectedNominee && (
           <NomineeDetailSheet
             nominee={selectedNominee}
             categoryName={category.name}
@@ -225,7 +236,7 @@ function NextUpCard({
   showStarted,
   openSpotlight,
 }: Omit<Props, 'leaderboard'>) {
-  const { player } = useGame()
+  const { player, room } = useGame()
   const currentPlayerId = player?.id ?? ''
   const [showModal, setShowModal] = useState(false)
 
@@ -345,7 +356,9 @@ function NextUpCard({
 
           {myDraftHere.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">My ensemble pick</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1">
+                {isLegacyShowPack(room?.show_pack_id) ? 'My ensemble pick' : 'My draft pick'}
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 {myDraftHere.map((e) => (
                   <span
@@ -494,7 +507,10 @@ export default function LiveHomeView({
             openSpotlight={openSpotlight}
           />
         )}
-        {finished && (
+        {/* The offline ceremony is a legacy artifact that was hand-built for the
+            legacy pack. It is not published for any other pack, so the link is
+            not offered in a room that would land on a 404. */}
+        {finished && isLegacyShowPack(room?.show_pack_id) && (
           <a
             href="/ceremony.html"
             className="flex items-center gap-3 rounded-2xl border border-oscar-gold/40 bg-white/5 backdrop-blur-lg px-4 py-3 shadow-lg"

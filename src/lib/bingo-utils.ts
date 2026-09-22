@@ -28,6 +28,18 @@ import type {
 
 export const FREE_CENTER_INDEX = 12
 
+/**
+ * How many squares a player can actually mark: the 5x5 grid minus the free
+ * centre. Every progress denominator reads this, because the card header said
+ * "0/24 marked" while the peer row beside it said "0/25" for the same card.
+ */
+export const MARKABLE_SQUARE_COUNT = 24
+
+/** True for a mark that counts toward a progress denominator. */
+export function isMarkableSquareIndex(index: number): boolean {
+  return index !== FREE_CENTER_INDEX
+}
+
 export const BINGO_LINES: readonly number[][] = [
   // 5 rows
   [0, 1, 2, 3, 4],
@@ -546,11 +558,62 @@ const TILE_HYPHENATION: Record<string, string> = {
   wounded: 'Wound­ed',
 }
 
+/**
+ * The authored list only covers the words one pack happened to ship. Any pack
+ * can bring a long word — "Performance", "Categories", "Statement" — and the
+ * `break-words` backstop broke those wherever the line ran out, which is how a
+ * tile came to read "Categorie / s" and "Statemen / t". A one-letter fragment
+ * is not a hyphenation, it is a typo.
+ *
+ * So a word with no authored break point gets soft hyphens at every position
+ * that leaves a real fragment on both sides. The browser takes the last one
+ * that fits, which is the longest legal first fragment, and `break-words` never
+ * has to engage. A soft hyphen costs nothing when the word fits — it is only
+ * visible at a line end — so the threshold is set where the shortest word that
+ * has ever needed to break sits: "Memorial", eight letters, which `break-words`
+ * cut into "Memoria / l" on a 45px tile line at 11px. Six letters always fit.
+ * Three is the shortest fragment that still reads as a piece of a word.
+ */
+const TILE_MIN_FRAGMENT = 3
+const TILE_MAX_UNBROKEN = 6
+
+const SOFT_HYPHEN = '­'
+
+/** True for the characters that make up a breakable run inside a word. */
+function isTileLetter(char: string): boolean {
+  return /\p{L}/u.test(char)
+}
+
+/** Soft-hyphenates one maximal run of letters, leaving shorter runs alone. */
+export function softHyphenateRun(run: string): string {
+  if (run.length <= TILE_MAX_UNBROKEN) return run
+  if (run.length < TILE_MIN_FRAGMENT * 2) return run
+  const out: string[] = []
+  for (let i = 0; i < run.length; i++) {
+    if (i >= TILE_MIN_FRAGMENT && run.length - i >= TILE_MIN_FRAGMENT) out.push(SOFT_HYPHEN)
+    out.push(run[i])
+  }
+  return out.join('')
+}
+
 /** Inserts soft hyphens so long titles break at a syllable instead of mid-letter. */
 export function hyphenateForTile(text: string): string {
   return text
     .split(' ')
-    .map((word) => TILE_HYPHENATION[word.toLowerCase()] ?? word)
+    .map((word) => {
+      const authored = TILE_HYPHENATION[word.toLowerCase()]
+      if (authored) return authored
+      // Punctuation — a real hyphen, an apostrophe — is already a break
+      // opportunity, so each run of letters is considered on its own.
+      let out = ''
+      let run = ''
+      for (const char of word) {
+        if (isTileLetter(char)) { run += char; continue }
+        out += softHyphenateRun(run) + char
+        run = ''
+      }
+      return out + softHyphenateRun(run)
+    })
     .join(' ')
 }
 

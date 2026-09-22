@@ -253,6 +253,8 @@ describe('settlement drop compiler', () => {
     expect(html).toContain('border-style:dashed')
     expect(html).toContain('class="ember-canvas" data-embers')
     expect(html).toContain('.weight-betrayal h2{font-size:clamp(')
+    expect(html).toContain('.muster-row{padding:12px}.bingo-cell{font-size:10px}}')
+    expect(html).toContain('.bingo-cell span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;')
     expect(html).toContain('@keyframes theaterDim')
     expect(html).toContain('function startEmbers')
     expect(html).toContain('data-quote-count="2"')

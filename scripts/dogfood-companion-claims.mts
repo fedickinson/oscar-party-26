@@ -3,7 +3,9 @@
  *
  * One disposable room exercises concurrent claim arbitration, atomic message
  * completion, completed-work refusal, stale takeover and explicit release.
- * The private claim rows cascade away with the room.
+ * The private claim rows cascade away with the room. The room binds the shared
+ * Results Night proof catalog, which the local stack retains between runs,
+ * because the spotlight reactions under proof follow real ceremony commands.
  *
  *   npx tsx scripts/dogfood-companion-claims.mts
  */
@@ -36,6 +38,7 @@ import {
 } from '../src/lib/companion-prompts.ts'
 import { groundedCompanionBatch } from '../api/_grounding.ts'
 import { supabaseConfig } from './lib/env.mts'
+import { bindResultsNightDogfoodPack } from './lib/results-night-dogfood-pack.mts'
 
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 if (target !== 'local') throw new Error('companion claim dogfood is local-only')
@@ -70,6 +73,7 @@ type DeliveryResult = {
 
 let roomId: string | null = null
 let operatorCapability: string | null = null
+let welcomeHostPlayerId: string | null = null
 let checks = 0
 const engineByInstance = new Map<string, 'browser' | 'daemon'>()
 
@@ -174,6 +178,36 @@ async function schedule(
   return result
 }
 
+type SpotlightRow = {
+  active_spotlight_category_id: number | null
+  spotlight_revision: number
+  spotlight_opened_at: string | null
+}
+
+async function openSpotlight(categoryId: number, expectedRevision: number): Promise<SpotlightRow> {
+  const { data, error } = await browser.rpc('open_scheduled_spotlight_authorized', {
+    p_room_id: roomId,
+    p_category_id: categoryId,
+    p_expected_revision: expectedRevision,
+    p_actor_player_id: welcomeHostPlayerId,
+    p_operator_capability: operatorCapability,
+  })
+  if (error) throw error
+  return data as SpotlightRow
+}
+
+async function closeSpotlight(categoryId: number, expectedRevision: number): Promise<SpotlightRow> {
+  const { data, error } = await browser.rpc('close_scheduled_spotlight_authorized', {
+    p_room_id: roomId,
+    p_expected_category_id: categoryId,
+    p_expected_revision: expectedRevision,
+    p_actor_player_id: welcomeHostPlayerId,
+    p_operator_capability: operatorCapability,
+  })
+  if (error) throw error
+  return data as SpotlightRow
+}
+
 async function deliver(client: SupabaseClient): Promise<DeliveryResult> {
   const { data, error } = await client.rpc('deliver_due_companion_reactions', {
     p_room_id: roomId,
@@ -193,10 +227,21 @@ try {
     p_color: 'slate',
   })
   if (roomError) throw roomError
-  const room = created.room
+  const createdRoom = created.room
   const welcomePlayer = created.player
-  roomId = room.id
+  roomId = createdRoom.id
   operatorCapability = String(created.operator_capability)
+  welcomeHostPlayerId = String(welcomePlayer.id)
+  // Spotlight ceremonies belong to the scheduled runtime, so this fixture binds
+  // a Results Night pack in the lobby and lets the room contract select it.
+  bindResultsNightDogfoodPack(String(createdRoom.code))
+  const { data: room, error: boundRoomError } = await service.from('rooms')
+    .select('id,code,show_pack_id,game_model,spotlight_revision,spotlight_opened_at')
+    .eq('id', roomId)
+    .single()
+  if (boundRoomError) throw boundRoomError
+  check(room.game_model === 'legacy_ensemble',
+    'the bound Results Night contract selects the scheduled spotlight runtime')
   const { error: liveError } = await service.from('rooms')
     .update({ phase: 'live' }).eq('id', roomId)
   if (liveError) throw liveError
@@ -205,39 +250,28 @@ try {
     .from('categories')
     .select('id,name,tier,points,display_order,winner_id,announced_at')
     .eq('show_pack_id', room.show_pack_id)
+    .is('room_id', null)
     .order('display_order')
     .limit(1)
     .single()
   if (spotlightCategoryError) throw spotlightCategoryError
   const spotlightCategoryRecord = { ...spotlightCategory, tie_winner_id: null }
-  const { data: firstSpotlight, error: firstSpotlightError } = await service
-    .from('rooms')
-    .update({ active_spotlight_category_id: spotlightCategory.id })
-    .eq('id', roomId)
-    .select('active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
-    .single()
-  if (firstSpotlightError) throw firstSpotlightError
-  const { data: closedSpotlight, error: closedSpotlightError } = await service
-    .from('rooms')
-    .update({ active_spotlight_category_id: null })
-    .eq('id', roomId)
-    .select('active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
-    .single()
-  if (closedSpotlightError) throw closedSpotlightError
-  const { data: reopenedSpotlight, error: reopenedSpotlightError } = await service
-    .from('rooms')
-    .update({ active_spotlight_category_id: spotlightCategory.id })
-    .eq('id', roomId)
-    .select('active_spotlight_category_id,spotlight_revision,spotlight_opened_at')
-    .single()
-  if (reopenedSpotlightError) throw reopenedSpotlightError
+  // The phone drives the spotlight through the capability-gated, room-locked,
+  // revision-checked host commands in useSpotlight; so does this proof. A
+  // service-role table write bypasses the transition guard and would receipt
+  // nothing.
+  const firstSpotlight = await openSpotlight(spotlightCategory.id, 0)
+  const closedSpotlight = await closeSpotlight(spotlightCategory.id, 1)
+  const reopenedSpotlight = await openSpotlight(spotlightCategory.id, 1)
   check((room.spotlight_revision ?? 0) === 0 && room.spotlight_opened_at == null &&
+      firstSpotlight.active_spotlight_category_id === spotlightCategory.id &&
       firstSpotlight.spotlight_revision === 1 && firstSpotlight.spotlight_opened_at != null &&
+      closedSpotlight.active_spotlight_category_id === null &&
       closedSpotlight.spotlight_revision === 1 &&
       closedSpotlight.spotlight_opened_at === firstSpotlight.spotlight_opened_at &&
       reopenedSpotlight.spotlight_revision === 2 && reopenedSpotlight.spotlight_opened_at != null &&
       reopenedSpotlight.spotlight_opened_at > firstSpotlight.spotlight_opened_at,
-    'the database revisions every non-null spotlight opening while a close preserves its receipt')
+    'the spotlight command revisions every opening while a close preserves its receipt')
   const spotlightTamper = await browser.from('rooms')
     .update({ spotlight_revision: 99 })
     .eq('id', roomId)

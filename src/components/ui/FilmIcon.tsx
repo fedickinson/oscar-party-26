@@ -1,11 +1,18 @@
 /**
- * film-icons.tsx — maps houses, faction groups and dragons to heraldic icons.
+ * FilmIcon.tsx — maps houses, faction groups and dragons to heraldic icons.
  *
  * Usage:
  *   <FilmIcon filmName="The Blacks" size={16} className="text-accent" />
  *
  * Pattern-matched on lowercased title. Falls back to a neutral heraldic shield
  * for unknown titles.
+ *
+ * THE HERALDRY IS LEGACY-ONLY
+ * Every device below is either Westerosi or an Academy Awards nominee, and the
+ * fallback shield is heraldry too — which is why “The Fate of Ophelia” rendered
+ * behind a shield. A room bound to any other pack never reaches this chain: it
+ * gets one small, neutral music glyph in front of a title, so no substring can
+ * accidentally hand an artist a dragon. The legacy chain is untouched.
  *
  * Films covered (98th Academy Awards nominees):
  *   Sinners · One Battle After Another · Marty Supreme · Hamnet
@@ -15,12 +22,17 @@
 
 import React from 'react'
 import type { ReactNode } from 'react'
+import { Music } from 'lucide-react'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { titleIconKey, type TitleIconKey } from '../../lib/title-icon-map'
 
 
 interface FilmIconProps {
   filmName: string
   size?: number
   className?: string
+  /** Overrides the room read. Pass it where the identity is already in hand. */
+  isLegacy?: boolean
 }
 
 // ─── Shared SVG wrapper ────────────────────────────────────────────────────────
@@ -297,62 +309,58 @@ function DragonHead({ size, className }: { size?: number; className?: string }) 
   )
 }
 
-const DRAGON_NAMES = new Set([
-  'caraxes', 'vermithor', 'vhagar', 'tessarion', 'sunfyre', 'seasmoke',
-  'silverwing', 'dreamfyre', 'sheepstealer', 'moondancer', 'syrax',
-])
-
 // ─── Resolver ──────────────────────────────────────────────────────────────────
 
-function resolveFilmIcon(name: string): FilmIconComponent {
-  const n = name.toLowerCase().trim()
+/** The neutral title mark: small, quiet, and not from anybody's show. */
+function NeutralTitleMark({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return <Music size={size} className={className} />
+}
 
-  // Dragons by name
-  if (DRAGON_NAMES.has(n)) return DragonHead
-
-  // Houses and faction groups (nominees.film_name)
-  if (n === 'the blacks') return deviceIcon('targaryen')
-  if (n === 'the greens') return GreenCrown
-  if (n.includes('hightower')) return deviceIcon('hightower')
-  if (n.includes('velaryon')) return deviceIcon('velaryon')
-  if (n === 'harrenhal') return MeltedTower
-  if (n.includes('dragonseed')) return DragonEgg
-  if (n.includes('north') || n.includes('riverland')) return deviceIcon('stark')
-  if (n.includes('stark')) return deviceIcon('stark')
-  if (n.includes('lannister')) return deviceIcon('lannister')
-  if (n.includes('baratheon')) return deviceIcon('baratheon')
-  if (n.includes('blackwood')) return deviceIcon('blackwood')
-  if (n.includes('targaryen')) return deviceIcon('targaryen')
-
-  if (n.includes('sinners')) return Guitar
-  if (n.includes('one battle')) return ShieldBattle
-  if (n.includes('marty')) return PingPong
-  if (n.includes('hamnet')) return Quill
-  if (n.includes('frankenstein')) return MonsterHead
-  if (n.includes('sentimental')) return FrameHeart
-  if (n.includes('bugonia')) return Saucer
-  if (n === 'f1' || n.startsWith('f1 ')) return SteeringWheel
-  if (n.includes('train dream')) return Locomotive
-  if (n.includes('secret agent')) return SpyGlass
-  if (n.includes('kpop') || n.includes('k-pop') || n.includes('demon hunter')) return DemonMic
+const ICONS: Record<TitleIconKey, FilmIconComponent> = {
+  neutral: NeutralTitleMark,
+  'dragon-head': DragonHead,
+  'green-crown': GreenCrown,
+  'melted-tower': MeltedTower,
+  'dragon-egg': DragonEgg,
+  'device-targaryen': deviceIcon('targaryen'),
+  'device-hightower': deviceIcon('hightower'),
+  'device-velaryon': deviceIcon('velaryon'),
+  'device-stark': deviceIcon('stark'),
+  'device-lannister': deviceIcon('lannister'),
+  'device-baratheon': deviceIcon('baratheon'),
+  'device-blackwood': deviceIcon('blackwood'),
+  guitar: Guitar,
+  'shield-battle': ShieldBattle,
+  'ping-pong': PingPong,
+  quill: Quill,
+  'monster-head': MonsterHead,
+  'frame-heart': FrameHeart,
+  saucer: Saucer,
+  'steering-wheel': SteeringWheel,
+  locomotive: Locomotive,
+  'spy-glass': SpyGlass,
+  'demon-mic': DemonMic,
 
   // Neutral heraldic shield — event-agnostic fallback for unknown entities.
   // (A clapperboard next to a dragon was the loudest leftover of the Oscars skin.)
-  return ({ size, className }) => (
-    <Svg size={size} className={className}>
-      <path
-        d="M12 3l7 2.5V11c0 4.4-2.9 7.7-7 9.5-4.1-1.8-7-5.1-7-9.5V5.5L12 3z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path d="M12 3v17.5" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-    </Svg>
-  )
+  'heraldic-shield': function HeraldicShield({ size, className }) {
+    return (
+      <Svg size={size} className={className}>
+        <path
+          d="M12 3l7 2.5V11c0 4.4-2.9 7.7-7 9.5-4.1-1.8-7-5.1-7-9.5V5.5L12 3z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path d="M12 3v17.5" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+      </Svg>
+    )
+  },
 }
 
-export function FilmIcon({ filmName, size = 16, className = '' }: FilmIconProps) {
-  const Icon = resolveFilmIcon(filmName)
+export function FilmIcon({ filmName, size = 16, className = '', isLegacy }: FilmIconProps) {
+  const { identity } = useShowIdentity()
+  const Icon = ICONS[titleIconKey(filmName, isLegacy ?? identity.isLegacy)]
   return <Icon size={size} className={className} />
 }

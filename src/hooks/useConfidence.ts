@@ -2,11 +2,14 @@
  * useConfidence — all state and actions for the confidence picks phase.
  *
  * FLOW:
- *   1. Fetches all 24 categories + their nominees (via nested select)
- *   2. Player taps nominees and assigns confidence numbers 1–24
+ *   1. Fetches the room pack's predictable categories + their nominees
+ *   2. Player taps nominees and assigns confidence numbers 1..N, where N is the
+ *      number of categories in play (getConfidenceRange)
  *   3. Each confidence number is used exactly once (implicit swap on conflict)
- *   4. submitPicks() batch-inserts 24 rows at once
- *   5. Host calls lockPicks() to auto-fill any stragglers and push phase → 'live'
+ *   4. submitPicks() batch-inserts one row per category at once
+ *   5. Host calls lockPicks() to auto-fill any stragglers, then opens live
+ *      through open_room_live_authorized — the capability-gated phase command,
+ *      never a direct rooms.phase write and never a local navigate()
  *
  * LOCAL vs SUBMITTED:
  *   localPicks = pre-submit working state (component state only)
@@ -22,9 +25,17 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
+import { requireShowPackId } from '../lib/catalog-scope'
+import { isLegacyShowPack } from '../lib/show-identity'
 import { filterPrestigeCategories, getConfidenceRange } from '../lib/mode-utils'
+import { fetchAllRows } from './fetch-all-rows'
 import type { CategoryWithNominees } from '../types/game'
-import type { ConfidencePickRow, ConfidencePickInsert } from '../types/database'
+import type {
+  CategoryRow,
+  ConfidencePickRow,
+  ConfidencePickInsert,
+  NomineeRow,
+} from '../types/database'
 
 export interface LocalPick {
   nominee_id: string | null
@@ -91,26 +102,36 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
     setCategoriesError(null)
 
     async function fetchCategories() {
-      const { data, error } = await supabase
+      // The room's own pack binding is required rather than assumed: an absent
+      // one would otherwise be sent to PostgREST as a literal filter value.
+      const showPackId = requireShowPackId(room!)
+
+      // Exhaust the query the way every sibling catalog reader does. One
+      // PostgREST page is not the slate; order by (display_order, id) so the
+      // paging is deterministic and the sheet keeps its authored order.
+      type CategoryWithJoin = CategoryRow & {
+        category_nominees: Array<{ nominees: NomineeRow | null }>
+      }
+      const { data, error } = await fetchAllRows<CategoryWithJoin>((from, to) => supabase
         .from('categories')
-        .select(`
-          *,
-          category_nominees (
-            nominees (*)
-          )
-        `)
-        .eq('show_pack_id', room!.show_pack_id)
+        .select('*, category_nominees(nominees(*))')
+        .eq('show_pack_id', showPackId)
         .order('display_order')
+        .order('id')
+        .range(from, to))
       if (error) throw error
       if (cancelled) return
 
       // Flatten nested join result into CategoryWithNominees shape
-      const hydrated: CategoryWithNominees[] = ((data ?? []) as any[]).map((cat) => ({
-        ...cat,
-        nominees: (cat.category_nominees as any[])
-          .map((cn: any) => cn.nominees)
-          .filter(Boolean),
-      }))
+      const hydrated: CategoryWithNominees[] = (data ?? []).map((cat) => {
+        const { category_nominees: categoryNominees, ...row } = cat
+        return {
+          ...row,
+          nominees: categoryNominees
+            .map((link) => link.nominees)
+            .filter((nominee): nominee is NomineeRow => nominee != null),
+        }
+      })
       const prestigeMode = room?.prestige_mode ?? 'full'
 
       // Only events with a real slate belong on the prediction sheet.
@@ -121,7 +142,12 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
       // Keep the slate-shape check as a second safety boundary: a prediction
       // must still offer an actual choice rather than one pre-resolved entity.
       const predictable = hydrated.filter((cat) => cat.nominees.length >= 2)
-      const filtered = filterPrestigeCategories(predictable as any, prestigeMode) as CategoryWithNominees[]
+      // The prestige subsets are hardcoded legacy category ids (1..24). On any
+      // other pack they match nothing, so a non-full mode would silently hand
+      // the player an empty sheet. Only the pack those ids belong to is filtered.
+      const filtered = isLegacyShowPack(showPackId)
+        ? filterPrestigeCategories(predictable, prestigeMode) as CategoryWithNominees[]
+        : predictable
       setCategories(filtered)
 
       // Pre-allocate empty local pick slots for each category
@@ -175,10 +201,12 @@ export function useConfidence(roomId: string | undefined): ConfidenceState {
       try {
         while (!disposed && run === hydrationRun) {
           const revisionAtStart = liveRevision
-          const { data, error } = await supabase
+          const { data, error } = await fetchAllRows<ConfidencePickRow>((from, to) => supabase
             .from('confidence_picks')
             .select()
             .eq('room_id', roomId)
+            .order('id')
+            .range(from, to))
           if (error) throw error
           if (disposed || run !== hydrationRun) return
           if (liveRevision !== revisionAtStart) continue

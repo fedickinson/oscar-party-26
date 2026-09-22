@@ -25,6 +25,8 @@ import TheReckoning from './TheReckoning'
 import type { BingoMarkRow, BingoSquareRow, GameModel, PlayerRow, PlayerVerdictRow } from '../../types/database'
 import type { PlayerAward, CharacterAward } from '../../lib/night-awards'
 import type { ScoredPlayer } from '../../lib/scoring'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { showIdentityLine, type ShowIdentity } from '../../lib/show-identity'
 import type { TimelinePoint, TurningPoint as TurningPointType, HeadToHead } from '../../lib/timeline-utils'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
@@ -56,6 +58,12 @@ interface Props {
   onSharePlayerCard?: (playerId: string) => void
   /** Enables per-player keepsake links inside The Reckoning. */
   roomCode?: string
+  /**
+   * The show this record belongs to. The session-free recap route resolves it
+   * from the room it loaded by code; without it the view falls back to the
+   * viewer's own session, which is only the same show on the in-room path.
+   */
+  showIdentity?: ShowIdentity
   gameModel?: GameModel
   runtimeVoices?: RuntimeNarrativeVoice[]
 }
@@ -88,9 +96,12 @@ export default function PostCeremonyView({
   currentPlayerId,
   onSharePlayerCard,
   roomCode,
+  showIdentity,
   gameModel = 'legacy_ensemble',
   runtimeVoices,
 }: Props) {
+  const { identity: sessionIdentity } = useShowIdentity()
+  const identity = showIdentity ?? sessionIdentity
   const settled = recordSource === 'settled'
   const confettiFired = useRef(false)
   const [bingoExpanded, setBingoExpanded] = useState(false)
@@ -224,13 +235,17 @@ export default function PostCeremonyView({
 
       {/* ── 1. Header ──────────────────────────────────────────────────────── */}
       <div className="text-center relative z-10">
+        {/* --t-accent is a dark madder; at 55% on the stone wall the show
+            credit was unreadable in every theme and for every pack. The dim
+            text token is this page's own eyebrow color and clears the wall. */}
         <motion.p
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
-          className="text-[10px] text-accent/55 uppercase tracking-[0.28em] mb-2"
+          className="text-[10px] uppercase tracking-[0.28em] mb-2"
+          style={{ color: 'var(--t-text-dim)' }}
         >
-          House of the Dragon · Season 3 Finale
+          {showIdentityLine(identity, ' · ')}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: -6 }}
@@ -696,6 +711,7 @@ export default function PostCeremonyView({
           isCopied={isCopied}
           roomCode={roomCode}
           runtimeVoices={runtimeVoices}
+          isLegacy={identity.isLegacy}
         />
       </div>
 
@@ -716,6 +732,7 @@ export default function PostCeremonyView({
           draftData={draftData}
           leaderboard={leaderboard}
           players={players}
+          isLegacy={identity.isLegacy}
         />
       </div>
 

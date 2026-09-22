@@ -10,7 +10,7 @@
 
 import { AVATAR_CONFIGS } from '../data/avatars'
 import type { AvatarConfig } from '../data/avatars'
-import { PLAYER_AVATARS } from '../data/avatar-config'
+import { PLAYER_AVATARS, getNeutralAvatarById } from '../data/avatar-config'
 
 export type AvatarEmotion = 'happy' | 'sad' | 'shocked' | 'neutral'
 
@@ -20,6 +20,22 @@ export interface GameEvent {
 }
 
 export function getAvatarById(id: string): AvatarConfig | undefined {
+  // Neutral marks first: their keys are prefixed and cannot collide, and the
+  // check is a string prefix rather than a scan. Colors are token references,
+  // not literals — every consumer here renders them through CSS.
+  const mark = getNeutralAvatarById(id)
+  if (mark) {
+    return {
+      id: mark.id,
+      characterName: mark.name,
+      actorName: '',
+      filmName: '',
+      initials: mark.name.slice(0, 2).toUpperCase(),
+      colorPrimary: `var(${mark.deviceToken})`,
+      colorSecondary: `var(${mark.fieldToken})`,
+    }
+  }
+
   const legacy = AVATAR_CONFIGS.find((a) => a.id === id)
   if (legacy) return legacy
 

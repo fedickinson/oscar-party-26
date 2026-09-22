@@ -100,7 +100,7 @@
       "title": "The Signal",
       "subtitle": "What was seen before midnight",
       "scene": "keep",
-      "interstitial": { "portrait_asset": "fox" },
+      "interstitial": { "portrait_asset": "owl" },
       "beats": [
         {
           "id": "lantern-lit",
@@ -160,7 +160,7 @@
       "title": "The Bargain",
       "subtitle": "What the closing record changed",
       "scene": "field",
-      "interstitial": { "portrait_asset": "owl" },
+      "interstitial": { "portrait_asset": "fox" },
       "beats": [
         {
           "id": "bargain-broken",

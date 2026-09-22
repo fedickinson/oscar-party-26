@@ -9,8 +9,14 @@ import { useOperatorAuthority } from '../context/OperatorAuthorityContext'
 import { useBeatActivation } from '../hooks/useBeatActivation'
 import type { SignatureBeatRow } from '../types/database'
 
+// `signature_beats.odds` carries the pack's likelihood tier verbatim
+// (`likely`, `toss_up`, `long_shot`, `chaos` — see show-pack activation), plus
+// the legacy authored spellings from the pre-pack beats. Every one of them
+// needs a label here or the raw enum value reaches the screen.
 const ODDS_LABELS: Record<string, string> = {
   likely: 'Likely',
+  toss_up: 'Toss-up',
+  'toss up': 'Toss-up',
   coin_flip: 'Coin flip',
   'coin flip': 'Coin flip',
   long_shot: 'Long shot',

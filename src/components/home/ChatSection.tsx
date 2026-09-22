@@ -23,6 +23,7 @@ import { acquireCompanionTypingChannel } from '../../hooks/companionTypingChanne
 import { useRuntimeNarrativeCast } from '../../hooks/useRuntimeNarrativeCast'
 import type { RuntimeNarrativeVoice } from '../../lib/runtime-narrative'
 import { LEGACY_SHOW_PACK_ID } from '../../lib/catalog-scope'
+import { isLegacyShowPack } from '../../lib/show-identity'
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
 // Supports: \n line breaks, **bold**, *italic*
@@ -185,7 +186,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   const [sendError, setSendError] = useState<string | null>(null)
   const [profileCompanionId, setProfileCompanionId] = useState<string | null>(null)
   const [profilePlayerId, setProfilePlayerId] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const prevMessageCountRef = useRef(0)
   const initialScrollDoneRef = useRef(false)
@@ -232,27 +233,38 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
   // On initial mount or remount (tab switch, spotlight open), jump instantly so we
   // don't animate through the full message history. Only smooth-scroll for messages
   // that arrive after we've already established the initial position.
+  //
+  // This anchors the message list by moving the list's own scrollTop. The
+  // earlier `scrollIntoView` on a bottom sentinel walked every scrollable
+  // ancestor, so each arriving line also dragged the Home tab's column — and
+  // the chat ledger's post-subscribe reconciliation made that happen seconds
+  // after a silent arrival. A container scroll cannot reach past itself.
   useEffect(() => {
-    if (!bottomRef.current) return
+    const container = listRef.current
+    if (!container) return
     const isNewMessage = messages.length > prevMessageCountRef.current
     prevMessageCountRef.current = messages.length
 
     if (!initialScrollDoneRef.current) {
       // First render with messages — jump instantly regardless of count
-      bottomRef.current.scrollIntoView({ behavior: 'instant' })
+      container.scrollTop = container.scrollHeight
       if (messages.length > 0) initialScrollDoneRef.current = true
       return
     }
 
     if (!isNewMessage) {
-      bottomRef.current.scrollIntoView({ behavior: 'instant' })
+      container.scrollTop = container.scrollHeight
       return
     }
 
     const newest = messages[messages.length - 1]
     const isSectionStart =
       newest?.player_id === 'system' || newest?.player_id === 'winner-divider'
-    bottomRef.current.scrollIntoView({ behavior: isSectionStart ? 'instant' : 'smooth' })
+    if (isSectionStart) {
+      container.scrollTop = container.scrollHeight
+    } else {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+    }
   }, [messages])
 
   async function handleSend() {
@@ -293,6 +305,7 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
       {/* Message list */}
       {!collapsed && (
       <div
+        ref={listRef}
         className={['overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-3 flex flex-col gap-2', fill ? 'flex-1 min-h-0' : ''].join(' ')}
         style={fill ? undefined : { maxHeight: '40vh', minHeight: '120px' }}
       >
@@ -337,7 +350,11 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
             }
 
             // ── Film encyclopedia link cards ──────────────────────────────
+            // The encyclopedia is legacy-pack content (src/data/film-encyclopedia).
+            // A room on any other pack has nothing behind the card, so it is not
+            // offered there at all.
             if (msg.player_id === 'film-link') {
+              if (!isLegacyShowPack(room?.show_pack_id)) return null
               return (
                 <motion.div
                   key={msg.id}
@@ -493,8 +510,6 @@ export default function ChatSection({ fill = false, onFilmLinkTap }: Props) {
             />
           ))}
         </AnimatePresence>
-
-        <div ref={bottomRef} />
       </div>
       )}
 

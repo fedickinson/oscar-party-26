@@ -22,6 +22,8 @@ interface Props {
   maxConfidence: number
   onAssign: (confidence: number) => void
   onClose: () => void
+  /** Legacy rooms keep their authored "prestige" wording; every other pack is neutral. */
+  isLegacy: boolean
 }
 
 export default function ConfidenceNumberPicker({
@@ -31,6 +33,7 @@ export default function ConfidenceNumberPicker({
   maxConfidence,
   onAssign,
   onClose,
+  isLegacy,
 }: Props) {
   const currentConfidence = localPicks[category.id]?.confidence ?? null
 
@@ -74,7 +77,7 @@ export default function ConfidenceNumberPicker({
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-white/40 uppercase tracking-widest mb-0.5">
-                Prestige for
+                {isLegacy ? 'Prestige for' : 'Confidence for'}
               </p>
               <p className="text-sm font-semibold text-white leading-tight">
                 {category.name}
@@ -89,7 +92,10 @@ export default function ConfidenceNumberPicker({
           </div>
 
           <p className="text-xs text-white/40 mb-3">
-            Higher numbers = more prestige. Tap a taken number to swap it.
+            {isLegacy
+              ? 'Higher numbers = more prestige.'
+              : 'Higher numbers = more points if you are right.'}
+            {' '}Tap a taken number to swap it.
           </p>
 
           {/* Number grid — cols scale with range (6→6, 12→4, 6→3) */}

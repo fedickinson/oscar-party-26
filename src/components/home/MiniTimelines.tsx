@@ -16,7 +16,7 @@ import {
   Bar,
   Cell,
 } from 'recharts'
-import { Brain, Grid3X3, Swords } from 'lucide-react'
+import { Brain, Grid3X3, ListChecks, Swords } from 'lucide-react'
 import { AVATAR_CONFIGS } from '../../data/avatars'
 import type { GameModel, PlayerRow } from '../../types/database'
 import type { ScoredPlayer } from '../../lib/scoring'
@@ -29,6 +29,8 @@ interface Props {
   leaderboard: ScoredPlayer[]
   players: PlayerRow[]
   gameModel?: GameModel
+  /** Only the legacy pack calls the draft "Ensemble" under crossed swords. */
+  isLegacy?: boolean
 }
 
 function getPlayerColor(_avatarId: string, playerIndex: number): string {
@@ -222,6 +224,7 @@ export default function MiniTimelines({
   leaderboard,
   players,
   gameModel = 'legacy_ensemble',
+  isLegacy = true,
 }: Props) {
   return (
     <div className="space-y-3">
@@ -229,7 +232,14 @@ export default function MiniTimelines({
         Game Breakdown
       </p>
       <MiniLineChart title={gameModel === 'conviction_portfolio' ? 'Conviction' : 'Confidence Picks'} icon={Brain} data={confidenceData} players={players} />
-      {gameModel === 'legacy_ensemble' && <MiniLineChart title="Ensemble" icon={Swords} data={draftData} players={players} />}
+      {gameModel === 'legacy_ensemble' && (
+        <MiniLineChart
+          title={isLegacy ? 'Ensemble' : 'Draft'}
+          icon={isLegacy ? Swords : ListChecks}
+          data={draftData}
+          players={players}
+        />
+      )}
       <BingoBarChart leaderboard={leaderboard} />
     </div>
   )

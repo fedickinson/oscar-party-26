@@ -67,6 +67,27 @@ export interface OperatorRoomObservation {
   runtime_cast_ids: string[]
 }
 
+/**
+ * The room bearer every operator command shares: the explicit environment
+ * value when one is set, otherwise the private mode-0600 token file that
+ * `issue-operator-capability.mts` wrote. Returns null when neither exists so a
+ * read-only command can report an unavailable queue rather than fail; a
+ * command that writes must refuse null itself. Never log the return value.
+ */
+export function readRoomOperatorCapability(code: string): string | null {
+  const environmentValue = process.env.ROOM_OPERATOR_CAPABILITY
+  if (environmentValue !== undefined) {
+    const capability = normalizeOperatorCapability(environmentValue)
+    if (!capability) throw new Error('ROOM_OPERATOR_CAPABILITY is not valid 256-bit hexadecimal text')
+    return capability
+  }
+  const path = resolve('.private', 'operator-capabilities', `${code}.token`)
+  if (!existsSync(path)) return null
+  const capability = normalizeOperatorCapability(readFileSync(path, 'utf8'))
+  if (!capability) throw new Error(`operator capability file is invalid: ${path}`)
+  return capability
+}
+
 export function createOperatorRoomReader(defaultTarget: Target = 'remote') {
   const config = supabaseConfig(defaultTarget)
   const headers = {
@@ -138,20 +159,6 @@ export function createOperatorRoomReader(defaultTarget: Target = 'remote') {
     }
   }
 
-  function roomOperatorCapability(code: string): string | null {
-    const environmentValue = process.env.ROOM_OPERATOR_CAPABILITY
-    if (environmentValue !== undefined) {
-      const capability = normalizeOperatorCapability(environmentValue)
-      if (!capability) throw new Error('ROOM_OPERATOR_CAPABILITY is not valid 256-bit hexadecimal text')
-      return capability
-    }
-    const path = resolve('.private', 'operator-capabilities', `${code}.token`)
-    if (!existsSync(path)) return null
-    const capability = normalizeOperatorCapability(readFileSync(path, 'utf8'))
-    if (!capability) throw new Error(`operator capability file is invalid: ${path}`)
-    return capability
-  }
-
   async function read(requestedCode: string): Promise<OperatorRoomObservation> {
     const code = requestedCode.trim().toUpperCase()
     if (!code) throw new Error('operator room code is required')
@@ -196,7 +203,7 @@ export function createOperatorRoomReader(defaultTarget: Target = 'remote') {
           `bingo_marks?card_id=in.(${cards.map((card) => card.id).join(',')})` +
             '&select=id,card_id&order=marked_at.asc,id.asc',
         )
-    const operatorCapability = roomOperatorCapability(code)
+    const operatorCapability = readRoomOperatorCapability(code)
     const [groundingQueue, witnessQueue] = room.host_id === null
       ? [
           { count: 0, error: 'room has no host identity' },

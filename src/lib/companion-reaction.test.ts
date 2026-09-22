@@ -9,6 +9,7 @@ import {
   buildIdentityChangeReactionKey,
   buildPostShowReactionKey,
   buildVerdictReactionKey,
+  buildWinnerDividerReactionKey,
   buildSpotlightReactionKey,
   buildShowStartedReactionKey,
   buildTeamChangeReactionKey,
@@ -33,6 +34,17 @@ describe('companion reaction identity', () => {
       .toThrow('message id must contain only')
     expect(() => buildCompanionReactionKey('abc-123', 'mention'))
       .toThrow('mention reactions require a companion id')
+  })
+
+  it('keeps the winner divider on its own key, apart from the cast generation', () => {
+    expect(buildWinnerDividerReactionKey(12)).toBe('event:12:winner:divider')
+    // The daemon claims `event:<id>:winner` for a pack room's voices. The
+    // divider must never contend with it, or one owner locks the other out.
+    expect(buildWinnerDividerReactionKey(12)).not.toBe('event:12:winner')
+    expect(() => buildWinnerDividerReactionKey(0))
+      .toThrow('positive integer category id')
+    expect(() => buildWinnerDividerReactionKey(1.5))
+      .toThrow('positive integer category id')
   })
 
   it('gives each bingo mark one stable announcement and reaction identity', () => {

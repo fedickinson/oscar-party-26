@@ -9,8 +9,9 @@
 
 import { motion } from 'framer-motion'
 import { Lock } from 'lucide-react'
-import { PLAYER_AVATARS } from '../data/avatar-config'
+import { NEUTRAL_AVATARS, PLAYER_AVATARS, getNeutralAvatarById } from '../data/avatar-config'
 import { allegianceForAvatar, allegianceLabel } from '../lib/allegiance'
+import AvatarMark from './ui/AvatarMark'
 
 interface Props {
   onSelect: (avatarId: string) => void
@@ -18,12 +19,42 @@ interface Props {
   takenIds: string[]
   /** avatarId → player name for taken avatars */
   takenBy?: Record<string, string>
+  /**
+   * Which set to offer. The house sigils are House of the Dragon heraldry and
+   * they declare a faction, so only the legacy pack gets them; everything else
+   * gets the neutral marks. The create form has no room yet and passes the
+   * featured show's answer; the join form passes the room's.
+   */
+  isLegacy?: boolean
 }
 
-export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy = {} }: Props) {
+export default function AvatarPicker({
+  onSelect,
+  selectedId,
+  takenIds,
+  takenBy = {},
+  isLegacy = true,
+}: Props) {
+  const options: Array<{
+    id: string
+    name: string
+    object: string
+    color: string
+    image?: string
+  }> = isLegacy
+    ? PLAYER_AVATARS.map((avatar) => ({
+      id: avatar.id, name: avatar.name, object: avatar.object,
+      color: avatar.color, image: avatar.image,
+    }))
+    : NEUTRAL_AVATARS.map((avatar) => ({
+      id: avatar.id, name: avatar.name, object: avatar.object,
+      color: `var(${avatar.deviceToken})`,
+    }))
+
   return (
     <div className="grid grid-cols-2 gap-3">
-      {PLAYER_AVATARS.map((avatar, i) => {
+      {options.map((avatar, i) => {
+        const mark = getNeutralAvatarById(avatar.id)
         const isTaken = takenIds.includes(avatar.id) && avatar.id !== selectedId
         const isSelected = avatar.id === selectedId
         const claimedBy = takenBy[avatar.id]
@@ -53,17 +84,25 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
             <div className="relative">
               <div
                 className="rounded-xl overflow-hidden flex-shrink-0"
-                style={{ width: 80, height: 80, background: `${avatar.color}22` }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  background: mark ? `var(${mark.fieldToken})` : `${avatar.color}22`,
+                }}
               >
-                <img
-                  src={avatar.image}
-                  alt={avatar.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to color block if image missing
-                    e.currentTarget.style.display = 'none'
-                  }}
-                />
+                {mark ? (
+                  <AvatarMark avatar={mark} size={80} />
+                ) : (
+                  <img
+                    src={avatar.image}
+                    alt={avatar.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to color block if image missing
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
               </div>
               {/* Lock overlay for taken avatars */}
               {isTaken && (
@@ -100,18 +139,21 @@ export default function AvatarPicker({ onSelect, selectedId, takenIds, takenBy =
                   </p>
                 </div>
                 <p className="text-xs text-white/45 mt-0.5 truncate">{avatar.object}</p>
-                {/* Your house is your side — declared at pick time */}
-                <p
-                  className="text-[10px] font-bold uppercase tracking-widest mt-1"
-                  style={{
-                    color:
-                      allegianceForAvatar(avatar.id) === 'green'
-                        ? 'var(--t-team-b-text)'
-                        : 'var(--t-team-a-text)',
-                  }}
-                >
-                  {allegianceLabel(avatar.id)}
-                </p>
+                {/* Your house is your side — declared at pick time. A neutral
+                    mark declares nothing, so it carries no faction line. */}
+                {isLegacy && (
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-widest mt-1"
+                    style={{
+                      color:
+                        allegianceForAvatar(avatar.id) === 'green'
+                          ? 'var(--t-team-b-text)'
+                          : 'var(--t-team-a-text)',
+                    }}
+                  >
+                    {allegianceLabel(avatar.id)}
+                  </p>
+                )}
               </div>
             )}
 

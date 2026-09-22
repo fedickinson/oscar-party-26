@@ -1,15 +1,27 @@
 /**
  * Focused local proof for the atomic draft command.
  *
- * This uses the published seed catalog read-only, creates one disposable room,
- * exercises real anonymous PostgREST writes, and removes every room-owned row.
- * It never writes catalog tables and refuses a remote target.
+ * This binds the deterministic Results Night draft catalog to one disposable
+ * room, exercises real anonymous PostgREST writes, and removes every room-owned
+ * row. The published proof catalog is retained between local runs; the room and
+ * its picks are not. It refuses a remote target.
  *
  *   npx tsx scripts/dogfood-draft-command.mts
  */
 
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig } from './lib/env.mts'
+import { bindResultsNightDogfoodPack } from './lib/results-night-dogfood-pack.mts'
+
+// The scarcity draft under proof is the Results Night sub-draft, so the fixture
+// binds a Results Night pack and lets the contract select the runtime. Patching
+// rooms.game_model on its own is what the composable game contract forbids.
+const DRAFT_PACK_SHAPE = {
+  packKey: 'results-night-draft-dogfood-v1',
+  title: 'Results Night Draft Dogfood',
+  people: 3,
+  creatures: 3,
+} as const
 
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 if (target !== 'local') throw new Error('draft command dogfood is local-only')
@@ -33,13 +45,25 @@ function check(condition: unknown, message: string): asserts condition {
 
 try {
   const code = `ADT${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
-  const { data: room, error: roomError } = await service
+  const { data: createdRoom, error: roomError } = await service
     .from('rooms')
     .insert({ code, phase: 'lobby', host_id: null })
     .select()
     .single()
   if (roomError) throw roomError
-  roomId = room.id
+  roomId = createdRoom.id
+  bindResultsNightDogfoodPack(code, DRAFT_PACK_SHAPE)
+  const { data: room, error: boundRoomError } = await service
+    .from('rooms')
+    .select()
+    .eq('id', createdRoom.id)
+    .single()
+  if (boundRoomError) throw boundRoomError
+  check(
+    room.game_model === 'legacy_ensemble'
+      && room.game_contract?.commitment === 'confidence_allocation',
+    'binding the Results Night pack selects the scarcity draft runtime',
+  )
 
   const { data: players, error: playerError } = await service
     .from('players')
@@ -67,10 +91,6 @@ try {
     .from('rooms')
     .update({
       host_id: players[0].id,
-      // This script proves the legacy scarcity draft. The seeded finale pack
-      // correctly defaults to conviction, so opt this disposable fixture into
-      // the older model while it is still in the lobby.
-      game_model: 'legacy_ensemble',
       phase: 'draft',
       draft_order: players.map((player) => player.id),
       current_pick: 0,
@@ -86,7 +106,10 @@ try {
   if (entityError) throw entityError
   const films = entities.filter((entity) => entity.type === 'film')
   const people = entities.filter((entity) => entity.type === 'person')
-  check(films.length >= 3 && people.length >= 3, 'loaded the published draft pools read-only')
+  check(
+    films.length === DRAFT_PACK_SHAPE.creatures && people.length === DRAFT_PACK_SHAPE.people,
+    'loaded the bound pack draft pools read-only',
+  )
 
   const race = await Promise.all([
     anon.from('draft_picks').insert({

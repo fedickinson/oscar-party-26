@@ -7,6 +7,7 @@ import type {
 import type { PlayerAward } from './night-awards'
 import type { ScoredPlayer } from './scoring'
 import type { VerdictSlotContract } from './verdict-response'
+import { keepsakeLengthContract } from './verdict-response'
 import type {
   CategoryRow,
   ConfidencePickRow,
@@ -451,8 +452,8 @@ export function buildRuntimeVerdictsPrompt(
   lineCandidates: Map<string, RuntimeVerdictLineCandidate[]> = new Map(),
 ): RuntimeVerdictsPrompt {
   if (!cast.postShow) throw new Error('runtime keepsakes need an authored post-show cast')
-  if (awards.length < 1 || awards.length > 7) {
-    throw new Error('runtime keepsake generation requires one through seven player awards')
+  if (awards.length < 1 || awards.length > 10) {
+    throw new Error('runtime keepsake generation requires one through ten player awards')
   }
   if (new Set(awards.map((award) => award.playerId)).size !== awards.length) {
     throw new Error('runtime keepsake player awards must be unique')
@@ -545,13 +546,20 @@ AUTHORED KEEPSAKE VOICES
 ${usedVoices.map((voice) => postShowVoiceBlock(voice, 'keepsake')).join('\n\n')}
 
 Each slot's assigned voice must write only that slot. Voice and source-material attitude blocks govern expression, never broadcast truth. Every claim about the night must come from the numbered LIVE FACTS. Chat records prove only what was written. Do not invent motive, emotion, dialogue, screen action, relationship, location, source-material outcome, score cause, or future event.`
+  // Every keepsake shares one response. Above seven seats the wide contract
+  // does not fit under the proxy ceiling — see keepsakeLengthContract.
+  const length = keepsakeLengthContract(awards.length)
+  const budgetNote = length.tightened
+    ? `
+THIS IS A WIDE ROOM: ${awards.length} keepsakes share one response. The caps above are tighter than usual and they are the ones to follow. Write less per keepsake so every slot is complete; a short keepsake for everyone beats a long one for the first few.`
+    : ''
   const user = `Write exactly one keepsake verdict for every numbered slot, in ascending order.
 
 - Use only that slot's GAME RECORD and CHAT RECORD.
-- Write a distinct two-to-four-word title and a two-to-three-sentence second-person verdict.
-- Choose zero to four highlight message_ids only from that slot's candidates.
+- Write a distinct two-to-four-word title and a ${length.sentences} second-person verdict.
+- Choose zero to ${length.maxHighlights === 2 ? 'two' : 'four'} highlight message_ids only from that slot's candidates.
 - Return imagery as an empty array. This pack has no authored keepsake artwork contract.
-- When a fact is absent, unresolved, or excerpted, say less.
+- When a fact is absent, unresolved, or excerpted, say less.${budgetNote}
 
 Return exactly ${awards.length} verdict${awards.length === 1 ? '' : 's'} in the documented JSON shape. Slots and titles must be unique and complete.`
   return { system, user, slots, groundingFacts, slotContracts }

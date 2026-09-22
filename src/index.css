@@ -367,7 +367,11 @@ input:focus-visible {
   background-repeat: repeat;
 }
 
-.material-stone::before { background-image: var(--t-tex-stone); opacity: var(--t-tex-stone-strength); }
+/* The stone tile is authored at 480x360 but the wall paints it at 240x180
+   (html::before). A card that paints it at its natural size renders masonry at
+   twice the wall's scale, and the mortar strokes cut through card text, so the
+   card carries the wall's size too. */
+.material-stone::before { background-image: var(--t-tex-stone); background-size: 240px 180px; opacity: var(--t-tex-stone-strength); }
 .material-oak::before { background-image: var(--t-tex-oak); opacity: var(--t-tex-oak-strength); }
 .material-vellum::before { background-image: var(--t-tex-vellum); opacity: var(--t-tex-vellum-strength); }
 .material-enamel::before { background-image: var(--t-tex-enamel); opacity: var(--t-tex-enamel-strength); }

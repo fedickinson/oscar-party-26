@@ -58,6 +58,7 @@ import {
   buildSpotlightReactionKey,
   buildTeamChangeReactionKey,
   buildWelcomeReactionKey,
+  buildWinnerDividerReactionKey,
   buildRuntimePreShowArrivalReactionKey,
   buildRuntimeMilestoneReactionKey,
   buildIdentityChangeReactionKey,
@@ -383,6 +384,12 @@ export function useAICompanions(
     legacyTextSentinel?: string,
     legacySince?: string,
     stillValid?: () => boolean,
+    /**
+     * Who the divider row is attributed to. `system` for the ceremony dividers;
+     * `winner-divider` for a declaration, because that is the author the
+     * operator lens and the sentinel read as a declared fact.
+     */
+    authorPlayerId: string = 'system',
   ): Promise<boolean> {
     const currentRoom = roomRef.current
     if (!currentRoom || !isHostRef.current) return false
@@ -395,7 +402,7 @@ export function useAICompanions(
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('room_id', currentRoom.id)
-          .eq('player_id', 'system')
+          .eq('player_id', authorPlayerId)
           .eq('text', legacyTextSentinel)
         if (legacySince) legacyQuery = legacyQuery.gte('created_at', legacySince)
         const { count, error } = await legacyQuery
@@ -430,7 +437,7 @@ export function useAICompanions(
           p_room_id: currentRoom.id,
           p_reaction_key: reactionKey,
           p_instance_id: reactionInstanceRef.current,
-          p_messages: [{ player_id: 'system', text }],
+          p_messages: [{ player_id: authorPlayerId, text }],
           p_operator_capability: operatorCapabilityRef.current,
         },
       )
@@ -449,14 +456,29 @@ export function useAICompanions(
     }
   }
 
-  async function insertWinnerDivider(text: string) {
-    const currentRoom = roomRef.current
-    if (!currentRoom || !isHostRef.current) return
-    await supabase.from('messages').insert({
-      room_id: currentRoom.id,
-      player_id: 'winner-divider',
+  /**
+   * One divider per declaration, on every path that has a host tab.
+   *
+   * It used to be an unkeyed insert, which meant two host tabs watching the
+   * same declaration wrote two rows. It goes through the same durable claim as
+   * every other divider now, on a key of its own
+   * (`event:<id>:winner:divider`) so it never contends with the cast
+   * generation that owns `event:<id>:winner` — the daemon in a pack room, this
+   * hook in a legacy one.
+   *
+   * The author stays `winner-divider`, not `system`: `operator-lens` counts
+   * only that author as a declared fact, so changing it would blind the
+   * operator's lens and the sentinel to the whole broadcast.
+   */
+  async function insertWinnerDivider(categoryId: number, text: string): Promise<boolean> {
+    return insertClaimedSystemDivider(
+      buildWinnerDividerReactionKey(categoryId),
       text,
-    })
+      undefined,
+      undefined,
+      undefined,
+      'winner-divider',
+    )
   }
 
   async function insertFilmLink(filmName: string) {
@@ -1144,7 +1166,15 @@ export function useAICompanions(
   // Subsequent updates: fire for genuinely new winners only.
 
   useEffect(() => {
-    if (!isHost || !categories.length || packCeremony) return
+    // A pack room reaches here too. Its live cast is the daemon's — the
+    // browser policy sets liveEvents:false — but the winner divider is not
+    // cast work, it is the declared fact entering the transcript, and until
+    // this effect wrote it on the pack path an on-air declaration produced no
+    // `winner-divider` row at all: the operator lens and the sentinel read the
+    // whole broadcast as idle while the batch script's declarations, which
+    // post their own divider, showed up normally. The divider is written here
+    // for both paths; only the legacy cast generation below is skipped.
+    if (!isHost || !categories.length) return
 
     if (!dataInitializedRef.current) {
       // Mark all currently-announced categories as already seen
@@ -1152,12 +1182,16 @@ export function useAICompanions(
 
       // Pre-populate milestoneFiredRef for any thresholds already passed so
       // Effect 5 (milestone reactions) doesn't re-fire them on page reload.
-      const count = categories.filter((c) => c.winner_id != null).length
-      if (count >= 6) milestoneFiredRef.current.add('halfway')
-      if (count >= 12) milestoneFiredRef.current.add('final_stretch')
-      const total = categories.length
-      if (total > 0 && count >= total - 1) milestoneFiredRef.current.add('final_category')
-      if (total > 0 && count >= total) milestoneFiredRef.current.add('ceremony_end')
+      // Legacy thresholds only: a pack room's milestones are authored, carry
+      // their own ids, and are deduplicated by their own durable claim.
+      if (!packCeremony) {
+        const count = categories.filter((c) => c.winner_id != null).length
+        if (count >= 6) milestoneFiredRef.current.add('halfway')
+        if (count >= 12) milestoneFiredRef.current.add('final_stretch')
+        const total = categories.length
+        if (total > 0 && count >= total - 1) milestoneFiredRef.current.add('final_category')
+        if (total > 0 && count >= total) milestoneFiredRef.current.add('ceremony_end')
+      }
 
       dataInitializedRef.current = true
       return
@@ -1177,6 +1211,20 @@ export function useAICompanions(
     const tieWinner = cat.tie_winner_id
       ? nomineesRef.current.find((n) => n.id === cat.tie_winner_id) ?? undefined
       : undefined
+
+    // The declaration enters the transcript on every path, pack or legacy,
+    // before anything decides whether a cast speaks about it.
+    void insertWinnerDivider(
+      cat.id,
+      tieWinner
+        ? `Winner — ${winner.name} & ${tieWinner.name}`
+        : `Winner — ${winner.name}`,
+    ).catch(() => undefined)
+
+    // Everything below is the legacy in-browser cast. A pack room's voices are
+    // the daemon's: it claims `event:<id>:winner` and writes the reaction
+    // lines, so generating a second set here would double the room's chat.
+    if (packCeremony) return
 
     // Find stored predictions that mentioned nominees in this category
     let playerPredictions: PlayerPrediction[] | undefined
@@ -1211,12 +1259,6 @@ export function useAICompanions(
         )
       }
     }
-
-    insertWinnerDivider(
-      tieWinner
-        ? `Winner — ${winner.name} & ${tieWinner.name}`
-        : `Winner — ${winner.name}`,
-    )
 
     // Await so the film link fires only after the Academy's delay-0 message is inserted
     const filmName = winner.film_name || winner.name

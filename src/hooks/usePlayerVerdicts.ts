@@ -172,7 +172,7 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
     } = options
     if (!roomId || !hostPlayerId || !isHost || !operatorCapability
       || !ready || recordSource === 'settled' ||
-      playerAwards.length === 0 || playerAwards.length > 7) return
+      playerAwards.length === 0 || playerAwards.length > 10) return
     if (attemptedRoomRef.current === roomId) return
     attemptedRoomRef.current = roomId
     let disposed = false
@@ -255,14 +255,35 @@ export function usePlayerVerdicts(options: Args): PlayerVerdictsState {
               authors,
               candidates,
             )
+        // A pack room's keepsakes are written by its own projected post-show
+        // voices, so the allowlist is that cast and nothing wider. Without a
+        // pack cast the guard keeps its legacy seven-id default.
         const grounded = await groundedVerdictBatch({
           system: prompt.system,
           user: prompt.user,
           facts: prompt.groundingFacts,
           contracts: prompt.slotContracts,
           model: 'claude-sonnet-5',
-          maxTokens: 3000,
+          // One keepsake costs about 430 output tokens at the wide contract: a
+          // 2-4 word title, a 2-3 sentence passage, up to four highlight notes
+          // and up to two imagery notes. Ten of those want 4300, and
+          // MAX_TOKENS_CEILING in api/_guards.ts caps every proxied request at
+          // 4000 - that ceiling is the account's cost guard for a public URL,
+          // not a keepsake tuning knob, so it does not move. The contract
+          // moves instead: above seven seats both prompt builders ask for two
+          // highlights, one image and a shorter passage, about 290 tokens each
+          // (see keepsakeLengthContract in src/lib/verdict-response.ts), so ten
+          // keepsakes fit in roughly 2900 with about 1100 tokens of margin.
+          // The database envelope is unchanged - 20260921000100 still accepts
+          // four highlights and two images per row - so this narrows what is
+          // asked for, never what is valid. A truncated batch would not be a
+          // silent loss either: it fails the envelope check and lands in the
+          // grounding review record like any other unusable response.
+          maxTokens: 4000,
           maxRetries: 2,
+          allowedCompanionIds: current.runtimeCast?.postShow
+            ? current.runtimeCast.postShow.voices.map((voice) => voice.id)
+            : undefined,
           caller: callClaude,
         })
         if (grounded.findings.length > 0) {

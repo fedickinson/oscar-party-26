@@ -3,24 +3,35 @@
  * while initial data fetches are in flight.
  *
  * The Dance mark breathing over a blood-thread fill line. Pass an optional
- * message to provide context (defaults to "Loading…").
+ * message to provide context.
+ *
+ * The mark and the default line are both Westerosi, so both are legacy-only:
+ * every other room breathes a neutral loader glyph over "Loading…". A caller
+ * that passes its own message keeps it either way.
  */
 
 import { motion } from 'framer-motion'
+import { LoaderCircle } from 'lucide-react'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 import { Hallmark } from './Hallmarks'
 
 interface Props {
   message?: string
 }
 
-export default function LoadingScreen({ message = 'The ravens are flying…' }: Props) {
+export default function LoadingScreen({ message }: Props) {
+  const { identity } = useShowIdentity()
+  const isLegacy = identity.isLegacy
+  const line = message ?? (isLegacy ? 'The ravens are flying…' : 'Loading…')
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5">
       <motion.div
         animate={{ opacity: [0.45, 1, 0.45] }}
         transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <Hallmark id="hallmark-dance" size={56} />
+        {isLegacy
+          ? <Hallmark id="hallmark-dance" size={56} />
+          : <LoaderCircle size={56} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
       </motion.div>
 
       {/* Blood-thread fill — the title-sequence channel, looping */}
@@ -37,7 +48,7 @@ export default function LoadingScreen({ message = 'The ravens are flying…' }: 
         />
       </div>
 
-      <p className="text-sm text-white/40">{message}</p>
+      <p className="text-sm text-white/40">{line}</p>
     </div>
   )
 }

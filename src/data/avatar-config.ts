@@ -92,3 +92,80 @@ export type CompanionAvatarId = typeof COMPANION_AVATARS[number]['id'];
 export function getAvatarById(id: string) {
   return [...PLAYER_AVATARS, ...COMPANION_AVATARS].find(a => a.id === id);
 }
+
+// ─── Neutral marks ────────────────────────────────────────────────────────────
+//
+// The sigils above are House of the Dragon heraldry and they declare a faction.
+// A room bound to any other pack gets this set instead: twelve two-tone
+// geometric marks drawn inline from the token layer, with plain names and no
+// allegiance. They are deliberately abstract — a mark cannot belong to a show,
+// so it never has to be re-authored per pack.
+//
+// The `mark-` prefix is the collision guard. Legacy keys are bare house names
+// ('targaryen') and the archived ceremony cast ids ('mbj-smoke'); no key in
+// either set can ever start with `mark-`, so a stored `players.avatar` value
+// identifies its set on sight and no migration is needed.
+
+export const NEUTRAL_AVATAR_PREFIX = 'mark-'
+
+export type NeutralAvatarShape =
+  | 'spark'
+  | 'waves'
+  | 'bars'
+  | 'triangle'
+  | 'ring'
+  | 'chevron'
+  | 'pulse'
+  | 'diamond'
+  | 'grid'
+  | 'arc'
+  | 'burst'
+  | 'split'
+
+export interface NeutralAvatar {
+  id: string
+  name: string
+  /** One-word shape description, shown under the name in the picker. */
+  object: string
+  shape: NeutralAvatarShape
+  /** Custom property for the mark's ground. Never a literal color. */
+  fieldToken: string
+  /** Custom property for the mark's figure. Never a literal color. */
+  deviceToken: string
+}
+
+export const NEUTRAL_AVATARS: NeutralAvatar[] = [
+  { id: 'mark-ember', name: 'Ember', object: 'Spark', shape: 'spark',
+    fieldToken: '--t-jet', deviceToken: '--t-madder-light' },
+  { id: 'mark-tide', name: 'Tide', object: 'Waves', shape: 'waves',
+    fieldToken: '--t-bottle', deviceToken: '--t-beacon-light' },
+  { id: 'mark-static', name: 'Static', object: 'Bars', shape: 'bars',
+    fieldToken: '--t-basalt', deviceToken: '--t-mortar' },
+  { id: 'mark-prism', name: 'Prism', object: 'Triangle', shape: 'triangle',
+    fieldToken: '--t-ink', deviceToken: '--t-vellum' },
+  { id: 'mark-orbit', name: 'Orbit', object: 'Ring', shape: 'ring',
+    fieldToken: '--t-iron-dark', deviceToken: '--t-ashlar' },
+  { id: 'mark-ridge', name: 'Ridge', object: 'Chevrons', shape: 'chevron',
+    fieldToken: '--t-oak-deep', deviceToken: '--t-vellum-deep' },
+  { id: 'mark-pulse', name: 'Pulse', object: 'Signal', shape: 'pulse',
+    fieldToken: '--t-jet-raised', deviceToken: '--t-pending' },
+  { id: 'mark-quartz', name: 'Quartz', object: 'Diamond', shape: 'diamond',
+    fieldToken: '--t-iron', deviceToken: '--t-beacon' },
+  { id: 'mark-grid', name: 'Grid', object: 'Quarters', shape: 'grid',
+    fieldToken: '--t-ink', deviceToken: '--t-mortar' },
+  { id: 'mark-arc', name: 'Arc', object: 'Span', shape: 'arc',
+    fieldToken: '--t-bottle-raised', deviceToken: '--t-vellum-light' },
+  { id: 'mark-nova', name: 'Nova', object: 'Burst', shape: 'burst',
+    fieldToken: '--t-oak', deviceToken: '--t-wax-light' },
+  { id: 'mark-slate', name: 'Slate', object: 'Halves', shape: 'split',
+    fieldToken: '--t-basalt', deviceToken: '--t-ashlar' },
+]
+
+export function isNeutralAvatarId(id: string | null | undefined): boolean {
+  return typeof id === 'string' && id.startsWith(NEUTRAL_AVATAR_PREFIX)
+}
+
+export function getNeutralAvatarById(id: string | null | undefined): NeutralAvatar | undefined {
+  if (!isNeutralAvatarId(id)) return undefined
+  return NEUTRAL_AVATARS.find((avatar) => avatar.id === id)
+}

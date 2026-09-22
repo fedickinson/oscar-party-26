@@ -329,22 +329,40 @@ export default function Live() {
   // the banner from overlapping the SpotlightView content mid-slide-in.
   const [spotlightDisplayId, setSpotlightDisplayId] = useState<number | null>(null)
 
+  // The room row and the category slate arrive on two different clocks, and on
+  // a reload or a late join the room row usually lands first. This effect used
+  // to commit the ref before looking the category up, so that first pass
+  // recorded "already presented" for a category it had not found — and every
+  // later pass, once the slate had hydrated, saw no change and did nothing. The
+  // phone then sat on the Home tab through an open spotlight.
+  //
+  // The ref now advances only once the spotlight is fully known, so the effect
+  // stays armed until the category resolves and still fires exactly once per
+  // opening. The cast's own spotlight lines are not driven from here: they are
+  // claimed durably per `spotlight_revision` in useAICompanions, so presenting
+  // an already-open spotlight to a rejoining phone adds no duplicate chat line.
   useEffect(() => {
     const prev = prevSpotlightCategoryIdRef.current
-    prevSpotlightCategoryIdRef.current = spotlightCategoryId
 
-    if (spotlightCategoryId != null && spotlightCategoryId !== prev) {
-      const cat = scores.categories.find((c) => c.id === spotlightCategoryId)
-      if (cat) {
-        setNotificationCategory({ name: cat.name, tier: cat.tier })
-        setShowSpotlightNotification(true)
-        // Clear display id so SpotlightView unmounts until notification completes
+    if (spotlightCategoryId == null) {
+      if (prev != null) {
+        // Spotlight closed — clear display id immediately
+        prevSpotlightCategoryIdRef.current = null
         setSpotlightDisplayId(null)
       }
-    } else if (spotlightCategoryId == null && prev != null) {
-      // Spotlight closed — clear display id immediately
-      setSpotlightDisplayId(null)
+      return
     }
+
+    if (spotlightCategoryId === prev) return
+
+    const cat = scores.categories.find((c) => c.id === spotlightCategoryId)
+    if (!cat) return
+
+    prevSpotlightCategoryIdRef.current = spotlightCategoryId
+    setNotificationCategory({ name: cat.name, tier: cat.tier })
+    setShowSpotlightNotification(true)
+    // Clear display id so SpotlightView unmounts until notification completes
+    setSpotlightDisplayId(null)
   }, [spotlightCategoryId, scores.categories])
 
   function handleSpotlightNotificationComplete() {

@@ -1,0 +1,1819 @@
+{
+  "schema_version": 4,
+  "game_contract": {
+    "version": 1,
+    "commitment": "confidence_allocation",
+    "conviction_budget": null,
+    "identity": {
+      "selection": "exclusive_entity_draft",
+      "scoring": "ensemble"
+    },
+    "scarcity": {
+      "commitments": "ranked_allocation",
+      "identity": "exclusive"
+    },
+    "visibility": "sealed_until_lock",
+    "cadence": "immediate_per_outcome",
+    "continuity": "no_carryover"
+  },
+  "pack": {
+    "id": "results-night-proof",
+    "version": 1,
+    "title": "The Proof Music Awards 2026",
+    "property": "The Proof Music Awards",
+    "installment": "2026 ceremony",
+    "fact_source": "scheduled",
+    "canon_cutoff": "Nominations published, before the 2026 ceremony broadcast"
+  },
+  "sources": [
+    {
+      "id": "proof-awards-nominations-record",
+      "kind": "operator_record",
+      "title": "Proof Music Awards 2026 nominations record",
+      "locator": "operator-record:proof-music-awards-2026-nominations"
+    },
+    {
+      "id": "proof-awards-format-record",
+      "kind": "operator_record",
+      "title": "Proof Music Awards 2026 broadcast format record",
+      "locator": "operator-record:proof-music-awards-2026-format"
+    },
+    {
+      "id": "proof-awards-prior-telecast",
+      "kind": "screen",
+      "title": "Proof Music Awards 2025 telecast screen record",
+      "locator": "screen:proof-music-awards-2025-telecast"
+    },
+    {
+      "id": "proof-awards-fan-digest",
+      "kind": "sentiment",
+      "title": "Proof Music Awards audience sentiment digest",
+      "locator": "sentiment:proof-awards-audience-digest-2026"
+    },
+    {
+      "id": "proof-awards-style-guide",
+      "kind": "source_material",
+      "title": "Proof Music Awards house style guide",
+      "locator": "source-material:proof-awards-house-style-guide"
+    }
+  ],
+  "claims": [
+    {
+      "id": "nova-quill-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Nova Quill holds four 2026 Proof Music Awards nominations, including Video of the Year.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "nova-quill-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion going into the 2026 ceremony treats Nova Quill as the night's presumed front-runner.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "cass-tremble-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Cass Tremble holds three 2026 Proof Music Awards nominations, including Song of the Year.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "cass-tremble-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion frames Cass Tremble as the veteran overdue for a first top-category win.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "halcyon-drift-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Halcyon Drift holds three 2026 Proof Music Awards nominations across video and production categories.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "halcyon-drift-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion of Halcyon Drift concentrates on the staging of the nominated videos rather than the songs.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "mirrorbird-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Mirrorbird holds two 2026 Proof Music Awards nominations, both in performance categories.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "mirrorbird-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion treats Mirrorbird as the most likely upset winner of the night.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "lu-vanta-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Lu Vanta holds two 2026 Proof Music Awards nominations, including Best New Artist.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "lu-vanta-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion of Lu Vanta is dominated by a first-ceremony arrival rather than by the nominated work.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "saint-omen-nominations",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Saint Omen holds three 2026 Proof Music Awards nominations, including Best Collaboration.",
+      "source_ids": [
+        "proof-awards-nominations-record"
+      ]
+    },
+    {
+      "id": "saint-omen-audience-note",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience discussion expects Saint Omen to convert a long run of nominations into a first win.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "ceremony-three-hour-broadcast",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2026 Proof Music Awards is scheduled as a three-hour live broadcast carrying eleven on-air awards.",
+      "source_ids": [
+        "proof-awards-format-record"
+      ]
+    },
+    {
+      "id": "ceremony-off-air-categories",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Five 2026 Proof Music Awards categories are decided off air and published in one official results post on the night.",
+      "source_ids": [
+        "proof-awards-format-record"
+      ]
+    },
+    {
+      "id": "ceremony-arrivals-preshow",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2026 broadcast opens with a thirty-minute arrivals pre-show carried on the same feed.",
+      "source_ids": [
+        "proof-awards-format-record"
+      ]
+    },
+    {
+      "id": "prior-telecast-opening-number",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2025 telecast opened with a full performance before the first award was announced.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-speech-cutoffs",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Play-off music interrupted three acceptance speeches during the 2025 telecast.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-host-monologue",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2025 host named several nominees during the opening monologue before the first envelope was opened.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-crowd-cutaways",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2025 telecast cut to seated nominees before every envelope was opened.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-tribute-ovation",
+      "canon": "screen",
+      "status": "verified",
+      "text": "A career tribute segment in the 2025 telecast ended in a standing ovation.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-technical-fault",
+      "canon": "screen",
+      "status": "verified",
+      "text": "A microphone fault interrupted one 2025 acceptance speech for several seconds.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-duet-finale",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2025 telecast closed with a duet between two nominated artists.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-trophy-drop",
+      "canon": "screen",
+      "status": "verified",
+      "text": "One 2025 winner dropped a trophy on stage while leaving the podium.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-family-thanks",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Every 2025 acceptance speech thanked at least one family member.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-presenter-pairs",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Presenter pairs read most of the 2025 envelopes together on stage.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-phone-speech",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Two 2025 winners read their acceptance speeches from a phone screen.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-guest-performer",
+      "canon": "screen",
+      "status": "verified",
+      "text": "An unannounced guest joined a scheduled performance during the 2025 telecast.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-collaborator-podium",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Winning collaborators shared the podium in two 2025 categories.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-outfit-change",
+      "canon": "screen",
+      "status": "verified",
+      "text": "Two 2025 performers changed outfits between the arrivals feed and their performance.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-declined-speech",
+      "canon": "screen",
+      "status": "verified",
+      "text": "One 2025 winner accepted a trophy without speaking.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-misread-name",
+      "canon": "screen",
+      "status": "verified",
+      "text": "A 2025 presenter misread a nominee's name and corrected it on air.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-no-recorded-tie",
+      "canon": "screen",
+      "status": "verified",
+      "text": "No Proof Music Awards category has ever been declared a tie across the ceremony's recorded history.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-overrun",
+      "canon": "screen",
+      "status": "verified",
+      "text": "The 2025 telecast ran eleven minutes past its scheduled end.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-first-time-winner",
+      "canon": "screen",
+      "status": "verified",
+      "text": "A first-time nominee won a top category at the 2025 ceremony.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-sweep-ceiling",
+      "canon": "screen",
+      "status": "verified",
+      "text": "No artist won more than three categories at any of the last three Proof Music Awards ceremonies.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "prior-telecast-second-loss-reaction",
+      "canon": "screen",
+      "status": "verified",
+      "text": "One 2025 nominee was shown on camera losing two categories during the same broadcast.",
+      "source_ids": [
+        "proof-awards-prior-telecast"
+      ]
+    },
+    {
+      "id": "audience-sweep-appetite",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience sentiment before the 2026 ceremony expects at least one of the leading nominees to take multiple categories.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "audience-outfit-focus",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience chatter during recent ceremonies concentrates on arrivals outfits more than on the awards themselves.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "audience-upset-appetite",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Audience sentiment before the 2026 ceremony favors an upset in the newcomer category.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "audience-speech-complaints",
+      "canon": "discourse",
+      "status": "verified",
+      "text": "Viewers of recent ceremonies routinely complain that play-off music cuts speeches short.",
+      "source_ids": [
+        "proof-awards-fan-digest"
+      ]
+    },
+    {
+      "id": "style-guide-plain-record",
+      "canon": "source_material",
+      "status": "attitude_only",
+      "text": "The house style guide asks the record-keeping voice to state each result plainly and to claim nothing the record has not given it.",
+      "source_ids": [
+        "proof-awards-style-guide"
+      ]
+    },
+    {
+      "id": "style-guide-declared-partisan",
+      "canon": "source_material",
+      "status": "attitude_only",
+      "text": "The house style guide allows exactly one openly partisan voice who never pretends to be neutral.",
+      "source_ids": [
+        "proof-awards-style-guide"
+      ]
+    },
+    {
+      "id": "style-guide-long-memory",
+      "canon": "source_material",
+      "status": "attitude_only",
+      "text": "The house style guide keeps a long-memory critic who measures every night against the ceremonies that came before it.",
+      "source_ids": [
+        "proof-awards-style-guide"
+      ]
+    },
+    {
+      "id": "style-guide-surface-watch",
+      "canon": "source_material",
+      "status": "attitude_only",
+      "text": "The house style guide keeps one voice assigned to arrivals, outfits and crowd reactions rather than to results.",
+      "source_ids": [
+        "proof-awards-style-guide"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "id": "nova-quill",
+      "name": "Nova Quill",
+      "kind": "person",
+      "group": "Quillhouse Collective",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/nova-quill.png",
+        "sha256": "56b9430c1732de285ab06ed18767ff75aefeb90dabf36d20b598a19562f2dabd"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "nova-quill-nominations"
+        ],
+        "discourse_claim_ids": [
+          "nova-quill-audience-note"
+        ]
+      }
+    },
+    {
+      "id": "cass-tremble",
+      "name": "Cass Tremble",
+      "kind": "person",
+      "group": "Tremble Republic",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/cass-tremble.png",
+        "sha256": "eda14d851b476bc33fb8a56e8ddd1d77bc3bc8f8aca4efe85004617349128ad7"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "cass-tremble-nominations"
+        ],
+        "discourse_claim_ids": [
+          "cass-tremble-audience-note"
+        ]
+      }
+    },
+    {
+      "id": "halcyon-drift",
+      "name": "Halcyon Drift",
+      "kind": "person",
+      "group": "Driftline Audio",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/halcyon-drift.png",
+        "sha256": "e21b3fdb898c637596c5c13690574d3ad483cceb341f33347f2b442abb45ef8a"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "halcyon-drift-nominations"
+        ],
+        "discourse_claim_ids": [
+          "halcyon-drift-audience-note"
+        ]
+      }
+    },
+    {
+      "id": "mirrorbird",
+      "name": "Mirrorbird",
+      "kind": "person",
+      "group": "Aviary Records",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/mirrorbird.png",
+        "sha256": "eb37452ef6e487ee29d0905c392fb8912d942690449dfe1171308412aa3c67cb"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "mirrorbird-nominations"
+        ],
+        "discourse_claim_ids": [
+          "mirrorbird-audience-note"
+        ]
+      }
+    },
+    {
+      "id": "lu-vanta",
+      "name": "Lu Vanta",
+      "kind": "person",
+      "group": "Vanta House",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/lu-vanta.png",
+        "sha256": "d3b3cc6c71f810cbd57618c3b4f1abbd7c579572dabe2cad7d25a7490fbc96d8"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "lu-vanta-nominations"
+        ],
+        "discourse_claim_ids": [
+          "lu-vanta-audience-note"
+        ]
+      }
+    },
+    {
+      "id": "saint-omen",
+      "name": "Saint Omen",
+      "kind": "person",
+      "group": "Omen Choir",
+      "draftable": true,
+      "portrait": {
+        "path": "/portraits/results-night-proof/saint-omen.png",
+        "sha256": "7fd5a39e7e178b5d4d85516b9aed74f7356d1864f375367a98575e3561018c5c"
+      },
+      "dossier": {
+        "fact_claim_ids": [
+          "saint-omen-nominations"
+        ],
+        "discourse_claim_ids": [
+          "saint-omen-audience-note"
+        ]
+      }
+    }
+  ],
+  "predictions": [
+    {
+      "id": "video-of-the-year",
+      "title": "Video of the Year",
+      "truth_authority": "official_result",
+      "condition": "The Proof Music Awards names this artist the official winner of Video of the Year, on air or in the official results post published the same night.",
+      "exclusions": [
+        "A nomination, a performance slot, or a presenter appearance does not count as a win.",
+        "An artist credited only as a featured guest on another nominee's entry does not count as that entry's winner."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names the ceremony's marquee category and the condition requires that exact official result, nothing broader."
+      },
+      "basis_claim_ids": [
+        "nova-quill-nominations",
+        "cass-tremble-nominations",
+        "halcyon-drift-nominations",
+        "mirrorbird-nominations",
+        "lu-vanta-nominations",
+        "saint-omen-nominations"
+      ],
+      "points": 8,
+      "tier": 1,
+      "candidate_entity_ids": [
+        "nova-quill",
+        "cass-tremble",
+        "halcyon-drift",
+        "mirrorbird",
+        "lu-vanta",
+        "saint-omen"
+      ]
+    },
+    {
+      "id": "song-of-the-year",
+      "title": "Song of the Year",
+      "truth_authority": "official_result",
+      "condition": "The Proof Music Awards names this artist the official winner of Song of the Year, on air or in the official results post published the same night.",
+      "exclusions": [
+        "A nomination, a performance slot, or a presenter appearance does not count as a win.",
+        "An artist credited only as a featured guest on another nominee's entry does not count as that entry's winner."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names one official category and the condition resolves on that category's announced winner alone."
+      },
+      "basis_claim_ids": [
+        "nova-quill-nominations",
+        "cass-tremble-nominations",
+        "mirrorbird-nominations",
+        "lu-vanta-nominations",
+        "saint-omen-nominations"
+      ],
+      "points": 6,
+      "tier": 2,
+      "candidate_entity_ids": [
+        "nova-quill",
+        "cass-tremble",
+        "mirrorbird",
+        "lu-vanta",
+        "saint-omen"
+      ]
+    },
+    {
+      "id": "best-new-artist",
+      "title": "Best New Artist",
+      "truth_authority": "official_result",
+      "condition": "The Proof Music Awards names this artist the official winner of Best New Artist, on air or in the official results post published the same night.",
+      "exclusions": [
+        "A nomination, a performance slot, or a presenter appearance does not count as a win.",
+        "An artist credited only as a featured guest on another nominee's entry does not count as that entry's winner."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title promises the newcomer category and the condition requires that category's announced winner."
+      },
+      "basis_claim_ids": [
+        "lu-vanta-nominations",
+        "mirrorbird-nominations",
+        "halcyon-drift-nominations",
+        "saint-omen-nominations"
+      ],
+      "points": 6,
+      "tier": 2,
+      "candidate_entity_ids": [
+        "lu-vanta",
+        "mirrorbird",
+        "halcyon-drift",
+        "saint-omen"
+      ]
+    },
+    {
+      "id": "best-choreography",
+      "title": "Best Choreography",
+      "truth_authority": "official_result",
+      "condition": "The Proof Music Awards names this artist the official winner of Best Choreography, on air or in the official results post published the same night.",
+      "exclusions": [
+        "A nomination, a performance slot, or a presenter appearance does not count as a win.",
+        "An artist credited only as a featured guest on another nominee's entry does not count as that entry's winner."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names a craft category awarded to the credited artist, which is exactly what the condition resolves."
+      },
+      "basis_claim_ids": [
+        "halcyon-drift-nominations",
+        "nova-quill-nominations",
+        "mirrorbird-nominations"
+      ],
+      "points": 6,
+      "tier": 2,
+      "candidate_entity_ids": [
+        "halcyon-drift",
+        "nova-quill",
+        "mirrorbird"
+      ]
+    },
+    {
+      "id": "best-collaboration",
+      "title": "Best Collaboration",
+      "truth_authority": "official_result",
+      "condition": "The Proof Music Awards names this artist as a credited winner of Best Collaboration, on air or in the official results post published the same night.",
+      "exclusions": [
+        "A nomination, a performance slot, or a presenter appearance does not count as a win.",
+        "An artist credited only as a featured guest on another nominee's entry does not count as that entry's winner."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title promises a shared award and the condition credits every artist the official result names."
+      },
+      "basis_claim_ids": [
+        "saint-omen-nominations",
+        "cass-tremble-nominations",
+        "nova-quill-nominations",
+        "lu-vanta-nominations"
+      ],
+      "points": 6,
+      "tier": 2,
+      "candidate_entity_ids": [
+        "saint-omen",
+        "cass-tremble",
+        "nova-quill",
+        "lu-vanta"
+      ]
+    }
+  ],
+  "signature_beats": [
+    {
+      "id": "nova-quill-takes-two",
+      "title": "Nova Quill Wins Two Or More",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Nova Quill as a winner in two or more categories, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "nova-quill-nominations",
+        "audience-sweep-appetite"
+      ],
+      "probability_pct": 55,
+      "likelihood_tier": "toss_up",
+      "entity_ids": [
+        "nova-quill"
+      ],
+      "points": 20,
+      "pitch": "The front-runner is priced as a coin flip, so the safe-looking pick is not free."
+    },
+    {
+      "id": "cass-tremble-takes-two",
+      "title": "Cass Tremble Wins Two Or More",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Cass Tremble as a winner in two or more categories, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "cass-tremble-nominations",
+        "prior-telecast-sweep-ceiling"
+      ],
+      "probability_pct": 42,
+      "likelihood_tier": "toss_up",
+      "entity_ids": [
+        "cass-tremble"
+      ],
+      "points": 24,
+      "pitch": "Three nominations is exactly enough to make two wins plausible and never comfortable."
+    },
+    {
+      "id": "halcyon-drift-takes-two",
+      "title": "Halcyon Drift Wins Two Or More",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Halcyon Drift as a winner in two or more categories, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "halcyon-drift-nominations",
+        "prior-telecast-sweep-ceiling"
+      ],
+      "probability_pct": 32,
+      "likelihood_tier": "long_shot",
+      "entity_ids": [
+        "halcyon-drift"
+      ],
+      "points": 30,
+      "pitch": "A craft-heavy slate can quietly stack two trophies while the room watches the marquee categories."
+    },
+    {
+      "id": "mirrorbird-takes-two",
+      "title": "Mirrorbird Wins Two Or More",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Mirrorbird as a winner in two or more categories, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "mirrorbird-nominations",
+        "audience-upset-appetite"
+      ],
+      "probability_pct": 24,
+      "likelihood_tier": "long_shot",
+      "entity_ids": [
+        "mirrorbird"
+      ],
+      "points": 34,
+      "pitch": "Two nominations means this only pays if both of them land."
+    },
+    {
+      "id": "lu-vanta-takes-two",
+      "title": "Lu Vanta Wins Two Or More",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Lu Vanta as a winner in two or more categories, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "lu-vanta-nominations",
+        "audience-upset-appetite"
+      ],
+      "probability_pct": 16,
+      "likelihood_tier": "chaos",
+      "entity_ids": [
+        "lu-vanta"
+      ],
+      "points": 40,
+      "pitch": "A newcomer sweeping both nominations is the cheapest way to own the story of the night."
+    },
+    {
+      "id": "saint-omen-and-mirrorbird-both-win",
+      "title": "Saint Omen And Mirrorbird Both Win",
+      "truth_authority": "official_result",
+      "condition": "The official 2026 results credit Saint Omen with at least one category and Mirrorbird with at least one category, counting the on-air awards and the official off-air results post together.",
+      "exclusions": [
+        "Nominations, presenter slots and performance slots do not count toward the category total.",
+        "An unofficial tally, a leak, or a prediction published before the results post does not count."
+      ],
+      "adjudication": {
+        "proxies": "count",
+        "offscreen": "count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title states the exact category count the condition requires and names every artist it depends on."
+      },
+      "basis_claim_ids": [
+        "saint-omen-nominations",
+        "mirrorbird-nominations"
+      ],
+      "probability_pct": 38,
+      "likelihood_tier": "long_shot",
+      "entity_ids": [
+        "saint-omen",
+        "mirrorbird"
+      ],
+      "points": 32,
+      "pitch": "One pick, two artists, and it only pays if the night spreads its trophies around."
+    }
+  ],
+  "bingo_squares": [
+    {
+      "id": "play-off-music-cuts-a-speech",
+      "title": "Play-Off Music Cuts A Speech",
+      "truth_authority": "official_result",
+      "condition": "Play-off music starts under an acceptance speech while the winner is still talking during the live broadcast.",
+      "exclusions": [
+        "Music under a presenter, a transition, or a performance does not count.",
+        "A speech that ends before the music starts does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-speech-cutoffs",
+        "audience-speech-complaints"
+      ],
+      "probability_pct": 80,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "Everyone recognizes the exact moment the room stops belonging to the winner.",
+      "storyline_tags": [
+        "speeches",
+        "broadcast"
+      ]
+    },
+    {
+      "id": "host-names-a-nominee-in-the-monologue",
+      "title": "Host Names A Nominee",
+      "truth_authority": "official_result",
+      "condition": "The host names at least one nominated artist out loud during the opening monologue.",
+      "exclusions": [
+        "Naming a presenter, a performer, or a past winner who is not nominated this year does not count.",
+        "A name that appears only on a graphic does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-host-monologue"
+      ],
+      "probability_pct": 78,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "It is the first moment the room learns which way the night intends to lean.",
+      "storyline_tags": [
+        "host",
+        "opening"
+      ]
+    },
+    {
+      "id": "crowd-cutaway-before-an-envelope",
+      "title": "Crowd Cutaway Before An Envelope",
+      "truth_authority": "official_result",
+      "condition": "The broadcast cuts to a seated nominee's face after the category is read and before the envelope is opened.",
+      "exclusions": [
+        "A cutaway after the winner is announced does not count.",
+        "A wide audience shot with no identifiable nominee does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-crowd-cutaways"
+      ],
+      "probability_pct": 85,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "The camera tells you who the producers think is about to lose.",
+      "storyline_tags": [
+        "crowd",
+        "camera"
+      ]
+    },
+    {
+      "id": "winner-thanks-a-family-member",
+      "title": "Winner Thanks Family",
+      "truth_authority": "official_result",
+      "condition": "A winner thanks a named family member out loud during an on-air acceptance speech.",
+      "exclusions": [
+        "Thanking a label, a manager, a band, or fans does not count.",
+        "A thank-you shown only in on-screen text does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-family-thanks"
+      ],
+      "probability_pct": 72,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "The most predictable line in awards television is still the one that lands.",
+      "storyline_tags": [
+        "speeches"
+      ]
+    },
+    {
+      "id": "opening-number-before-the-first-award",
+      "title": "Performance Opens The Show",
+      "truth_authority": "official_result",
+      "condition": "A full musical performance airs before the first award of the night is announced.",
+      "exclusions": [
+        "The arrivals pre-show and its interviews do not count.",
+        "Walk-on music under the host's entrance does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-opening-number",
+        "ceremony-arrivals-preshow"
+      ],
+      "probability_pct": 82,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "The show tells you what it is before it tells you who won anything.",
+      "storyline_tags": [
+        "opening",
+        "performance"
+      ]
+    },
+    {
+      "id": "arrivals-outfit-gets-a-full-screen-shot",
+      "title": "Full-Screen Outfit Shot",
+      "truth_authority": "official_result",
+      "condition": "The arrivals pre-show holds a full-screen head-to-toe shot of one artist's outfit.",
+      "exclusions": [
+        "A group shot on the step-and-repeat does not count.",
+        "A waist-up interview framing does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "ceremony-arrivals-preshow",
+        "audience-outfit-focus"
+      ],
+      "probability_pct": 88,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "One voice in this room has been waiting all night for exactly this frame.",
+      "storyline_tags": [
+        "arrivals",
+        "outfits"
+      ]
+    },
+    {
+      "id": "host-reads-an-off-air-result",
+      "title": "Host Reads An Off-Air Result",
+      "truth_authority": "official_result",
+      "condition": "The host or a presenter reads out a category decided off air during the live broadcast.",
+      "exclusions": [
+        "A graphic listing off-air winners with no one reading it does not count.",
+        "The official post-ceremony results post does not count for this square."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "ceremony-off-air-categories"
+      ],
+      "probability_pct": 65,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "The off-air categories are where a quiet draft pick turns into points.",
+      "storyline_tags": [
+        "broadcast",
+        "results"
+      ]
+    },
+    {
+      "id": "standing-ovation-during-a-tribute",
+      "title": "Standing Ovation",
+      "truth_authority": "official_result",
+      "condition": "The room stands and applauds during or immediately after a tribute or honorary segment.",
+      "exclusions": [
+        "Applause from seated attendees does not count.",
+        "A standing ovation after an ordinary acceptance speech does not count for this square."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-tribute-ovation"
+      ],
+      "probability_pct": 68,
+      "likelihood_tier": "likely",
+      "why_it_is_fun": "It is the one minute of the night nobody in the room is competing for.",
+      "storyline_tags": [
+        "tribute",
+        "crowd"
+      ]
+    },
+    {
+      "id": "two-presenters-share-one-envelope",
+      "title": "Two Presenters, One Envelope",
+      "truth_authority": "official_result",
+      "condition": "Two presenters read the same category together on stage, passing or sharing the envelope.",
+      "exclusions": [
+        "A single presenter with a silent escort does not count.",
+        "Two presenters reading two different categories does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-presenter-pairs"
+      ],
+      "probability_pct": 50,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The bit either works immediately or dies in front of everyone.",
+      "storyline_tags": [
+        "presenters"
+      ]
+    },
+    {
+      "id": "a-winner-reads-from-a-phone",
+      "title": "Speech Read From A Phone",
+      "truth_authority": "official_result",
+      "condition": "A winner visibly reads an acceptance speech from a phone screen on stage.",
+      "exclusions": [
+        "Reading from paper or a card does not count.",
+        "Holding a phone without reading from it does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-phone-speech"
+      ],
+      "probability_pct": 55,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The note was written in the car and everyone can tell.",
+      "storyline_tags": [
+        "speeches"
+      ]
+    },
+    {
+      "id": "nominee-shown-losing-in-real-time",
+      "title": "Losing Face On Camera",
+      "truth_authority": "official_result",
+      "condition": "The broadcast holds on a losing nominee's reaction in the seconds after a winner is announced.",
+      "exclusions": [
+        "A cutaway before the envelope is opened does not count.",
+        "A shot of the winner's table does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-crowd-cutaways",
+        "prior-telecast-second-loss-reaction"
+      ],
+      "probability_pct": 58,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "This is the shot the room will argue about for the rest of the night.",
+      "storyline_tags": [
+        "crowd",
+        "camera"
+      ]
+    },
+    {
+      "id": "duet-closes-the-broadcast",
+      "title": "Duet Closes The Show",
+      "truth_authority": "official_result",
+      "condition": "Two or more credited artists perform together in the broadcast's final performance slot.",
+      "exclusions": [
+        "A solo closing performance with backing vocalists does not count.",
+        "A group medley that is not the final performance does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-duet-finale"
+      ],
+      "probability_pct": 45,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The finale is the producers' last chance to make the night mean something.",
+      "storyline_tags": [
+        "performance",
+        "finale"
+      ]
+    },
+    {
+      "id": "speech-runs-past-ninety-seconds",
+      "title": "Speech Past Ninety Seconds",
+      "truth_authority": "official_result",
+      "condition": "One on-air acceptance speech runs longer than ninety seconds from the first word to the last.",
+      "exclusions": [
+        "Time spent walking to the podium does not count.",
+        "Two winners splitting one speech slot are timed as one speech."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-speech-cutoffs",
+        "audience-speech-complaints"
+      ],
+      "probability_pct": 52,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "Somebody always decides the clock does not apply to them.",
+      "storyline_tags": [
+        "speeches"
+      ]
+    },
+    {
+      "id": "host-jokes-about-the-runtime",
+      "title": "Host Jokes About The Clock",
+      "truth_authority": "official_result",
+      "condition": "The host makes an explicit joke about how long the broadcast is running.",
+      "exclusions": [
+        "A generic joke about the schedule of the week does not count.",
+        "A producer or presenter making the joke does not count for this square."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "ceremony-three-hour-broadcast",
+        "prior-telecast-overrun"
+      ],
+      "probability_pct": 48,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The show admitting it is long is the show admitting it is losing.",
+      "storyline_tags": [
+        "host",
+        "broadcast"
+      ]
+    },
+    {
+      "id": "first-time-nominee-wins",
+      "title": "First-Time Nominee Wins",
+      "truth_authority": "official_result",
+      "condition": "An artist receiving their first Proof Music Awards nomination this year wins a category during the broadcast.",
+      "exclusions": [
+        "A first win by a previously nominated artist does not count.",
+        "An off-air result published after the broadcast does not count for this square."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-first-time-winner",
+        "audience-upset-appetite"
+      ],
+      "probability_pct": 44,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The upset everyone says they want is only fun if somebody bet on it.",
+      "storyline_tags": [
+        "results",
+        "newcomers"
+      ]
+    },
+    {
+      "id": "artist-changes-outfit-mid-show",
+      "title": "Outfit Change Mid-Show",
+      "truth_authority": "official_result",
+      "condition": "One artist appears in visibly different outfits at two separate points of the live broadcast.",
+      "exclusions": [
+        "A change between the arrivals pre-show and the broadcast does not count.",
+        "Removing or adding a jacket does not count as a change."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-outfit-change",
+        "audience-outfit-focus"
+      ],
+      "probability_pct": 41,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "Tracking this properly requires actually watching the crowd shots.",
+      "storyline_tags": [
+        "outfits",
+        "crowd"
+      ]
+    },
+    {
+      "id": "collaborator-joins-the-podium",
+      "title": "Collaborator Joins The Podium",
+      "truth_authority": "official_result",
+      "condition": "A winner brings a credited collaborator up to the podium and that collaborator speaks.",
+      "exclusions": [
+        "A collaborator who stands silently does not count.",
+        "A category whose winners were all announced together does not count for this square."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-collaborator-podium"
+      ],
+      "probability_pct": 47,
+      "likelihood_tier": "toss_up",
+      "why_it_is_fun": "The shared award is where the night's alliances become visible.",
+      "storyline_tags": [
+        "speeches",
+        "collaboration"
+      ]
+    },
+    {
+      "id": "technical-fault-interrupts-the-feed",
+      "title": "Technical Fault On Air",
+      "truth_authority": "official_result",
+      "condition": "A visible or audible technical fault interrupts the live broadcast for at least several seconds.",
+      "exclusions": [
+        "A brief audio bleep for censorship does not count.",
+        "A viewer's own streaming buffer does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-technical-fault"
+      ],
+      "probability_pct": 30,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "Live television failing in public is the last unscripted thing left.",
+      "storyline_tags": [
+        "broadcast",
+        "chaos"
+      ]
+    },
+    {
+      "id": "trophy-is-dropped-on-stage",
+      "title": "Trophy Hits The Floor",
+      "truth_authority": "official_result",
+      "condition": "A trophy is dropped and hits the stage or floor on camera.",
+      "exclusions": [
+        "A trophy fumbled but caught does not count.",
+        "A trophy set down deliberately does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-trophy-drop"
+      ],
+      "probability_pct": 22,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "It is nobody's fault and everybody's favorite moment.",
+      "storyline_tags": [
+        "stage",
+        "chaos"
+      ]
+    },
+    {
+      "id": "winner-declines-to-speak",
+      "title": "Winner Says Nothing",
+      "truth_authority": "official_result",
+      "condition": "A winner accepts a trophy on stage and leaves without giving a speech.",
+      "exclusions": [
+        "A speech cut short by play-off music does not count.",
+        "An absent winner whose award is accepted by someone else does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-declined-speech"
+      ],
+      "probability_pct": 24,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "Silence on that stage is louder than anything anyone prepared.",
+      "storyline_tags": [
+        "speeches"
+      ]
+    },
+    {
+      "id": "presenter-misreads-a-name",
+      "title": "Presenter Misreads A Name",
+      "truth_authority": "official_result",
+      "condition": "A presenter says a nominee's or winner's name incorrectly on air.",
+      "exclusions": [
+        "A deliberate joke mispronunciation does not count.",
+        "A stumble that is corrected inside the same word does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-misread-name"
+      ],
+      "probability_pct": 20,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "Everyone hears it, and then everyone pretends they did not.",
+      "storyline_tags": [
+        "presenters",
+        "chaos"
+      ]
+    },
+    {
+      "id": "unannounced-guest-joins-a-performance",
+      "title": "Surprise Guest Performer",
+      "truth_authority": "official_result",
+      "condition": "An artist not listed for that performance slot joins it on stage during the broadcast.",
+      "exclusions": [
+        "A scheduled featured artist named in the broadcast listing does not count.",
+        "A backing band or dance ensemble does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-guest-performer"
+      ],
+      "probability_pct": 35,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The one thing the run-of-show is not allowed to tell you in advance.",
+      "storyline_tags": [
+        "performance"
+      ]
+    },
+    {
+      "id": "an-artist-wins-three-categories",
+      "title": "Three-Category Night",
+      "truth_authority": "official_result",
+      "condition": "One artist is credited as a winner in three or more categories across the broadcast and the official results post.",
+      "exclusions": [
+        "Nominations do not count toward the total.",
+        "Shared collaboration credits count once per category, not once per artist."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-sweep-ceiling",
+        "audience-sweep-appetite"
+      ],
+      "probability_pct": 28,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "This is the night that reshapes the leaderboard in one line.",
+      "storyline_tags": [
+        "results"
+      ]
+    },
+    {
+      "id": "nominee-loses-twice-on-camera",
+      "title": "Two Losses, One Camera",
+      "truth_authority": "official_result",
+      "condition": "The broadcast shows the same nominee reacting to losing two separate categories.",
+      "exclusions": [
+        "Two cutaways to the same nominee for one category do not count.",
+        "A nominee shown reacting to someone else's category does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-second-loss-reaction"
+      ],
+      "probability_pct": 32,
+      "likelihood_tier": "long_shot",
+      "why_it_is_fun": "The second cutaway is where sympathy turns into comedy.",
+      "storyline_tags": [
+        "crowd",
+        "camera"
+      ]
+    },
+    {
+      "id": "two-artists-tie-in-one-category",
+      "title": "A Declared Tie",
+      "truth_authority": "official_result",
+      "condition": "The ceremony declares two artists joint winners of the same category.",
+      "exclusions": [
+        "A shared collaboration award credited to multiple artists for one entry does not count.",
+        "An announced error later corrected to a single winner does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "prior-telecast-no-recorded-tie"
+      ],
+      "probability_pct": 8,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "It has never happened, which is exactly why somebody will take it.",
+      "storyline_tags": [
+        "results",
+        "chaos"
+      ]
+    },
+    {
+      "id": "broadcast-ends-ahead-of-schedule",
+      "title": "Show Ends Early",
+      "truth_authority": "official_result",
+      "condition": "The live broadcast signs off before its scheduled end time.",
+      "exclusions": [
+        "Ending on time to the minute does not count.",
+        "A regional feed cutting away early does not count."
+      ],
+      "adjudication": {
+        "proxies": "do_not_count",
+        "offscreen": "do_not_count",
+        "mentions": "do_not_count"
+      },
+      "title_review": {
+        "status": "approved",
+        "note": "The title names exactly the moment the condition requires and promises nothing wider."
+      },
+      "basis_claim_ids": [
+        "ceremony-three-hour-broadcast",
+        "prior-telecast-overrun"
+      ],
+      "probability_pct": 12,
+      "likelihood_tier": "chaos",
+      "why_it_is_fun": "Three hours of television finishing early would be the real upset.",
+      "storyline_tags": [
+        "broadcast"
+      ]
+    }
+  ],
+  "commentary_voices": [
+    {
+      "id": "tally",
+      "name": "Tally",
+      "instruction": "State what the record shows in short, plain sentences and never claim a result the record has not given you.",
+      "attitude_claim_ids": [
+        "style-guide-plain-record"
+      ],
+      "runtime": {
+        "slot": "narrator",
+        "role": "The Record",
+        "aliases": [
+          "scorekeeper"
+        ],
+        "post_show": {
+          "farewell": {
+            "order": 1,
+            "delay_seconds": 0,
+            "instruction": "Close the room by reading the final standings plainly, with no verdict of your own."
+          },
+          "keepsake": {
+            "instruction": "Summarize one player's night from the recorded picks and results, without ranking their taste."
+          }
+        }
+      }
+    },
+    {
+      "id": "flare",
+      "name": "Flare",
+      "instruction": "Speak as an openly partisan fan of whoever the room has just seen win, and never pretend to be neutral.",
+      "attitude_claim_ids": [
+        "style-guide-declared-partisan"
+      ],
+      "runtime": {
+        "slot": "rotating",
+        "role": "The Believer",
+        "aliases": [
+          "stan"
+        ],
+        "post_show": {
+          "farewell": {
+            "order": 2,
+            "delay_seconds": 14,
+            "instruction": "Close the room by defending your favorite of the night one last time."
+          },
+          "keepsake": {
+            "instruction": "Tell one player which of their commitments you would have made yourself."
+          }
+        }
+      }
+    },
+    {
+      "id": "archivum",
+      "name": "Archivum",
+      "instruction": "Measure tonight against the ceremonies that came before it, citing only what you have been given.",
+      "attitude_claim_ids": [
+        "style-guide-long-memory"
+      ],
+      "runtime": {
+        "slot": "rotating",
+        "role": "The Long Memory",
+        "aliases": [
+          "historian"
+        ],
+        "post_show": {
+          "farewell": {
+            "order": 3,
+            "delay_seconds": 29,
+            "instruction": "Close the room by placing tonight in the ceremony's longer record."
+          },
+          "keepsake": {
+            "instruction": "Judge one player's night against the recorded pattern of the evening."
+          }
+        }
+      }
+    },
+    {
+      "id": "glimmer",
+      "name": "Glimmer",
+      "instruction": "Care about arrivals, outfits and crowd reactions, and treat the awards themselves as background.",
+      "attitude_claim_ids": [
+        "style-guide-surface-watch"
+      ],
+      "runtime": {
+        "slot": "rotating",
+        "role": "The Arrivals Desk",
+        "aliases": [
+          "carpet"
+        ],
+        "post_show": {
+          "farewell": {
+            "order": 4,
+            "delay_seconds": 47,
+            "instruction": "Close the room with a last word on how the night looked rather than how it scored."
+          },
+          "keepsake": {
+            "instruction": "Describe one player's night as if it were an outfit you are reviewing."
+          }
+        }
+      }
+    }
+  ],
+  "commentary_requests": [],
+  "runtime_ceremonies": {
+    "milestones": [
+      {
+        "id": "first-three-results",
+        "declared_event_count": 3,
+        "voices": [
+          {
+            "voice_id": "tally",
+            "delay_seconds": 0,
+            "instruction": "Name the checkpoint and read only the recorded standings."
+          },
+          {
+            "voice_id": "flare",
+            "delay_seconds": 11,
+            "instruction": "React to the first three results as the partisan you are."
+          },
+          {
+            "voice_id": "archivum",
+            "delay_seconds": 23,
+            "instruction": "Compare the first three results to the pattern of earlier ceremonies."
+          },
+          {
+            "voice_id": "glimmer",
+            "delay_seconds": 38,
+            "instruction": "Report what the room and the arrivals looked like across the first three results."
+          }
+        ]
+      }
+    ]
+  }
+}

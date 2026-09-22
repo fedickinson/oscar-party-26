@@ -490,21 +490,28 @@ Black/Green picker self-hides outside its pinned historical pack.
 **Goal:** arrive at the next watch event with a tested pack and an operator who
 has already run the exact night once.
 
-- [ ] Select the property, installment, screen-canon cutoff and expected group
-  size.
-- [ ] Choose a product shell and fill its game contract deliberately.
-- [ ] Build the roster, propositions, exact trigger contracts, calibration,
+- [x] Select the property, installment, screen-canon cutoff and expected group
+  size. The 2026 MTV Video Music Awards, September 27, 2026, four to ten remote
+  players; brief at `show-packs/research/vma-2026/BRIEF.md`.
+- [x] Choose a product shell and fill its game contract deliberately. Results
+  Night with the exact executable profile; decisions D1-D10 in the brief.
+- [x] Build the roster, propositions, exact trigger contracts, calibration,
   bingo, cast dossiers, visual assets and commentary requests through the
-  factory.
+  factory. Hand-authored as a first-of-property schema-v4 pack from six
+  research packets (the factory needs a predecessor receipt); compiles
+  publishable with 67 artists, 23 categories, 12 beats, 64 bingo squares and
+  a five-voice runtime cast. Search-summary grade pending round-two sources.
 - [ ] Perform the required source, canon, trigger-title, portrait and grounded
   prose reviews.
-- [ ] Activate the published pack in a local rehearsal room.
+- [x] Activate the published pack in a local rehearsal room. Done 2026-09-21 on
+  the sandbox stack (Docker-free, no Realtime) with a full attestation.
 - [ ] Rehearse with a host and at least one second client at 375 by 812.
 - [ ] Exercise missing players, incomplete portfolios, rapid declarations,
   mistaken declarations, blocked AI prose, host reload and room closure.
 - [ ] Produce and inspect a full settlement receipt and ceremony from synthetic
   rehearsal facts.
-- [ ] Write the show-specific operator checklist and rollback path.
+- [x] Write the show-specific operator checklist and rollback path
+  (`show-packs/research/vma-2026/OPERATOR-CHECKLIST.md`).
 
 **Next-event readiness gate**
 
@@ -716,6 +723,11 @@ a new primitive:
 | 2026-08-12 | Conviction revisions are append-only. | The timing and evolution of belief are part of the product's value. |
 | 2026-08-12 | Settled receipts, not AI summaries, own evolving canon. | Grounding and reproducibility require provenance. |
 | 2026-08-12 | P0-P3 define next-event readiness. | Campaign work must not delay a reusable one-night game. |
+| 2026-09-21 | The 2026 VMAs are the P3 event, on the Results Night shell, as a private remote beta. | First pack-authored awards show; public launch and payments are not ready and are not the goal. |
+| 2026-09-21 | The VMA unit of play is the artist, not the video. | Draft rivalry over named artists is the engagement hook; videos spread value across names nobody roots for. |
+| 2026-09-21 | Bingo stays self-marked; host-adjudicated bingo is deferred. | Host approval was the Oscars-night bottleneck; settlement already re-warrants marks. |
+| 2026-09-21 | Draft point pricing is set by simulation through the real scoring library, not by argument. | The bingo rebalance already used the same method; odds arrive from research midweek. |
+| 2026-09-21 | VMA draft pricing is 3 points for marquee categories and 2 for all others. | The 8/6 placeholder let draft slot one win 42 percent of simulated six-player nights; 3/2 holds it at 27 percent, 31 percent with Taylor Swift absent. See `show-packs/research/vma-2026/SIMULATION.md`. |
 
 ## How to maintain this plan
 

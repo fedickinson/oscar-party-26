@@ -71,6 +71,15 @@ constructed from an explicit public allowlist. Put raw excerpts and private
 research notes beside the authoring pack, never inside it; an unknown field is a
 compile error rather than content that can leak into the public bundle.
 
+`examples/results-night-proof.json` is a complete, compilable schema-v4 Results
+Night pack for a fictional awards show: the exact executable confidence contract,
+official-result truth authority on every wager, six draftable artists with sealed
+portrait tiles under `public/portraits/`, tiered categories, official-result
+signature beats, a bingo pool that deals the balanced board, and four runtime
+voices with post-show cadence. Author a real awards-show pack by copying it.
+`scripts/generate-portrait-tiles.mts --pack ID --entities a,b,c` emits the
+deterministic tiles and prints each SHA-256 for the portrait block.
+
 `examples/hotd-s3e8-proof.json` is deliberately a representative migration
 slice of the hand-authored HotD material, not the full activatable catalog. It
 proves the contract and compiler without presenting partial content as a show.

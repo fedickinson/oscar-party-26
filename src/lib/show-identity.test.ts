@@ -1,0 +1,198 @@
+import { describe, expect, it } from 'vitest'
+import { LEGACY_SHOW_PACK_ID } from './catalog-scope'
+import {
+  FEATURED_SHOW_IDENTITY,
+  LEGACY_SHOW_IDENTITY,
+  UNBOUND_SHOW_IDENTITY,
+  confidencePhaseTitle,
+  confidenceTierLabel,
+  draftPoolNoun,
+  draftRosterNoun,
+  draftSubPhaseLabel,
+  isLegacyShowPack,
+  showIdentityFromPackRow,
+  showIdentityKicker,
+  showIdentityLine,
+  showIdentityMastheadLine,
+  showIdentityPresentsProperty,
+} from './show-identity'
+
+const VMA_ROW = {
+  title: '2026 MTV Video Music Awards',
+  property: 'MTV Video Music Awards',
+  installment: '2026',
+}
+const VMA_PACK_ID = '6a1c0f7e-2d44-4a10-9b0e-41f0b0a5b7c2'
+
+describe('isLegacyShowPack', () => {
+  it('recognizes only the pinned legacy id', () => {
+    expect(isLegacyShowPack(LEGACY_SHOW_PACK_ID)).toBe(true)
+    expect(isLegacyShowPack(VMA_PACK_ID)).toBe(false)
+    expect(isLegacyShowPack(null)).toBe(false)
+    expect(isLegacyShowPack(undefined)).toBe(false)
+  })
+})
+
+describe('showIdentityFromPackRow', () => {
+  it('keeps the legacy pack on its pinned copy whatever the row says', () => {
+    expect(showIdentityFromPackRow(LEGACY_SHOW_PACK_ID, VMA_ROW)).toEqual(LEGACY_SHOW_IDENTITY)
+    expect(showIdentityFromPackRow(LEGACY_SHOW_PACK_ID, null)).toEqual(LEGACY_SHOW_IDENTITY)
+  })
+
+  it('names a non-legacy pack from its registry row and never says legacy copy', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    expect(identity).toEqual({
+      title: '2026 MTV Video Music Awards',
+      property: 'MTV Video Music Awards',
+      installment: '2026',
+      isLegacy: false,
+    })
+    expect(JSON.stringify(identity)).not.toMatch(/dragon/i)
+  })
+
+  it('falls back to the unbound identity when nothing is bound or nothing is named', () => {
+    expect(showIdentityFromPackRow(null, null)).toEqual(UNBOUND_SHOW_IDENTITY)
+    expect(showIdentityFromPackRow(VMA_PACK_ID, null)).toEqual(UNBOUND_SHOW_IDENTITY)
+    expect(showIdentityFromPackRow(VMA_PACK_ID, { title: '  ', property: '', installment: null }))
+      .toEqual(UNBOUND_SHOW_IDENTITY)
+  })
+
+  it('carries a missing half as null rather than a blank string', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, { title: 'One Night Only' })
+    expect(identity.property).toBeNull()
+    expect(identity.installment).toBeNull()
+    expect(identity.title).toBe('One Night Only')
+  })
+})
+
+describe('showIdentityLine', () => {
+  it('joins the halves that exist', () => {
+    expect(showIdentityLine(LEGACY_SHOW_IDENTITY)).toBe('House of the Dragon — Season 3 Finale')
+    expect(showIdentityLine(showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)))
+      .toBe('MTV Video Music Awards — 2026')
+    expect(showIdentityLine(showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW), ' · '))
+      .toBe('MTV Video Music Awards · 2026')
+  })
+
+  it('falls back to the title when the pack names neither half', () => {
+    expect(showIdentityLine(showIdentityFromPackRow(VMA_PACK_ID, { title: 'One Night Only' })))
+      .toBe('One Night Only')
+  })
+
+  it('never emits legacy copy for the unbound identity', () => {
+    expect(showIdentityLine(UNBOUND_SHOW_IDENTITY)).toBe('Tonight’s show')
+  })
+})
+
+describe('FEATURED_SHOW_IDENTITY', () => {
+  it('names the show a room-less route puts on tonight', () => {
+    expect(FEATURED_SHOW_IDENTITY).toEqual({
+      title: '2026 VMAs',
+      property: 'MTV Video Music Awards',
+      installment: 'Sunday, September 27',
+      isLegacy: false,
+    })
+  })
+
+  it('is not the unbound identity and carries no legacy copy', () => {
+    expect(FEATURED_SHOW_IDENTITY).not.toEqual(UNBOUND_SHOW_IDENTITY)
+    expect(JSON.stringify(FEATURED_SHOW_IDENTITY)).not.toMatch(/dragon|oscar|academy award/i)
+  })
+})
+
+describe('masthead stack', () => {
+  it('presents the featured show as kicker, wordmark and dated line', () => {
+    expect(showIdentityPresentsProperty(FEATURED_SHOW_IDENTITY)).toBe(true)
+    expect(showIdentityKicker(FEATURED_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('MTV Video Music Awards')
+    expect(FEATURED_SHOW_IDENTITY.title).toBe('2026 VMAs')
+    expect(showIdentityMastheadLine(FEATURED_SHOW_IDENTITY)).toBe('Sunday, September 27')
+    expect(showIdentityMastheadLine(FEATURED_SHOW_IDENTITY, ' · ')).toBe('Sunday, September 27')
+  })
+
+  it('keeps the legacy masthead exactly as it shipped', () => {
+    expect(showIdentityPresentsProperty(LEGACY_SHOW_IDENTITY)).toBe(false)
+    expect(showIdentityKicker(LEGACY_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('Watch Party presents')
+    expect(showIdentityKicker(LEGACY_SHOW_IDENTITY, 'Watch Party')).toBe('Watch Party')
+    expect(showIdentityMastheadLine(LEGACY_SHOW_IDENTITY))
+      .toBe('House of the Dragon — Season 3 Finale')
+    expect(showIdentityMastheadLine(LEGACY_SHOW_IDENTITY, ' · '))
+      .toBe('House of the Dragon · Season 3 Finale')
+  })
+
+  it('leaves the platform kicker in place when there is nothing to present', () => {
+    expect(showIdentityPresentsProperty(UNBOUND_SHOW_IDENTITY)).toBe(false)
+    expect(showIdentityKicker(UNBOUND_SHOW_IDENTITY, 'Watch Party presents'))
+      .toBe('Watch Party presents')
+    expect(showIdentityMastheadLine(UNBOUND_SHOW_IDENTITY)).toBe('Tonight’s show')
+
+    // A pack that names one half only keeps that half on the line.
+    const titleOnly = showIdentityFromPackRow(VMA_PACK_ID, { title: 'One Night Only' })
+    expect(showIdentityPresentsProperty(titleOnly)).toBe(false)
+    expect(showIdentityKicker(titleOnly, 'Watch Party')).toBe('Watch Party')
+    expect(showIdentityMastheadLine(titleOnly)).toBe('One Night Only')
+
+    const propertyOnly = showIdentityFromPackRow(VMA_PACK_ID, { property: 'A Property' })
+    expect(showIdentityPresentsProperty(propertyOnly)).toBe(false)
+    expect(showIdentityMastheadLine(propertyOnly)).toBe('A Property')
+  })
+
+  it('presents any pack that names both halves, not only the featured one', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    expect(showIdentityKicker(identity, 'Watch Party')).toBe('MTV Video Music Awards')
+    expect(showIdentityMastheadLine(identity)).toBe('2026')
+  })
+})
+
+describe('pool copy', () => {
+  it('keeps the legacy pools named as they were', () => {
+    expect(draftSubPhaseLabel('film', LEGACY_SHOW_IDENTITY)).toBe('Claim a dragon')
+    expect(draftSubPhaseLabel('person', LEGACY_SHOW_IDENTITY)).toBe('Draft your characters')
+    expect(draftPoolNoun('film', 1, LEGACY_SHOW_IDENTITY)).toBe('dragon')
+    expect(draftPoolNoun('film', 3, LEGACY_SHOW_IDENTITY)).toBe('dragons')
+    expect(draftPoolNoun('person', 2, LEGACY_SHOW_IDENTITY)).toBe('characters')
+    expect(draftRosterNoun(LEGACY_SHOW_IDENTITY)).toBe('characters and dragons')
+  })
+
+  it('says nothing legacy for any other pack', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    const strings = [
+      draftSubPhaseLabel('film', identity),
+      draftSubPhaseLabel('person', identity),
+      draftPoolNoun('film', 1, identity),
+      draftPoolNoun('film', 4, identity),
+      draftPoolNoun('person', 1, identity),
+      draftPoolNoun('person', 4, identity),
+      draftRosterNoun(identity),
+    ]
+    for (const text of strings) {
+      expect(text).not.toMatch(/dragon|oscar|academy award|film encyclopedia/i)
+    }
+    expect(draftSubPhaseLabel('person', identity)).toBe('Draft your roster')
+    expect(draftPoolNoun('person', 4, identity)).toBe('people')
+  })
+})
+
+describe('confidence copy', () => {
+  it('keeps the legacy tier labels and phase title exactly as shipped', () => {
+    expect(confidencePhaseTitle(LEGACY_SHOW_IDENTITY)).toBe('Prestige Picks')
+    expect(confidenceTierLabel(1, LEGACY_SHOW_IDENTITY)).toBe('Major Awards')
+    expect(confidenceTierLabel(2, LEGACY_SHOW_IDENTITY)).toBe('Prestige Craft')
+    expect(confidenceTierLabel(3, LEGACY_SHOW_IDENTITY)).toBe('Technical & Performance')
+    expect(confidenceTierLabel(4, LEGACY_SHOW_IDENTITY)).toBe('Specialty')
+    expect(confidenceTierLabel(5, LEGACY_SHOW_IDENTITY)).toBe('Short Films')
+    expect(confidenceTierLabel(6, LEGACY_SHOW_IDENTITY)).toBe('Tier 6')
+  })
+
+  it('numbers the tiers and names no awards show for any other pack', () => {
+    const identity = showIdentityFromPackRow(VMA_PACK_ID, VMA_ROW)
+    expect(confidencePhaseTitle(identity)).toBe('Predictions')
+    expect(confidencePhaseTitle(UNBOUND_SHOW_IDENTITY)).toBe('Predictions')
+    for (const tier of [1, 2, 3, 4, 5]) {
+      expect(confidenceTierLabel(tier, identity)).toBe(`Tier ${tier}`)
+      expect(confidenceTierLabel(tier, UNBOUND_SHOW_IDENTITY)).toBe(`Tier ${tier}`)
+      expect(confidenceTierLabel(tier, identity)).not.toMatch(/award|prestige|craft|short film|specialty/i)
+    }
+  })
+})

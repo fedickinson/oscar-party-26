@@ -9,8 +9,8 @@
  *   collapsed → only players who scored (non-zero impact)
  *   expanded  → all players, zero-impact ones shown muted
  *
- * Color conventions (consistent with Leaderboard badges):
- *   Confidence impacts: blue  (text-blue-400, border-l-blue-500)
+ * Color conventions:
+ *   Confidence impacts: the state tokens — positive / negative / dim for zero
  *   Draft impacts:      purple (text-purple-400, border-l-purple-500)
  */
 
@@ -18,14 +18,21 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Crown, ScrollText } from 'lucide-react'
 import Avatar from '../Avatar'
-import { CategoryIcon } from '../../lib/category-icons'
-import { FilmIcon } from '../../lib/film-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
+import { FilmIcon } from '../ui/FilmIcon'
+import { confidenceTierLabel, type ShowIdentity } from '../../lib/show-identity'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 import type { FeedEvent, PlayerImpact } from '../../hooks/useScores'
 
 // ─── Tier badge ───────────────────────────────────────────────────────────────
 
-function TierBadge({ tier }: { tier: number }) {
-  const label = tier === 1 ? 'Big 6' : tier === 2 ? 'Major' : tier === 3 ? 'Craft' : 'Short'
+function TierBadge({ tier, identity }: { tier: number; identity: ShowIdentity }) {
+  // The short awards-ceremony names are authored legacy copy, kept exactly.
+  // Every other pack numbers its tiers through the canonical owner rather than
+  // borrowing another show's vocabulary.
+  const label = identity.isLegacy
+    ? (tier === 1 ? 'Big 6' : tier === 2 ? 'Major' : tier === 3 ? 'Craft' : 'Short')
+    : confidenceTierLabel(tier, identity)
   const color =
     tier === 1
       ? 'bg-accent/20 text-accent border-accent/30'
@@ -45,21 +52,33 @@ function PlayerImpactRow({ impact, muted }: { impact: PlayerImpact; muted: boole
   const hasConfidence = impact.confidenceDelta > 0 || impact.confidencePickedName !== null
   const hasDraft = impact.draftDelta > 0
 
+  // State colour is faction-neutral and comes from the token contract: a
+  // scoring delta is bone, a losing one ash, and a zero delta stays dim.
+  const confidenceTone =
+    impact.confidenceDelta > 0
+      ? 'var(--t-positive)'
+      : impact.confidenceDelta < 0
+        ? 'var(--t-negative)'
+        : 'var(--t-text-dim)'
+
   return (
     <div className={`space-y-0.5 ${muted ? 'opacity-35' : ''}`}>
       {hasConfidence && (
-        <div className="flex items-center gap-2 pl-2 border-l-2 border-blue-500/60">
+        <div
+          className="flex items-center gap-2 pl-2 border-l-2"
+          style={{ borderColor: confidenceTone }}
+        >
           <Avatar avatarId={impact.avatarId} size="sm" emotion="neutral" />
           {impact.confidenceCorrect ? (
-            <span className="text-xs text-blue-400">
+            <span className="text-xs" style={{ color: confidenceTone }}>
               <span className="font-medium">{impact.playerName}</span>
               {': C+'}
               <span className="font-bold">{impact.confidenceDelta}</span>
               <span className="text-white/40"> (picked with {impact.confidenceDelta})</span>
             </span>
           ) : (
-            <span className="text-xs text-white/40">
-              <span className="font-medium text-white/55">{impact.playerName}</span>
+            <span className="text-xs" style={{ color: confidenceTone }}>
+              <span className="font-medium text-[var(--t-text-muted)]">{impact.playerName}</span>
               {impact.confidencePickedName
                 ? `: picked ${impact.confidencePickedName} — 0`
                 : ': no pick — 0'}
@@ -86,7 +105,7 @@ function PlayerImpactRow({ impact, muted }: { impact: PlayerImpact; muted: boole
 
 // ─── WinnerCard ───────────────────────────────────────────────────────────────
 
-function WinnerCard({ entry }: { entry: Extract<FeedEvent, { kind: 'winner' }> }) {
+function WinnerCard({ entry, identity }: { entry: Extract<FeedEvent, { kind: 'winner' }>; identity: ShowIdentity }) {
   const [expanded, setExpanded] = useState(false)
 
   const scoringImpacts = entry.playerImpacts.filter(
@@ -120,7 +139,7 @@ function WinnerCard({ entry }: { entry: Extract<FeedEvent, { kind: 'winner' }> }
             <span className="text-[10px] text-white/35 uppercase tracking-widest">
               {entry.categoryName}
             </span>
-            <TierBadge tier={entry.categoryTier} />
+            <TierBadge tier={entry.categoryTier} identity={identity} />
           </div>
           <span className="text-xs text-white/30 flex-shrink-0">
             {entry.categoryPoints}pt cat
@@ -202,6 +221,8 @@ interface Props {
 }
 
 export default function ActivityFeed({ feed }: Props) {
+  const { identity } = useShowIdentity()
+
   if (feed.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 gap-2">
@@ -216,7 +237,7 @@ export default function ActivityFeed({ feed }: Props) {
       <AnimatePresence initial={false}>
         {feed.map((event) =>
           event.kind === 'winner' ? (
-            <WinnerCard key={`winner-${event.categoryId}`} entry={event} />
+            <WinnerCard key={`winner-${event.categoryId}`} entry={event} identity={identity} />
           ) : (
             <LeadChangeCard
               key={`lead-${event.leaderId}-${event.time.getTime()}`}

@@ -12,6 +12,7 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createClient } from '@supabase/supabase-js'
@@ -25,7 +26,7 @@ import {
 import { supabaseConfig } from './lib/env.mts'
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
-const workspace = mkdtempSync('/private/tmp/show-pack-activation-')
+const workspace = mkdtempSync(join(tmpdir(), 'show-pack-activation-'))
 const { target, url, anonKey, serviceKey } = supabaseConfig('local')
 if (target !== 'local') throw new Error('show-pack activation dogfood is local-only')
 if (!serviceKey) throw new Error('local Supabase did not report a service role key')

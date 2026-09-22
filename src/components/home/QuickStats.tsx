@@ -11,6 +11,8 @@ import { BarChart2, Zap, TrendingUp, CheckCircle, Info, Target } from 'lucide-re
 import { useGame } from '../../context/GameContext'
 import type { CategoryRow, ConfidencePickRow, DraftPickRow, DraftEntityRow, NomineeRow } from '../../types/database'
 import { findDraftPointsForWinner, type ScoredPlayer } from '../../lib/scoring'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
+import { draftPoolNoun, draftRosterNoun } from '../../lib/show-identity'
 
 interface Props {
   isPreCeremony: boolean
@@ -47,6 +49,7 @@ function PreCeremonyStats({
   categories, nominees, confidencePicks, draftPicks, draftEntities,
 }: Omit<Props, 'isPreCeremony' | 'leaderboard'>) {
   const { players } = useGame()
+  const { identity: showIdentity } = useShowIdentity()
 
   // Draft Breakdown: count draft picks per player grouped by entity type
   const draftBreakdown = useMemo(() => {
@@ -142,10 +145,12 @@ function PreCeremonyStats({
               </div>
               <div className="flex gap-2 flex-shrink-0 text-xs text-right">
                 <div className="text-white/50">
-                  <span className="text-accent font-medium">{filmCount}</span> dragons
+                  <span className="text-accent font-medium">{filmCount}</span>{' '}
+                  {draftPoolNoun('film', filmCount, showIdentity)}
                 </div>
                 <div className="text-white/50">
-                  <span className="text-white/80 font-medium">{personCount}</span> characters
+                  <span className="text-white/80 font-medium">{personCount}</span>{' '}
+                  {draftPoolNoun('person', personCount, showIdentity)}
                 </div>
               </div>
             </div>
@@ -274,11 +279,12 @@ interface DraftHitEntry {
 }
 
 function DraftHitRateCard({ draftEfficiency }: { draftEfficiency: DraftHitEntry[] }) {
+  const { identity: showIdentity } = useShowIdentity()
   return (
     <InfoStatCard
       icon={TrendingUp}
       label="Roster hit rate"
-      info="Of all the characters and dragons you drafted, how many have scored at least once. Higher means your roster is doing things. It doesn't count points — just whether your picks are showing up."
+      info={`Of all the ${draftRosterNoun(showIdentity)} you drafted, how many have scored at least once. Higher means your roster is doing things. It doesn't count points — just whether your picks are showing up.`}
     >
       <div className="space-y-2">
         {draftEfficiency.map(({ player, pct, won, total }) => (
@@ -405,7 +411,7 @@ function LiveStats({
       {showTop && <InfoStatCard
         icon={CheckCircle}
         label="Categories remaining"
-        info="How many of the 24 Oscar categories are still to be announced tonight. The bar fills as winners are called — when it's full, the ceremony is over."
+        info={`How many of the ${categories.length} categories are still to be announced tonight. The bar fills as winners are called — when it's full, the show is over.`}
       >
         <div className="flex items-center gap-3">
           <div className="flex-1">

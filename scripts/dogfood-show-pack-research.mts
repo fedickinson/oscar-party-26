@@ -2,6 +2,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -12,7 +13,7 @@ import { serializeSettlementReceipt, type SettlementReceipt } from '../src/lib/s
 import { sha256Hex } from '../src/lib/sha256'
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
-const workspace = mkdtempSync('/private/tmp/show-pack-research-')
+const workspace = mkdtempSync(join(tmpdir(), 'show-pack-research-'))
 let checks = 0
 
 function check(condition: unknown, message: string): asserts condition {

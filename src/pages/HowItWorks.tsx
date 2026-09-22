@@ -22,6 +22,13 @@
  * draft scoring — are exactly the parts behind a disclosure. Rewriting a
  * ladder is a contained edit; the visible spine does not move.
  *
+ * TWO NIGHTS, ONE PAGE
+ * The paragraph above describes the legacy night: a shared streaming playback
+ * that stops and starts together. A live broadcast has no shared playback at
+ * all — own feed, no pause, the host declaring on the fastest stream — so the
+ * remote, the drift and the pause sequence render only for the legacy identity,
+ * and every other identity gets the Live broadcast section in their place.
+ *
  * THIS IS NOT A RULES REFERENCE
  * The in-app PhaseExplainer covers each mini-game at the moment you need it.
  * This page is what comes first: what we are agreeing to, and why the pauses
@@ -44,12 +51,22 @@ import {
   ChevronDown,
   Clock,
   Hand,
+  ListChecks,
   MessageCircle,
+  MessageSquare,
   Pause,
   Play,
+  Radio,
   Tv,
 } from 'lucide-react'
 import { Hallmark } from '../components/ui/Hallmarks'
+import { useGame } from '../context/GameContext'
+import { useShowIdentity } from '../hooks/useShowIdentity'
+import {
+  FEATURED_SHOW_IDENTITY,
+  showIdentityKicker,
+  showIdentityMastheadLine,
+} from '../lib/show-identity'
 
 // ─── Tonight ──────────────────────────────────────────────────────────────────
 // The only block that changes between parties. `null` on any time renders a
@@ -57,8 +74,11 @@ import { Hallmark } from '../components/ui/Hallmarks'
 // the schedule is settled.
 
 const TONIGHT = {
-  event: 'House of the Dragon',
-  episode: 'Season 3, the finale',
+  /**
+   * The show itself is no longer named here. It comes from the pack the reader's
+   * room is bound to (`useShowIdentity`), falling back to the platform's own
+   * unbound wording for a stranger who has not joined anything yet.
+   */
   date: 'Sunday 9 August',
   /** Shown big at the bottom. null hides the code block entirely. */
   roomCode: null as string | null,
@@ -108,6 +128,13 @@ const TONIGHT = {
 // ─── The pact ─────────────────────────────────────────────────────────────────
 // Five, not ten. A list nobody finishes reading protects nothing. Deliberately
 // never collapsed — this is the payload of the whole page.
+//
+// Two versions, because the two nights make opposite promises. The legacy pact
+// is a shared streaming playback: one remote, stops between scenes, nobody
+// ahead of anybody. A live broadcast has none of that — everyone is on their
+// own feed, nothing pauses, and chat runs ahead of the slow streams. Stating
+// the streaming pact over a broadcast would be the one thing this page cannot
+// afford: instructions that are not true tonight.
 
 const PACT = [
   {
@@ -129,6 +156,30 @@ const PACT = [
   {
     title: `${TONIGHT.gameMaster} calls it, and that is the call.`,
     body: 'Someone has to decide what counted and who it counted for. Argue at the break, in good faith, briefly — then let it go and watch the show.',
+  },
+]
+
+/** The same five promises for a live broadcast nobody can pause. */
+const LIVE_PACT = [
+  {
+    title: 'The show never waits for the game.',
+    body: 'Nothing in here needs you mid-moment. A bingo claim is two taps. Scoring happens without you. The draft is finished before the broadcast starts.',
+  },
+  {
+    title: 'Everyone is on their own feed.',
+    body: 'There is no shared play button and nothing to pause. Watch wherever the show reaches you, on whatever carries it, and the game runs underneath that.',
+  },
+  {
+    title: 'The room moves at the fastest feed.',
+    body: 'The host declares each result as it happens on theirs, and chat follows the host rather than your stream. If you are running behind, chat is a spoiler — that is the trade for a room that reacts together.',
+  },
+  {
+    title: 'Missing it costs you bingo, and nothing else.',
+    body: 'Your picks and your draft score in full whether or not you are watching. Only the card needs your eyes on the show.',
+  },
+  {
+    title: 'The host calls it, and that is the call.',
+    body: 'Someone has to decide what counted and who it counted for. Argue in chat, in good faith, briefly — then let it go and watch the show.',
   },
 ]
 
@@ -389,6 +440,20 @@ function Rule() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HowItWorks() {
+  // The reader may be a stranger with the link and no room at all. With no room
+  // there is no pack to name, so the page names the featured show; a reader who
+  // does have a session gets their own room's identity, legacy or otherwise.
+  const { room } = useGame()
+  const { identity: boundIdentity } = useShowIdentity()
+  const showIdentity = room == null ? FEATURED_SHOW_IDENTITY : boundIdentity
+  const isLegacy = showIdentity.isLegacy
+  // Nobody is named to a reader who is not in the legacy party: the person
+  // declaring results is whoever is hosting that room.
+  const caller = isLegacy ? TONIGHT.gameMaster : 'the host'
+  const pact = isLegacy ? PACT : LIVE_PACT
+  // Rendered only under `isLegacy` below: the running order is that event's.
+  const schedule = TONIGHT.schedule
+
   return (
     <div
       className="flex flex-col gap-10"
@@ -406,27 +471,31 @@ export default function HowItWorks() {
             from an ancestor. 88px sits inside the Dance's declared 48–160
             drawing range, where its heads and membrane fingers actually read. */}
         <span style={HALLMARK_RELIEF}>
-          <Hallmark id="hallmark-dance" size={88} />
+          {isLegacy
+            ? <Hallmark id="hallmark-dance" size={88} />
+            : <Tv size={88} strokeWidth={1} aria-hidden />}
         </span>
         <span
           className="text-[12px] font-semibold uppercase tracking-[0.3em]"
           style={{ color: 'var(--t-ornament-muted)' }}
         >
-          Watch Party
+          {showIdentityKicker(showIdentity, 'Watch Party')}
         </span>
         <h1
           className="text-[42px] leading-none"
           style={{ fontFamily: 'var(--font-family-display)', color: 'var(--t-text)' }}
         >
-          Fire &amp; Blood
+          {isLegacy ? <>Fire &amp; Blood</> : showIdentity.title}
         </h1>
         <div className="flex flex-col gap-0.5">
           <p className="text-[14px]" style={{ color: 'var(--t-text-muted)' }}>
-            {TONIGHT.event} &middot; {TONIGHT.episode}
+            {showIdentityMastheadLine(showIdentity, ' \u00b7 ')}
           </p>
-          <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
-            {TONIGHT.date}
-          </p>
+          {isLegacy && (
+            <p className="text-[14px]" style={{ color: 'var(--t-text-dim)' }}>
+              {TONIGHT.date}
+            </p>
+          )}
         </div>
       </motion.header>
 
@@ -437,14 +506,27 @@ export default function HowItWorks() {
         transition={{ duration: 0.4, delay: 0.08, ease: [0.2, 0.8, 0.2, 1] }}
         className="material-vellum deckled px-6 py-7"
       >
-        <p
-          className="text-[18px] leading-[1.5] font-semibold"
-          style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
-        >
-          To the lords and ladies of the realm, and to you in particular: you are
-          summoned to the last hour of the Dance. We watch it together tonight, though we
-          sit in different halls, and a game runs beneath the episode.
-        </p>
+        {/* The summons is written in the Dance's own voice, so it belongs to
+            that identity only. Every other show gets the same promise in plain
+            language rather than a realm it is not set in. */}
+        {isLegacy ? (
+          <p
+            className="text-[18px] leading-[1.5] font-semibold"
+            style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+          >
+            To the lords and ladies of the realm, and to you in particular: you are
+            summoned to the last hour of the Dance. We watch it together tonight, though we
+            sit in different halls, and a game runs beneath the episode.
+          </p>
+        ) : (
+          <p
+            className="text-[18px] leading-[1.5] font-semibold"
+            style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
+          >
+            You are invited: we watch tonight together, though we sit in different
+            rooms, and a game runs beneath the show.
+          </p>
+        )}
         <p
           className="text-[18px] leading-[1.5] font-semibold mt-4"
           style={{ fontFamily: 'var(--font-family-manuscript)', color: 'var(--t-ink)' }}
@@ -466,7 +548,7 @@ export default function HowItWorks() {
         </P>
 
         <ol className="flex flex-col gap-3">
-          {PACT.map((item, i) => (
+          {pact.map((item, i) => (
             <li key={item.title} className="relief-glass p-4 flex gap-3.5">
               <span
                 className="flex-shrink-0 grid place-items-center w-7 h-7 border text-[16px]"
@@ -508,12 +590,21 @@ export default function HowItWorks() {
         </P>
 
         <div className="flex flex-col gap-3">
-          {/* Draft — Signature Beats. The system is locked; the beat lists are
-              still being loaded, hence the draftBeatsLive note at the bottom. */}
+          {/* Draft. Both identities render this card: the legacy summary
+              describes Signature Beats, whose system is locked while the beat
+              lists are still being loaded — hence the draftBeatsLive note in
+              the legacy-only rows below — and every other identity gets the
+              plain roster summary instead. */}
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>}
+            /* The hallmarks are Westerosi heraldry and they are drawn to be
+               read large; at 28px, next to plain-language copy about a
+               broadcast, they are both off-show and illegible. A lucide glyph
+               at the same size in the same ornament token reads at a glance. */
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-claim" size={28} /></span>
+              : <ListChecks size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="Before — you draft"
-            summary={
+            summary={isLegacy ? (
               <>
                 One dragon each, then four characters each, taken in turns. Drafting the
                 character is only half of it: for every character you take, you then choose
@@ -522,8 +613,17 @@ export default function HowItWorks() {
                 An activated beat scores if it happens tonight. A beat you left off pays
                 nothing, however loudly it happens.
               </>
-            }
+            ) : (
+              <>
+                You draft from the board in turns, and the roster you end up with is the
+                whole bet &mdash; there is nothing to choose or confirm afterwards. Every
+                category the show declares pays its points to whoever is holding the winner,
+                so a roster is a spread of claims on the night.
+              </>
+            )}
           >
+            {isLegacy && (
+            <>
             <Disclosure label="Why no character is the best pick">
               <P>
                 Every legal set of three lands in the same 60&ndash;90 point band. How many
@@ -555,9 +655,32 @@ export default function HowItWorks() {
                 Characters score at one and a half times, so a 45-point wild beat actually
                 pays 67 &mdash; enough to swing the whole night on one moment. That is
                 deliberate, and it is why the wild band has to stay genuinely unlikely.
-                Dragons pay at face value.
+                {isLegacy && ' Dragons pay at face value.'}
               </P>
             </Disclosure>
+            </>
+            )}
+            {/* Beats are inert on a Results Night pack, so what a pick is worth
+                there is the category value itself — the rule `src/lib/scoring.ts`
+                applies, with no activation step in front of it. */}
+            {!isLegacy && (
+            <Disclosure label="What a pick is worth">
+              <P>
+                Each category on the board carries its own point value, set by how much of
+                the night it is. When the host declares a winner, those points go to whoever
+                drafted them &mdash; and to nobody, if nobody did.
+              </P>
+              <P>
+                A winner you drafted as a person pays one and a half times the category,
+                rounded. So the spread matters more than any single name: a roster with a
+                claim in more categories outscores one stacked on a single favourite.
+              </P>
+            </Disclosure>
+            )}
+            {/* The two worked examples below name the legacy pack's characters;
+                another pack's forks and shared beats are its own, so the rule is
+                stated only where the example is true. */}
+            {isLegacy && (
             <Disclosure label="You are allowed to bet both ways">
               <P>
                 Beats come in forks. Daemon can make peace with Rhaenyra or openly defy her.
@@ -571,6 +694,8 @@ export default function HowItWorks() {
                 game.
               </P>
             </Disclosure>
+            )}
+            {isLegacy && (
             <Disclosure label="Some beats pay two people">
               <P>
                 Eight beats name two characters, and both drafters score. If a conscious
@@ -585,6 +710,10 @@ export default function HowItWorks() {
                 shouts.
               </P>
             </Disclosure>
+            )}
+            {/* The opening one-each round only exists on the legacy pack; a pack
+                with no second pool never runs it, so the rule is not stated. */}
+            {isLegacy && (
             <Disclosure label="Dragons work differently">
               <P>
                 Dragons go first, everyone gets exactly one, and there are only eleven, so
@@ -596,17 +725,20 @@ export default function HowItWorks() {
                 face value rather than one and a half times.
               </P>
             </Disclosure>
+            )}
             <Disclosure label="How the round actually runs">
               <P>
                 Snake order, 45 seconds a pick &mdash; miss the clock and it moves on
                 without you. This is the only part of the night that needs everyone in the
                 app at the same time.
               </P>
+              {isLegacy && (
               <P>
                 Activation happens after the picking and before the episode starts. Once the
                 episode is running, your three are locked.
               </P>
-              {!TONIGHT.draftBeatsLive && (
+              )}
+              {isLegacy && !TONIGHT.draftBeatsLive && (
                 <p
                   className="text-[14px] leading-relaxed border-l-2 pl-3"
                   style={{ color: 'var(--t-pending)', borderColor: 'var(--t-pending)' }}
@@ -621,14 +753,16 @@ export default function HowItWorks() {
 
           {/* Bingo — current as of the rebalanced 75-square researched pool. */}
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-comet" size={28} /></span>}
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-comet" size={28} /></span>
+              : <Radio size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="During — you watch"
             summary={
               <>
                 That is genuinely the instruction. Your score moves on its own as{' '}
-                {TONIGHT.gameMaster} logs what happens on screen. The only thing that wants
+                {caller} logs what happens on screen. The only thing that wants
                 your thumb is a 5&times;5 bingo card: tap a square when you see it happen,
-                confirm, and it goes to {TONIGHT.gameMaster} to approve.
+                confirm, and it scores immediately.
               </>
             }
           >
@@ -636,12 +770,16 @@ export default function HowItWorks() {
               <P>
                 Every square has a strict win condition that spells out what does{' '}
                 <em>not</em> count, and tapping a square shows you that wording before you
-                commit. &ldquo;Named Dragon Snack&rdquo; needs a dragon to actually use its
-                teeth on someone with a name &mdash; burning them does not count.
+                commit.
+                {isLegacy && (
+                  <> &ldquo;Named Dragon Snack&rdquo; needs a dragon to actually use its
+                  teeth on someone with a name &mdash; burning them does not count.</>
+                )}
               </P>
               <P>
-                So it is two taps, not one: select, read, confirm. Then say it out loud,
-                because a claim sits pending until {TONIGHT.gameMaster} approves it.
+                So it is two taps, not one: select, read, confirm. Nobody approves it and
+                nothing sits pending &mdash; the card is on your honor. Say it out loud
+                anyway, and if you marked it by mistake, tap the square again to undo it.
               </P>
             </Disclosure>
             <Disclosure label="What a square is worth">
@@ -679,15 +817,25 @@ export default function HowItWorks() {
           </GameCard>
 
           <GameCard
-            icon={<span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>}
+            icon={isLegacy
+              ? <span style={HALLMARK_RELIEF}><Hallmark id="hallmark-horn" size={28} /></span>
+              : <MessageSquare size={28} strokeWidth={1.5} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
             title="Underneath — the chat"
-            summary={
+            summary={isLegacy ? (
               <>
                 All of us, plus seven AI companions who are watching along and have opinions
                 about it. They react to what actually happens, live.
               </>
-            }
+            ) : (
+              <>
+                All of us, plus an AI cast who are watching along and have opinions about
+                it. They react to what actually happens, live.
+              </>
+            )}
           >
+            {/* The roster is the legacy pack's; another pack's cast is named by
+                that pack, not here. */}
+            {isLegacy && (
             <Disclosure label="Who is in there">
               <P>
                 Cersei passes judgement, Tyrion drinks and knows things, Olenna is unkind
@@ -699,10 +847,17 @@ export default function HowItWorks() {
                 say when your pick dies.
               </P>
             </Disclosure>
+            )}
           </GameCard>
         </div>
       </Section>
 
+      {/* Everything from here to the timeline describes one shared playback:
+          a remote-holder, a paused episode, two screens kept on the same
+          second. None of it is true of a live broadcast, so a non-legacy
+          reader gets the live section below instead. */}
+      {isLegacy && (
+      <>
       <Rule />
 
       {/* ── The remote ───────────────────────────────────────────────────── */}
@@ -872,52 +1027,116 @@ export default function HowItWorks() {
           </Disclosure>
         </div>
       </Section>
+      </>
+      )}
 
+      {/* ── Live broadcast ───────────────────────────────────────────────── */}
+      {/* The live replacement for the three sections above: no shared playback
+          to explain, so what a reader needs instead is where the truth comes
+          from, what chat will do to a slow stream, and what they still score
+          if they cannot watch at all. */}
+      {!isLegacy && (
+      <>
       <Rule />
 
-      {/* ── Timeline ─────────────────────────────────────────────────────── */}
-      <Section eyebrow="Tonight" title="The shape of it">
+      <Section eyebrow="While the show airs" title="Live broadcast">
         <P>
-          The episode drops at nine and we will start it around half past &mdash; that part
-          is deliberate. The draft and activation take a real half hour, and it is far better
-          to begin late together than to rush the picks. Nine o&rsquo;clock is a release time,
-          not a deadline; the episode waits for us.
+          There is nothing to press play on together. Everyone watches on their own feed,
+          wherever the show reaches them, and the game runs underneath whatever you are
+          watching on.
         </P>
 
-        <ol className="flex flex-col">
-          {TONIGHT.schedule.map((slot, i) => (
-            <li key={slot.title} className="flex gap-4">
-              {/* Spine: a continuous rule with a node per step. */}
-              <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
-                <span
-                  className="w-2 h-2 rounded-full mt-1.5"
-                  style={{ background: 'var(--t-accent)' }}
-                />
-                {i < TONIGHT.schedule.length - 1 && (
-                  <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
-                )}
-              </div>
-              <div className="flex flex-col gap-1 pb-6 min-w-0">
-                <span
-                  className="text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums"
-                  style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
-                >
-                  {slot.time ?? 'time to come'}
-                </span>
-                <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
-                  {slot.title}
-                </h3>
-                <p
-                  className="text-[16px] leading-[1.6]"
-                  style={{ color: 'var(--t-text-muted)' }}
-                >
-                  {slot.detail}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <KeyLine>The host declares it the moment it happens on the fastest feed.</KeyLine>
+
+        <P>
+          That is what moves the board, and chat moves with it. If your stream runs a minute
+          or two behind, chat will tell you what happened before your screen does &mdash;
+          that is the trade for a room reacting together, and it is worth knowing before you
+          scroll.
+        </P>
+
+        <div className="relief-glass p-4 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Radio
+              size={18}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--t-text-dim)' }}
+              aria-hidden
+            />
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Not every category is handed out on air. The ones the show posts afterwards are
+              declared at the end of the night, from that official post, one at a time.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Tv
+              size={18}
+              className="flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--t-text-dim)' }}
+              aria-hidden
+            />
+            <p className="text-[16px] leading-[1.6]" style={{ color: 'var(--t-text-muted)' }}>
+              Cannot watch tonight? Your picks and your draft still score in full, and the
+              recap is waiting afterwards. Bingo is the only part you forfeit.
+            </p>
+          </div>
+        </div>
       </Section>
+      </>
+      )}
+
+      {/* The date, the running order and the release time all belong to the
+          legacy event. A room on any other pack has its own schedule, which this
+          page does not know, so it shows none rather than the wrong one. */}
+      {isLegacy && (
+        <>
+        <Rule />
+
+        {/* ── Timeline ─────────────────────────────────────────────────────── */}
+        <Section eyebrow="Tonight" title="The shape of it">
+          <P>
+            The episode drops at nine and we will start it around half past &mdash; that part
+            is deliberate. The draft and activation take a real half hour, and it is far better
+            to begin late together than to rush the picks. Nine o&rsquo;clock is a release time,
+            not a deadline; the episode waits for us.
+          </P>
+
+          <ol className="flex flex-col">
+            {schedule.map((slot, i) => (
+              <li key={slot.title} className="flex gap-4">
+                {/* Spine: a continuous rule with a node per step. */}
+                <div className="flex flex-col items-center flex-shrink-0 w-3" aria-hidden>
+                  <span
+                    className="w-2 h-2 rounded-full mt-1.5"
+                    style={{ background: 'var(--t-accent)' }}
+                  />
+                  {i < schedule.length - 1 && (
+                    <span className="w-px flex-1" style={{ background: 'var(--t-line)' }} />
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 pb-6 min-w-0">
+                  <span
+                    className="text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums"
+                    style={{ color: slot.time ? 'var(--t-accent-light)' : 'var(--t-text-dim)' }}
+                  >
+                    {slot.time ?? 'time to come'}
+                  </span>
+                  <h3 className="text-[18px] font-semibold" style={{ color: 'var(--t-text)' }}>
+                    {slot.title}
+                  </h3>
+                  <p
+                    className="text-[16px] leading-[1.6]"
+                    style={{ color: 'var(--t-text-muted)' }}
+                  >
+                    {slot.detail}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+        </>
+      )}
 
       {/* ── Join ─────────────────────────────────────────────────────────── */}
       <motion.div

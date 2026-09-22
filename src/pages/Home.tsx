@@ -16,23 +16,39 @@
  * AnimatePresence with mode="wait" ensures the current screen exits before the
  * next one enters, giving a clean slide-up transition between steps.
  *
+ * JOIN DEEP LINK:
+ * /join/CODE and /?join=CODE both land here, put the screen in 'join-code'
+ * with the code prefilled, and run the same room lookup the Continue button
+ * runs. They never submit the join itself — a seat still needs a name, and an
+ * avatar when the room is in its lobby.
+ *
  * SESSION REDIRECT:
  * If the context already has a player (session restored on mount), we redirect
- * straight to their room so they don't have to rejoin after a refresh.
+ * straight to their room so they don't have to rejoin after a refresh. The
+ * exception is a join link naming a different room: that is a choice, not a
+ * redirect, so the 'session-conflict' screen names both rooms and waits.
  */
 
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Tv } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useGame } from '../context/GameContext'
 import { useRoom } from '../hooks/useRoom'
+import { useShowIdentity, useShowIdentityForPack } from '../hooks/useShowIdentity'
 import { resolvePlayerReclaim } from '../lib/player-reclaim'
+import { normalizeJoinLinkCode, parseJoinLinkCode } from '../lib/join-link'
 import AvatarPicker from '../components/AvatarPicker'
 import Avatar from '../components/Avatar'
 import { Hallmark } from '../components/ui/Hallmarks'
 import { PLAYER_AVATARS } from '../data/avatar-config'
+import {
+  FEATURED_SHOW_IDENTITY,
+  showIdentityKicker,
+  showIdentityMastheadLine,
+  showIdentityPresentsProperty,
+} from '../lib/show-identity'
 import type { PlayerRow, RoomPhase } from '../types/database'
 
 // ─── Screen state ─────────────────────────────────────────────────────────────
@@ -45,8 +61,17 @@ type Screen =
     view: 'join-form'
     code: string
     phase: RoomPhase
+    // The room's pack, read in the same lookup that fetched the phase. The
+    // avatar set is the room's decision, not the visitor's: a legacy room keeps
+    // offering its sigils however this phone arrived at it.
+    showPackId: string | null
     existingPlayers: Array<Pick<PlayerRow, 'id' | 'name' | 'avatar_id'>>
   }
+  // A restored session and a join link that disagree. The session redirect is
+  // the right default and stays untouched everywhere else; here it would throw
+  // away the link the player just tapped, so the two rooms are named and the
+  // player picks. Nothing is written until they do.
+  | { view: 'session-conflict'; linkCode: string; restoredCode: string }
 
 // 4-letter uppercase code using consonants only (avoids accidental words and
 // ambiguous I/O characters)
@@ -71,6 +96,15 @@ export default function Home() {
   const navigate = useNavigate()
   const { player, room, loading } = useGame()
   const { createRoom, joinRoom } = useRoom()
+  // This route exists before any room does: a restored session is redirected to
+  // its room by the effect below, so every screen here — landing, create, join —
+  // is room-less and names the featured show rather than the unbound wording. A
+  // bound identity still wins whenever one is somehow in hand, and only the
+  // legacy pack keeps the Fire & Blood wordmark and the two-dragon Dance
+  // hallmark.
+  const { identity: boundIdentity } = useShowIdentity()
+  const showIdentity = room == null ? FEATURED_SHOW_IDENTITY : boundIdentity
+  const isLegacy = showIdentity.isLegacy
 
   const [screen, setScreen] = useState<Screen>({ view: 'landing' })
   const [name, setName] = useState('')
@@ -78,6 +112,31 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // The avatar set belongs to the room being joined, not to the featured show:
+  // the join form has a pack id in hand, so it asks the same cached resolver
+  // every other surface asks. The create form has no room yet and uses the
+  // featured answer above.
+  const { identity: joinIdentity } = useShowIdentityForPack(
+    screen.view === 'join-form' ? screen.showPackId : null,
+  )
+
+  // ── The join deep link ─────────────────────────────────────────────────────
+  //
+  // /join/CODE carries the code in the path; /?join=CODE carries it in the
+  // query, for the chat apps and QR tools that mangle one or the other. Both
+  // are read here and validated by the same pure rule as a typed code — see
+  // lib/join-link. A link only ever fills the form and runs the lookup the
+  // Continue button runs; it never joins, because a seat needs a name.
+  const { code: routeJoinCode } = useParams<{ code?: string }>()
+  const [searchParams] = useSearchParams()
+  const linkCodeRaw = routeJoinCode ?? searchParams.get('join')
+  const linkCode = useMemo(() => parseJoinLinkCode(linkCodeRaw), [linkCodeRaw])
+  // Set to the code whose room lookup is owed, and cleared the moment it runs,
+  // so a re-render (or a StrictMode double effect) cannot look it up twice.
+  const pendingLinkLookupRef = useRef<string | null>(null)
+  const linkHandledRef = useRef(false)
+
   const reclaim = screen.view === 'join-form'
     ? resolvePlayerReclaim(screen.existingPlayers, name)
     : null
@@ -86,12 +145,59 @@ export default function Home() {
     ? PLAYER_AVATARS.find((avatar) => avatar.id === reclaimedPlayer.avatar_id)
     : null
 
-  // If the session was restored (refresh), go straight to the room
+  // If the session was restored (refresh), go straight to the room.
+  // The one exception is a join link for a DIFFERENT room: silently redirecting
+  // there would swallow the link the player just tapped and leave them certain
+  // they had joined the new room. They get the choice instead, and the redirect
+  // resumes for every other case, including a link for the room they are in.
+  const restoredSessionConflictsWithLink =
+    room != null && linkCode != null && linkCode !== room.code
   useEffect(() => {
-    if (!loading && player && room) {
+    if (!loading && player && room && !restoredSessionConflictsWithLink) {
       navigate(`/room/${room.code}`)
     }
-  }, [loading, player, room, navigate])
+  }, [loading, player, room, navigate, restoredSessionConflictsWithLink])
+
+  // Apply the link once the session restore has settled, so the decision is
+  // made against a known session rather than a momentarily empty one.
+  useEffect(() => {
+    if (loading || linkCodeRaw == null || linkHandledRef.current) return
+    linkHandledRef.current = true
+
+    if (player && room) {
+      // Same room: the redirect above already takes them home. Different room:
+      // name both and wait. A link we could not read is not worth stranding a
+      // seated player over, so that also falls through to the redirect.
+      if (linkCode != null && linkCode !== room.code) {
+        setScreen({ view: 'session-conflict', linkCode, restoredCode: room.code })
+      }
+      return
+    }
+
+    if (linkCode == null) {
+      // Restrictive default: a code that is not exactly four letters is never
+      // repaired into a room lookup. The salvageable letters prefill the field
+      // and a person finishes it.
+      setJoinCode(normalizeJoinLinkCode(linkCodeRaw))
+      setScreen({ view: 'join-code' })
+      setError('That link did not carry a four-letter room code. Enter it here.')
+      return
+    }
+
+    setJoinCode(linkCode)
+    setError(null)
+    setScreen({ view: 'join-code' })
+    pendingLinkLookupRef.current = linkCode
+  }, [loading, linkCodeRaw, linkCode, player, room])
+
+  // The lookup runs only once the field actually holds the link's code, so it
+  // goes through the same handler, with the same state, as a typed code.
+  useEffect(() => {
+    if (pendingLinkLookupRef.current == null) return
+    if (joinCode !== pendingLinkLookupRef.current) return
+    pendingLinkLookupRef.current = null
+    void handleJoinCodeSubmit()
+  }, [joinCode])
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -115,7 +221,7 @@ export default function Home() {
       // because it discarded the error and fell through to the null check.
       const { data: roomData, error: lookupError } = await supabase
         .from('rooms')
-        .select('id, phase')
+        .select('id, phase, show_pack_id')
         .eq('code', code)
         .maybeSingle()
 
@@ -139,6 +245,7 @@ export default function Home() {
         view: 'join-form',
         code,
         phase: roomData.phase,
+        showPackId: roomData.show_pack_id ?? null,
         existingPlayers: existingPlayers ?? [],
       })
     } catch (e) {
@@ -230,7 +337,9 @@ export default function Home() {
             transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
           >
             {/* The Dance — two dragons, Black and Green, circling. The master mark. */}
-            <Hallmark id="hallmark-dance" size={72} />
+            {isLegacy
+              ? <Hallmark id="hallmark-dance" size={72} />
+              : <Tv size={72} strokeWidth={1} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
           </motion.div>
         </div>
 
@@ -242,7 +351,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          Watch Party presents
+          {showIdentityKicker(showIdentity, 'Watch Party presents')}
         </motion.p>
         <motion.h1
           className="text-[27px] font-bold tracking-[0.04em] uppercase mt-2"
@@ -257,7 +366,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          Fire &amp; Blood
+          {isLegacy ? <>Fire &amp; Blood</> : showIdentity.title}
         </motion.h1>
         <motion.p
           className="text-sm mt-2"
@@ -266,7 +375,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
         >
-          House of the Dragon — Season 3 Finale
+          {showIdentityMastheadLine(showIdentity)}
         </motion.p>
 
         {/* Star field — static decorative dots */}
@@ -298,6 +407,50 @@ export default function Home() {
       <div className="w-full">
         <AnimatePresence mode="wait">
 
+          {/* ── JOIN LINK vs RESTORED SESSION ───────────────────────────── */}
+          {screen.view === 'session-conflict' && (
+            <motion.div key="session-conflict" {...screenAnim}>
+              <div className="relief-glass rounded-2xl p-5 space-y-5">
+                <div>
+                  <h2 className="font-display text-xl font-bold text-[var(--t-text)]">
+                    Which room?
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--t-text-muted)]">
+                    You already have a seat in room {screen.restoredCode}, and the link you
+                    opened is for room {screen.linkCode}. Nothing changes until you choose.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => navigate(`/room/${screen.restoredCode}`)}
+                  className="min-h-[56px] w-full rounded-2xl bg-accent px-5 text-lg font-bold text-ground transition-all active:scale-95 hover:bg-accent-light"
+                >
+                  Back to room {screen.restoredCode}
+                </button>
+
+                <button
+                  onClick={() => {
+                    const target = screen.linkCode
+                    setError(null)
+                    setSelectedAvatar(null)
+                    setJoinCode(target)
+                    setScreen({ view: 'join-code' })
+                    pendingLinkLookupRef.current = target
+                  }}
+                  className="min-h-[56px] w-full rounded-2xl border px-5 text-base font-bold text-[var(--t-text)] transition-colors"
+                  style={{ borderColor: 'var(--t-line-strong)' }}
+                >
+                  Join room {screen.linkCode} instead
+                </button>
+
+                <p className="text-xs leading-relaxed text-[var(--t-text-dim)]">
+                  Joining the new room moves this phone's identity to it. Your old seat stays
+                  where it is; rejoin it later with the same name.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {/* ── LANDING ─────────────────────────────────────────────────── */}
           {screen.view === 'landing' && (
             <motion.div
@@ -321,7 +474,9 @@ export default function Home() {
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 190, damping: 19, delay: 0.04 }}
                 >
-                  <Hallmark id="hallmark-dance-hero" size={128} />
+                  {isLegacy
+                    ? <Hallmark id="hallmark-dance-hero" size={128} />
+                    : <Tv size={128} strokeWidth={1} style={{ color: 'var(--t-ornament)' }} aria-hidden />}
                 </motion.div>
 
                 <motion.p
@@ -331,7 +486,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 }}
                 >
-                  Watch Party presents
+                  {showIdentityKicker(showIdentity, 'Watch Party presents')}
                 </motion.p>
                 <motion.h1
                   id="party-title"
@@ -344,8 +499,13 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.14 }}
                 >
-                  Fire <span style={{ color: 'var(--t-vellum-light)' }}>&amp;</span> Blood
+                  {isLegacy
+                    ? <>Fire <span style={{ color: 'var(--t-vellum-light)' }}>&amp;</span> Blood</>
+                    : showIdentity.title}
                 </motion.h1>
+                {/* The property sits here only when the kicker above did not
+                    take it; when it did, the dated band below is the line. */}
+                {!showIdentityPresentsProperty(showIdentity) && (
                 <motion.p
                   className="mt-2 text-[18px] font-semibold italic leading-none"
                   style={{
@@ -356,11 +516,14 @@ export default function Home() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
                 >
-                  House of the Dragon
+                  {showIdentity.property}
                 </motion.p>
+                )}
               </section>
 
-              {/* The episode is treated as tonight's dated proclamation. */}
+              {/* The installment is treated as tonight's dated proclamation.
+                  The band renders only when the identity names one. */}
+              {showIdentity.installment != null && (
               <motion.div
                 className="material-vellum deckled relief-raised flex min-h-11 w-full items-center justify-center gap-3 px-5 py-2"
                 style={{ color: 'var(--t-ink)' }}
@@ -373,10 +536,11 @@ export default function Home() {
                   className="whitespace-nowrap text-[12px] font-extrabold uppercase tracking-[0.18em]"
                   style={{ fontFamily: 'var(--font-family-display)' }}
                 >
-                  Season 3 Finale
+                  {showIdentity.installment}
                 </span>
                 <span className="h-px flex-1" style={{ backgroundColor: 'var(--t-ink-muted)' }} aria-hidden />
               </motion.div>
+              )}
 
               {/* Blood-thread divider: madder line, wax knot, restrained ornament. */}
               <div className="flex w-full items-center gap-2 px-1" aria-hidden>
@@ -438,6 +602,17 @@ export default function Home() {
                   <ArrowRight size={18} style={{ color: 'var(--t-ornament)' }} aria-hidden />
                 </motion.button>
               </div>
+
+              {/* The only way into the explainer from the landing. Quiet on
+                  purpose — it sits under the two actions, not beside them —
+                  and the row clears the 44px target on its own. */}
+              <Link
+                to="/how-it-works"
+                className="flex min-h-[44px] w-full items-center justify-center px-4 text-[14px] font-medium underline underline-offset-4"
+                style={{ color: 'var(--t-text-dim)', textDecorationColor: 'var(--t-line-strong)' }}
+              >
+                How it works
+              </Link>
             </motion.div>
           )}
 
@@ -490,6 +665,7 @@ export default function Home() {
                     onSelect={setSelectedAvatar}
                     selectedId={selectedAvatar}
                     takenIds={[]}
+                    isLegacy={isLegacy}
                   />
                 </div>
 
@@ -638,7 +814,9 @@ export default function Home() {
                       <p className="mt-1 text-sm text-[var(--t-text-muted)]">
                         {reclaimedAvatar
                           ? `House ${reclaimedAvatar.name} is still yours. No new sigil needed.`
-                          : 'Your original sigil and every game choice are still attached.'}
+                          : joinIdentity.isLegacy
+                            ? 'Your original sigil and every game choice are still attached.'
+                            : 'Your original avatar and every game choice are still attached.'}
                       </p>
                     </div>
                   </div>
@@ -671,6 +849,7 @@ export default function Home() {
                     <AvatarPicker
                       onSelect={setSelectedAvatar}
                       selectedId={selectedAvatar}
+                      isLegacy={joinIdentity.isLegacy}
                       takenIds={screen.existingPlayers.map((player) => player.avatar_id)}
                       takenBy={Object.fromEntries(
                         screen.existingPlayers.map((player) => [player.avatar_id, player.name]),

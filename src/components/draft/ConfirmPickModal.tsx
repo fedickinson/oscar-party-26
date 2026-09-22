@@ -19,11 +19,13 @@
  */
 
 import { motion } from 'framer-motion'
-import { FilmIcon } from '../../lib/film-icons'
+import { BadgeCheck } from 'lucide-react'
+import { FilmIcon } from '../ui/FilmIcon'
 import { Hallmark } from '../ui/Hallmarks'
 import StoryPortrait from '../ui/StoryPortrait'
 import type { SignatureBeatRow } from '../../types/database'
 import type { DraftEntityWithDetails } from '../../types/game'
+import { useShowIdentity } from '../../hooks/useShowIdentity'
 
 // Returns a display-friendly short label for the Claim button.
 // Prefers the full name if it fits; otherwise truncates to the longest
@@ -43,6 +45,13 @@ function claimLabel(name: string, maxChars = 14): string {
 interface Props {
   entity: DraftEntityWithDetails
   beats: SignatureBeatRow[]
+  /**
+   * Whether this room's board scores signature beats. A Results Night pack
+   * authors none, and the empty-list branch below said "Signature beats
+   * loading" forever — a permanent promise of something that was never coming.
+   * When false the beats section is not rendered at all.
+   */
+  beatsActive: boolean
   onConfirm: () => void
   onCancel: () => void
   isSubmitting: boolean
@@ -51,10 +60,12 @@ interface Props {
 export default function ConfirmPickModal({
   entity,
   beats,
+  beatsActive,
   onConfirm,
   onCancel,
   isSubmitting,
 }: Props) {
+  const { identity: showIdentity } = useShowIdentity()
   const isFilm = entity.type === 'film'
   const scoringBeats = isFilm ? beats : beats.slice(0, 3)
   const totalPoints = scoringBeats.reduce((sum, beat) => sum + beat.points, 0)
@@ -99,7 +110,9 @@ export default function ConfirmPickModal({
                   color: 'var(--t-pending)',
                 }}
               >
-                {isFilm ? 'Dragon' : 'Character'}
+                {isFilm
+                  ? (showIdentity.isLegacy ? 'Dragon' : 'Title')
+                  : (showIdentity.isLegacy ? 'Character' : 'Pick')}
               </span>
             </div>
 
@@ -116,8 +129,8 @@ export default function ConfirmPickModal({
           </div>
         </div>
 
-        {/* Signature beats list */}
-        {beats.length > 0 ? (
+        {/* Signature beats list — omitted entirely when the room's beats are inert */}
+        {!beatsActive ? null : beats.length > 0 ? (
           <div className="relief-glass rounded-xl p-4 mb-5 space-y-2" style={{ borderColor: 'var(--t-line-soft)' }}>
             <p className="text-xs text-[var(--t-text-dim)] uppercase tracking-widest mb-3">Signature beats</p>
             {beats.map((beat) => (
@@ -163,7 +176,11 @@ export default function ConfirmPickModal({
             }}
           >
             <span className="flex items-center justify-center gap-2">
-              <Hallmark id="hallmark-claim" size={18} className="flex-shrink-0" />
+              {/* The claim hallmark is a mantled dragon; a non-legacy room gets
+                  a neutral claimed mark at the same 18px, as in MyRoster. */}
+              {showIdentity.isLegacy
+                ? <Hallmark id="hallmark-claim" size={18} className="flex-shrink-0" />
+                : <BadgeCheck size={18} strokeWidth={1.8} aria-hidden className="flex-shrink-0" />}
               {isSubmitting ? 'Claiming…' : `Claim ${claimLabel(entity.name)}`}
             </span>
           </button>

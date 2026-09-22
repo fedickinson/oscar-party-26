@@ -15,7 +15,7 @@ import {
   type FilmProfile,
   type FilmCategory,
 } from '../../data/film-encyclopedia'
-import { FilmIcon } from '../../lib/film-icons'
+import { FilmIcon } from '../ui/FilmIcon'
 
 // ─── Category display config ─────────────────────────────────────────────────
 

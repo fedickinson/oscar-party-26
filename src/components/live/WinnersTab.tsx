@@ -5,11 +5,15 @@
  *
  * LAYOUT:
  *   - Progress bar: "12 / 24 Announced"
- *   - End Ceremony card (host only, when all categories have winners)
+ *   - Close-the-live-floor card (host only, permanent, two-step). Results Night
+ *     resolves half its slate on social media after the broadcast, so the close
+ *     is never gated on a full slate; the card names the unresolved count and
+ *     what staying unresolved costs before the second confirmation.
  *   - Category list sorted by display_order:
  *       ANNOUNCED: name + tier badge + winner name (accent) + film + check
  *                  Tap to expand → all nominees, winner highlighted
- *                  Undo button (host only, within 30s window)
+ *                  Two-tap undo (host with authority, while the room is live,
+ *                  for any declared category however it was declared)
  *       UNANNOUNCED (host): "Open Category" button → spotlight via openSpotlight()
  *       UNANNOUNCED (non-host): "Awaiting result..." italic
  */
@@ -25,19 +29,25 @@ import {
   FastForward,
   RotateCcw,
   AlertTriangle,
+  Loader2,
   RefreshCw,
   Trophy,
   User,
 } from 'lucide-react'
 import { useAdmin } from '../../hooks/useAdmin'
-import { CategoryIcon } from '../../lib/category-icons'
-import { FilmIcon } from '../../lib/film-icons'
+import { CategoryIcon } from '../ui/CategoryIcon'
+import { FilmIcon } from '../ui/FilmIcon'
+import {
+  SCHEDULED_UNDO_HINT_WINDOW_MS,
+  deriveLiveFloorCloseCard,
+  deriveScheduledUndoAffordance,
+} from '../../lib/live-floor'
 import { supabase } from '../../lib/supabase'
 
 const FREE_CENTER_INDEX = 12
 
-
-const UNDO_WINDOW_MS = 30_000
+/** How long an armed undo stays armed before it disarms itself. */
+const UNDO_ARM_MS = 15_000
 
 const TIER_BADGE_COLORS: Record<number, string> = {
   1: 'bg-accent/20 text-accent',
@@ -75,6 +85,7 @@ export default function WinnersTab({
   const {
     categories,
     winnerSetAt,
+    roomPhase,
     isLoading,
     syncError,
     retrySync,
@@ -143,13 +154,29 @@ export default function WinnersTab({
   }
   const [tick, setTick] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [confirmingClose, setConfirmingClose] = useState(false)
+  const [armedUndoId, setArmedUndoId] = useState<number | null>(null)
 
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // 1Hz tick to keep undo countdowns accurate
+  // An armed undo disarms itself, so a stray tap never sits waiting to fire.
+  useEffect(() => {
+    if (armedUndoId == null) return
+    const timer = setTimeout(() => setArmedUndoId(null), UNDO_ARM_MS)
+    return () => clearTimeout(timer)
+  }, [armedUndoId])
+
+  // Clear a stale failure rather than leaving it over the live category list.
+  useEffect(() => {
+    if (error == null) return
+    const timer = setTimeout(() => setError(null), 6000)
+    return () => clearTimeout(timer)
+  }, [error])
+
+  // 1Hz tick to keep the undo freshness countdown accurate
   useEffect(() => {
     const hasRecent = Object.values(winnerSetAt).some(
-      (t) => Date.now() - t < UNDO_WINDOW_MS,
+      (t) => Date.now() - t < SCHEDULED_UNDO_HINT_WINDOW_MS,
     )
     if (hasRecent) {
       if (!tickRef.current) {
@@ -166,11 +193,24 @@ export default function WinnersTab({
     }
   }, [winnerSetAt, tick])
 
+  // Two-tap undo. The first tap arms one category; the second fires the
+  // capability-gated compare-and-delete command. There is no timer to beat.
   async function handleUndo(categoryId: number) {
+    if (armedUndoId !== categoryId) {
+      setError(null)
+      setArmedUndoId(categoryId)
+      return
+    }
+    setArmedUndoId(null)
     try {
       await undoWinner(categoryId)
-    } catch {
-      // silent — undo window likely expired
+      setError(null)
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'That declaration could not be undone.',
+      )
     }
   }
 
@@ -219,7 +259,7 @@ export default function WinnersTab({
 
   const announcedCount = categories.filter((c) => c.winner_id != null).length
   const totalCount = categories.length
-  const allAnnounced = totalCount > 0 && announcedCount === totalCount
+  const closeCard = deriveLiveFloorCloseCard({ announcedCount, totalCount })
 
   return (
     <>
@@ -280,65 +320,99 @@ export default function WinnersTab({
           </div>
         </div>
 
-        {/* Close the live floor — host only, when all announced */}
-        <AnimatePresence>
-          {allAnnounced && isHost && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              className="backdrop-blur-lg bg-accent/10 border border-accent/30 rounded-2xl p-4 space-y-3"
-            >
-              <div className="flex items-center gap-2">
-                <Trophy size={14} className="text-accent" />
-                <p className="text-sm font-semibold text-white">
-                  All {totalCount} categories announced
-                </p>
-              </div>
-              <p className="text-xs text-white/50">
-                Close the live floor to publish provisional results on every phone.
-              </p>
-              <motion.button
-                type="button"
-                onClick={onCloseNight}
-                disabled={isClosingNight || !refereeEnabled}
-                whileTap={!isClosingNight && refereeEnabled ? { scale: 0.97 } : undefined}
-                className={[
-                  'min-h-11 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
-                  !isClosingNight && refereeEnabled
-                    ? 'bg-accent text-ground'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed',
-                ].join(' ')}
-              >
-                {isClosingNight ? (
-                  <div className="w-4 h-4 border-2 border-ground/40 border-t-ground rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Flame size={14} />
-                    Close the Live Floor
-                  </>
-                )}
-              </motion.button>
-              {closeNightError && (
-                <p className="text-xs text-[var(--t-pending)]" role="alert">
-                  {closeNightError}
-                </p>
+        {/* Close the live floor — host only, permanent, two-step. Unresolved
+            categories do not block the close; the database command accepts
+            them and the settlement pass is where they become true. */}
+        {isHost && (
+          // Iron, not stone: the stone texture is a masonry course drawn at
+          // 480x360 and never scaled down for a card this size, so its mortar
+          // lines ran straight through the paragraph that explains what closing
+          // costs. Iron carries the same alpha-only grain with no structure in
+          // it. The border is the strong line token — at --t-line this card read
+          // as a disabled control rather than the night's last decision.
+          <div className="material-iron relief-inset space-y-3 rounded-2xl border border-[color:var(--t-line-strong)] p-4">
+            <div className="flex items-center gap-2">
+              {closeCard.unresolvedCount > 0 ? (
+                <AlertTriangle size={14} style={{ color: 'var(--t-pending)' }} aria-hidden />
+              ) : (
+                <Trophy size={14} style={{ color: 'var(--t-accent)' }} aria-hidden />
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p className="text-sm font-semibold text-[color:var(--t-text)]">
+                {closeCard.headline}
+              </p>
+            </div>
+            <p className="text-xs leading-relaxed text-[color:var(--t-text-muted)]">
+              {closeCard.detail}
+            </p>
+            {closeCard.emptyLedgerWarning && (
+              <p className="rounded-xl border border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] p-3 text-xs leading-relaxed text-[color:var(--t-text-muted)]">
+                {closeCard.emptyLedgerWarning}
+              </p>
+            )}
+
+            {confirmingClose ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingClose(false)}
+                  disabled={isClosingNight}
+                  className="min-h-11 rounded-xl border border-[color:var(--t-line)] px-3 py-2 text-sm font-medium text-[color:var(--t-text-muted)] disabled:opacity-40"
+                >
+                  Keep the floor live
+                </button>
+                <motion.button
+                  type="button"
+                  onClick={onCloseNight}
+                  disabled={isClosingNight || !refereeEnabled}
+                  whileTap={!isClosingNight && refereeEnabled ? { scale: 0.97 } : undefined}
+                  className="min-h-11 rounded-xl bg-[var(--t-personal-device)] px-3 py-2 text-sm font-bold text-[color:var(--t-ground)] disabled:opacity-40"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {isClosingNight ? (
+                      <Loader2 size={14} className="animate-spin" aria-hidden />
+                    ) : (
+                      <Flame size={14} aria-hidden />
+                    )}
+                    {isClosingNight ? 'Closing' : closeCard.confirmLabel}
+                  </span>
+                </motion.button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingClose(true)}
+                disabled={isClosingNight || !refereeEnabled}
+                className="min-h-11 w-full rounded-xl border border-[color:var(--t-line-strong)] px-4 py-2 text-sm font-bold text-[color:var(--t-text)] disabled:opacity-40"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Flame size={14} aria-hidden />
+                  Close the Live Floor
+                </span>
+              </button>
+            )}
+
+            {closeNightError && (
+              <p className="text-xs text-[color:var(--t-pending)]" role="alert">
+                {closeNightError}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Category list */}
         <div className="material-oak relief-carved rounded-2xl space-y-2">
           {categories.map((category, i) => {
             const hasWinner = category.winner_id != null
             const isExpanded = expandedIds.has(category.id)
-            const setAt = winnerSetAt[category.id]
-            const canUndo = isHost && setAt != null && Date.now() - setAt < UNDO_WINDOW_MS
-            const secondsLeft = canUndo
-              ? Math.ceil((UNDO_WINDOW_MS - (Date.now() - setAt)) / 1000)
-              : 0
+            const undo = deriveScheduledUndoAffordance({
+              isHost,
+              refereeEnabled,
+              roomPhase,
+              hasWinner,
+              declaredAtMs: winnerSetAt[category.id] ?? null,
+              nowMs: Date.now(),
+            })
+            const isUndoArmed = armedUndoId === category.id
 
             const winnerNominee = hasWinner
               ? category.nominees.find((n) => n.id === category.winner_id)
@@ -347,6 +421,101 @@ export default function WinnersTab({
               ? category.nominees.find((n) => n.id === category.tie_winner_id)
               : null
             const hasTie = tieWinnerNominee != null
+
+            // The status icon, the category and the disclosure chevron. Shared
+            // so the announced row can put them inside the expand button while
+            // an unannounced row renders them as plain, unclickable content.
+            const rowBody = (
+              <>
+                {/* Status icon */}
+                <div
+                  className={[
+                    'relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
+                    hasWinner
+                      ? 'bg-accent/16 border border-accent/30'
+                      : 'bg-white/6 border border-white/8',
+                  ].join(' ')}
+                >
+                  {hasWinner ? (
+                    <>
+                      <Trophy size={11} className="text-accent" />
+                      <span
+                        aria-hidden="true"
+                        className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--t-wax)] relief-seal"
+                      />
+                    </>
+                  ) : (
+                    <Clock size={12} className="text-white/22" />
+                  )}
+                </div>
+
+                {/* Category info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                    <CategoryIcon
+                      categoryName={category.name}
+                      size={13}
+                      className={hasWinner ? 'text-white/30 flex-shrink-0' : 'text-white/60 flex-shrink-0'}
+                    />
+                    <p
+                      className={[
+                        'text-sm font-medium leading-tight',
+                        hasWinner ? 'text-white/60' : 'text-white',
+                      ].join(' ')}
+                    >
+                      {category.name}
+                    </p>
+                    <span
+                      className={[
+                        'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide flex-shrink-0',
+                        TIER_BADGE_COLORS[category.tier] ?? 'bg-white/10 text-white/40',
+                      ].join(' ')}
+                    >
+                      {category.points}pt
+                    </span>
+                  </div>
+
+                  {hasWinner && winnerNominee ? (
+                    <div>
+                      <p className="text-[13px] font-bold text-accent leading-tight truncate">
+                        {winnerNominee.name}
+                        {hasTie && tieWinnerNominee && (
+                          <>
+                            <span className="text-white/28 mx-1 font-normal">&</span>
+                            {tieWinnerNominee.name}
+                          </>
+                        )}
+                      </p>
+                      {hasTie && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--t-pending)]">Tie</span>
+                      )}
+                      {winnerNominee.film_name && !hasTie && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
+                          <p className="text-[11px] text-white/40 truncate">
+                            {winnerNominee.film_name}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className={['text-xs', !isHost && 'italic'].join(' ')}>
+                      <span className="text-white/30">
+                        {isHost
+                          ? `${category.nominees.length} nominees`
+                          : 'Awaiting result...'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {hasWinner && (
+                  isExpanded
+                    ? <ChevronUp size={14} className="text-white/30 flex-shrink-0" />
+                    : <ChevronDown size={14} className="text-white/30 flex-shrink-0" />
+                )}
+              </>
+            )
 
             return (
               <motion.div
@@ -361,105 +530,34 @@ export default function WinnersTab({
                     : 'text-[color:var(--t-text-muted)]',
                 ].join(' ')}
               >
-                {/* Main row */}
-                <button
-                  onClick={hasWinner ? () => toggleExpand(category.id) : undefined}
-                  className={[
-                    'min-h-11 w-full px-3.5 py-3 flex items-center gap-3 text-left',
-                    hasWinner ? 'cursor-pointer' : 'cursor-default',
-                  ].join(' ')}
-                >
-                  {/* Status icon */}
-                  <div
-                    className={[
-                      'relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
-                      hasWinner
-                        ? 'bg-accent/16 border border-accent/30'
-                        : 'bg-white/6 border border-white/8',
-                    ].join(' ')}
-                  >
-                    {hasWinner ? (
-                      <>
-                        <Trophy size={11} className="text-accent" />
-                        <span
-                          aria-hidden="true"
-                          className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--t-wax)] relief-seal"
-                        />
-                      </>
-                    ) : (
-                      <Clock size={12} className="text-white/22" />
-                    )}
-                  </div>
-
-                  {/* Category info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                      <CategoryIcon
-                        categoryName={category.name}
-                        size={13}
-                        className={hasWinner ? 'text-white/30 flex-shrink-0' : 'text-white/60 flex-shrink-0'}
-                      />
-                      <p
-                        className={[
-                          'text-sm font-medium leading-tight',
-                          hasWinner ? 'text-white/60' : 'text-white',
-                        ].join(' ')}
-                      >
-                        {category.name}
-                      </p>
-                      <span
-                        className={[
-                          'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide flex-shrink-0',
-                          TIER_BADGE_COLORS[category.tier] ?? 'bg-white/10 text-white/40',
-                        ].join(' ')}
-                      >
-                        {category.points}pt
-                      </span>
+                {/* Main row. A div, not a button: Spotlight and Undo are real
+                    buttons and a button cannot contain one. React logged the
+                    nesting, and the two-tap undo's second tap could be swallowed
+                    by the row behind it. Expanding is now its own sibling
+                    control, so each tap has exactly one target. */}
+                <div className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  {hasWinner ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(category.id)}
+                      aria-expanded={isExpanded}
+                      className="min-h-11 min-w-0 flex-1 flex items-center gap-3 text-left cursor-pointer"
+                    >
+                      {rowBody}
+                    </button>
+                  ) : (
+                    <div className="min-h-11 min-w-0 flex-1 flex items-center gap-3">
+                      {rowBody}
                     </div>
-
-                    {hasWinner && winnerNominee ? (
-                      <div>
-                        <p className="text-[13px] font-bold text-accent leading-tight truncate">
-                          {winnerNominee.name}
-                          {hasTie && tieWinnerNominee && (
-                            <>
-                              <span className="text-white/28 mx-1 font-normal">&</span>
-                              {tieWinnerNominee.name}
-                            </>
-                          )}
-                        </p>
-                        {hasTie && (
-                          <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--t-pending)]">Tie</span>
-                        )}
-                        {winnerNominee.film_name && !hasTie && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <FilmIcon filmName={winnerNominee.film_name} size={10} className="text-white/30 flex-shrink-0" />
-                            <p className="text-[11px] text-white/40 truncate">
-                              {winnerNominee.film_name}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className={['text-xs', !isHost && 'italic'].join(' ')}>
-                        <span className="text-white/30">
-                          {isHost
-                            ? `${category.nominees.length} nominees`
-                            : 'Awaiting result...'}
-                        </span>
-                      </p>
-                    )}
-                  </div>
+                  )}
 
                   {/* Right-side actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {!hasWinner && isHost && (
                       <motion.button
+                        type="button"
                         whileTap={{ scale: 0.94 }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openSpotlight(category.id)
-                        }}
+                        onClick={() => openSpotlight(category.id)}
                         disabled={!refereeEnabled}
                         className="relief-raised min-h-11 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30 text-accent text-xs font-semibold"
                       >
@@ -467,30 +565,33 @@ export default function WinnersTab({
                       </motion.button>
                     )}
 
-                    {hasWinner && canUndo && (
+                    {undo.enabled && (
                       <motion.button
+                        type="button"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         whileTap={{ scale: 0.94 }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleUndo(category.id)
-                        }}
-                        disabled={!refereeEnabled}
-                        className="relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white/50 text-[11px]"
+                        onClick={() => handleUndo(category.id)}
+                        aria-label={isUndoArmed
+                          ? `Confirm undo of ${category.name}`
+                          : `Undo ${category.name}`}
+                        className={[
+                          'relief-raised min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px]',
+                          isUndoArmed
+                            ? 'border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] font-semibold text-[color:var(--t-pending)]'
+                            : 'border-[color:var(--t-line)] text-[color:var(--t-text-dim)]',
+                        ].join(' ')}
                       >
-                        <RotateCcw size={10} />
-                        {secondsLeft}s
+                        <RotateCcw size={10} aria-hidden />
+                        {isUndoArmed
+                          ? 'Confirm'
+                          : undo.countdownSeconds != null
+                            ? `Undo ${undo.countdownSeconds}s`
+                            : 'Undo'}
                       </motion.button>
                     )}
-
-                    {hasWinner && (
-                      isExpanded
-                        ? <ChevronUp size={14} className="text-white/30" />
-                        : <ChevronDown size={14} className="text-white/30" />
-                    )}
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded: all nominees */}
                 <AnimatePresence initial={false}>
@@ -565,7 +666,8 @@ export default function WinnersTab({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="fixed bottom-20 left-4 right-4 max-w-md mx-auto bg-red-500/90 text-white text-sm font-medium px-4 py-3 rounded-xl text-center z-40"
+              role="alert"
+              className="fixed bottom-20 left-4 right-4 max-w-md mx-auto border border-[color:var(--t-pending)] bg-[var(--t-pending-soft)] text-[color:var(--t-text)] text-sm font-medium px-4 py-3 rounded-xl text-center z-40 backdrop-blur-lg"
             >
               {error}
             </motion.div>
