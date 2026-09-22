@@ -1,6 +1,6 @@
 # 2026 MTV Video Music Awards — P3 event brief
 
-**Status:** implemented on the planning branch and awaiting the Thursday rehearsal on a local stack; nothing here has been run against a database or a phone. This is the `ROADMAP.md` P3 slice ("author and
+**Status:** implemented on the planning branch and rehearsed in the sandbox against a real database and headless phone-size browser (section 7b); real Realtime, the cast and a real phone wait for the Friday run. This is the `ROADMAP.md` P3 slice ("author and
 rehearse the next real event") applied to one concrete property.
 
 **Show:** Sunday, September 27, 2026, Peacock Theater, Los Angeles. Live on CBS, simulcast
