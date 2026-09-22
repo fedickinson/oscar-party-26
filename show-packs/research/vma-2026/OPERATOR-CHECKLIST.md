@@ -847,7 +847,10 @@ and D2h). Per D2, off-air winners are declared by the host from MTV's official p
 
    It declares one at a time in file order through the same command the phone uses, posts the
    winner divider, and stops at the first failure saying which entries landed. Ties stay on the
-   phone: the script always declares a single winner.
+   phone: the script always declares a single winner. The batch is safe to run with the host's
+   Live tab open: the script takes the same durable `event:<category id>:winner:divider` claim
+   the browser takes, so whichever writer gets there first posts the line and the other writes
+   nothing — one divider per category either way.
 4. If you would rather tap, spotlight each one exactly as in 4.6 with 60 to 90 seconds between
    declarations — the ceremony still works after the broadcast.
 5. **Choose a cutoff and say it in chat before you start.** 11:00 p.m. ET is a reasonable one.

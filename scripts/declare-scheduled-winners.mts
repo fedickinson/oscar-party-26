@@ -26,6 +26,14 @@
  * wall of chat. The first failure stops the run and the report names exactly
  * which entries were declared and which were not.
  *
+ * ONE DIVIDER PER CATEGORY
+ * A host Live tab writes the winner divider for every declaration it observes,
+ * through the durable claim key `event:<category id>:winner:divider`. This
+ * command takes that same claim before writing its own divider and seals it
+ * through the same completion RPC, so whichever writer claims the category
+ * first owns the line and the other writes nothing. The batch is therefore
+ * safe to run with the host's Live tab open.
+ *
  *   npx tsx scripts/declare-scheduled-winners.mts --room CODE --input winners.json
  *   npx tsx scripts/declare-scheduled-winners.mts --room CODE --input winners.json \
  *     --apply --confirm-room CODE --pause-seconds 60
@@ -37,8 +45,10 @@
  * explicit SUPABASE_TARGET=remote as well as the double confirmation.
  */
 
+import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { buildWinnerDividerReactionKey } from '../src/lib/companion-reaction'
 import {
   buildScheduledWinnerPlan,
   formatScheduledWinnerPlanTable,
@@ -251,7 +261,19 @@ async function main(): Promise<void> {
   }
   console.log(`${LOG} capability=loaded`)
 
+  // One instance identity for the whole batch, exactly as a host tab holds one
+  // per page load. It only has to be distinct from every other engine's.
+  const instanceId = randomUUID()
+
+  interface ClaimRow {
+    claimed?: boolean
+    active_engine?: string | null
+    active_completed_at?: string | null
+  }
+
   const declaredNow: PlannedScheduledWinner[] = []
+  let dividersWritten = 0
+  let dividersOwnedElsewhere = 0
   let stoppedAt: PlannedScheduledWinner | null = null
   let failure: string | null = null
 
@@ -287,28 +309,89 @@ async function main(): Promise<void> {
         `"${declaration.category_name}" -> ${declaration.winner_name}`,
     )
 
+    // The room hears the result the way it hears a live declaration, with the
+    // post it came from named in the same line. A host Live tab observing this
+    // same declaration writes that line too, so the divider goes through the
+    // shared durable claim rather than a second unkeyed insert: the first
+    // writer to take `event:<category id>:winner:divider` owns it, the other
+    // writes nothing. The browser wrappers gate on the room operator
+    // capability this command already holds, and set the claim's browser
+    // provenance themselves, so no service key is involved.
+    const reactionKey = buildWinnerDividerReactionKey(declaration.category_id)
+    let claimed = false
+    let completed = false
     try {
-      // The room hears the result the way it hears a live declaration, with
-      // the post it came from named in the same line.
-      await request('messages', {
+      const claimRows = await request('rpc/claim_browser_companion_reaction_authorized', {
         method: 'POST',
-        headers: { Prefer: 'return=minimal' },
         body: JSON.stringify({
-          room_id: room.id,
-          player_id: 'winner-divider',
-          text: declaration.announcement,
+          p_room_id: room.id,
+          p_reaction_key: reactionKey,
+          p_instance_id: instanceId,
+          p_lease_seconds: 60,
+          p_operator_capability: capability,
         }),
-      })
+      }) as ClaimRow[] | null
+      const claim = claimRows?.[0]
+      claimed = claim?.claimed === true
+      if (!claimed) {
+        dividersOwnedElsewhere += 1
+        console.log(
+          `${LOG} divider for "${declaration.category_name}" already owned by ` +
+            `${claim?.active_engine ?? 'another writer'}` +
+            `${claim?.active_completed_at ? ' (posted)' : ' (in flight)'}; wrote nothing`,
+        )
+        continue
+      }
+      const completeRows = await request('rpc/complete_browser_companion_reaction_authorized', {
+        method: 'POST',
+        body: JSON.stringify({
+          p_room_id: room.id,
+          p_reaction_key: reactionKey,
+          p_instance_id: instanceId,
+          p_messages: [{ player_id: 'winner-divider', text: declaration.announcement }],
+          p_operator_capability: capability,
+        }),
+      }) as Array<{ completed?: boolean }> | null
+      completed = completeRows?.[0]?.completed === true
+      if (!completed) {
+        throw new Error(`the divider claim ${reactionKey} was taken over before it was sealed`)
+      }
+      dividersWritten += 1
     } catch (error) {
       stoppedAt = null
       failure = `the winner was declared but its announcement could not be posted: ${
         error instanceof Error ? error.message : String(error)
       }`
       break
+    } finally {
+      if (claimed && !completed) {
+        // Never leave a dead 60-second lease behind: the host tab should be
+        // able to write the line the moment this command fails to.
+        try {
+          await request('rpc/release_browser_companion_reaction_authorized', {
+            method: 'POST',
+            body: JSON.stringify({
+              p_room_id: room.id,
+              p_reaction_key: reactionKey,
+              p_instance_id: instanceId,
+              p_operator_capability: capability,
+            }),
+          })
+        } catch (error) {
+          console.error(
+            `${LOG} could not release divider claim ${reactionKey}: ` +
+              `${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+      }
     }
   }
 
   console.log(`${LOG} declared=${declaredNow.length}/${plan.declarations.length}`)
+  console.log(
+    `${LOG} dividers_written=${dividersWritten} ` +
+      `dividers_owned_elsewhere=${dividersOwnedElsewhere}`,
+  )
   for (const declaration of declaredNow) {
     console.log(`${LOG} DONE ${declaration.order} "${declaration.category_name}" -> ${declaration.winner_name}`)
   }
